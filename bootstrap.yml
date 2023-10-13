@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:mariadb://10.0.4.62:3306/sihomdb
+    username: sihomdb
+    password: ojsGnsIL48bV2wEF
+    driver-class-name: org.mariadb.jdbc.Driver
