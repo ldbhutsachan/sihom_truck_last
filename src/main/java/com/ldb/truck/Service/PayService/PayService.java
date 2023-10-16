@@ -13,6 +13,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class PayService {
@@ -435,13 +436,19 @@ public class PayService {
     }
     ///-----Pay OWE
     public  PayTxnDetailsRes v_popupPay(){
+        double pay = 0.0;
+        double noPay = 0.0;
+        double amount =0.0;
         PayTxnDetailsRes result = new PayTxnDetailsRes();
         List<PayTxnDetails> resList = new ArrayList<>();
+        List<PayTxnDetails> resList02 = new ArrayList<>();
         try{
             resList = payDao.v_popupPay();
+            log.info("log:"+resList);
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resList);
+
         }catch (Exception e){
             e.printStackTrace();
             result.setMessage("data not found");

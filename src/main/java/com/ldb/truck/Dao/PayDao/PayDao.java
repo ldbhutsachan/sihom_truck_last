@@ -309,10 +309,12 @@ public class PayDao  implements PayInDao{
     public List<PayTxnDetails> v_popupPay() {
         List<PayTxnDetails> result = new ArrayList<>();
         try {
-            SQL = "select BILLNO,INVOICE_NO,CUSTOMER_ID,CUSTOMER_NAME,CURRENCY,PAY_STATUS,NOPAY_AMOUNT\n" +
+            SQL = "select BILLNO,INVOICE_NO,CUSTOMER_ID,CUSTOMER_NAME,CURRENCY,PAY_STATUS,\n" +
+                    "(AMOUNT) as amount,(PAY_AMOUNT) as pay_amount,(NOPAY_AMOUNT) as NOPAY_AMOUNT\n" +
                     "from V_PAYMENTDETAILS  where pay_status in ('O')  \n" +
-                    "group by BILLNO,INVOICE_NO,CUSTOMER_ID,CUSTOMER_NAME,CURRENCY,PAY_STATUS,NOPAY_AMOUNT\n" +
-                    "order by BILLNO asc";
+                    " group by BILLNO,INVOICE_NO,CUSTOMER_ID,CUSTOMER_NAME,CURRENCY,PAY_STATUS,AMOUNT,PAY_AMOUNT,NOPAY_AMOUNT\n" +
+                    " order by BILLNO asc";
+            log.info("SQL:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<PayTxnDetails>() {
                 @Override
                 public PayTxnDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -323,6 +325,8 @@ public class PayDao  implements PayInDao{
                     data.setCusName(rs.getString("CUSTOMER_NAME"));
                     data.setStatus(rs.getString("PAY_STATUS"));
                     data.setNoPayAmount(rs.getString("NOPAY_AMOUNT"));
+                    data.setPayAmount(rs.getString("pay_amount"));
+                    data.setAmount(rs.getString("amount"));
                     data.setCurrency(rs.getString("CURRENCY"));
                     return data;
                 }
