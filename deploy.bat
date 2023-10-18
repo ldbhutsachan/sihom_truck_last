@@ -18,3 +18,5 @@ cmd /c mvn clean dependency:tree compile package
 
 cmd /c docker build -t %IMAGE%:%VERSION% .
 cmd /c docker push %IMAGE%:%VERSION%
+
+
