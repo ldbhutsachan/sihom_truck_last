@@ -25,6 +25,7 @@ public class PayTxnDetails {
     private String status;
     private String totalDay;
     private Double paymentAmounts;
+
     private String noPayAmount;
     private String currency;
     private String staff_Curr;

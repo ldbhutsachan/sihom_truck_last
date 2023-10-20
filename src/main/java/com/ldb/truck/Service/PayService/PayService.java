@@ -1,6 +1,7 @@
 package com.ldb.truck.Service.PayService;
 
 import com.ldb.truck.Model.Login.Pay.*;
+import com.ldb.truck.Model.Login.Payment.PayTxnReport;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

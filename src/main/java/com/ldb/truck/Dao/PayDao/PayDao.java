@@ -2,6 +2,7 @@ package com.ldb.truck.Dao.PayDao;
 
 import com.ldb.truck.Dao.Details.DetailsServiceDao;
 import com.ldb.truck.Model.Login.Pay.*;
+import com.ldb.truck.Model.Login.Payment.PayTxnReport;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.RowMapper.Pay.*;
 import com.ldb.truck.RowMapper.Payment.InvoiceMapper;
@@ -258,8 +259,10 @@ public class PayDao  implements PayInDao{
 
         if(resFromDateReq.getStartDate()==null){
             SQL = "select * from V_PAYMENTDETAILS ";
+            log.info("SQL"+SQL);
         }else {
             SQL = "select * from V_PAYMENTDETAILS  where PAY_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"'";
+            log.info("SQL"+SQL);
         }
         try {
             return  EBankJdbcTemplate.query(SQL, new RowMapper<PayTxnDetails>() {

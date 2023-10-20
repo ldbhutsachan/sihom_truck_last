@@ -133,6 +133,7 @@ public  PayCashRes listTxnReportLaiHup(@RequestBody ResFromDateReq resFromDateRe
     @CrossOrigin(origins = "*")
     @PostMapping("/listTxnReportLaiHupAll.service")
     public  PayCashRes listTxnReportLaiHupAll(@RequestBody ResFromDateReq resFromDateReq){
+        log.info("====================================>listTxnReportLaiHupAll<========================================");
         PayCashRes result =new PayCashRes();
         try
         {
