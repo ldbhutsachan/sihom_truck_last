@@ -299,7 +299,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_VICIVLE_LEKTHUNG,H_VICIVLE_GPS,H_VICIVLE_POYPUDNUMFON,H_VICIVLE_MORFAI,H_VICIVLE_BGTOM,H_VICIVLE_JANLARK,H_VICIVLE_FAINAR,H_VICIVLE_FAITHAIY,H_VICIVLE_FAIYKHANG,H_VICIVLE_VENMONGNAR,H_VICIVLE_VENMONGLHG , \n" +
                     "H_VICIVLE_VENKHANG,h_VICIVLE_GLASS,LL_TIRE_NO_1, LL_TIRE_NO_2, LL_TIRE_NO_3,LL_TIRE_NO_4,LL_TIRE_NO_5,LL_TIRE_NO_6,LL_TIRE_NO_7, LL_TIRE_DATE_1, LL_TIRE_DATE_2, LL_TIRE_DATE_3, LL_TIRE_DATE_4,LL_TIRE_DATE_5,LL_TIRE_DATE_6,LL_TIRE_DATE_7, \n" +
                     "LL_TIRE_KM_1 , LL_TIRE_KM_2 , LL_TIRE_KM_3 , LL_TIRE_KM_4 , LL_TIRE_KM_5 ,LL_TIRE_KM_6,LL_TIRE_KM_7,R_TIRE_NO_1,R_TIRE_NO_2,R_TIRE_NO_3,R_TIRE_NO_4,R_TIRE_NO_5,R_TIRE_NO_6,R_TIRE_NO_7, \n" +
-                    "R_TIRE_DATE_1, R_TIRE_DATE_2, R_TIRE_DATE_3, R_TIRE_DATE_4, R_TIRE_DATE_5, R_TIRE_DATE_6,R_TIRE_DATE_7, R_TIRE_KM_1,R_TIRE_KM_2,R_TIRE_KM_3,R_TIRE_KM_4,R_TIRE_KM_5,R_TIRE_KM_6,R_TIRE_KM_7,H_LEK_NUMMUNKHG,H_STATUS,kim_km," +
+                    "R_TIRE_DATE_1, R_TIRE_DATE_2, R_TIRE_DATE_3, R_TIRE_DATE_4, R_TIRE_DATE_5, R_TIRE_DATE_6,R_TIRE_DATE_7, R_TIRE_KM_1,R_TIRE_KM_2,R_TIRE_KM_3,R_TIRE_KM_4,R_TIRE_KM_5,R_TIRE_KM_6,R_TIRE_KM_7,H_LEK_NUMMUNKHG,kim_km," +
                     "H_KM1 ,\n" +
                     "H_KM2 ,\n" +
                     "H_KM3 ,\n" +
@@ -324,8 +324,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 ,  \n" +
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
-                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo)\n" +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS)\n" +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y')";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
