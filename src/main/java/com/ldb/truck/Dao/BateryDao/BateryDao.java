@@ -12,5 +12,5 @@ public interface BateryDao {
     public int saveBatery(BateryReq bateryReq);
     int UpdateBatery(BateryReq bateryReq);
     int DelBatery(BateryReq bateryReq);
-
+//ss
 }
