@@ -567,17 +567,16 @@ String SQL="";
                 SQL = "SELECT H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,\n" +
                         "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
                         "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned)) AS carPay,\n" +
-                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) + SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
-                        "-cast(replace(staff02_payAll, ',', '') as unsigned)) AS kumLaiy\n" +
+                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) + SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- sum (cast(replace(staff02_payAll, ',', '') as unsigned)) AS kumLaiy\n" +
                         "FROM V_REPORT_GIVE_OUT_CAR   GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE";
-
+log.info("sql:"+SQL);
             }else {
                 SQL = "SELECT H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,\n" +
                         "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
                         "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned)) AS carPay,\n" +
-                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) + SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
-                        "-cast(replace(staff02_payAll, ',', '') as unsigned)) AS kumLaiy\n" +
-                        "FROM V_REPORT_GIVE_OUT_CAR WHERE OUT_DATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE";
+                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) + SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- sum (cast(replace(staff02_payAll, ',', '') as unsigned)) AS kumLaiy\n" +
+                        "FROM V_REPORT_GIVE_OUT_CAR  WHERE OUT_DATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE";
+                log.info("sql:"+SQL);
             }
             return EBankJdbcTemplate.query(SQL, new RowMapper<TruckDetails>() {
                 @Override
