@@ -1,5 +1,6 @@
 package com.ldb.truck.Service.DetailsService;
 import com.ldb.truck.Dao.Details.DetailsServiceDao;
+import com.ldb.truck.Dao.Performance.PerformanceDao;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Details.DetailsRes;
 import com.ldb.truck.Model.Login.Details.Details;
@@ -16,6 +17,8 @@ import java.util.List;
 public class DetailsService {
     @Autowired
     private DetailsServiceDao detailsServiceDao;
+    @Autowired
+    PerformanceDao performanceDao;
     public DetailsRes ListDataALL(){
         List<Details> listdata = new ArrayList<>();
         DetailsRes result = new DetailsRes();
@@ -79,7 +82,9 @@ public class DetailsService {
         List<Details> listdata = new ArrayList<>();
         DetailsRes result = new DetailsRes();
         try{
-           detailsServiceDao.saveData(detailsReq);;
+           detailsServiceDao.saveData(detailsReq);
+           performanceDao.updateDetailsHeaderKM(detailsReq);
+           performanceDao.updateDetailsFooterKM(detailsReq);
            detailsServiceDao.UpdateHeader(detailsReq);
            detailsServiceDao.UpdateFooter(detailsReq);
            detailsServiceDao.updateStaff01(detailsReq);
