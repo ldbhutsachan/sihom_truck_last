@@ -23,15 +23,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("${base_url}")
+//:/api-prod/v1/truck/getBateryAll
 public class BatteryController {
 @Autowired
 BeterSerivice beterSerivice;
     private static final Logger logger = LogManager.getLogger(BatteryController.class);
     @Autowired
     MediaUploadServiceImpl mediaUploadService;
-@CrossOrigin(value = "*")
-@PostMapping(value = "/getBateryAll")
+
+    @CrossOrigin(value = "*")
+    @PostMapping(value = "/getBateryAll")
     public BateryRes getBateryAll(@RequestBody BateryReq bateryReq){
+    logger.info("batlr:"+bateryReq.getKeyId());
     BateryRes result = new BateryRes();
     try{
         result = beterSerivice.getBateryAll(bateryReq);
@@ -40,6 +43,7 @@ BeterSerivice beterSerivice;
     }
     return result;
 }
+
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/saveBatery" , consumes = {"multipart/form-data"})
     public Messages saveBatery(
