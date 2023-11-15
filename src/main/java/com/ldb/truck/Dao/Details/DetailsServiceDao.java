@@ -185,7 +185,19 @@ public class DetailsServiceDao implements  DetailsDao {
                     "NUMNUKLOD=?,  \n" +
                     "KONGNARLOD=?,  \n" +
                     "KHG_MUE_TIDLOD=?,PRICE=?,TOTAL_PRICE=?,PRIECENUMNUN=?  \n" +
-                    "KIM_KILO=?,staff02_payAll=?,staff02_beforepay=?,staff02_notpay=? where key_id=?";
+                    "KIM_KILO=?,staff02_payAll=?,staff02_beforepay=?,staff02_notpay=?,FeeOvertime1=?,\n" +
+                    "FeeJumPo2=?,\n" +
+                    "FeePolish3=?,\n" +
+                    "FeeTaxung4=?,\n" +
+                    "FeeTiew5=?,\n" +
+                    "FeeLakSao=?,\n" +
+                    "FeePassport=?,\n" +
+                    "Feevacin=?,\n" +
+                    "Feesing=?,\n" +
+                    "Feesaphan=?,\n" +
+                    "Feeyoktu=?,\n" +
+                    "Feecontrainer=?,\n" +
+                    "Feepayang=? where key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(detailsReq.getLaHud_poyLod());
             paramList.add(detailsReq.getCUSTOMER_ID());
@@ -218,6 +230,21 @@ public class DetailsServiceDao implements  DetailsDao {
             paramList.add(detailsReq.getStaff02_PayAll());
             paramList.add(detailsReq.getStaff02_Beforepay());
             paramList.add(detailsReq.getStaff02_Notpay());
+
+            paramList.add(detailsReq.getFeeOvertime1());
+            paramList.add(detailsReq.getFeeJumPo2());
+            paramList.add(detailsReq.getFeePolish3());
+            paramList.add(detailsReq.getFeeTaxung4());
+            paramList.add(detailsReq.getFeeTiew5());
+            paramList.add(detailsReq.getFeeLakSao());
+            paramList.add(detailsReq.getFeePassport());
+            paramList.add(detailsReq.getFeevacin());
+            paramList.add(detailsReq.getFeesing());
+            paramList.add(detailsReq.getFeesaphan());
+            paramList.add(detailsReq.getFeeyoktu());
+            paramList.add(detailsReq.getFeecontrainer());
+            paramList.add(detailsReq.getFeepayang());
+
             paramList.add(detailsReq.getKEY_ID());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
         }catch (Exception e ){
@@ -236,7 +263,6 @@ public class DetailsServiceDao implements  DetailsDao {
         }
         return null;
     }
-
     @Override
     public int saveData(DetailsReq detailsReq) {
         try {
@@ -264,8 +290,20 @@ public class DetailsServiceDao implements  DetailsDao {
                      "KONGNARLOD,  \n" +
                      "KHG_MUE_TIDLOD,  \n" +
                      "KIM_KILO,DETAILS_DATE," +
-                     "PRICE,TOTAL_PRICE,d_status,PRIECENUMNUN,CURRENCY,STAFF_BIALIENG_CUR,CREATE_DATE,CREATE_BY,staff_01_status,staff_02_status,staff02_payAll,staff02_beforepay,staff02_notpay) " +
-                     "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,'N',?,?,?,now(),?,?,?,?,?,?)  ";
+                     "PRICE,TOTAL_PRICE,d_status,PRIECENUMNUN,CURRENCY,STAFF_BIALIENG_CUR,CREATE_DATE,CREATE_BY,staff_01_status,staff_02_status,staff02_payAll,staff02_beforepay,staff02_notpay,feeOvertime1,\n" +
+                     "feeJumPo2,\n" +
+                     "feePolish3,\n" +
+                     "feeTaxung4,\n" +
+                     "feeTiew5,\n" +
+                     "feeLakSao,\n" +
+                     "feePassport,\n" +
+                     "feevacin,\n" +
+                     "feesing,\n" +
+                     "feesaphan,\n" +
+                     "feeyoktu,\n" +
+                     "feecontrainer,\n" +
+                     "feepayang) " +
+                     "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,'N',?,?,?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)  ";
              log.info("SQL:"+sql);
             List<Object> paramList = new ArrayList<Object>();
           //  paramList.add(detailsReq.getKEY_ID());
@@ -305,8 +343,23 @@ public class DetailsServiceDao implements  DetailsDao {
             paramList.add(detailsReq.getStaff02_PayAll());
             paramList.add(detailsReq.getStaff02_Beforepay());
             paramList.add(detailsReq.getStaff02_Notpay());
+
+            paramList.add(detailsReq.getFeeOvertime1());
+            paramList.add(detailsReq.getFeeJumPo2());
+            paramList.add(detailsReq.getFeePolish3());
+            paramList.add(detailsReq.getFeeTaxung4());
+            paramList.add(detailsReq.getFeeTiew5());
+            paramList.add(detailsReq.getFeeLakSao());
+            paramList.add(detailsReq.getFeePassport());
+            paramList.add(detailsReq.getFeevacin());
+            paramList.add(detailsReq.getFeesing());
+            paramList.add(detailsReq.getFeesaphan());
+            paramList.add(detailsReq.getFeeyoktu());
+            paramList.add(detailsReq.getFeecontrainer());
+            paramList.add(detailsReq.getFeepayang());
           //  paramList.add(detailsReq.getDETAILS_DATE());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
+
         }catch (Exception e ){
             e.printStackTrace();
             return -1;
@@ -316,7 +369,7 @@ public class DetailsServiceDao implements  DetailsDao {
     public int UpdateHeader(DetailsReq detailsReq) {
         System.out.println("hh:"+detailsReq.getHEADER_ID());
         try{
-            String sql = "update TB_HEADER_TRUCK set h_status='Y' where key_id=?";
+            String sql = "update TB_HEADER_TRUCK set h_status='N' where key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(detailsReq.getHEADER_ID());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
@@ -328,11 +381,9 @@ public class DetailsServiceDao implements  DetailsDao {
 
     @Override
     public int UpdateFooter(DetailsReq detailsReq) {
-//        paramList.add(detailsReq.getHEADER_ID());
-//        paramList.add(detailsReq.getFOOTER_ID());
         System.out.println("hh:"+detailsReq.getFOOTER_ID());
         try{
-            String sql = "update TB_FOOTER_TRUCH set f_status='Y' where key_id=?";
+            String sql = "update TB_FOOTER_TRUCH set f_status='N' where key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(detailsReq.getFOOTER_ID());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
@@ -347,7 +398,7 @@ public class DetailsServiceDao implements  DetailsDao {
     @Override
     public int updateStaff01(DetailsReq detailsReq) {
         try{
-            String sql = "update STAFF set OUT_STATUS='N' where key_id=?";
+            String sql = "update STAFF set OUT_STATUS='Y' where key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(detailsReq.getSTAFF_ID_NUM1());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
@@ -359,7 +410,7 @@ public class DetailsServiceDao implements  DetailsDao {
     @Override
     public int updateStaff02(DetailsReq detailsReq) {
         try{
-            String sql = "update STAFF set OUT_STATUS='N' where key_id=?";
+            String sql = "update STAFF set OUT_STATUS='Y' where key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(detailsReq.getSTAFF_ID_NUM2());
             return EBankJdbcTemplate.update(sql, paramList.toArray());

@@ -53,4 +53,19 @@ public class DetailsReq {
 
     private String staff_Status01;
     private String staff_Status02;
+
+    private String feeOvertime1;
+    private String feeJumPo2;
+    private String feePolish3;
+    private String feeTaxung4;
+    private String feeTiew5;
+    private String feeLakSao;
+    private String feePassport;
+    private String feevacin;
+    private String feesing;
+    private String feesaphan;
+    private String feeyoktu;
+    private String feecontrainer;
+    private String feepayang;
+
 }

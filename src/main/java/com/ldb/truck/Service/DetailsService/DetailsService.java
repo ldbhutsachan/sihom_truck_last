@@ -76,9 +76,6 @@ public class DetailsService {
         return result;
     }
     public DetailsRes saveData(DetailsReq detailsReq){
-        //check info from login
-
-
         List<Details> listdata = new ArrayList<>();
         DetailsRes result = new DetailsRes();
         try{
@@ -86,7 +83,7 @@ public class DetailsService {
            detailsServiceDao.UpdateHeader(detailsReq);
            detailsServiceDao.UpdateFooter(detailsReq);
            detailsServiceDao.updateStaff01(detailsReq);
-            detailsServiceDao.updateStaff02(detailsReq);
+           detailsServiceDao.updateStaff02(detailsReq);
             result.setStatus("00");
             result.setMessage("success");
         }catch (Exception e){
