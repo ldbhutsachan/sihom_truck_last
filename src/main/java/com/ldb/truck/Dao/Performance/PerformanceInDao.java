@@ -1,4 +1,5 @@
 package com.ldb.truck.Dao.Performance;
+import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
@@ -10,6 +11,8 @@ import javax.swing.plaf.PanelUI;
 import java.util.List;
 
 public interface PerformanceInDao {
+    public int updateDetailsFooterKM(DetailsReq detailsReq);
+    public int updateDetailsHeaderKM(DetailsReq detailsReq);
     public int updateDetailsAmount(PerformanceReq performanceReq);
     public int updateStaffNum01(PerformanceReq performanceReq);
     public int updateStaffNum02(PerformanceReq performanceReq);

@@ -40,6 +40,7 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         performanceDao.updateStaffNum02(performanceReq);
         performanceDao.updateDetailsFooter(performanceReq);
         performanceDao.updateDetailsHeader(performanceReq);
+
         i = performanceDao.updateDetails(performanceReq);
         number = performanceDao.savePerformance(performanceReq);
         number1=performanceDao.storePerformanceHis(performanceReq);

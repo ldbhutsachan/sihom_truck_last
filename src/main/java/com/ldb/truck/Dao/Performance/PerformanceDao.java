@@ -1,7 +1,9 @@
 package com.ldb.truck.Dao.Performance;
 
+import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.Report.ReportAll;
+import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooter;
 import com.ldb.truck.RowMapper.Performance.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -300,6 +302,73 @@ public class PerformanceDao implements PerformanceInDao {
                     "where key_id  in (select a.key_id from  TB_HEADER_TRUCK a INNER JOIN TB_DETAILS b ON a.KEY_ID = b.HEADER_ID " +
                     "where LAHUD_POYLOD='"+performanceReq.getPerformanceBillNo()+"') ";
             log.info("update KM header:"+sql);
+            return  EBankJdbcTemplate.update(sql);
+        }catch (Exception e){
+            e.printStackTrace();}
+        return 0;
+    }
+    //update km =============================
+    @Override
+    public int updateDetailsHeaderKM(DetailsReq detailsReq) {
+        log.info("===============================================<update km<=======================================");
+        log.info("getHEADER_ID:"+detailsReq.getHEADER_ID());
+        log.info("getLAIYATHANG:"+detailsReq.getLAIYATHANG());
+        String laiyathangString = detailsReq.getLAIYATHANG();
+        laiyathangString = laiyathangString.replace(",", "");
+        int laiyathang = Integer.parseInt(laiyathangString);
+        log.info("laiyathang:"+laiyathang);
+        List<Performance> data = new ArrayList<>();
+        try {
+            String sql ="update TB_HEADER_TRUCK set h_status='Y' " +
+                    ",KIM_KM= KIM_KM + "+laiyathang+" " +
+                    ",LL_TIRE_KM_1= LL_TIRE_KM_1 - "+laiyathang+" " +
+                    ",LL_TIRE_KM_2= LL_TIRE_KM_2 - "+laiyathang+" " +
+                    ",LL_TIRE_KM_3= LL_TIRE_KM_3 - "+laiyathang+" " +
+                    ",LL_TIRE_KM_4= LL_TIRE_KM_4 - "+laiyathang+" " +
+                    ",LL_TIRE_KM_5= LL_TIRE_KM_5 - "+laiyathang+" " +
+                    ",LL_TIRE_KM_6= LL_TIRE_KM_6 - "+laiyathang+" " +
+                    ",LL_TIRE_KM_7= LL_TIRE_KM_7 - "+laiyathang+" " +
+                    ",R_TIRE_KM_1=R_TIRE_KM_1-"+laiyathang+""+
+                    ",R_TIRE_KM_2=R_TIRE_KM_2-"+laiyathang+""+
+                    ",R_TIRE_KM_3=R_TIRE_KM_3-"+laiyathang+""+
+                    ",R_TIRE_KM_4=R_TIRE_KM_4-"+laiyathang+""+
+                    ",R_TIRE_KM_5=R_TIRE_KM_5-"+laiyathang+""+
+                    ",R_TIRE_KM_6=R_TIRE_KM_6-"+laiyathang+""+
+                    ",R_TIRE_KM_7=R_TIRE_KM_7-"+laiyathang+""+
+                    "\n where key_id='"+detailsReq.getHEADER_ID()+"'";
+            return  EBankJdbcTemplate.update(sql);
+        }catch (Exception e){
+            e.printStackTrace();}
+        return 0;
+    }
+    //L_TRIES_KM_1    ---R_TRIES_KM_1
+    @Override
+    public int updateDetailsFooterKM(DetailsReq detailsReq) {
+        log.info("===============================================<update footer<=======================================");
+        log.info("getFOOTER_ID:"+detailsReq.getFOOTER_ID());
+        log.info("getLAIYATHANG:"+detailsReq.getLAIYATHANG());
+        String laiyathangString = detailsReq.getLAIYATHANG();
+        laiyathangString = laiyathangString.replace(",", "");
+        int laiyathang = Integer.parseInt(laiyathangString);
+        log.info("laiyathang:"+laiyathang);
+        List<VicicleFooter> data = new ArrayList<>();
+        try {
+            String sql ="update TB_FOOTER_TRUCH set F_STATUS='Y' " +
+                    ",L_TRIES_KM_1= L_TRIES_KM_1 - "+laiyathang+" " +
+                    ",L_TRIES_KM_2= L_TRIES_KM_2 - "+laiyathang+" " +
+                    ",L_TRIES_KM_3= L_TRIES_KM_3 - "+laiyathang+" " +
+                    ",L_TRIES_KM_4= L_TRIES_KM_4 - "+laiyathang+" " +
+                    ",L_TRIES_KM_5= L_TRIES_KM_5 - "+laiyathang+" " +
+                    ",L_TRIES_KM_6= L_TRIES_KM_6 - "+laiyathang+" " +
+                    ",L_TRIES_KM_7= L_TRIES_KM_7 - "+laiyathang+" " +
+                    ",R_TRIES_KM_1=R_TRIES_KM_1-"+laiyathang+""+
+                    ",R_TRIES_KM_2=R_TRIES_KM_2-"+laiyathang+""+
+                    ",R_TRIES_KM_3=R_TRIES_KM_3-"+laiyathang+""+
+                    ",R_TRIES_KM_4=R_TRIES_KM_4-"+laiyathang+""+
+                    ",R_TRIES_KM_5=R_TRIES_KM_5-"+laiyathang+""+
+                    ",R_TRIES_KM_6=R_TRIES_KM_6-"+laiyathang+""+
+                    ",R_TRIES_KM_7=R_TRIES_KM_7-"+laiyathang+""+
+                    "\n where key_id='"+detailsReq.getFOOTER_ID()+"'";
             return  EBankJdbcTemplate.update(sql);
         }catch (Exception e){
             e.printStackTrace();}
