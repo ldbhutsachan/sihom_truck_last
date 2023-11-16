@@ -440,6 +440,7 @@ public Messages saveVicicleHeader(
             @RequestParam("batNo") String  batNo,
             @RequestParam("imageTruck") String  imageTruck
 
+
     ){
         log.info("===================================update header==================================================");
         Date date = new Date();
@@ -547,19 +548,20 @@ public Messages saveVicicleHeader(
             data.setExCarColor(exCarColor);
             data.setExHangMar(exHangMar);
             data.setBatNo(batNo);
-            data.setImageTruck(imageTruck);
+           // data.setImageTruck(imageTruck);
             log.error("******file lenght"+files);
+            log.info("files:==="+files);
             log.error(data);
             String fileName = "";
             List<String> fileNames = new ArrayList<>();
-            if(files == null){
+            if (files == null ){
                 log.warn("************* file name is null ****************");
-                data.setImageTruck("http://khounkham.com/images/car/image.jpg");
+                data.setImageTruck("101");
             }else {
+                log.warn("************* file name no null ****************");
                 Arrays.asList(files).stream().forEach(file -> {
                     fileNames.add(mediaUploadService.uploadMediacar(file));
                 });
-                log.info("Uploaded the files successfully: " + fileNames );
                 fileName = StringUtils.join(fileNames, ',');
                 data.setImageTruck(fileName);
             }

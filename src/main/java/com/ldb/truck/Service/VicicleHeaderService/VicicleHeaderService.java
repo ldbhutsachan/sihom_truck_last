@@ -149,7 +149,13 @@ public class VicicleHeaderService  {
         Messages message = new Messages();
         int i = 0;
         try {
-            i =vicicleHeaderDao.updateVicicleHeader(vicicleHeaderReq);
+            log.info("getImageTruck:"+vicicleHeaderReq.getImageTruck());
+            if(vicicleHeaderReq.getImageTruck() == "" || vicicleHeaderReq.getImageTruck() == null ){
+                i =vicicleHeaderDao.updateVicicleHeaderUppicHaveData(vicicleHeaderReq);
+            }else {
+                i =vicicleHeaderDao.updateVicicleHeader(vicicleHeaderReq);
+            }
+
           //  i = vicicleHeaderDao.saveHeaderHistroty(vicicleHeaderReq);
             if(i == 0){
                 message.setStatus("01");

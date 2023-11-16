@@ -70,7 +70,6 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         List<performaceGroupDetails> resgroupDetails = new ArrayList<>();
         List<performanceGroupFee> resgroupFee = new ArrayList<>();
         List<performance_FeePower> feePower = new ArrayList<>();
-
         try {
             resperformanceSmallHeaderGruops= performanceDao.groupSmallGroup(performanceReq);
             resgruopHeader = performanceDao.gruopperformance(performanceReq);

@@ -15,6 +15,7 @@ public interface VicicleHeaderDao {
     public List<VicicleHeader> listVicicleHeaderByID (VicicleHeaderReq vicicleHeaderReq);
     public int saveVicicleHeader (VicicleHeaderReq vicicleHeaderReq) throws ParseException;
     public int updateVicicleHeader (VicicleHeaderReq vicicleHeaderReq) throws ParseException;
+    public int updateVicicleHeaderUppicHaveData (VicicleHeaderReq vicicleHeaderReq) throws ParseException;
     public int delVicicleHeader (VicicleHeaderReq vicicleHeaderReq);
 
     public int saveHeaderHistroty(VicicleHeaderReq vicicleHeaderReq);
