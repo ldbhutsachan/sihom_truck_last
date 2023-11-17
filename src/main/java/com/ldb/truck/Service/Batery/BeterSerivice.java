@@ -63,7 +63,11 @@ public Messages saveBatery(BateryReq bateryReq){
         Messages message = new Messages();
         int i = 0;
         try {
-            i = implBateryDao.UpdateBatery(bateryReq);
+            if(bateryReq.getImageBatery().equals("1")){
+                i = implBateryDao.UpdateBateryNoUpdateimage(bateryReq);
+            }else {
+                i = implBateryDao.UpdateBatery(bateryReq);
+            }
             if(i == 0){
                 message.setStatus("01");
                 message.setMessage("ບໍ່ສາມາດເເກ້ໄຂໄດ້");

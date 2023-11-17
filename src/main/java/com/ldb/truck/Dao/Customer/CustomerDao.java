@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.util.List;
 
 public interface CustomerDao {
+    public int UpdateStaftNoUpdate(stafReq stafReq);
     List<StaffDetails> ListDetailStaff(StaffPayReq staffPayReq);
     List<StaffPay> ListStaffPay(StaffPayReq staffPayReq);
     List<ReportStaff> ListStaffPaydetailsByStaffId(StaffPayReq staffPayReq);

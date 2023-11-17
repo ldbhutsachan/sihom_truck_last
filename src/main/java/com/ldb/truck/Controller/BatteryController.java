@@ -119,7 +119,7 @@ BeterSerivice beterSerivice;
 
          if(files == null){
              logger.warn("************* file name is null ****************");
-             data.setImageBatery("http://khounkham.com/images/image.jpg");
+             data.setImageBatery("1");
          }else {
              Arrays.asList(files).stream().forEach(file -> {
                  fileNames.add(mediaUploadService.uploadMedia(file));

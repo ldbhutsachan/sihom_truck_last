@@ -520,6 +520,38 @@ public class ImpCustomerDao  implements CustomerDao{
             return i;
         }
         return i;
+    } @Override
+    public int UpdateStaftNoUpdate(stafReq stafReq) {
+        int i = 0 ;
+        String id = stafReq.getId();
+        String staftId = stafReq.getStaftId();
+        String name = stafReq.getName();
+        String surname = stafReq.getSurname();
+        String idCard = stafReq.getIdCard();
+        String licenceId = stafReq.getLicenceId();
+        String verBy = stafReq.getVerBy();
+        String licenceExp = stafReq.getLicenceExp();
+        String vaillage = stafReq.getVaillage();
+        String district = stafReq.getDistrict();
+        String province = stafReq.getProvince();
+        String mobile = stafReq.getMobile();
+        String mobile1 = stafReq.getMobile1();
+        String gender = stafReq.getGender();
+        String genderStatus = stafReq.getGenderStatus();
+        String userId = stafReq.getUserId();
+        String path="http://khounkham.com/images/staff/";
+        String imageStaff = path+stafReq.getImageStaff();
+        try {
+
+            String SQL = " UPDATE STAFF  SET STAFT_NAME = '"+name+"' , STAFT_SURNAME ='"+surname+"' , ID_CARD = '"+idCard+"' , LICENCE_ID = '"+licenceId+"'  , VERIFY_BY = '"+verBy+"' , \n" +
+                "LICENCE_ID_EXP = '"+licenceExp+"'  , VILLAGE = '"+vaillage+"'  , DISTRICT = '"+district+"'  ,\n" +
+                    "PROVINCE ='"+province+"'  , MOBILE1 ='"+mobile+"'  , MOBILE2 = '"+mobile1+"'  ,GENDER = '"+gender+"'  , GENDER_STATUS = '"+genderStatus+"' , USERID = '"+userId+"'   WHERE KEY_ID =  '"+id+"' " ;
+            i = EBankJdbcTemplate.update(SQL);
+        }catch (Exception e){
+            e.printStackTrace();
+            return i;
+        }
+        return i;
     }
 
     @Override

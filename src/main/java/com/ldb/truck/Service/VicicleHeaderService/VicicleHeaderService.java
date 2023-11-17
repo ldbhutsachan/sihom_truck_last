@@ -150,7 +150,7 @@ public class VicicleHeaderService  {
         int i = 0;
         try {
             log.info("getImageTruck:"+vicicleHeaderReq.getImageTruck());
-            if(vicicleHeaderReq.getImageTruck() == "" || vicicleHeaderReq.getImageTruck() == null ){
+            if(vicicleHeaderReq.getImageTruck().equals("1") || vicicleHeaderReq.getImageTruck() == null ){
                 i =vicicleHeaderDao.updateVicicleHeaderUppicHaveData(vicicleHeaderReq);
             }else {
                 i =vicicleHeaderDao.updateVicicleHeader(vicicleHeaderReq);

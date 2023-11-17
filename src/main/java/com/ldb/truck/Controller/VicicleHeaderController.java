@@ -556,7 +556,7 @@ public Messages saveVicicleHeader(
             List<String> fileNames = new ArrayList<>();
             if (files == null ){
                 log.warn("************* file name is null ****************");
-                data.setImageTruck("101");
+                data.setImageTruck("1");
             }else {
                 log.warn("************* file name no null ****************");
                 Arrays.asList(files).stream().forEach(file -> {
