@@ -119,7 +119,12 @@ public class StaftService {
         Messages message = new Messages();
         int i = 0;
         try {
-            i = impCustomerDao.UpdateStaft(stafReq);
+            if(stafReq.getImageStaff().equals("1")){
+                i = impCustomerDao.UpdateStaftNoUpdate(stafReq);
+            }else {
+                i = impCustomerDao.UpdateStaft(stafReq);
+            }
+
             if(i == 0){
                 message.setStatus("01");
                 message.setMessage("ບໍ່ສາມາດເເກ້ໄຂໄດ້");

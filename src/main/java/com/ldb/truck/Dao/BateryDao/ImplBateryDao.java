@@ -88,6 +88,25 @@ public class ImplBateryDao implements BateryDao {
         return 0;
     }
     @Override
+    public int UpdateBateryNoUpdateimage(BateryReq bateryReq) {
+        String path="http://khounkham.com/images/batery/";
+        String fileName = bateryReq.getImageBatery();
+        try{
+            SQL="UPDATE MORFAI SET ID_MORFAI=?,MODAL_MORFAI=?,SIZE_MORFAI=?,SERVICE_LIFE=? WHERE KEY_ID=?";
+            List<String> paraList = new ArrayList<>();
+            paraList.add(bateryReq.getBatNo());
+
+            paraList.add(bateryReq.getModalMorfai());
+            paraList.add(bateryReq.getSizeMorfai());
+            paraList.add(bateryReq.getServiceLife());
+            paraList.add(bateryReq.getKeyId());
+            return EBankJdbcTemplate.update(SQL,paraList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    @Override
     public int DelBatery(BateryReq bateryReq) {
         try{
 

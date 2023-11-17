@@ -363,13 +363,13 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_5());
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_6());
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_7());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_1());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_2());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_3());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_4());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_5());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_6());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_7());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_1().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_2().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_3().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_4().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_5().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_6().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_7().replace(",",""));
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_1());
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_2());
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_3());
@@ -384,15 +384,15 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_5());
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_6());
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_7());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_1());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_2());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_3());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_4());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_5());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_6());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_7());
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_1().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_2().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_3().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_4().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_5().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_6().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_7().replace(",",""));
             paramList.add(vicicleHeaderReq.getH_LEK_NUMMUNKHG());
-            paramList.add(vicicleHeaderReq.getKim_KM());
+            paramList.add(vicicleHeaderReq.getKim_KM().replace(",",""));
             paramList.add(vicicleHeaderReq.getH_KM1 ());
             paramList.add(vicicleHeaderReq.getH_KM2 ());
             paramList.add(vicicleHeaderReq.getH_KM3 ());
@@ -444,34 +444,34 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
         java.sql.Date sqlEndDate = new java.sql.Date(Bat_EndtDate.getTime());
         String path="http://khounkham.com/images/car/";
         String fileName = vicicleHeaderReq.getImageTruck();
-//        log.info("sqlStartDate:"+sqlStartDate);
-//        log.info("sqlEndDate:"+sqlEndDate);
-//        System.out.println("key:"+vicicleHeaderReq.getHis_REASON());
         try {
             String SQL ="update TB_HEADER_TRUCK set H_VICIVLE_NUMBER=?, H_VICIVLE_GALATY=?, H_VICIVLE_DATE_GALATY=?, H_VICIVLE_TNGLOD=?, H_VICIVLE_BRANCH=?, H_VICIVLE_YEARLEVEL=?, \n" +
                     "H_VICIVLE_BRANCHTYPE=?, H_VICIVLE_DATEEXPRIRE=?, H_VICIVLE_LEKJUK=?, H_VICIVLE_LEKTHUNG=?, H_VICIVLE_GPS=?, H_VICIVLE_POYPUDNUMFON=?, \n" +
                     "H_VICIVLE_MORFAI=?, H_VICIVLE_BGTOM=?, H_VICIVLE_JANLARK=?, H_VICIVLE_FAINAR=?, H_VICIVLE_FAITHAIY=?,h_VICIVLE_GLASS=?, H_VICIVLE_FAIYKHANG=?, \n" +
                     "H_VICIVLE_VENMONGNAR=?,H_VICIVLE_VENMONGLHG=?,H_VICIVLE_VENKHANG=?,LL_TIRE_NO_1=?,LL_TIRE_NO_2=?,LL_TIRE_NO_3=?,LL_TIRE_NO_4=?, \n" +
-                    "LL_TIRE_NO_5=?,LL_TIRE_NO_6=?,LL_TIRE_DATE_1=?,LL_TIRE_DATE_2=?,LL_TIRE_DATE_3=?,LL_TIRE_DATE_4=?,LL_TIRE_DATE_5=?, \n" +
-                    "LL_TIRE_DATE_6=?,LL_TIRE_KM_1=?,LL_TIRE_KM_2 =?,LL_TIRE_KM_3 =?,LL_TIRE_KM_4 =?,LL_TIRE_KM_5 =?,LL_TIRE_KM_6 =?, \n" +
+                    "LL_TIRE_NO_5=?,LL_TIRE_NO_6=?,LL_TIRE_NO_7=?,LL_TIRE_DATE_1=?,LL_TIRE_DATE_2=?,LL_TIRE_DATE_3=?,LL_TIRE_DATE_4=?,LL_TIRE_DATE_5=?, \n" +
+                    "LL_TIRE_DATE_6=?,LL_TIRE_DATE_7=?,LL_TIRE_KM_1=?,LL_TIRE_KM_2 =?,LL_TIRE_KM_3 =?,LL_TIRE_KM_4 =?,LL_TIRE_KM_5 =?,LL_TIRE_KM_6 =?,LL_TIRE_KM_7 =?, \n" +
                     "R_TIRE_NO_1=?,R_TIRE_NO_2 =?,R_TIRE_NO_3  =?, \n" +
                     "R_TIRE_NO_4=?, \n" +
                     "R_TIRE_NO_5=?, \n" +
                     "R_TIRE_NO_6=?, \n" +
+                    "R_TIRE_NO_7=?, \n" +
                     "R_TIRE_DATE_1=?, \n" +
                     "R_TIRE_DATE_2=?, \n" +
                     "R_TIRE_DATE_3=?, \n" +
                     "R_TIRE_DATE_4=?, \n" +
                     "R_TIRE_DATE_5=?, \n" +
                     "R_TIRE_DATE_6=?, \n" +
+                    "R_TIRE_DATE_7=?, \n" +
                     "R_TIRE_KM_1=?, \n" +
                     "R_TIRE_KM_2=?, \n" +
                     "R_TIRE_KM_3=?, \n" +
                     "R_TIRE_KM_4=?, \n" +
                     "R_TIRE_KM_5=?, \n" +
-                    "R_TIRE_KM_6=?," +
-                    "H_LEK_NUMMUNKHG=?, " +
-                    "h_STATUS='Y'," +
+                    "R_TIRE_KM_6=?,\n" +
+                    "R_TIRE_KM_7=?,\n" +
+                    "H_LEK_NUMMUNKHG=?,\n" +
+                    "h_STATUS='Y',\n" +
                     "HIS_RESON=?,kim_km=?,H_KM1 =?,\n" +
                     "H_KM2 =?,\n" +
                     "H_KM3 =?,\n" +
@@ -497,7 +497,6 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
                     "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=? where  key_id=?";
-            System.out.println("sql999:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -527,40 +526,46 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLL_TIRE_NO_4());
             paramList.add(vicicleHeaderReq.getLL_TIRE_NO_5());
             paramList.add(vicicleHeaderReq.getLL_TIRE_NO_6());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_NO_7());
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_1());
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_2());
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_3());
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_4());
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_5());
             paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_6());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_1());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_2());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_3());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_4());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_5());
-            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_6());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_7());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_1().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_2().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_3().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_4().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_5().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_6().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_7().replace(",",""));
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_1());
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_2());
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_3());
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_4());
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_5());
             paramList.add(vicicleHeaderReq.getR_TIRE_NO_6());
+            paramList.add(vicicleHeaderReq.getR_TIRE_NO_7());
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_1());
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_2());
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_3());
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_4());
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_5());
             paramList.add(vicicleHeaderReq.getR_TIRE_DATE_6());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_1());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_2());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_3());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_4());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_5());
-            paramList.add(vicicleHeaderReq.getR_TIRE_KM_6());
+            paramList.add(vicicleHeaderReq.getR_TIRE_DATE_7());
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_1().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_2().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_3().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_4().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_5().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_6().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_7().replace(",",""));
             paramList.add(vicicleHeaderReq.getH_LEK_NUMMUNKHG());
             //paramList.add(vicicleHeaderReq.getH_STATUS());
             paramList.add(vicicleHeaderReq.getHis_REASON());
-            paramList.add(vicicleHeaderReq.getKim_KM());
+            paramList.add(vicicleHeaderReq.getKim_KM().replace(",",""));
 
             paramList.add(vicicleHeaderReq.getH_KM1 ());
             paramList.add(vicicleHeaderReq.getH_KM2 ());
@@ -592,6 +597,181 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(sqlEndDate);
 
             paramList.add(path+fileName);
+            paramList.add(vicicleHeaderReq.getExCarDate());
+            paramList.add(vicicleHeaderReq.getExCarColor());
+            paramList.add(vicicleHeaderReq.getExHangMar());
+            paramList.add(vicicleHeaderReq.getBatNo());
+
+            paramList.add(vicicleHeaderReq.getKey_id());
+            return EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    } @Override
+    public int updateVicicleHeaderUppicHaveData(VicicleHeaderReq vicicleHeaderReq) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date Bat_StartDateGalaty = sdf.parse(vicicleHeaderReq.getH_VICIVLE_DATE_GALATY());
+        java.sql.Date sqlStartDateGalanty = new java.sql.Date(Bat_StartDateGalaty.getTime());
+        Date Bat_StartDate = sdf.parse(vicicleHeaderReq.getBat_StartDate());
+        Date Bat_EndtDate = sdf.parse(vicicleHeaderReq.getBat_EndDate());
+        java.sql.Date sqlStartDate = new java.sql.Date(Bat_StartDate.getTime());
+        java.sql.Date sqlEndDate = new java.sql.Date(Bat_EndtDate.getTime());
+        String path="http://khounkham.com/images/car/";
+        String fileName = vicicleHeaderReq.getImageTruck();
+        try {
+            String SQL ="update TB_HEADER_TRUCK set H_VICIVLE_NUMBER=?, H_VICIVLE_GALATY=?, H_VICIVLE_DATE_GALATY=?, H_VICIVLE_TNGLOD=?, H_VICIVLE_BRANCH=?, H_VICIVLE_YEARLEVEL=?, \n" +
+                    "H_VICIVLE_BRANCHTYPE=?, H_VICIVLE_DATEEXPRIRE=?, H_VICIVLE_LEKJUK=?, H_VICIVLE_LEKTHUNG=?, H_VICIVLE_GPS=?, H_VICIVLE_POYPUDNUMFON=?, \n" +
+                    "H_VICIVLE_MORFAI=?, H_VICIVLE_BGTOM=?, H_VICIVLE_JANLARK=?, H_VICIVLE_FAINAR=?, H_VICIVLE_FAITHAIY=?,h_VICIVLE_GLASS=?, H_VICIVLE_FAIYKHANG=?, \n" +
+                    "H_VICIVLE_VENMONGNAR=?,H_VICIVLE_VENMONGLHG=?,H_VICIVLE_VENKHANG=?,LL_TIRE_NO_1=?,LL_TIRE_NO_2=?,LL_TIRE_NO_3=?,LL_TIRE_NO_4=?, \n" +
+                    "LL_TIRE_NO_5=?,LL_TIRE_NO_6=?,LL_TIRE_NO_7=?,LL_TIRE_DATE_1=?,LL_TIRE_DATE_2=?,LL_TIRE_DATE_3=?,LL_TIRE_DATE_4=?,LL_TIRE_DATE_5=?, \n" +
+                    "LL_TIRE_DATE_6=?,LL_TIRE_DATE_7=?,LL_TIRE_KM_1=?,LL_TIRE_KM_2 =?,LL_TIRE_KM_3 =?,LL_TIRE_KM_4 =?,LL_TIRE_KM_5 =?,LL_TIRE_KM_6 =?,LL_TIRE_KM_7 =?, \n" +
+                    "R_TIRE_NO_1=?,R_TIRE_NO_2 =?,R_TIRE_NO_3  =?, \n" +
+                    "R_TIRE_NO_4=?, \n" +
+                    "R_TIRE_NO_5=?, \n" +
+                    "R_TIRE_NO_6=?, \n" +
+                    "R_TIRE_NO_7=?, \n" +
+                    "R_TIRE_DATE_1=?, \n" +
+                    "R_TIRE_DATE_2=?, \n" +
+                    "R_TIRE_DATE_3=?, \n" +
+                    "R_TIRE_DATE_4=?, \n" +
+                    "R_TIRE_DATE_5=?, \n" +
+                    "R_TIRE_DATE_6=?, \n" +
+                    "R_TIRE_DATE_7=?, \n" +
+                    "R_TIRE_KM_1=?, \n" +
+                    "R_TIRE_KM_2=?, \n" +
+                    "R_TIRE_KM_3=?, \n" +
+                    "R_TIRE_KM_4=?, \n" +
+                    "R_TIRE_KM_5=?, \n" +
+                    "R_TIRE_KM_6=?,\n" +
+                    "R_TIRE_KM_7=?,\n" +
+                    "H_LEK_NUMMUNKHG=?,\n" +
+                    "h_STATUS='Y',\n" +
+                    "HIS_RESON=?,kim_km=?,H_KM1 =?,\n" +
+                    "H_KM2 =?,\n" +
+                    "H_KM3 =?,\n" +
+                    "H_KM4 =?,\n" +
+                    "H_KM5 =?,\n" +
+                    "H_KM6 =?,\n" +
+                    "H_KM7 =?,\n" +
+                    "H_KM8 =?,\n" +
+                    "H_KM9 =?,\n" +
+                    "H_KM10=?,\n" +
+                    "H_KM11=?,\n" +
+                    "H_KM12=?,\n" +
+                    "H_KM13=?,\n" +
+                    "H_KML_1 =?,  \n" +
+                    "H_KML_2 =?,  \n" +
+                    "H_KML_3 =?,  \n" +
+                    "H_KML_4 =?,  \n" +
+                    "H_KML_5 =?,  \n" +
+                    "H_KML_6 =?,  \n" +
+                    "H_KML_7 =?,  \n" +
+                    "H_KML_8 =?,  \n" +
+                    "H_KML_9 =?,  \n" +
+                    "H_KML_10=?,  \n" +
+                    "H_KML_11=?,  \n" +
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=? where  key_id=?";
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
+            paramList.add(sqlStartDateGalanty);
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_TNGLOD());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_BRANCH());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_YEARLEVEL());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_BRANCHTYPE());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_DATEEXPRIRE());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_LEKJUK());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_LEKTHUNG ());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_GPS());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_POYPUDNUMFON());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_MORFAI());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_BGTOM());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_JANLARK());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_FAINAR());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_FAITHAIY());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_GLASS());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_FAIYKHANG());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_VENMONGNAR());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_VENMONGLHG());
+            paramList.add(vicicleHeaderReq.getH_VICIVLE_VENKHANG());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_NO_1());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_NO_2());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_NO_3());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_NO_4());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_NO_5());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_NO_6());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_NO_7());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_1());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_2());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_3());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_4());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_5());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_6());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_DATE_7());
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_1().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_2().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_3().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_4().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_5().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_6().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLL_TIRE_KM_7().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_NO_1());
+            paramList.add(vicicleHeaderReq.getR_TIRE_NO_2());
+            paramList.add(vicicleHeaderReq.getR_TIRE_NO_3());
+            paramList.add(vicicleHeaderReq.getR_TIRE_NO_4());
+            paramList.add(vicicleHeaderReq.getR_TIRE_NO_5());
+            paramList.add(vicicleHeaderReq.getR_TIRE_NO_6());
+            paramList.add(vicicleHeaderReq.getR_TIRE_NO_7());
+            paramList.add(vicicleHeaderReq.getR_TIRE_DATE_1());
+            paramList.add(vicicleHeaderReq.getR_TIRE_DATE_2());
+            paramList.add(vicicleHeaderReq.getR_TIRE_DATE_3());
+            paramList.add(vicicleHeaderReq.getR_TIRE_DATE_4());
+            paramList.add(vicicleHeaderReq.getR_TIRE_DATE_5());
+            paramList.add(vicicleHeaderReq.getR_TIRE_DATE_6());
+            paramList.add(vicicleHeaderReq.getR_TIRE_DATE_7());
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_1().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_2().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_3().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_4().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_5().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_6().replace(",",""));
+            paramList.add(vicicleHeaderReq.getR_TIRE_KM_7().replace(",",""));
+            paramList.add(vicicleHeaderReq.getH_LEK_NUMMUNKHG());
+            //paramList.add(vicicleHeaderReq.getH_STATUS());
+            paramList.add(vicicleHeaderReq.getHis_REASON());
+            paramList.add(vicicleHeaderReq.getKim_KM().replace(",",""));
+
+            paramList.add(vicicleHeaderReq.getH_KM1 ());
+            paramList.add(vicicleHeaderReq.getH_KM2 ());
+            paramList.add(vicicleHeaderReq.getH_KM3 ());
+            paramList.add(vicicleHeaderReq.getH_KM4 ());
+            paramList.add(vicicleHeaderReq.getH_KM5 ());
+            paramList.add(vicicleHeaderReq.getH_KM6 ());
+            paramList.add(vicicleHeaderReq.getH_KM7 ());
+            paramList.add(vicicleHeaderReq.getH_KM8 ());
+            paramList.add(vicicleHeaderReq.getH_KM9 ());
+            paramList.add(vicicleHeaderReq.getH_KM10());
+            paramList.add(vicicleHeaderReq.getH_KM11());
+            paramList.add(vicicleHeaderReq.getH_KM12());
+            paramList.add(vicicleHeaderReq.getH_KM13());
+            paramList.add(vicicleHeaderReq.getH_KML_1 ());
+            paramList.add(vicicleHeaderReq.getH_KML_2 ());
+            paramList.add(vicicleHeaderReq.getH_KML_3 ());
+            paramList.add(vicicleHeaderReq.getH_KML_4 ());
+            paramList.add(vicicleHeaderReq.getH_KML_5 ());
+            paramList.add(vicicleHeaderReq.getH_KML_6 ());
+            paramList.add(vicicleHeaderReq.getH_KML_7 ());
+            paramList.add(vicicleHeaderReq.getH_KML_8 ());
+            paramList.add(vicicleHeaderReq.getH_KML_9 ());
+            paramList.add(vicicleHeaderReq.getH_KML_10());
+            paramList.add(vicicleHeaderReq.getH_KML_11());
+            paramList.add(vicicleHeaderReq.getH_KML_12());
+            paramList.add(vicicleHeaderReq.getH_KML_13());
+            paramList.add(sqlStartDate);
+            paramList.add(sqlEndDate);
+
+            //paramList.add(path+fileName);
             paramList.add(vicicleHeaderReq.getExCarDate());
             paramList.add(vicicleHeaderReq.getExCarColor());
             paramList.add(vicicleHeaderReq.getExHangMar());

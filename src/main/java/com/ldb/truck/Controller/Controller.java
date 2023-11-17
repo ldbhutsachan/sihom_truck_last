@@ -287,7 +287,7 @@ public class Controller {
             List<String> fileNames = new ArrayList<>();
             if(files == null){
                 logger.warn("************* file name is null ****************");
-                data.setImageStaff("image.jpg");
+                data.setImageStaff("1");
             }else {
                 Arrays.asList(files).stream().forEach(file -> {
                     fileNames.add(mediaUploadService.uploadMediaStaff(file));
