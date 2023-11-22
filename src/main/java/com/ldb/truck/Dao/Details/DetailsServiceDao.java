@@ -265,6 +265,7 @@ public class DetailsServiceDao implements  DetailsDao {
     }
     @Override
     public int saveData(DetailsReq detailsReq) {
+        log.info("popoLao:"+detailsReq.getPriceNamMun());
         String price = detailsReq.getPrice();
         String totalPrice = detailsReq.getTotalPrice();
 
@@ -275,30 +276,25 @@ public class DetailsServiceDao implements  DetailsDao {
         String staff02_notpay = detailsReq.getStaff02_Notpay();
 
         if(price == null || price == "" || totalPrice == null || totalPrice ==""
-                || STAFF_BIALIENG=="" || STAFF_BIALIENG == null || PRIECENUMNUN== null || PRIECENUMNUN=="" ||
+                || STAFF_BIALIENG=="" || STAFF_BIALIENG == null ||
                 staff02_payAll=="" || staff02_payAll==null || staff02_beforepay==null || staff02_beforepay== "" || staff02_notpay == null || staff02_notpay==""){
             price ="0.0";
             totalPrice ="0.0";
             STAFF_BIALIENG="0.0";
-            PRIECENUMNUN="0.0";
+
             staff02_payAll="0.0";
             staff02_beforepay="0.0";
             staff02_notpay="0.0";
         }else {
-            price =detailsReq.getPrice();
-            totalPrice =detailsReq.getTotalPrice();
-             STAFF_BIALIENG = detailsReq.getSTAFF_BIALIENG();
-             PRIECENUMNUN = detailsReq.getPriceNamMun();
+             price =detailsReq.getPrice();
+             totalPrice =detailsReq.getTotalPrice();
              staff02_payAll = detailsReq.getStaff02_PayAll();
              staff02_beforepay = detailsReq.getStaff02_Beforepay();
              staff02_notpay = detailsReq.getStaff02_Notpay();
         }
         log.info("price:"+price);
         log.info("totalPrice:"+totalPrice);
-
-
-
-
+        log.info("PRIECENUMNUN:"+PRIECENUMNUN);
         try {
              String sql ="insert into TB_DETAILS (LAHUD_POYLOD,CUSTOMER_ID,  \n" +
                      "PRODUCT_ID,  \n" +

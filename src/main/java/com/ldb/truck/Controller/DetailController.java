@@ -92,7 +92,6 @@ public class DetailController {
     @CrossOrigin(origins = "*")
     @PostMapping("/saveDataDetails.service")
     public DetailsRes saveDataDetails(@RequestBody  DetailsReq detailsReq){
-        log.info("data999999999222:"+detailsReq.getFeeJumPo2());
         DetailsRes result = new DetailsRes();
         try {
             result = detailsService.saveData(detailsReq);

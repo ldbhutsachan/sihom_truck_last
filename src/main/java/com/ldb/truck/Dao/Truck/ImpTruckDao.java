@@ -583,7 +583,7 @@ log.info("sql:"+SQL);
                 public TruckDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
                     TruckDetails tr = new TruckDetails();
                     tr.setCarTabienLod(rs.getString("H_VICIVLE_NUMBER"));
-                  //  tr.setDetailsNo(rs.getString("LAHUD_POYLOD"));
+                 //   tr.setDetailsNo(rs.getString("LAHUD_POYLOD"));
                     tr.setCarModel(rs.getString("H_VICIVLE_BRANCH"));
                     tr.setCarType(rs.getString("H_VICIVLE_BRANCHTYPE"));
                     tr.setCarGive(rs.getString("carGive"));
