@@ -265,6 +265,40 @@ public class DetailsServiceDao implements  DetailsDao {
     }
     @Override
     public int saveData(DetailsReq detailsReq) {
+        String price = detailsReq.getPrice();
+        String totalPrice = detailsReq.getTotalPrice();
+
+        String STAFF_BIALIENG = detailsReq.getSTAFF_BIALIENG();
+        String PRIECENUMNUN = detailsReq.getPriceNamMun();
+        String staff02_payAll = detailsReq.getStaff02_PayAll();
+        String staff02_beforepay = detailsReq.getStaff02_Beforepay();
+        String staff02_notpay = detailsReq.getStaff02_Notpay();
+
+        if(price == null || price == "" || totalPrice == null || totalPrice ==""
+                || STAFF_BIALIENG=="" || STAFF_BIALIENG == null || PRIECENUMNUN== null || PRIECENUMNUN=="" ||
+                staff02_payAll=="" || staff02_payAll==null || staff02_beforepay==null || staff02_beforepay== "" || staff02_notpay == null || staff02_notpay==""){
+            price ="0.0";
+            totalPrice ="0.0";
+            STAFF_BIALIENG="0.0";
+            PRIECENUMNUN="0.0";
+            staff02_payAll="0.0";
+            staff02_beforepay="0.0";
+            staff02_notpay="0.0";
+        }else {
+            price =detailsReq.getPrice();
+            totalPrice =detailsReq.getTotalPrice();
+             STAFF_BIALIENG = detailsReq.getSTAFF_BIALIENG();
+             PRIECENUMNUN = detailsReq.getPriceNamMun();
+             staff02_payAll = detailsReq.getStaff02_PayAll();
+             staff02_beforepay = detailsReq.getStaff02_Beforepay();
+             staff02_notpay = detailsReq.getStaff02_Notpay();
+        }
+        log.info("price:"+price);
+        log.info("totalPrice:"+totalPrice);
+
+
+
+
         try {
              String sql ="insert into TB_DETAILS (LAHUD_POYLOD,CUSTOMER_ID,  \n" +
                      "PRODUCT_ID,  \n" +
@@ -319,7 +353,7 @@ public class DetailsServiceDao implements  DetailsDao {
             paramList.add(detailsReq.getPLACE_PD_TO());
             paramList.add(detailsReq.getSTAFF_ID_NUM1());
             paramList.add(detailsReq.getSTAFF_ID_NUM2());
-            paramList.add(detailsReq.getSTAFF_BIALIENG());
+            paramList.add(STAFF_BIALIENG);
             paramList.add(detailsReq.getSTAFF_BIALIENG_FRIST());
             paramList.add(detailsReq.getSTAFF_BIALINEG_KANGJAIY());
             paramList.add(detailsReq.getHEADER_ID());
@@ -332,17 +366,17 @@ public class DetailsServiceDao implements  DetailsDao {
             paramList.add(detailsReq.getKONGNARLOD());
             paramList.add(detailsReq.getKHG_MUE_TIDLOD());
             paramList.add(detailsReq.getKim_KILO());
-            paramList.add(detailsReq.getPrice());
-            paramList.add(detailsReq.getTotalPrice());
-            paramList.add(detailsReq.getPriceNamMun());
+            paramList.add(price);
+            paramList.add(totalPrice);
+            paramList.add(PRIECENUMNUN);
             paramList.add(detailsReq.getCurrency());
             paramList.add(detailsReq.getStaff_Curr());
             paramList.add(detailsReq.getCreate_By());
             paramList.add(detailsReq.getStaff_Status01());
             paramList.add(detailsReq.getStaff_Status02());
-            paramList.add(detailsReq.getStaff02_PayAll());
-            paramList.add(detailsReq.getStaff02_Beforepay());
-            paramList.add(detailsReq.getStaff02_Notpay());
+            paramList.add(staff02_payAll);
+            paramList.add(staff02_beforepay);
+            paramList.add(staff02_notpay);
 
             paramList.add(detailsReq.getFeeOvertime1());
             paramList.add(detailsReq.getFeeJumPo2());
