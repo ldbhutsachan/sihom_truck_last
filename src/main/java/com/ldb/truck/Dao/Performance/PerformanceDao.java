@@ -112,7 +112,7 @@ public class PerformanceDao implements PerformanceInDao {
         System.out.println("show billNo:"+performanceReq.getPerformanceBillNo());
         try
         {
-            String sql ="update TB_DETAILS set D_STATUS='Y',CURRENCY='"+performanceReq.getCurrency()+"' where LAHUD_POYLOD='"+performanceReq.getPerformanceBillNo()+"'";
+            String sql ="update TB_DETAILS set dpay_money='"+performanceReq.getDpay_Money()+"' , D_STATUS='Y',CURRENCY='"+performanceReq.getCurrency()+"' where LAHUD_POYLOD='"+performanceReq.getPerformanceBillNo()+"'";
             return EBankJdbcTemplate.update(sql);
 
         }catch (Exception e){
@@ -341,6 +341,8 @@ public class PerformanceDao implements PerformanceInDao {
             e.printStackTrace();}
         return 0;
     }
+
+
     //L_TRIES_KM_1    ---R_TRIES_KM_1
     @Override
     public int updateDetailsFooterKM(DetailsReq detailsReq) {

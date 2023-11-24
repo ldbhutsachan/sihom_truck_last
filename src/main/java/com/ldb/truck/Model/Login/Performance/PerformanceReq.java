@@ -47,4 +47,5 @@ public class PerformanceReq {
     private String currency;
     private String staff_Curr;
     private String total_PRICE;
+    private String dpay_Money;
 }

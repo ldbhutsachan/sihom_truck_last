@@ -14,6 +14,7 @@ public class PerformanceSmallMapper implements RowMapper {
             // data.setSTAFF_BIALIENG(rs.getString("STAFF_BIALIENG"));
            data.setKeyId(rs.getString("key_id"));
            data.setPrintDate(rs.getString("printDate"));
+           data.setDpay_money(rs.getString("dpay_money"));
         }catch (Exception e){
             e.printStackTrace();
             return  data;

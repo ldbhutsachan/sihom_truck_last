@@ -16,5 +16,7 @@ public class PrintBillPaymentHeader {
     private String cusId;
     private String cusName;
     private String location;
+    private String nextDatePay;
+
 
 }

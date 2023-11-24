@@ -11,7 +11,9 @@ import com.ldb.truck.Dao.PayDao.PayDao;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -114,16 +116,26 @@ public class PayService {
 
         List<PrintBillPaymentInfo> details = new ArrayList<>();
         try{
+
             resData = payDao.PrintBillNo(printReq);
             List<String> billNo = resData.stream().map(PrintBillPayment::getBillNo).distinct().collect(Collectors.toList());
             for(String billNoID : billNo){
                 header = new PrintBillPaymentHeader();
+                List<PrintBillPayment> resDataGroupDetail = new ArrayList<>();
+                for(PrintBillPayment listDataGroupDetails : resData){
+                    noPayAmount = listDataGroupDetails.getNoPayAmount();
+                    if(noPayAmount == 0.0 ){
+                        header.setNextDatePay("ບໍ່ມີການຄ້າງຊາລະ");
+                    }else {
+                        header.setNextDatePay(listDataGroupDetails.getNextDatePay());
+                    }
+                }
+
                 header.setBillNo(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getBillNo).findFirst().orElse(""));
                 header.setPrintDate(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getPrintDate).findFirst().orElse(""));
                 header.setCusId(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getCusId).findFirst().orElse(""));
                 header.setCusName(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getCusName).findFirst().orElse(""));
                 header.setLocation(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getLocation).findFirst().orElse(""));
-
                 ListHeader.add(header);
             }
             List<PrintBillPayment> resDataGroupDetail = new ArrayList<>();
@@ -145,12 +157,14 @@ public class PayService {
                 resDataGroup.setCurrency(listDataGroupDetails.getCurrency());
                 if(noPayAmount > 0){
                   resDataGroup.setNoPayAmount(listDataGroupDetails.getNoPayAmount());
+
                 }else{
                     resDataGroup.setNoPayAmount(sumPayNoFee);
                 }
                 resDataGroupDetail.add(resDataGroup);
             }
             for (String billNoID : billNo) {
+
                 sumFooter = new PrintBillPaymentFooter();
                 sumTotalAll = resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getAmountTotal).collect(Collectors.summingDouble(Double::doubleValue));
                     sumFooter.setTotalAmount(numfm.format(sumTotalAll));

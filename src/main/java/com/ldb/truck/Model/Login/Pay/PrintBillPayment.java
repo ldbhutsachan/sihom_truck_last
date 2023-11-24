@@ -27,6 +27,7 @@ private String amountTotalS;
 private Double payAmount;
 private Double noPayAmount;
 private String currency;
+private String nextDatePay;
 
     private Double payCashAmount;
 

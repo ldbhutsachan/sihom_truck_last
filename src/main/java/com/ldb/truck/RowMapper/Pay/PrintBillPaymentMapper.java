@@ -23,6 +23,7 @@ public class PrintBillPaymentMapper implements RowMapper {
             data.setPayAmount(rs.getDouble("PAY_AMOUNT"));
             data.setNoPayAmount(rs.getDouble("NOPAY_AMOUNT"));
             data.setCurrency(rs.getString("CURRENCY"));
+            data.setNextDatePay(rs.getString("nextDatePay"));
         }catch (Exception e){
             e.printStackTrace();
         }

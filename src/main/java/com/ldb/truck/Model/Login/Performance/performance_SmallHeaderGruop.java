@@ -12,4 +12,5 @@ import lombok.Setter;
 public class performance_SmallHeaderGruop {
     private String keyId;
     private String printDate;
+    private String dpay_money;
 }

@@ -17,8 +17,8 @@ public class PayReq {
     private String amount;
     private String payAmount;
     private String status;
+    private String nextDatePay;
     private String noPayAmount;
-
     private String allPayAmountAll;
 
 

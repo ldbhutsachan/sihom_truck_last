@@ -55,8 +55,9 @@ public class PayDao  implements PayInDao{
     @Override
     public int storePayment(PayReq payReq) {
         log.info("payReq"+payReq.getBillNo());
+        log.info("next:"+payReq.getNextDatePay());
         try{
-            SQL= "insert into PAYMENT (BILLNO,PAY_DATE,INVOICE_NO,PAYMENT_TYPE,BANKNAME,REF,AMOUNT,PAY_AMOUNT,PAY_STATUS) values (?,now(),?,?,?,?,?,?,?)";
+            SQL= "insert into PAYMENT (BILLNO,PAY_DATE,INVOICE_NO,PAYMENT_TYPE,BANKNAME,REF,AMOUNT,PAY_AMOUNT,PAY_STATUS,nextDatePay) values (?,now(),?,?,?,?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(payReq.getBillNo());
             paramList.add(payReq.getInvoiceNo());
@@ -66,7 +67,10 @@ public class PayDao  implements PayInDao{
             paramList.add(payReq.getAmount());
             paramList.add(payReq.getPayAmount());
             paramList.add(payReq.getStatus());
+            paramList.add(payReq.getNextDatePay());
+            log.info("SQL:"+SQL);
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
+
         }catch (Exception e){
             e.printStackTrace();
         }
