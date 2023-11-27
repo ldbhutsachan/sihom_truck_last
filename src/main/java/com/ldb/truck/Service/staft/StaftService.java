@@ -70,6 +70,28 @@ public class StaftService {
             return result;
         }
     }
+    public staftRes getChooseStaft02 (){
+        staftRes result = new staftRes();
+        List<staftOut> data = new ArrayList<>();
+        try {
+            data = impCustomerDao.getChooseStaft02();
+            if(data.size() < 1 ){
+
+                result.setMessage("data not found ");
+                result.setStatus("01");
+                return  result;
+            }
+            result.setMessage("success");
+            result.setStatus("00");
+            result.setData(data);
+            return  result;
+        }catch (Exception e) {
+            e.printStackTrace();
+            result.setMessage("data not found ");
+            result.setStatus("01");
+            return result;
+        }
+    }
     public staftRes getStaftById (stafReq stafReq){
         staftRes result = new staftRes();
         List<staftOut> data = new ArrayList<>();

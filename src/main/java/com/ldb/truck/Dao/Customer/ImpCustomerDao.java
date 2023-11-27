@@ -440,6 +440,30 @@ public class ImpCustomerDao  implements CustomerDao{
         return result;
     }
     @Override
+    public List<staftOut> getChooseStaft02() {
+        List<staftOut>  result = new ArrayList<>();
+        try {
+            String SQL = "\n" +
+                    "select \n" +
+                    "'116' as KEY_ID , '0' as STAFT_ID ,'ບໍ່ເລືອກຄົນຂັບທີ 2' as  STAFT_NAME , '' as STAFT_SURNAME ,null as  ID_CARD ,null as  LICENCE_ID ,null as  VERIFY_BY ,\n" +
+                    "null as LICENCE_ID_EXP , null as VILLAGE ,null as  DISTRICT ,null as  PROVINCE ,null as  MOBILE1 ,null as  MOBILE2,null as  GENDER ,\n" +
+                    "null as  GENDER_STATUS , \n" +
+                    "null as GENDER_STATUS ,null as  DATE_INSERT, null as  USERID,null as  IMAGE_STAFF \n" +
+                    "union \n" +
+                    "SELECT \n" +
+                    "KEY_ID , STAFT_ID , STAFT_NAME , STAFT_SURNAME , ID_CARD , LICENCE_ID , VERIFY_BY ,\n" +
+                    "LICENCE_ID_EXP , VILLAGE , DISTRICT , PROVINCE , MOBILE1 , MOBILE2, GENDER , GENDER_STATUS , \n" +
+                    "GENDER_STATUS ,DATE_INSERT, USERID,IMAGE_STAFF \n" +
+                    "FROM STAFF WHERE OUT_STATUS = 'N'  and STATUS='A'";
+            System.out.println("show SQL:"+SQL);
+            result = EBankJdbcTemplate.query(SQL , new getAllStaftMapper());
+        }catch (Exception e){
+            e.printStackTrace();
+            return result;
+        }
+        return result;
+    }
+    @Override
     public List<staftOut> getStaftById(String id) {
         List<staftOut>  result = new ArrayList<>();
         try {

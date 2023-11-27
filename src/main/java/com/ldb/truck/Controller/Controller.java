@@ -157,6 +157,19 @@ public class Controller {
             return result;
         }
         return result;
+    }    @CrossOrigin(origins = "*")
+    @PostMapping("/getChooseStaft02.service")
+    public staftRes getChooseStaft02(){
+        staftRes result = new staftRes();
+        try {
+            result = staftService.getChooseStaft02();
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getStaftById")

@@ -483,6 +483,7 @@ public class PayService {
         double sumPayamount=0;
         double sumNoPayAmount=0;
         double sumCashPayAmount=0;
+        double noPayAmount =0;
         DecimalFormat numfm = new DecimalFormat("###,###.###");
 
         List<PrintBillPaymentInfo> details = new ArrayList<>();
@@ -491,11 +492,21 @@ public class PayService {
             List<String> billNo = resData.stream().map(PrintBillPayment::getBillNo).distinct().collect(Collectors.toList());
             for(String billNoID : billNo){
                 header = new PrintBillPaymentHeader();
+                List<PrintBillPayment> resDataGroupDetail = new ArrayList<>();
+                for(PrintBillPayment listDataGroupDetails : resData){
+                    noPayAmount = listDataGroupDetails.getNoPayAmount();
+                    if(noPayAmount == 0.0 ){
+                        header.setNextDatePay("ບໍ່ມີການຄ້າງຊາລະ");
+                    }else {
+                        header.setNextDatePay(listDataGroupDetails.getNextDatePay());
+                    }
+                }
                 header.setBillNo(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getBillNo).findFirst().orElse(""));
                 header.setPrintDate(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getPrintDate).findFirst().orElse(""));
                 header.setCusId(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getCusId).findFirst().orElse(""));
                 header.setCusName(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getCusName).findFirst().orElse(""));
                 header.setLocation(resData.stream().filter(p -> p.getBillNo().equals(billNoID)).map(PrintBillPayment::getLocation).findFirst().orElse(""));
+
                 ListHeader.add(header);
             }
             for (String billNoID : billNo) {

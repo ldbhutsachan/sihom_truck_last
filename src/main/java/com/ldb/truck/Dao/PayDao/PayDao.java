@@ -81,8 +81,9 @@ public class PayDao  implements PayInDao{
     public int storePayOwe(PayReq payReq) {
         log.info("payReq"+payReq.getBillNo());
         log.info("NOPAYMENT"+payReq.getNoPayAmount());
+        log.info("date"+payReq.getNextDatePay());
         try{
-            SQL= "insert into PAYMENT_HIS (NOPAYAMOUNT,BILLNO,PAY_DATE,INVOICE_NO,PAYMENT_TYPE,BANKNAME,REF,AMOUNT,PAY_AMOUNT,PAY_STATUS) values (?,?,now(),?,?,?,?,?,?,?)";
+            SQL= "insert into PAYMENT_HIS (NOPAYAMOUNT,BILLNO,PAY_DATE,INVOICE_NO,PAYMENT_TYPE,BANKNAME,REF,AMOUNT,PAY_AMOUNT,PAY_STATUS,nextDatePay) values (?,?,now(),?,?,?,?,?,?,?,?)";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(payReq.getNoPayAmount());
@@ -94,6 +95,7 @@ public class PayDao  implements PayInDao{
             paramList.add(payReq.getAmount());
             paramList.add(payReq.getPayAmount());
             paramList.add(payReq.getStatus());
+            paramList.add(payReq.getNextDatePay());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -145,9 +147,9 @@ public class PayDao  implements PayInDao{
         double totalAmount = amount-payAmount;
         try {
             if(payAmount == amount){
-                SQL = "update PAYMENT_HIS set PAY_STATUS='N',PAY_AMOUNT='" + payAmount + "' where  BILLNO='" + payReq.getBillNo() + "'  OR INVOICE_NO='"+payReq.getInvoiceNo()+"'" ;
+                SQL = "update PAYMENT_HIS set nextDatePay='"+payReq.getNextDatePay()+"',PAY_STATUS='N',PAY_AMOUNT='" + payAmount + "' where  BILLNO='" + payReq.getBillNo() + "'  OR INVOICE_NO='"+payReq.getInvoiceNo()+"'" ;
             } else if (payAmount < amount) {
-                SQL = "update PAYMENT_HIS set PAY_STATUS='O',PAY_AMOUNT="+allPayAmountAll+"+"+payAmount+"'  where BILLNO='" + payReq.getBillNo() + "' OR  INVOICE_NO='"+payReq.getInvoiceNo()+"'";
+                SQL = "update PAYMENT_HIS set nextDatePay='"+payReq.getNextDatePay()+"',PAY_STATUS='O',PAY_AMOUNT="+allPayAmountAll+"+"+payAmount+"'  where BILLNO='" + payReq.getBillNo() + "' OR  INVOICE_NO='"+payReq.getInvoiceNo()+"'";
             }
             log.info("sql:"+SQL);
             return EBankJdbcTemplate.update(SQL);
@@ -223,6 +225,7 @@ public class PayDao  implements PayInDao{
                     data.setNoPayAmount(rs.getDouble("NOPAY_AMOUNT"));
                     data.setCurrency(rs.getString("CURRENCY"));
                     data.setPayCashAmount(rs.getDouble("PAY_CASH_AMOUNT"));
+                    data.setNextDatePay(rs.getString("nextDatePay"));
 
                     return data;
                 }

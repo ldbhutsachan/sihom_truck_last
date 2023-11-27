@@ -30,6 +30,7 @@ public interface CustomerDao {
     int UpdateCustomer (CustomerReq custoerReq);
     int deleteCustomer (String id);
     List<staftOut> getChooseStaft01();
+    public List<staftOut> getChooseStaft02();
     List<staftOut> getAllStaft();
     List<staftOut> getStaftById( String id);
     int StoreStaft(stafReq stafReq);
