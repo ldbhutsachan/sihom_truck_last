@@ -125,10 +125,10 @@ public class PayDao  implements PayInDao{
         log.info("totalAmount:"+totalAmount);
         try {
             if (totalAmount == 0) {
-                SQL = "update PAYMENT set PAY_STATUS='Y' ,PAY_AMOUNT="+allPayAmountAll+"+"+payAmount+", PAY_CASH_AMOUNT="+payAmount+" where BILLNO='" + payReq.getBillNo() + "' OR INVOICE_NO='"+payReq.getInvoiceNo()+"'";
+                SQL = "update PAYMENT set nextDatePay='"+payReq.getNextDatePay()+"',PAY_STATUS='Y' ,PAY_AMOUNT="+allPayAmountAll+"+"+payAmount+", PAY_CASH_AMOUNT="+payAmount+" where BILLNO='" + payReq.getBillNo() + "' OR INVOICE_NO='"+payReq.getInvoiceNo()+"'";
                 log.info("SQL:"+SQL);
             } else if (totalAmount != 0) {
-                SQL = "update PAYMENT set PAY_STATUS='O' ,PAY_AMOUNT="+allPayAmountAll+"+"+payAmount+", PAY_CASH_AMOUNT="+payAmount+" where BILLNO='" + payReq.getBillNo() + "' OR INVOICE_NO='"+payReq.getInvoiceNo()+"'";
+                SQL = "update PAYMENT set nextDatePay='"+payReq.getNextDatePay()+"',PAY_STATUS='O' ,PAY_AMOUNT="+allPayAmountAll+"+"+payAmount+", PAY_CASH_AMOUNT="+payAmount+" where BILLNO='" + payReq.getBillNo() + "' OR INVOICE_NO='"+payReq.getInvoiceNo()+"'";
             log.info("SQL:"+SQL);
             }
             EBankJdbcTemplate.update(SQL);
