@@ -19,4 +19,8 @@ public class TruckDetailsGroupRes {
     private String carGiveTotal;
     private String carPayTotal;
     private String kumLaiyTotal;
+    private String totalRow;
+    private String totalFuel;
+
+
 }

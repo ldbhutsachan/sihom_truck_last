@@ -14,8 +14,14 @@ public class TruckDetails {
     private String carTabienLod;
     private String carModel;
     private String carType;
-    private String carGive;
-    private String carPay;
-    private String kumLaiy;
+    private Double carGive;
+    private Double carPay;
+    private Double kumLaiy;
+    private String totalFuel;
+    private String totalRow;
+
+private String type;
+
+
 
 }

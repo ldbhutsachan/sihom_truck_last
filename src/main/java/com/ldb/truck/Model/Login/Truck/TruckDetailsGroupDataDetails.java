@@ -22,4 +22,7 @@ public class TruckDetailsGroupDataDetails {
     private Double carPay;
     private Double kumLaiy;
 
+    private Double totalRow;
+    private Double totalFuel;
+
 }

@@ -107,7 +107,7 @@ public class VicicleHeaderService  {
     }
 //--insert data
     public Messages saveVicicleHeader(VicicleHeaderReq stafReq){
-        log.info("gggg:"+stafReq.getH_LEK_NUMMUNKHG());
+        log.info("batno:"+stafReq.getBatNo());
         Messages message = new Messages();
         int i = 0;
         try {
@@ -149,8 +149,8 @@ public class VicicleHeaderService  {
         Messages message = new Messages();
         int i = 0;
         try {
-            log.info("getImageTruck:"+vicicleHeaderReq.getImageTruck());
-            if(vicicleHeaderReq.getImageTruck().equals("1") || vicicleHeaderReq.getImageTruck() == null ){
+            log.info("getImageTruck:"+vicicleHeaderReq.getBatNo());
+            if(vicicleHeaderReq.getImageTruck().equals("1") || vicicleHeaderReq.getImageTruck() == null || vicicleHeaderReq.getBatNo()=="undefined"  ){
                 i =vicicleHeaderDao.updateVicicleHeaderUppicHaveData(vicicleHeaderReq);
             }else {
                 i =vicicleHeaderDao.updateVicicleHeader(vicicleHeaderReq);

@@ -2,6 +2,7 @@ package com.ldb.truck.Service.Truck;
 
 import com.ldb.truck.Dao.Truck.ImpTruckDao;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.SumGiveFooter.SumGiveFooter;
 import com.ldb.truck.Model.Login.Truck.*;
 import com.ldb.truck.Model.Login.staft.StaffDetails;
 import com.ldb.truck.Service.staft.StaftService;
@@ -151,10 +152,42 @@ public class TruckService {
     }
 //===============================================REPORT CAR ALL
 public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
+    DecimalFormat numfm = new DecimalFormat("###,###,###");
     List<TruckDetails> listTruck = new ArrayList<>();
     TruckDetailsRes result = new TruckDetailsRes();
+    List<SumGiveFooter> getSumfooter= new ArrayList<>();
+    List<TruckDetails> getData= new ArrayList<>();
     try {
         listTruck = impTruckDao.ReportGive(resFromDateReq);
+        String type= listTruck.get(0).getType();
+       logger.info("sumFooter:"+type);
+       for (TruckDetails rsList : listTruck) {
+           if (rsList.getType().equals("SUMFOOTER")) {
+               SumGiveFooter groupFooter = new SumGiveFooter();
+               groupFooter.setSumTotalRow(rsList.getTotalRow());
+               groupFooter.setSumTotalFuel(rsList.getTotalFuel());
+               Double carGiveTotal = rsList.getCarGive();
+               Double carPayTotal = rsList.getCarPay();
+               Double kumLaiyTotal = rsList.getKumLaiy();
+               groupFooter.setSumCarGive(numfm.format(carGiveTotal));
+               groupFooter.setSumCarPay(numfm.format(carPayTotal));
+               groupFooter.setSumKumLaiy(numfm.format(kumLaiyTotal));
+               getSumfooter.add(groupFooter);
+           }
+           else if (rsList.getType().equals("DATA")) {
+               TruckDetails tr = new TruckDetails();
+               tr.setCarTabienLod(rsList.getCarTabienLod());
+               tr.setCarModel(rsList.getCarModel());
+               tr.setCarType(rsList.getCarType());
+               tr.setType(rsList.getType());
+               tr.setCarGive(rsList.getCarGive());
+               tr.setCarPay(rsList.getCarPay());
+               tr.setKumLaiy(rsList.getKumLaiy());
+               tr.setTotalRow(rsList.getTotalRow());
+               tr.setTotalFuel(rsList.getTotalFuel());
+               getData.add(tr);
+           }
+       }
         if(listTruck.size() < 1 ){
             result.setMessage("data not found");
             result.setStatus("01");
@@ -162,7 +195,8 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
         }
         result.setMessage("Success");
         result.setStatus("00");
-        result.setData(listTruck);
+        result.setSumFooter(getSumfooter);
+        result.setData(getData);
         return result;
     }catch (Exception e){
         e.printStackTrace();
@@ -175,16 +209,22 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
     public TruckDetailsGroupRes ReportGiveCarAllNo(TruckDetailsReq truckDetailsReq){
 
         DecimalFormat numfm = new DecimalFormat("#########");
+        DecimalFormat numRow = new DecimalFormat("###,###");
         List<TruckDetailsGroupDataDetails> listTruck = new ArrayList<>();
         TruckDetailsGroupRes result = new TruckDetailsGroupRes();
         try {
             listTruck = impTruckDao.ReportGiveDetails(truckDetailsReq);
+
             Double carGiveTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getCarGive).collect(Collectors.summingDouble(Double::doubleValue));
             Double carPayTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getCarPay).collect(Collectors.summingDouble(Double::doubleValue));
             Double kumLaiyTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getKumLaiy).collect(Collectors.summingDouble(Double::doubleValue));
             result.setCarGiveTotal(numfm.format(carGiveTotal));
             result.setCarPayTotal(numfm.format(carPayTotal));
             result.setKumLaiyTotal(numfm.format(kumLaiyTotal));
+            Double totalRow =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalRow).collect(Collectors.summingDouble(Double::doubleValue));
+            Double totalFuel =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalFuel).collect(Collectors.summingDouble(Double::doubleValue));
+            result.setTotalRow(numRow.format(totalRow));
+            result.setTotalFuel(numRow.format(totalFuel));
             if(listTruck.size() < 1 ){
                 result.setMessage("data not found");
                 result.setStatus("01");

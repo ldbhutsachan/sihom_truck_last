@@ -79,10 +79,11 @@ public class ExchangeRateDao implements ExchangeRateImplDao{
         Date date = sdf.parse(exchangeRateReq.getExchangeDate());
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
         try{
-            SQL="UPDATE EXCHANGE SET USERID=?,EXCHANGERATE=?,TXN_USD=?,TXN_CNY=?,txn_Cny=? WHERE KEY_ID='"+exchangeRateReq.getKey_Id()+"'";
+            SQL="UPDATE EXCHANGE SET USERID=?,EXCHANGERATE=?,TXN_THB=?,TXN_USD=?,TXN_CNY=?,txn_Cny=? WHERE KEY_ID='"+exchangeRateReq.getKey_Id()+"'";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(exchangeRateReq.getUserId());
             paramList.add(sqlDate);
+            paramList.add(exchangeRateReq.getTxn_Thb());
             paramList.add(exchangeRateReq.getTxn_Usd());
             paramList.add(exchangeRateReq.getTxn_Thb());
             paramList.add(exchangeRateReq.getTxn_Cny());
