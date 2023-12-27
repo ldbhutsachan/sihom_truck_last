@@ -172,6 +172,7 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
                groupFooter.setSumCarGive(numfm.format(carGiveTotal));
                groupFooter.setSumCarPay(numfm.format(carPayTotal));
                groupFooter.setSumKumLaiy(numfm.format(kumLaiyTotal));
+
                getSumfooter.add(groupFooter);
            }
            else if (rsList.getType().equals("DATA")) {
@@ -218,9 +219,9 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
             Double carGiveTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getCarGive).collect(Collectors.summingDouble(Double::doubleValue));
             Double carPayTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getCarPay).collect(Collectors.summingDouble(Double::doubleValue));
             Double kumLaiyTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getKumLaiy).collect(Collectors.summingDouble(Double::doubleValue));
-            result.setCarGiveTotal(numfm.format(carGiveTotal));
-            result.setCarPayTotal(numfm.format(carPayTotal));
-            result.setKumLaiyTotal(numfm.format(kumLaiyTotal));
+            result.setCarGiveTotal(numRow.format(carGiveTotal));
+            result.setCarPayTotal(numRow.format(carPayTotal));
+            result.setKumLaiyTotal(numRow.format(kumLaiyTotal));
             Double totalRow =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalRow).collect(Collectors.summingDouble(Double::doubleValue));
             Double totalFuel =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalFuel).collect(Collectors.summingDouble(Double::doubleValue));
             result.setTotalRow(numRow.format(totalRow));
