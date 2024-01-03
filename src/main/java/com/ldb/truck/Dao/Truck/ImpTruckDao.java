@@ -573,7 +573,7 @@ String SQL="";
                         "                        SUM(SAINUMMUN) as TotalFuel,\n" +
                         "                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- \n" +
                         "sum (cast(replace(staff02_payAll, ',', '') as unsigned)) -SUM(PRIECENUMNUN) AS kumLaiy\n" +
-                        "                        FROM V_REPORT_GIVE_OUT_CAR   GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE\n" +
+                        "                        FROM V_REPORT_GIVE_OUT_CAR  GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE\n" +
                         "                      \n" +
                         "                        UNION \n" +
                         "     SELECT 'SUMFOOTER'AS TYPE,'' AS H_VICIVLE_NUMBER,'' AS H_VICIVLE_BRANCH,'' AS H_VICIVLE_BRANCHTYPE,\n" +
@@ -585,7 +585,7 @@ String SQL="";
                         "                        SUM(SAINUMMUN) as TotalFuel,\n" +
                         "                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- \n" +
                         "sum (cast(replace(staff02_payAll, ',', '') as unsigned)) -SUM(PRIECENUMNUN) AS kumLaiy\n" +
-                        "                        FROM V_REPORT_GIVE_OUT_CAR  -- GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE              ";
+                        "                        FROM V_REPORT_GIVE_OUT_CAR   ";
 log.info("sql:"+SQL);
             }else {
                 SQL = "SELECT 'DATA'AS TYPE,H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,\n" +
@@ -597,7 +597,7 @@ log.info("sql:"+SQL);
                         "                        SUM(SAINUMMUN) as TotalFuel,\n" +
                         "                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- \n" +
                         "sum (cast(replace(staff02_payAll, ',', '') as unsigned)) -SUM(PRIECENUMNUN) AS kumLaiy\n" +
-                        "                        FROM V_REPORT_GIVE_OUT_CAR   GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE\n" +
+                        "                        FROM V_REPORT_GIVE_OUT_CAR  WHERE OUT_DATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE\n" +
                         "                      \n" +
                         "                        UNION \n" +
                         "     SELECT 'SUMFOOTER'AS TYPE,'' AS H_VICIVLE_NUMBER,'' AS H_VICIVLE_BRANCH,'' AS H_VICIVLE_BRANCHTYPE,\n" +
@@ -609,7 +609,7 @@ log.info("sql:"+SQL);
                         "                        SUM(SAINUMMUN) as TotalFuel,\n" +
                         "                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- \n" +
                         "sum (cast(replace(staff02_payAll, ',', '') as unsigned)) -SUM(PRIECENUMNUN) AS kumLaiy\n" +
-                        "                        FROM V_REPORT_GIVE_OUT_CAR  -- GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE   WHERE OUT_DATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE";
+                        "                        FROM V_REPORT_GIVE_OUT_CAR  WHERE OUT_DATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "' ";
                 log.info("sql:"+SQL);
             }
             return EBankJdbcTemplate.query(SQL, new RowMapper<TruckDetails>() {
@@ -647,7 +647,7 @@ log.info("sql:"+SQL);
                     "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
                     "-cast(replace(staff02_payAll, ',', '') as unsigned)) -PRIECENUMNUN AS kumLaiy,COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
                     "SUM(SAINUMMUN) as TotalFuel\n" +
-                    "FROM V_REPORT_GIVE_OUT_CAR where H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
+                    "FROM V_REPORT_GIVE_OUT_CAR where   OUT_DATE BETWEEN '" + truckDetailsReq.getStartDate() + "' and '" + truckDetailsReq.getEndDate() + "' and H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
             return EBankJdbcTemplate.query(SQL, new RowMapper<TruckDetailsGroupDataDetails>() {
                 @Override
                 public TruckDetailsGroupDataDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
