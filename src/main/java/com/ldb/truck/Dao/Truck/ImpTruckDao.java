@@ -641,13 +641,26 @@ log.info("sql:"+SQL);
     @Override
     public List<TruckDetailsGroupDataDetails> ReportGiveDetails(TruckDetailsReq truckDetailsReq) {
         try{
-            SQL ="SELECT OUT_DATE,IN_DATE,PRO_NAME,DETAIL,H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,LAHUD_POYLOD,H_VICIVLE_BRANCHTYPE,\n" +
-                    "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
-                    "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay,\n" +
-                    "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
-                    "-cast(replace(staff02_payAll, ',', '') as unsigned)) -PRIECENUMNUN AS kumLaiy,COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                    "SUM(SAINUMMUN) as TotalFuel\n" +
-                    "FROM V_REPORT_GIVE_OUT_CAR where   OUT_DATE BETWEEN '" + truckDetailsReq.getStartDate() + "' and '" + truckDetailsReq.getEndDate() + "' and H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
+            if(truckDetailsReq.getStartDate()==null || truckDetailsReq.getEndDate()==null
+                    || truckDetailsReq.getStartDate().equals(null) || truckDetailsReq.getEndDate().equals(null)){
+                SQL ="SELECT OUT_DATE,IN_DATE,PRO_NAME,DETAIL,H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,LAHUD_POYLOD,H_VICIVLE_BRANCHTYPE,\n" +
+                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
+                        "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay,\n" +
+                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
+                        "-cast(replace(staff02_payAll, ',', '') as unsigned)) -PRIECENUMNUN AS kumLaiy,COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
+                        "SUM(SAINUMMUN) as TotalFuel\n" +
+                        "FROM V_REPORT_GIVE_OUT_CAR where   H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
+
+            }else {
+                SQL = "SELECT OUT_DATE,IN_DATE,PRO_NAME,DETAIL,H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,LAHUD_POYLOD,H_VICIVLE_BRANCHTYPE,\n" +
+                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
+                        "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay,\n" +
+                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
+                        "-cast(replace(staff02_payAll, ',', '') as unsigned)) -PRIECENUMNUN AS kumLaiy,COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
+                        "SUM(SAINUMMUN) as TotalFuel\n" +
+                        "FROM V_REPORT_GIVE_OUT_CAR where   OUT_DATE BETWEEN '" + truckDetailsReq.getStartDate() + "' and '" + truckDetailsReq.getEndDate() + "' and H_VICIVLE_NUMBER='" + truckDetailsReq.getCarLodNo() + "' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
+            }
+            log.info("sql:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<TruckDetailsGroupDataDetails>() {
                 @Override
                 public TruckDetailsGroupDataDetails mapRow(ResultSet rs, int rowNum) throws SQLException {

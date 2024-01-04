@@ -49,6 +49,7 @@ public class ReportAllService {
         ReportAllRes result = new ReportAllRes();
         try {
             listData = reportStaffServiceDao.ListAllReportProduct(reportAllReq);
+
             result.setData(listData);
             result.setStatus("00");
             result.setMessage("success");
