@@ -211,6 +211,7 @@ public class InvoiceService {
                 header = new GenerateInvoiceID();
                 header.setINVOICE_ID(resData.stream().filter(p -> p.getInVoiceID().equals(InVoiceNo)).map(PrintInvoiceByNo::getInVoiceID).findFirst().orElse(""));
                 header.setPrintDate(resData.stream().filter(p -> p.getInVoiceID().equals(InVoiceNo)).map(PrintInvoiceByNo::getInVoiceDate).findFirst().orElse(""));
+                header.setPayDateOwe(resData.stream().filter(p -> p.getInVoiceID().equals(InVoiceNo)).map(PrintInvoiceByNo::getPayDateOwe).findFirst().orElse(""));
                 headerList.add(header);
             }
             for (String InVoiceNo : InVoiceID) {

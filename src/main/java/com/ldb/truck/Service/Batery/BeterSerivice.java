@@ -22,6 +22,7 @@ public BateryRes getBateryAll(BateryReq  bateryReq){
     List<Batery> listData = new ArrayList<>();
     try {
         listData = implBateryDao.getBateryAll(bateryReq);
+
         if(listData.size()> 1){
             result.setStatus("00");
             result.setMessage("suscess ");

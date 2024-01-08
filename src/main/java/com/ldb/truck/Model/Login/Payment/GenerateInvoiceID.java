@@ -12,4 +12,6 @@ import lombok.Setter;
 public class GenerateInvoiceID {
     private String iNVOICE_ID;
     private String printDate;
+
+    private String payDateOwe;
 }

@@ -30,6 +30,7 @@ public class PrintInvoiceOnlyByNoRowMapper implements RowMapper {
             data.setLaHudPoyLod(rs.getString("LAHUD_POYLOD"));
             data.setViciCleNumber(rs.getString("H_VICIVLE_NUMBER"));
             data.setCurrency(rs.getString("CURRENCY"));
+         //   data.setPayDateOwe(rs.getString("PayDateOwe"));
         }catch (Exception e){
             e.printStackTrace();
         }

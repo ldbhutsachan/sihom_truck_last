@@ -14,4 +14,7 @@ public interface BateryDao {
     int UpdateBatery(BateryReq bateryReq);
     int DelBatery(BateryReq bateryReq);
 
+
+
+
 }

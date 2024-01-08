@@ -25,6 +25,7 @@ public class getAllcustomerMapper implements RowMapper {
             data.setEmail(rs.getString("EMAIL"));
             data.setId(rs.getInt("KEY_ID"));
 
+
         }catch (Exception e){
             e.printStackTrace();
             return  data;

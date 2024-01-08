@@ -17,4 +17,6 @@ public class Batery {
     private String sizeMorfai;
     private String serviceLife;
 
+
+
 }

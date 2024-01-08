@@ -11,12 +11,14 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.Table;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 @Component
 @Repository
+
 public class ImplBateryDao implements BateryDao {
     @Autowired
     @Qualifier("EBankJdbcTemplate")
@@ -24,8 +26,10 @@ public class ImplBateryDao implements BateryDao {
 
 
     String SQL="";
+
     @Override
     public List<Batery> getBateryAll(BateryReq bateryReq) {
+        //imageBatery
         try {
             if(bateryReq.getKeyId()==""){
                 SQL= "SELECT * FROM MORFAI";
@@ -50,6 +54,7 @@ public class ImplBateryDao implements BateryDao {
         }
         return null;
     }
+
     @Override
     public int saveBatery(BateryReq bateryReq) {
         String path="http://khounkham.com/images/batery/";
@@ -120,4 +125,5 @@ public class ImplBateryDao implements BateryDao {
         }
         return 0;
     }
+
 }

@@ -61,9 +61,9 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setPLACE_PD_TO(rs.getString("PLACE_PD_TO"));
                     tr.setSTAFF_ID_NUM1(rs.getString("STAFF_ID_NUM1"));
                     tr.setSTAFF_ID_NUM2(rs.getString("STAFF_ID_NUM2"));
-                    tr.setSTAFF_BIALIENG(rs.getDouble("STAFF_BIALIENG"));
+                    tr.setSTAFF_BIALIENG(rs.getString("STAFF_BIALIENG"));
                     tr.setSTAFF_BIALIENG_FRIST(rs.getString("STAFF_BIALIENG_FRIST"));
-                    tr.setSTAFF_BIALINEG_KANGJAIY(rs.getDouble("STAFF_BIALINEG_KANGJAIY"));
+                    tr.setSTAFF_BIALINEG_KANGJAIY(rs.getString("STAFF_BIALINEG_KANGJAIY"));
                     tr.setHEADER_ID(rs.getString("HEADER_ID"));
                     tr.setFOOTER_ID(rs.getString("FOOTER_ID"));
                     tr.setOUT_DATE(rs.getString("OUT_DATE"));
@@ -132,9 +132,9 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setPLACE_PD_TO(rs.getString("PLACE_PD_TO"));
                     tr.setSTAFF_ID_NUM1(rs.getString("STAFF_ID_NUM1"));
                     tr.setSTAFF_ID_NUM2(rs.getString("STAFF_ID_NUM2"));
-                    tr.setSTAFF_BIALIENG(rs.getDouble("STAFF_BIALIENG"));
+                    tr.setSTAFF_BIALIENG(rs.getString("STAFF_BIALIENG"));
                     tr.setSTAFF_BIALIENG_FRIST(rs.getString("STAFF_BIALIENG_FRIST"));
-                    tr.setSTAFF_BIALINEG_KANGJAIY(rs.getDouble("STAFF_BIALINEG_KANGJAIY"));
+                    tr.setSTAFF_BIALINEG_KANGJAIY(rs.getString("STAFF_BIALINEG_KANGJAIY"));
                     tr.setHEADER_ID(rs.getString("HEADER_ID"));
                     tr.setFOOTER_ID(rs.getString("FOOTER_ID"));
                     tr.setOUT_DATE(rs.getString("OUT_DATE"));
@@ -205,9 +205,9 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setPLACE_PD_TO(rs.getString("PLACE_PD_TO"));
                     tr.setSTAFF_ID_NUM1(rs.getString("STAFF_ID_NUM1"));
                     tr.setSTAFF_ID_NUM2(rs.getString("STAFF_ID_NUM2"));
-                    tr.setSTAFF_BIALIENG(rs.getDouble("STAFF_BIALIENG"));
+                    tr.setSTAFF_BIALIENG(rs.getString("STAFF_BIALIENG"));
                     tr.setSTAFF_BIALIENG_FRIST(rs.getString("STAFF_BIALIENG_FRIST"));
-                    tr.setSTAFF_BIALINEG_KANGJAIY(rs.getDouble("STAFF_BIALINEG_KANGJAIY"));
+                    tr.setSTAFF_BIALINEG_KANGJAIY(rs.getString("STAFF_BIALINEG_KANGJAIY"));
                     tr.setHEADER_ID(rs.getString("HEADER_ID"));
                     tr.setFOOTER_ID(rs.getString("FOOTER_ID"));
                     tr.setOUT_DATE(rs.getString("OUT_DATE"));
@@ -279,10 +279,10 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setPLACE_PD_TO(rs.getString("PLACE_PD_TO"));
                     tr.setSTAFF_ID_NUM1(rs.getString("STAFF_ID_NUM1"));
                     tr.setSTAFF_ID_NUM2(rs.getString("STAFF_ID_NUM2"));
-                    tr.setSTAFF_BIALIENG(rs.getDouble("STAFF_BIALIENG"));
+                    tr.setSTAFF_BIALIENG(rs.getString("STAFF_BIALIENG"));
                     tr.setSTAFF_BIALIENG_FRIST(rs.getString("STAFF_BIALIENG_FRIST"));
-                    tr.setSTAFF_BIALINEG_KANGJAIY(rs.getDouble("STAFF_BIALINEG_KANGJAIY"));
-                    tr.setSTAFF_BIALINEG_KANGSecond(rs.getDouble("STAFF_BIALINEG_KANGsecond"));
+                    tr.setSTAFF_BIALINEG_KANGJAIY(rs.getString("STAFF_BIALINEG_KANGJAIY"));
+                    tr.setSTAFF_BIALINEG_KANGSecond(rs.getString("STAFF_BIALINEG_KANGsecond"));
                     tr.setHEADER_ID(rs.getString("HEADER_ID"));
                     tr.setFOOTER_ID(rs.getString("FOOTER_ID"));
                     tr.setOUT_DATE(rs.getString("OUT_DATE"));
@@ -301,11 +301,19 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setH_LEK_NUMMUNKHG(rs.getString("H_LEK_NUMMUNKHG"));
                     tr.setPrice(rs.getString("PRICE"));
                     tr.setTotal_price(rs.getString("TOTAL_PRICE"));
+
+
                     tr.setPriceNamMun(rs.getDouble("PRIECENUMNUN"));
                     tr.setTotalDay(rs.getString("totalDay"));
                     tr.setStatus(rs.getString("D_STATUS"));
                     tr.setCurrency(rs.getString("currency"));
                     tr.setStaff_Curr(rs.getString("STAFF_BIALIENG_CUR"));
+
+
+                    String numMun = rs.getString("PRIECENUMNUN").replaceAll(",","");
+                    double conVertnumMun = Double.parseDouble(numMun);
+                    tr.setTotalNummun(conVertnumMun);
+
                     return tr;
                 }
             });

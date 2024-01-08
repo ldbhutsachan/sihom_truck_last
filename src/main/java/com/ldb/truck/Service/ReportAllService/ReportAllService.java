@@ -58,14 +58,15 @@ public class ReportAllService {
         ReportAllRes result = new ReportAllRes();
         try {
             listData = reportStaffServiceDao.ListAllReportProduct(reportAllReq);
-            double sumNummun =  listData.stream().map(ReportAll::getPriceNamMun).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalBiaLieng=  listData.stream().map(ReportAll::getSTAFF_BIALIENG).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtodtalLaiyJaiyFrist =  listData.stream().map(ReportAll::getSTAFF_BIALINEG_KANGJAIY).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtodtodtalLaiyJaiySecond =  listData.stream().map(ReportAll::getSTAFF_BIALINEG_KANGSecond).collect(Collectors.summingDouble(Double::doubleValue));
-            result.setTotalNummun(sumNummun);
-            result.setTotalBiaLieng(sumtotalBiaLieng);
-            result.setTodtalLaiyJaiyFrist(sumtodtalLaiyJaiyFrist);
-            result.setTodtalLaiyJaiySecond(sumtodtodtalLaiyJaiySecond);
+
+            double sumNummun =  listData.stream().map(ReportAll::getTotalNummun).collect(Collectors.summingDouble(Double::doubleValue));
+//            double sumtotalBiaLieng=  listData.stream().map(ReportAll::getSTAFF_BIALIENG).collect(Collectors.summingDouble(Double::doubleValue));
+//            double sumtodtalLaiyJaiyFrist =  listData.stream().map(ReportAll::getSTAFF_BIALINEG_KANGJAIY).collect(Collectors.summingDouble(Double::doubleValue));
+//            double sumtodtodtalLaiyJaiySecond =  listData.stream().map(ReportAll::getSTAFF_BIALINEG_KANGSecond).collect(Collectors.summingDouble(Double::doubleValue));
+           result.setTotalNummun(sumNummun);
+//            result.setTotalBiaLieng(sumtotalBiaLieng);
+//            result.setTodtalLaiyJaiyFrist(sumtodtalLaiyJaiyFrist);
+//            result.setTodtalLaiyJaiySecond(sumtodtodtalLaiyJaiySecond);
             result.setData(listData);
             result.setStatus("00");
             result.setMessage("success");

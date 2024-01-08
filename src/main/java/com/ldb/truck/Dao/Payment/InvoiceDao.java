@@ -86,6 +86,7 @@ public class InvoiceDao  implements  InvoiceInDao{
     public List<PrintInvoiceByNo> pintBillByNo(PrintInvoiceByNoReq printInvoiceByNoReq) {
         List<PrintInvoiceByNo> result =new ArrayList<>();
         try {
+            //PayDateOwe
                 SQL= "select * from V_PRINTINVOICE where INVOICE_ID ='"+printInvoiceByNoReq.getBillNo()+"'";
                 result = EBankJdbcTemplate.query(SQL,new PrintInvoiceOnlyByNoRowMapper());
 

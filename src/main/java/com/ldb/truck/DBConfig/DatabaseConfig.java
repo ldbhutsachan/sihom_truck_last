@@ -24,18 +24,5 @@ public class DatabaseConfig {
         return new JdbcTemplate(EBankJdbcTemplate);
     }
     //----
-//    @Bean
-//    public DataSource dataSource() {
-//        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-//        dataSource.setDriverClassName("org.mariadb.jdbc.Driver");
-//        dataSource.setUrl("jdbc:mariadb://10.0.4.62:3306/sihomdb");
-//        dataSource.setUsername("sihomdb");
-//        dataSource.setPassword("ojsGnsIL48bV2wEF");
-//        return dataSource;
-//    }
-//    @Bean(name = "EBankJdbcTemplate")
-//    public JdbcTemplate EBankJdbcTemplate(DataSource EBankJdbcTemplate) {
-//        return new JdbcTemplate(EBankJdbcTemplate);
-//    }
 
 }

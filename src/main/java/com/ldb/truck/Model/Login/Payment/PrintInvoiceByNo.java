@@ -26,6 +26,7 @@ public class PrintInvoiceByNo {
     private String inVoiceID;
 
     private String inVoiceDate;
+    private String payDateOwe;
 
     private String laHudPoyLod;
     private String outDate;
