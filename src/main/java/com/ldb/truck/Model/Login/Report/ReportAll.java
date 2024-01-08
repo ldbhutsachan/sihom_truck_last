@@ -35,9 +35,10 @@ public class ReportAll {
     private String PLACE_PD_TO;
     private String STAFF_ID_NUM1;
     private String STAFF_ID_NUM2;
-    private String STAFF_BIALIENG;
+    private double STAFF_BIALIENG;
     private String STAFF_BIALIENG_FRIST;
-    private String STAFF_BIALINEG_KANGJAIY;
+    private double STAFF_BIALINEG_KANGJAIY;
+    private double STAFF_BIALINEG_KANGSecond;
     private String HEADER_ID;
     private String FOOTER_ID;
     private String OUT_DATE;
@@ -57,7 +58,7 @@ public class ReportAll {
     private String H_LEK_NUMMUNKHG;
     private String price;
     private String total_price;
-    private String priceNamMun;
+    private Double priceNamMun;
     private String totalDay;
     private String status;
     private String currency;
