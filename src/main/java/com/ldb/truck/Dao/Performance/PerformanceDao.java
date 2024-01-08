@@ -184,7 +184,6 @@ public class PerformanceDao implements PerformanceInDao {
                     return tr;
                 }
             });
-
         }catch (Exception e){
             e.printStackTrace();
         }

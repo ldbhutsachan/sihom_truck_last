@@ -25,4 +25,9 @@ public class TruckDetailsGroupDataDetails {
     private Double totalRow;
     private Double totalFuel;
 
+    private Double totalPriceNummun;
+    private Double totalBialieng;
+
+
+
 }
