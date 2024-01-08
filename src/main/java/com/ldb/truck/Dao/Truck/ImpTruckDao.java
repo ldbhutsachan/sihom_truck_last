@@ -648,7 +648,8 @@ log.info("sql:"+SQL);
                         "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay,\n" +
                         "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
                         "-cast(replace(staff02_payAll, ',', '') as unsigned)) -PRIECENUMNUN AS kumLaiy,COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                        "SUM(SAINUMMUN) as TotalFuel\n" +
+                        "SUM(SAINUMMUN) as TotalFuel,sum(PRIECENUMNUN) as PRIECENUMNUN,\n" +
+                        "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned)) as totalBialieng\n" +
                         "FROM V_REPORT_GIVE_OUT_CAR where   H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
 
             }else {
@@ -657,7 +658,8 @@ log.info("sql:"+SQL);
                         "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay,\n" +
                         "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
                         "-cast(replace(staff02_payAll, ',', '') as unsigned)) -PRIECENUMNUN AS kumLaiy,COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                        "SUM(SAINUMMUN) as TotalFuel\n" +
+                        "SUM(SAINUMMUN) as TotalFuel,sum(PRIECENUMNUN) as PRIECENUMNUN,\n" +
+                        "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned)) as totalBialieng\n" +
                         "FROM V_REPORT_GIVE_OUT_CAR where   OUT_DATE BETWEEN '" + truckDetailsReq.getStartDate() + "' and '" + truckDetailsReq.getEndDate() + "' and H_VICIVLE_NUMBER='" + truckDetailsReq.getCarLodNo() + "' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
             }
             log.info("sql:"+SQL);
@@ -678,6 +680,8 @@ log.info("sql:"+SQL);
                     tr.setPlName(rs.getString("DETAIL"));
                     tr.setTotalRow(rs.getDouble("totalRow"));
                     tr.setTotalFuel(rs.getDouble("TotalFuel"));
+                    tr.setTotalPriceNummun(rs.getDouble("PRIECENUMNUN"));
+                    tr.setTotalBialieng(rs.getDouble("totalBialieng"));
                     return tr;
                 }
             });

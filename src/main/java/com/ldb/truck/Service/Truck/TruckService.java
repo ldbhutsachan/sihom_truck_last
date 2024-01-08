@@ -219,9 +219,14 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
             Double carGiveTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getCarGive).collect(Collectors.summingDouble(Double::doubleValue));
             Double carPayTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getCarPay).collect(Collectors.summingDouble(Double::doubleValue));
             Double kumLaiyTotal = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getKumLaiy).collect(Collectors.summingDouble(Double::doubleValue));
+
+            Double totakSainummun = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalPriceNummun).collect(Collectors.summingDouble(Double::doubleValue));
+            Double totalBialieng = listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalBialieng).collect(Collectors.summingDouble(Double::doubleValue));
             result.setCarGiveTotal(numRow.format(carGiveTotal));
             result.setCarPayTotal(numRow.format(carPayTotal));
             result.setKumLaiyTotal(numRow.format(kumLaiyTotal));
+            result.setTotalPriceNummun(numfm.format(totakSainummun));
+            result.setTotalBialieng(numfm.format(totalBialieng));
             Double totalRow =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalRow).collect(Collectors.summingDouble(Double::doubleValue));
             Double totalFuel =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalFuel).collect(Collectors.summingDouble(Double::doubleValue));
             result.setTotalRow(numRow.format(totalRow));
