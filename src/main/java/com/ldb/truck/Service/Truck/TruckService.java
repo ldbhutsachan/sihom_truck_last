@@ -169,9 +169,13 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
                Double carGiveTotal = rsList.getCarGive();
                Double carPayTotal = rsList.getCarPay();
                Double kumLaiyTotal = rsList.getKumLaiy();
+               Double TotalPriceNummun = rsList.getTotalPriceNummun();
+                Double TotalBialieng = rsList.getTotalBialieng();
                groupFooter.setSumCarGive(numfm.format(carGiveTotal));
                groupFooter.setSumCarPay(numfm.format(carPayTotal));
                groupFooter.setSumKumLaiy(numfm.format(kumLaiyTotal));
+               groupFooter.setTotalPriceNummun(numfm.format(TotalPriceNummun));
+               groupFooter.setTotalBialieng(numfm.format(TotalBialieng));
 
                getSumfooter.add(groupFooter);
            }
@@ -186,6 +190,8 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
                tr.setKumLaiy(rsList.getKumLaiy());
                tr.setTotalRow(rsList.getTotalRow());
                tr.setTotalFuel(rsList.getTotalFuel());
+               tr.setTotalPriceNummun(rsList.getTotalPriceNummun());
+               tr.setTotalBialieng(rsList.getTotalBialieng());
                getData.add(tr);
            }
        }
@@ -225,8 +231,8 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
             result.setCarGiveTotal(numRow.format(carGiveTotal));
             result.setCarPayTotal(numRow.format(carPayTotal));
             result.setKumLaiyTotal(numRow.format(kumLaiyTotal));
-            result.setTotalPriceNummun(numfm.format(totakSainummun));
-            result.setTotalBialieng(numfm.format(totalBialieng));
+            result.setTotalPriceNummun(numRow.format(totakSainummun));
+            result.setTotalBialieng(numRow.format(totalBialieng));
             Double totalRow =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalRow).collect(Collectors.summingDouble(Double::doubleValue));
             Double totalFuel =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalFuel).collect(Collectors.summingDouble(Double::doubleValue));
             result.setTotalRow(numRow.format(totalRow));

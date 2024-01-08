@@ -1,6 +1,8 @@
 package com.ldb.truck.Service.PerformanceService;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.Report.ReportAll;
@@ -98,10 +100,13 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
     }
     //--view data
     public v_performanceRes ListV_performance(){
+        DecimalFormat numRow = new DecimalFormat("###,###");
         v_performanceRes result = new v_performanceRes();
         List<v_performance> resdata = new ArrayList<>();
         try {
             resdata = performanceDao.ListV_performance();
+            Double carGiveTotal = resdata.stream().distinct().map(v_performance::getTOTAL_PRICE02).collect(Collectors.summingDouble(Double::doubleValue));
+           result.setSumAmount(numRow.format( carGiveTotal));
             result.setData(resdata);
             result.setMessage("success");
             result.setStatus("00");

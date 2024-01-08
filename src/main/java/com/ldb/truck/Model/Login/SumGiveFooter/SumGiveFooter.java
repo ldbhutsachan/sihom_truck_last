@@ -15,4 +15,8 @@ public class SumGiveFooter {
     private String sumKumLaiy;
     private String sumTotalFuel;
     private String sumTotalRow;
+
+    private String totalPriceNummun;
+    private String totalBialieng;
+
 }

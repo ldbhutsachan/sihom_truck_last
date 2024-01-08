@@ -19,6 +19,8 @@ public class TruckDetails {
     private Double kumLaiy;
     private String totalFuel;
     private String totalRow;
+    private Double totalPriceNummun;
+    private Double totalBialieng;
 
 private String type;
 

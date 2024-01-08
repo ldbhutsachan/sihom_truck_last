@@ -20,6 +20,9 @@ public class v_performance {
     private String  sAINUMMUN;
     private String   pRIECENUMNUN;
     private String   tOTAL_PRICE;
+    private Double   tOTAL_PRICE02;
+
+
     private String   fEETOTAL;
     private String  tOTALNUMMUN ;
     private String  status;
