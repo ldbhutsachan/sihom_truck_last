@@ -2,6 +2,7 @@ package com.ldb.truck.Service.ReportAllService;
 
 import com.ldb.truck.Dao.ReportAllDao.ReportAllServiceDao;
 import com.ldb.truck.Model.Login.Pay.PrintBillPayment;
+import com.ldb.truck.Model.Login.Report.sumFooterGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
@@ -60,13 +61,17 @@ public class ReportAllService {
             listData = reportStaffServiceDao.ListAllReportProduct(reportAllReq);
 
             double sumNummun =  listData.stream().map(ReportAll::getTotalNummun).collect(Collectors.summingDouble(Double::doubleValue));
-//            double sumtotalBiaLieng=  listData.stream().map(ReportAll::getSTAFF_BIALIENG).collect(Collectors.summingDouble(Double::doubleValue));
-//            double sumtodtalLaiyJaiyFrist =  listData.stream().map(ReportAll::getSTAFF_BIALINEG_KANGJAIY).collect(Collectors.summingDouble(Double::doubleValue));
-//            double sumtodtodtalLaiyJaiySecond =  listData.stream().map(ReportAll::getSTAFF_BIALINEG_KANGSecond).collect(Collectors.summingDouble(Double::doubleValue));
-           result.setTotalNummun(sumNummun);
-//            result.setTotalBiaLieng(sumtotalBiaLieng);
-//            result.setTodtalLaiyJaiyFrist(sumtodtalLaiyJaiyFrist);
-//            result.setTodtalLaiyJaiySecond(sumtodtodtalLaiyJaiySecond);
+            double sumtotalBiaLieng=  listData.stream().map(ReportAll::getTotalBiaLieng).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtodtalLaiyJaiyFrist =  listData.stream().map(ReportAll::getTodtalLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtodtodtalLaiyJaiySecond =  listData.stream().map(ReportAll::getTodtalLaiyJaiySecond).collect(Collectors.summingDouble(Double::doubleValue));
+            sumFooterGroup restFooter = new sumFooterGroup();
+
+            restFooter.setTotalNummun(numfm.format(sumNummun));
+            restFooter.setTotalBiaLieng(numfm.format(sumtotalBiaLieng));
+            restFooter.setTodtalLaiyJaiyFrist(numfm.format(sumtodtalLaiyJaiyFrist));
+            restFooter.setTodtalLaiyJaiySecond(numfm.format(sumtodtodtalLaiyJaiySecond));
+
+            result.setSumFooter(restFooter);
             result.setData(listData);
             result.setStatus("00");
             result.setMessage("success");

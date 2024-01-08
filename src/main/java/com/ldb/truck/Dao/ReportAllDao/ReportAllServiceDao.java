@@ -310,9 +310,22 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setStaff_Curr(rs.getString("STAFF_BIALIENG_CUR"));
 
 
-                    String numMun = rs.getString("PRIECENUMNUN").replaceAll(",","");
+                    String numMun = rs.getString("SAINUMMUN").replaceAll(",","");
                     double conVertnumMun = Double.parseDouble(numMun);
+                    log.info("show: "+conVertnumMun);
                     tr.setTotalNummun(conVertnumMun);
+                    //----------------------total staff bialieng all
+                    String numtotalStaffbialieng = rs.getString("STAFF_BIALIENG").replaceAll(",","");
+                    double conVertStaffbialieng  = Double.parseDouble(numtotalStaffbialieng);
+                    tr.setTotalBiaLieng(conVertStaffbialieng);
+                    //---------------------kang jai staff 1 ----------
+                    String numtotalStaffbialieng01 = rs.getString("STAFF_BIALINEG_KANGJAIY").replaceAll(",","");
+                    double conVertStaffbialieng01  = Double.parseDouble(numtotalStaffbialieng01);
+                    tr.setTodtalLaiyJaiyFrist(conVertStaffbialieng01);
+                    //---------------------kang jai staff 2 ----------
+                    String numtotalStaffbialieng02 = rs.getString("STAFF_BIALINEG_KANGsecond").replaceAll(",","");
+                    double conVertStaffbialieng02  = Double.parseDouble(numtotalStaffbialieng02);
+                    tr.setTodtalLaiyJaiySecond(conVertStaffbialieng02);
 
                     return tr;
                 }

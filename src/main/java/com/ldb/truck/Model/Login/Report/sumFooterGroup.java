@@ -5,15 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReportAllRes {
-    private String status;
-    private String message;
-    private List<ReportAll> data;
-    private sumFooterGroup sumFooter;
-
+public class sumFooterGroup {
+    private String totalBiaLieng ;
+    private String totalNummun ;
+    private String todtalLaiyJaiyFrist;
+    private String todtalLaiyJaiySecond;
 }
