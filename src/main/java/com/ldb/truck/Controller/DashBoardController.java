@@ -15,6 +15,7 @@ public class DashBoardController {
     @Autowired
     DashBoardService dashBoardService;
     @CrossOrigin(origins = "*")
+
     @PostMapping("/DashBoard")
     public DashBoardRes showDashBoard(@RequestBody DashBoardReq dashBoardReq){
         logger.info("============================DashBoard================");

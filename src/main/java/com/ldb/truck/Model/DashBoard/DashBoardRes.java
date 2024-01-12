@@ -20,4 +20,7 @@ List<DashBoard> groupC;
 List<DashBoard> groupD;
 List<CarDashBoard> groupCarFree;
 List<CarDashBoard> groupCarNoFree;
+List<DashBoard> groupPayCar;
+List<DashBoard> groupPayStaff;
+
 }
