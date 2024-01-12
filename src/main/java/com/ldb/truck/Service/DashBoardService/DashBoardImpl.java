@@ -24,9 +24,17 @@ public class DashBoardImpl {
     public List<DashBoard> DashBoardShow(DashBoardReq dashBoardReq){
         List<DashBoard> result = new ArrayList<>();
         try{
-        sql ="select  A,createDate,sum(amt_all) as amt_all,sum(amt_Done) as amt_Done,sum(amt_noDone) as amt_noDone," +
-                "sum(amount_No) as amount_No,sum(amount_Done) as amount_Done\n" +
-                "from v_dashboard group by A,createDate";
+            if (dashBoardReq.getStartDate().equals(null) || dashBoardReq.getEndDate().equals(null)){
+                sql ="select  A,createDate,sum(amt_all) as amt_all,sum(amt_Done) as amt_Done,sum(amt_noDone) as amt_noDone," +
+                        "sum(amount_No) as amount_No,sum(amount_Done) as amount_Done\n" +
+                        "from v_dashboard group by A,createDate";
+            }else {
+                sql ="select  A,createDate,sum(amt_all) as amt_all,sum(amt_Done) as amt_Done,sum(amt_noDone) as amt_noDone," +
+                        "sum(amount_No) as amount_No,sum(amount_Done) as amount_Done\n" +
+                        "from v_dashboard where createDate between '"+dashBoardReq.getStartDate()+"' and '"+dashBoardReq.getEndDate()+"' group by A,createDate";
+
+            }
+
         return EBankJdbcTemplate.query(sql, new RowMapper<DashBoard>() {
             @Override
             public DashBoard mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -48,7 +56,12 @@ public class DashBoardImpl {
     public List<DashBoard> DashBoardShowfORpAYcAR(DashBoardReq dashBoardReq){
         List<DashBoard> result = new ArrayList<>();
         try{
-        sql ="SELECT * FROM REPORT_SUM_DASHBOARD_PAY";
+            if (dashBoardReq.getStartDate().equals(null) || dashBoardReq.getEndDate().equals(null)){
+                sql ="SELECT * FROM REPORT_SUM_DASHBOARD_PAY";
+            }else {
+                sql ="SELECT * FROM REPORT_SUM_DASHBOARD_PAY where createDate between '"+dashBoardReq.getStartDate()+"' and '"+dashBoardReq.getEndDate()+"' group by A,createDate";
+
+            }
         return EBankJdbcTemplate.query(sql, new RowMapper<DashBoard>() {
             @Override
             public DashBoard mapRow(ResultSet rs, int rowNum) throws SQLException {
