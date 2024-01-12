@@ -24,7 +24,7 @@ public class DashBoardImpl {
     public List<DashBoard> DashBoardShow(DashBoardReq dashBoardReq){
         List<DashBoard> result = new ArrayList<>();
         try{
-            if (dashBoardReq.getStartDate().equals(null) || dashBoardReq.getEndDate().equals(null)){
+            if (dashBoardReq.getStartDate().equals("") || dashBoardReq.getEndDate().equals("")){
                 sql ="select  A,createDate,sum(amt_all) as amt_all,sum(amt_Done) as amt_Done,sum(amt_noDone) as amt_noDone," +
                         "sum(amount_No) as amount_No,sum(amount_Done) as amount_Done\n" +
                         "from v_dashboard group by A,createDate";
@@ -56,7 +56,7 @@ public class DashBoardImpl {
     public List<DashBoard> DashBoardShowfORpAYcAR(DashBoardReq dashBoardReq){
         List<DashBoard> result = new ArrayList<>();
         try{
-            if (dashBoardReq.getStartDate().equals(null) || dashBoardReq.getEndDate().equals(null)){
+            if (dashBoardReq.getStartDate().equals("") || dashBoardReq.getEndDate().equals("")){
                 sql ="SELECT * FROM REPORT_SUM_DASHBOARD_PAY";
             }else {
                 sql ="SELECT * FROM REPORT_SUM_DASHBOARD_PAY where createDate between '"+dashBoardReq.getStartDate()+"' and '"+dashBoardReq.getEndDate()+"' group by A,createDate";

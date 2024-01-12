@@ -245,10 +245,14 @@ public class ReportAllServiceDao implements ReportAllDao{
     @Override
     public List<ReportAll> ListAllReportProduct(@RequestBody  ReportAllReq reportAllReq) {
         try {
-            if(reportAllReq.getStartDate() == null){
+            if(reportAllReq.getStartDate() == null && reportAllReq.getStatus().equals(0)){
                 sql ="select * from V_RE_ALL";
-            }else {
-                sql = "select * from V_RE_ALL where DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
+            }
+            if(reportAllReq.getStartDate() == null && !reportAllReq.getStatus().equals(0)){
+                sql ="select * from V_RE_ALL where D_STATUS ='"+reportAllReq.getStatus()+"' ";
+            }
+            else {
+                sql = "select * from V_RE_ALL where D_STATUS ='"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportAll>() {
                 @Override

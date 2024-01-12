@@ -13,4 +13,5 @@ public class ReportAllReq {
     //private String staff_Id;
     private String startDate;
     private String endDate;
+    private String status;
 }
