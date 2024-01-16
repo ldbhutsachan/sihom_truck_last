@@ -83,12 +83,12 @@ public class DetailsService {
         DetailsRes result = new DetailsRes();
         try{
            detailsServiceDao.saveData(detailsReq);
-//           performanceDao.updateDetailsHeaderKM(detailsReq);
-//           performanceDao.updateDetailsFooterKM(detailsReq);
-//           detailsServiceDao.UpdateHeader(detailsReq);
-//           detailsServiceDao.UpdateFooter(detailsReq);
-//           detailsServiceDao.updateStaff01(detailsReq);
-//           detailsServiceDao.updateStaff02(detailsReq);
+           performanceDao.updateDetailsHeaderKM(detailsReq);
+           performanceDao.updateDetailsFooterKM(detailsReq);
+           detailsServiceDao.UpdateHeader(detailsReq);
+           detailsServiceDao.UpdateFooter(detailsReq);
+           detailsServiceDao.updateStaff01(detailsReq);
+           detailsServiceDao.updateStaff02(detailsReq);
             result.setStatus("00");
             result.setMessage("success");
         }catch (Exception e){

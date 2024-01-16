@@ -78,7 +78,7 @@ public class ReportAllService {
         }catch (Exception e ){
             e.printStackTrace();
             result.setStatus("01");
-            result.setMessage("data not found");
+            result.setMessage("khuy data not found ");
         }
         return result;
     }

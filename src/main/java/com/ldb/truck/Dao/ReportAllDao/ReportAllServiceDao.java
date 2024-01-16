@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -27,10 +29,14 @@ public class ReportAllServiceDao implements ReportAllDao{
     @Override
     public List<ReportAll> ListAllReport(@RequestBody  ReportAllReq reportAllReq) {
         try {
-           if(reportAllReq.getStartDate() == null){
+            if(reportAllReq.getStartDate() == null  && reportAllReq.getStatus().equals(0)){
                 sql ="select * from V_RE_ALL";
-            }else {
-                sql = "select * from V_RE_ALL where  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
+            }
+            if(reportAllReq.getStartDate() == null && !reportAllReq.getStatus().equals(0)){
+                sql ="select * from V_RE_ALL where D_STATUS ='"+reportAllReq.getStatus()+"' ";
+            }
+            else {
+                sql = "select * from V_RE_ALL where D_STATUS ='"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportAll>() {
                 @Override
@@ -245,14 +251,18 @@ public class ReportAllServiceDao implements ReportAllDao{
     @Override
     public List<ReportAll> ListAllReportProduct(@RequestBody  ReportAllReq reportAllReq) {
         try {
-            if(reportAllReq.getStartDate() == null && reportAllReq.getStatus().equals(0)){
+            if(reportAllReq.getStartDate() == null  && reportAllReq.getStatus().equals("A")){
                 sql ="select * from V_RE_ALL";
             }
-            if(reportAllReq.getStartDate() == null && !reportAllReq.getStatus().equals(0)){
+            else if(reportAllReq.getStartDate() == null && !(reportAllReq.getStatus().equals("A"))){
                 sql ="select * from V_RE_ALL where D_STATUS ='"+reportAllReq.getStatus()+"' ";
             }
+            else if((reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (reportAllReq.getStatus().equals("A")))
+            {
+                sql ="SELECT * FROM V_RE_ALL WHERE D_STATUS = 'N' OR D_STATUS = 'Y' AND DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
+            }
             else {
-                sql = "select * from V_RE_ALL where D_STATUS ='"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
+                sql = "select * from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportAll>() {
                 @Override

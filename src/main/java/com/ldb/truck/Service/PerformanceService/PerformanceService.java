@@ -106,7 +106,7 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         try {
             resdata = performanceDao.ListV_performance();
             Double carGiveTotal = resdata.stream().distinct().map(v_performance::getTOTAL_PRICE02).collect(Collectors.summingDouble(Double::doubleValue));
-           result.setSumAmount(numRow.format( carGiveTotal));
+            result.setSumAmount(numRow.format( carGiveTotal));
             result.setData(resdata);
             result.setMessage("success");
             result.setStatus("00");
