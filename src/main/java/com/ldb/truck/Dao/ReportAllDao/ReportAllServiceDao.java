@@ -92,6 +92,7 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setTotalDay(rs.getString("totalDay"));
                     tr.setStatus(rs.getString("D_STATUS"));
                     tr.setCurrency(rs.getString("currency"));
+
                     return tr;
                 }
             });
@@ -237,6 +238,7 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setStatus(rs.getString("D_STATUS"));
                     tr.setCurrency(rs.getString("currency"));
                     tr.setStaff_Curr(rs.getString("STAFF_BIALIENG_CUR"));
+
                     return tr;
                 }
             });
@@ -259,7 +261,7 @@ public class ReportAllServiceDao implements ReportAllDao{
             }
             else if((reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (reportAllReq.getStatus().equals("A")))
             {
-                sql ="SELECT * FROM V_RE_ALL WHERE D_STATUS = 'N' OR D_STATUS = 'Y' AND DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
+                sql ="SELECT * FROM V_RE_ALL WHERE D_STATUS IN ('N', 'Y') AND DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             else {
                 sql = "select * from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
@@ -297,6 +299,10 @@ public class ReportAllServiceDao implements ReportAllDao{
                     tr.setSTAFF_BIALIENG_FRIST(rs.getString("STAFF_BIALIENG_FRIST"));
                     tr.setSTAFF_BIALINEG_KANGJAIY(rs.getString("STAFF_BIALINEG_KANGJAIY"));
                     tr.setSTAFF_BIALINEG_KANGSecond(rs.getString("STAFF_BIALINEG_KANGsecond"));
+//                    u ni
+                    tr.setStaff02_payAll(rs.getString("staff02_payAll"));
+                    tr.setStaff02_beforepay(rs.getString("staff02_beforepay"));
+
                     tr.setHEADER_ID(rs.getString("HEADER_ID"));
                     tr.setFOOTER_ID(rs.getString("FOOTER_ID"));
                     tr.setOUT_DATE(rs.getString("OUT_DATE"));
@@ -340,6 +346,36 @@ public class ReportAllServiceDao implements ReportAllDao{
                     String numtotalStaffbialieng02 = rs.getString("STAFF_BIALINEG_KANGsecond").replaceAll(",","");
                     double conVertStaffbialieng02  = Double.parseDouble(numtotalStaffbialieng02);
                     tr.setTodtalLaiyJaiySecond(conVertStaffbialieng02);
+
+                    //---------------------total price fuel ----------
+//                    String numtotalPriceFuel = rs.getString("totalPriceFuel").replaceAll(",","");
+//                    double conVerttotalPriceFuel  = Double.parseDouble(numtotalPriceFuel);
+//                    tr.setTotalPriceFuel(conVerttotalPriceFuel);
+
+                    //----------------------total price nammun
+                    String numtotalPriceNammun = rs.getString("PRIECENUMNUN").replaceAll(",","");
+                    double conVerttotalPriceNammun  = Double.parseDouble(numtotalPriceNammun);
+                    tr.setTotalPriceNummun(conVerttotalPriceNammun);
+
+//---------------------person 2 jaiy mod----------
+                    String numStaff02_payAll = rs.getString("staff02_payAll").replaceAll(",","");
+                    double conVertStaff02_payAll  = Double.parseDouble(numStaff02_payAll);
+                    tr.setTotalstaff02_payAll(conVertStaff02_payAll);
+
+//---------------------person 2 jaiy krn----------
+                    String numStaff02_beforepay = rs.getString("staff02_payAll").replaceAll(",","");
+                    double conVertStaff02_beforepay  = Double.parseDouble(numStaff02_beforepay);
+                    tr.setTotalstaff02_beforepay(conVertStaff02_beforepay);
+
+//                    calculate nummun price
+//                    totalPriceFuel
+                    double countTotalNummun = conVerttotalPriceNammun*conVertnumMun;
+                    tr.setTotalPriceFuel(countTotalNummun);
+
+            //laiy jaiy all bialieng+numnun
+                    double allLaiyJaiy = countTotalNummun + conVertStaff02_beforepay + conVertStaffbialieng02 + conVertStaffbialieng01 + conVertStaffbialieng;
+                    tr.setAllLaiyJaiy(allLaiyJaiy);
+
 
                     return tr;
                 }

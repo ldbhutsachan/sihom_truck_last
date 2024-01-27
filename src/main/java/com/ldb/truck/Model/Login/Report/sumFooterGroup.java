@@ -14,4 +14,11 @@ public class sumFooterGroup {
     private String totalNummun ;
     private String todtalLaiyJaiyFrist;
     private String todtalLaiyJaiySecond;
+    private String totalPriceFuel;
+    private String totalPriceNammun;
+
+    private String totalstaff02_payAll ;
+    private String totalstaff02_beforepay ;
+
+    private String allLaiyJaiy ;
 }

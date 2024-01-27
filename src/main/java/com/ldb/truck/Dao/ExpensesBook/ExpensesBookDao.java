@@ -112,15 +112,18 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     @Override
     public int storeExpenses(ExpensesBookReq expensesBookReq) {
         try{
-            SQL="insert into EXPENSE (EXPNAME,EXPENSESTYPE,TOTAL,PERAMOUNT,AMOUNT,EXPDATE,C_DATE)" +
-                    " values(?,?,?,?,?,?,now())";
+            SQL="insert into EXPENSE (EXPNAME,EXPENSESTYPE,PERAMOUNT,TOTAL,AMOUNT,EXPDATE,C_DATE,REF_NO)" +
+                    " values(?,?,?,?,?,?,now(),'"+expensesBookReq.getRef_NO()+"')";
             List<Object> paraList = new ArrayList<>();
             paraList.add(expensesBookReq.getExPName());
             paraList.add(expensesBookReq.getExPType());
-            paraList.add(expensesBookReq.getToTal());
             paraList.add(expensesBookReq.getPerAmount());
+            paraList.add(expensesBookReq.getToTal());
             paraList.add(expensesBookReq.getAmount());
             paraList.add(expensesBookReq.getExpDate());
+            paraList.add(expensesBookReq.getCDate());
+            paraList.add(expensesBookReq.getRef_NO());
+
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -133,7 +136,7 @@ public class ExpensesBookDao implements ExpensesBookImDao{
         log.info("expensesBookReq:"+expensesBookReq.getExPType());
         log.info("expensesBookReq:"+expensesBookReq.getKey_id());
         try{
-            SQL="update  EXPENSE set EXPNAME=?,EXPENSESTYPE=?,TOTAL=?,PERAMOUNT=?,AMOUNT=?,EXPDATE=? where key_id= ? ";
+            SQL="update  EXPENSE set EXPNAME=?,EXPENSESTYPE=?,TOTAL=?,PERAMOUNT=?,AMOUNT=?,EXPDATE=?,REF_NO=? where key_id= ? ";
             log.info("sql"+SQL);
             List<Object> paraList = new ArrayList<>();
             paraList.add(expensesBookReq.getExPName());
@@ -142,6 +145,7 @@ public class ExpensesBookDao implements ExpensesBookImDao{
             paraList.add(expensesBookReq.getPerAmount());
             paraList.add(expensesBookReq.getAmount());
             paraList.add(expensesBookReq.getExpDate());
+            paraList.add(expensesBookReq.getRef_NO());
             paraList.add(expensesBookReq.getKey_id());
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){

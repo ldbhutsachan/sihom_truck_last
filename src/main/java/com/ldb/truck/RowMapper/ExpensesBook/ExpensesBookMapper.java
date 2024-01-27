@@ -11,11 +11,12 @@ public class ExpensesBookMapper implements RowMapper {
             data.setKey_id(rs.getString("key_id"));
             data.setExPType(rs.getString("EXPENSESTYPE"));
             data.setExPName(rs.getString("EXPNAME"));
-            data.setToTal(rs.getString("TOTAL"));
             data.setPerAmount(rs.getString("PERAMOUNT"));
+            data.setToTal(rs.getString("TOTAL"));
             data.setAmount(rs.getString("AMOUNT"));
             data.setExpDate(rs.getString("EXPDATE"));
             data.setCDate(rs.getString("C_DATE"));
+            data.setRef_NO(rs.getString("REF_NO"));
         }catch (Exception e){
             e.printStackTrace();}
         return data;

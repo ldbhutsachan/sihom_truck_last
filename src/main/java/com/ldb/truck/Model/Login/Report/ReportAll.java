@@ -35,10 +35,16 @@ public class ReportAll {
     private String PLACE_PD_TO;
     private String STAFF_ID_NUM1;
     private String STAFF_ID_NUM2;
+
     private String STAFF_BIALIENG;
     private String STAFF_BIALIENG_FRIST;
     private String STAFF_BIALINEG_KANGJAIY;
     private String STAFF_BIALINEG_KANGSecond;
+
+    private String staff02_payAll ;
+    private String staff02_beforepay ;
+    private String staff02_notpay ;
+
     private String HEADER_ID;
     private String FOOTER_ID;
     private String OUT_DATE;
@@ -68,6 +74,15 @@ public class ReportAll {
     private double totalBiaLieng;
     private double todtalLaiyJaiyFrist;
     private double todtalLaiyJaiySecond;
+
+    private double totalstaff02_payAll ;
+    private double totalstaff02_beforepay ;
+
+    private double totalPriceFuel;
+    private double totalPriceNummun;
+
+    private double allLaiyJaiy;
+
     //---check headdeer mechine
 
 

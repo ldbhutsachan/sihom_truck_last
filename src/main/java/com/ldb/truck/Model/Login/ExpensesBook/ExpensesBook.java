@@ -14,8 +14,9 @@ public class ExpensesBook {
     private String exPType;
     private String exPName;
     private String toTal;
-    private String perAmount;
     private String amount;
     private String expDate;
     private String cDate;
+    private String perAmount;
+    private String ref_NO;
 }

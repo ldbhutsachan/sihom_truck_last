@@ -54,6 +54,12 @@ public class ReportAllService {
         double totalNummun =0.0;
         double todtalLaiyJaiyFrist =0.0;
         double todtalLaiyJaiySecond =0.0;
+        double totalPriceFuel =0.0;
+//me do new
+        double totalstaff02_payAll =0.0;
+        double totalstaff02_beforepay =0.0;
+        double allLaiyJaiy=0.0;
+
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         List<ReportAll> listData = new ArrayList<>();
         ReportAllRes result = new ReportAllRes();
@@ -64,12 +70,36 @@ public class ReportAllService {
             double sumtotalBiaLieng=  listData.stream().map(ReportAll::getTotalBiaLieng).collect(Collectors.summingDouble(Double::doubleValue));
             double sumtodtalLaiyJaiyFrist =  listData.stream().map(ReportAll::getTodtalLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
             double sumtodtodtalLaiyJaiySecond =  listData.stream().map(ReportAll::getTodtalLaiyJaiySecond).collect(Collectors.summingDouble(Double::doubleValue));
+
+// me de new
+            double sumtotalstaff02_payAll=  listData.stream().map(ReportAll::getTotalstaff02_payAll).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalstaff02_beforepay =  listData.stream().map(ReportAll::getTotalstaff02_payAll).collect(Collectors.summingDouble(Double::doubleValue));
+//            double sumtotalstaff02_notpay =  listData.stream().map(ReportAll::getStaff02_notpay).collect(Collectors.summingDouble(Double::doubleValue));
+// Total price fuel
+            double sumtotalPriceFuel =  listData.stream().map(ReportAll::getTotalPriceFuel).collect(Collectors.summingDouble(Double::doubleValue));
+// Total price nammun
+            double sumtotalPriceNummun =  listData.stream().map(ReportAll::getTotalPriceNummun).collect(Collectors.summingDouble(Double::doubleValue));
+// all laiy jaiy bialieng+price nummun
+            double sumallLaiyJaiy =  listData.stream().map(ReportAll::getAllLaiyJaiy).collect(Collectors.summingDouble(Double::doubleValue));
             sumFooterGroup restFooter = new sumFooterGroup();
 
             restFooter.setTotalNummun(numfm.format(sumNummun));
             restFooter.setTotalBiaLieng(numfm.format(sumtotalBiaLieng));
             restFooter.setTodtalLaiyJaiyFrist(numfm.format(sumtodtalLaiyJaiyFrist));
             restFooter.setTodtalLaiyJaiySecond(numfm.format(sumtodtodtalLaiyJaiySecond));
+// all laiy jaiy bialieng+price nummun
+            restFooter.setAllLaiyJaiy(numfm.format(sumallLaiyJaiy));
+//  me do new
+            restFooter.setTotalstaff02_payAll(numfm.format(sumtotalstaff02_payAll));
+            restFooter.setTotalstaff02_beforepay(numfm.format(sumtotalstaff02_beforepay));
+//            restFooter.setStaff02_notpay(sumtotalstaff02_notpay);
+
+// Total price nammun
+//            double cal = sumtotalPriceNummun*sumNummun;
+// Total price fuel
+            restFooter.setTotalPriceFuel(numfm.format(sumtotalPriceFuel));
+            restFooter.setTotalPriceNammun(numfm.format(sumtotalPriceNummun));
+
 
             result.setSumFooter(restFooter);
             result.setData(listData);
@@ -78,7 +108,7 @@ public class ReportAllService {
         }catch (Exception e ){
             e.printStackTrace();
             result.setStatus("01");
-            result.setMessage("khuy data not found ");
+            result.setMessage("sus data not found ");
         }
         return result;
     }
