@@ -82,6 +82,8 @@ public class ReportAll {
     private double totalPriceNummun;
 
     private double allLaiyJaiy;
+    private double allLaiyJaiyOut;
+    private double allLaiyJaiyFrist;
 
     //---check headdeer mechine
 

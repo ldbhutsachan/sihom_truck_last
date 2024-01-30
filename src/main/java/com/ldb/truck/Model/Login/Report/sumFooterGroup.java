@@ -16,6 +16,9 @@ public class sumFooterGroup {
     private String todtalLaiyJaiySecond;
     private String totalPriceFuel;
     private String totalPriceNammun;
+    private String laiJaiyOutTotal;
+    private String laiJaiyOutFrist;
+
 
     private String totalstaff02_payAll ;
     private String totalstaff02_beforepay ;

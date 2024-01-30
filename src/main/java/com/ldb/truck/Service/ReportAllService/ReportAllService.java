@@ -81,6 +81,9 @@ public class ReportAllService {
             double sumtotalPriceNummun =  listData.stream().map(ReportAll::getTotalPriceNummun).collect(Collectors.summingDouble(Double::doubleValue));
 // all laiy jaiy bialieng+price nummun
             double sumallLaiyJaiy =  listData.stream().map(ReportAll::getAllLaiyJaiy).collect(Collectors.summingDouble(Double::doubleValue));
+            double getAllTotalLaijai =  listData.stream().map(ReportAll::getAllLaiyJaiyOut).collect(Collectors.summingDouble(Double::doubleValue));
+            double getAllTotalLaijaiFrist =  listData.stream().map(ReportAll::getAllLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
+
             sumFooterGroup restFooter = new sumFooterGroup();
 
             restFooter.setTotalNummun(numfm.format(sumNummun));
@@ -99,7 +102,10 @@ public class ReportAllService {
 // Total price fuel
             restFooter.setTotalPriceFuel(numfm.format(sumtotalPriceFuel));
             restFooter.setTotalPriceNammun(numfm.format(sumtotalPriceNummun));
-
+            //=================================cal lai jaiy=================
+            restFooter.setLaiJaiyOutFrist(numfm.format(getAllTotalLaijaiFrist));
+            restFooter.setLaiJaiyOutTotal(numfm.format(getAllTotalLaijai));
+            //=================================cal lai jaiy=================
 
             result.setSumFooter(restFooter);
             result.setData(listData);
@@ -108,7 +114,7 @@ public class ReportAllService {
         }catch (Exception e ){
             e.printStackTrace();
             result.setStatus("01");
-            result.setMessage("sus data not found ");
+            result.setMessage("data not found ");
         }
         return result;
     }

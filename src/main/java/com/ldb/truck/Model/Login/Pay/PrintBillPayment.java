@@ -29,7 +29,9 @@ private Double noPayAmount;
 private String currency;
 private String nextDatePay;
 
-    private Double payCashAmount;
+private Double payCashAmount;
+private String payType;
+private String refNo;
 
 
 }

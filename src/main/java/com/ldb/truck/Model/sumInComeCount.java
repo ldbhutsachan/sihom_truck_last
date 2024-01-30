@@ -9,9 +9,9 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class sumInCome {
-    private String sumKumLaiy;
+public class sumInComeCount {
 
+    private String sumKumLaiyCount;
 
 
 }

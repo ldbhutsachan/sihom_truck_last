@@ -17,12 +17,14 @@ public class TruckDetails {
     private Double carGive;
     private Double carPay;
     private Double kumLaiy;
+    private Double payReceipt;
     private String totalFuel;
     private String totalRow;
     private Double totalPriceNummun;
     private Double totalBialieng;
 
 private String type;
+private String checkk;
 
 
 

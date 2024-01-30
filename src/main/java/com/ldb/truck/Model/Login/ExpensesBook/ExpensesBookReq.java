@@ -19,4 +19,6 @@ public class ExpensesBookReq {
     private String cDate;
     private String perAmount;
     private String ref_NO;
+    private String status;
+
 }

@@ -17,6 +17,7 @@ public class ExpensesBookMapper implements RowMapper {
             data.setExpDate(rs.getString("EXPDATE"));
             data.setCDate(rs.getString("C_DATE"));
             data.setRef_NO(rs.getString("REF_NO"));
+            data.setStatus(rs.getString("STATUS"));
         }catch (Exception e){
             e.printStackTrace();}
         return data;
