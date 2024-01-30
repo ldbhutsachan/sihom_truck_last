@@ -13,8 +13,12 @@ import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpensesBook;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpensesBookRes;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpensesBookReq;
+
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ExpensesBookService {
     private static final Logger log = LogManager.getLogger(ExpensesBookService.class);
@@ -130,13 +134,32 @@ public class ExpensesBookService {
         return result;
     }
     public ExpensesBookRes getExpensesBookAll(){
+        DecimalFormat numfm = new DecimalFormat("###,###,###");
         ExpensesBookRes result = new ExpensesBookRes();
         List<ExpensesBook> resData = new ArrayList<>();
         try{
             resData = expensesBookDao.ListExpensesALL();
+            //==========================count pay and income=============================
+            List<String> refIds = resData.stream().map(ExpensesBook::getStatus).distinct().collect(Collectors.toList());
+            Double countTotalPay = 0.0;
+            Double countTotalIncome=0.0;
+            for (String refIdsNo : refIds ){
+                if (refIdsNo.equals("PAY")){
+                    countTotalPay =  resData.stream().filter(p -> p.getStatus().equals(refIdsNo)).map(ExpensesBook::getToTal).collect(Collectors.summingDouble(Double::doubleValue));
+                }
+                else if (refIdsNo.equals("INCOME")){
+                    countTotalIncome =  resData.stream().filter(p -> p.getStatus().equals(refIdsNo)).map(ExpensesBook::getToTal).collect(Collectors.summingDouble(Double::doubleValue));
+                }
+            }
+            //=================count pay - Income =======================================
+            Double countIncome_Pay = countTotalIncome-countTotalPay;
+            //==========================count pay and income=============================
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resData);
+            result.setTotalPay(numfm.format(countTotalPay));
+            result.setTotalIncome(numfm.format(countTotalIncome));
+            result.setTotalIncome_PayAll(numfm.format(countIncome_Pay));
 
         }catch (Exception e){
             e.printStackTrace();
