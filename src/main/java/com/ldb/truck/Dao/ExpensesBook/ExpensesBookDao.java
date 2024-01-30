@@ -103,15 +103,25 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     public List<ExpensesBook> ListExpensesALL(incomePayReq incomePayReq) {
         List<ExpensesBook> result = new ArrayList<>();
         try{
-            if (incomePayReq.getStartDate().equals("") || incomePayReq.getEndDate().equals("")){
-                SQL = "select * from V_EXPENSES ";
-            }
-            else if (!incomePayReq.getStartDate().equals("") && !incomePayReq.getEndDate().equals("") && incomePayReq.getStatus().equals("0")){
+
+             if (!incomePayReq.getStartDate().equals("") && !incomePayReq.getEndDate().equals("") && incomePayReq.getStatus().equals("0")){
                 SQL = "select * from V_EXPENSES where  EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"'";
+                log.info( "Q2");
             }
             else if (!incomePayReq.getStartDate().equals("") && !incomePayReq.getEndDate().equals("") && !incomePayReq.getStatus().equals("0")){
                 SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' and EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"'";
+                log.info( "Q3");
             }
+            else if (incomePayReq.getStartDate().equals("") && incomePayReq.getEndDate().equals("") && !incomePayReq.getStatus().equals("0")){
+                SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' ";
+                log.info( "Q4");
+
+            }
+             else if (incomePayReq.getStartDate().equals("") && incomePayReq.getEndDate().equals("") && incomePayReq.getStatus().equals("0")){
+                 SQL = "select * from V_EXPENSES  ";
+                 log.info( "Q5");
+
+             }
             result = EBankJdbcTemplate.query(SQL,new ExpensesBookMapper());
         }catch (Exception e){
             e.printStackTrace();

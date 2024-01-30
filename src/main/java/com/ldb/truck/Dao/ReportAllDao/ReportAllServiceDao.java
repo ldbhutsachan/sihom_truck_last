@@ -328,7 +328,7 @@ public class ReportAllServiceDao implements ReportAllDao{
 
                 //sql ="SELECT * FROM V_RE_ALL WHERE D_STATUS IN ('N', 'Y') AND DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
-            else {
+            else if((reportAllReq.getStartDate() == null) && (reportAllReq.getEndDate() == null) && (!reportAllReq.getStatus().equals("A"))) {
                 sql ="select '1' as type,\n" +
                         "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
                         "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
@@ -338,7 +338,7 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
                         "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay\n" +
                         ",0 as total\n" +
-                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' AND DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" +
+                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' " +
                         "union\n" +
                         "select '2' as type,\n" +
                         "0 PRICE,0 as TOTAL_PRICE,0 as PRIECENUMNUN,0 as STAFT_ID,0 as STAFT_NAME,0 as STAFT_SURNAME,0 as STAFT_ID1,0 as STAFT_NAME1,\n" +
@@ -352,6 +352,31 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "0 as STAFF_BIALIENG_CUR,0 as totalDay,\n" +
                         "sum (TOTAL) as total from V_EXPENSES where STATUS in ('PAY')";
                // sql = "select * from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
+            }
+            else if((reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (!reportAllReq.getStatus().equals("A"))) {
+                sql ="select '1' as type,\n" +
+                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
+                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
+                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
+                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
+                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
+                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
+                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay\n" +
+                        ",0 as total\n" +
+                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" +
+                        "union\n" +
+                        "select '2' as type,\n" +
+                        "0 PRICE,0 as TOTAL_PRICE,0 as PRIECENUMNUN,0 as STAFT_ID,0 as STAFT_NAME,0 as STAFT_SURNAME,0 as STAFT_ID1,0 as STAFT_NAME1,\n" +
+                        "0 as STAFT_SURNAME1,0 as H_VICIVLE_NUMBER,0 as H_VICIVLE_BRANCHTYPE,0 as F_BRANCH,0 as F_CARD_NO,0 as F_CAR_TYPE,\n" +
+                        "0 as PROVINCE,0 as DETAIL,0 as PROVINCE1,0 as DETAIL1,0 as CUSTOMER_ID,0 as CUSTOMER_NAME,0 as PRODUCT_ID,0 as PRO_NAME,\n" +
+                        "0 as PRO_TYPE,0 as PRODUCT_AMOUNT,0 as PRODUCT_SIZE,0 as PRODUCT_DETAILS,0 as PRODUCT_FROM,0 as PRODUCT_TO,\n" +
+                        "0 as PLACE_PD_FROM,0 as PLACE_PD_TO,0 as STAFF_ID_NUM1,0 as STAFF_ID_NUM2,0 as STAFF_BIALIENG,0 as STAFF_BIALIENG_FRIST,\n" +
+                        "0 as STAFF_BIALINEG_KANGJAIY,0 as STAFF_BIALINEG_KANGsecond,0 as staff02_payAll,0 as staff02_beforepay,0 as staff02_notpay,\n" +
+                        "0 as HEADER_ID,0 as FOOTER_ID,0 as OUT_DATE,0 as IN_DATE,0 as LAIYATHANG,0 as SAINUMMUN,0 as NUMNUKLOD,0 as KONGNARLOD,\n" +
+                        "0 as KHG_MUE_TIDLOD,0 as KIM_KILO,0 as LAHUD_POYLOD,0 as H_LEK_NUMMUNKHG,EXPDATE as DETAILS_DATE,0 as D_STATUS,0 as CURRENCY,\n" +
+                        "0 as STAFF_BIALIENG_CUR,0 as totalDay,\n" +
+                        "sum (TOTAL) as total from V_EXPENSES where STATUS in ('PAY')";
+                // sql = "select * from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportAll>() {
                 @Override
