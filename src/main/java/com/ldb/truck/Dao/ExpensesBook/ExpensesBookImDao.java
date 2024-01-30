@@ -1,6 +1,8 @@
 package com.ldb.truck.Dao.ExpensesBook;
 
 import java.util.List;
+
+import com.ldb.truck.Model.IncomePay.incomePayReq;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenType;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeRes;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
@@ -18,7 +20,7 @@ public interface ExpensesBookImDao {
     public int delExpensesType(ExpenTypeReq expenTypeReq);
 
     List<ExpensesBook>  ListExpenses(ResFromDateReq expensesBookReq);
-    List<ExpensesBook>  ListExpensesALL();
+    List<ExpensesBook>  ListExpensesALL(incomePayReq incomePayReq);
     public int storeExpenses(ExpensesBookReq expensesBookReq);
     public int updateExpenses(ExpensesBookReq expensesBookReq);
     public int delExpenses(ExpensesBookReq expensesBookReq);

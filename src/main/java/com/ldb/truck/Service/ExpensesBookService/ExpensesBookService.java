@@ -1,5 +1,6 @@
 package com.ldb.truck.Service.ExpensesBookService;
 import com.ldb.truck.Controller.ExpensesBookController;
+import com.ldb.truck.Model.IncomePay.incomePayReq;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -133,12 +134,12 @@ public class ExpensesBookService {
         }
         return result;
     }
-    public ExpensesBookRes getExpensesBookAll(){
+    public ExpensesBookRes getExpensesBookAll(incomePayReq incomePayReq){
         DecimalFormat numfm = new DecimalFormat("###,###,###");
         ExpensesBookRes result = new ExpensesBookRes();
         List<ExpensesBook> resData = new ArrayList<>();
         try{
-            resData = expensesBookDao.ListExpensesALL();
+            resData = expensesBookDao.ListExpensesALL(incomePayReq);
             //==========================count pay and income=============================
             List<String> refIds = resData.stream().map(ExpensesBook::getStatus).distinct().collect(Collectors.toList());
             Double countTotalPay = 0.0;

@@ -1,5 +1,6 @@
 package com.ldb.truck.Dao.ExpensesBook;
 
+import com.ldb.truck.Model.IncomePay.incomePayReq;
 import com.ldb.truck.Model.Login.ExpensesBook.*;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.RowMapper.ExpensesBook.ExpenTypeMapper;
@@ -99,10 +100,18 @@ public class ExpensesBookDao implements ExpensesBookImDao{
         return result;
     }
     @Override
-    public List<ExpensesBook> ListExpensesALL() {
+    public List<ExpensesBook> ListExpensesALL(incomePayReq incomePayReq) {
         List<ExpensesBook> result = new ArrayList<>();
         try{
-            SQL = "select * from V_EXPENSES ";
+            if (incomePayReq.getStartDate().equals("") || incomePayReq.getEndDate().equals("")){
+                SQL = "select * from V_EXPENSES ";
+            }
+            else if (!incomePayReq.getStartDate().equals("") && !incomePayReq.getEndDate().equals("") && incomePayReq.getStatus().equals("0")){
+                SQL = "select * from V_EXPENSES where  EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"'";
+            }
+            else if (!incomePayReq.getStartDate().equals("") && !incomePayReq.getEndDate().equals("") && !incomePayReq.getStatus().equals("0")){
+                SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' and EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"'";
+            }
             result = EBankJdbcTemplate.query(SQL,new ExpensesBookMapper());
         }catch (Exception e){
             e.printStackTrace();
