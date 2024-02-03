@@ -59,6 +59,7 @@ public class ReportAllService {
         double totalstaff02_payAll =0.0;
         double totalstaff02_beforepay =0.0;
         double allLaiyJaiy=0.0;
+        double runningTotal=0.0;
 
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         List<ReportAll> listData = new ArrayList<>();
@@ -83,10 +84,16 @@ public class ReportAllService {
             double sumallLaiyJaiy =  listData.stream().map(ReportAll::getAllLaiyJaiy).collect(Collectors.summingDouble(Double::doubleValue));
             double getAllTotalLaijai =  listData.stream().map(ReportAll::getAllLaiyJaiyOut).collect(Collectors.summingDouble(Double::doubleValue));
             double getAllTotalLaijaiFrist =  listData.stream().map(ReportAll::getAllLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
-//#######################____sum fee waste____#########################
-//#######################____sum fee waste____#########################
-            sumFooterGroup restFooter = new sumFooterGroup();
 
+//#######################____sum ค่าสิ้นเปือง____#########################
+            double sumRunningTotal =  listData.stream().map(ReportAll::getRunningTotal).collect(Collectors.summingDouble(Double::doubleValue));
+//#######################____sum ค่าสิ้นเปือง____#########################
+
+
+            sumFooterGroup restFooter = new sumFooterGroup();
+//ค่าสิ้นเปือง
+            restFooter.setRunningTotal(numfm.format(sumRunningTotal));
+//ค่าสิ้นเปือง
             restFooter.setTotalNummun(numfm.format(sumNummun));
             restFooter.setTotalBiaLieng(numfm.format(sumtotalBiaLieng));
             restFooter.setTodtalLaiyJaiyFrist(numfm.format(sumtodtalLaiyJaiyFrist));

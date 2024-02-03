@@ -19,6 +19,12 @@ public class sumFooterGroup {
     private String laiJaiyOutTotal;
     private String laiJaiyOutFrist;
 
+   // ==================== sum ค่าสิ้นเปือง===========================
+   private String RunningTotal;
+   // ==================== sum ค่าสิ้นเปือง===========================
+
+
+
 
     private String totalstaff02_payAll ;
     private String totalstaff02_beforepay ;
