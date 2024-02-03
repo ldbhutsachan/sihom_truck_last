@@ -103,23 +103,22 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     public List<ExpensesBook> ListExpensesALL(incomePayReq incomePayReq) {
         List<ExpensesBook> result = new ArrayList<>();
         try{
-
-             if (!incomePayReq.getStartDate().equals("") && !incomePayReq.getEndDate().equals("") && incomePayReq.getStatus().equals("0")){
+             if (incomePayReq.getStartDate() != null && incomePayReq.getEndDate()!= null && incomePayReq.getStatus().equals("0")){
                 SQL = "select * from V_EXPENSES where  EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"'";
-                log.info( "Q2");
+                log.info( "Q2"+SQL);
             }
-            else if (!incomePayReq.getStartDate().equals("") && !incomePayReq.getEndDate().equals("") && !incomePayReq.getStatus().equals("0")){
+            else if (incomePayReq.getStartDate() != null && incomePayReq.getEndDate()!= null && !incomePayReq.getStatus().equals("0")){
                 SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' and EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"'";
-                log.info( "Q3");
+                log.info( "Q3"+SQL);
             }
-            else if (incomePayReq.getStartDate().equals("") && incomePayReq.getEndDate().equals("") && !incomePayReq.getStatus().equals("0")){
+            else if (incomePayReq.getStartDate() == null && incomePayReq.getEndDate()== null && !incomePayReq.getStatus().equals("0")){
                 SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' ";
-                log.info( "Q4");
+                log.info( "Q4"+SQL);
 
             }
-             else if (incomePayReq.getStartDate().equals("") && incomePayReq.getEndDate().equals("") && incomePayReq.getStatus().equals("0")){
+             else if (incomePayReq.getStartDate() == null && incomePayReq.getEndDate()== null && incomePayReq.getStatus().equals("0")){
                  SQL = "select * from V_EXPENSES  ";
-                 log.info( "Q5");
+                 log.info( "Q5"+SQL);
 
              }
             result = EBankJdbcTemplate.query(SQL,new ExpensesBookMapper());

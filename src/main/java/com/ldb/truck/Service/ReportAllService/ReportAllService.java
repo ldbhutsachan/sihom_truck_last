@@ -83,7 +83,8 @@ public class ReportAllService {
             double sumallLaiyJaiy =  listData.stream().map(ReportAll::getAllLaiyJaiy).collect(Collectors.summingDouble(Double::doubleValue));
             double getAllTotalLaijai =  listData.stream().map(ReportAll::getAllLaiyJaiyOut).collect(Collectors.summingDouble(Double::doubleValue));
             double getAllTotalLaijaiFrist =  listData.stream().map(ReportAll::getAllLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
-
+//#######################____sum fee waste____#########################
+//#######################____sum fee waste____#########################
             sumFooterGroup restFooter = new sumFooterGroup();
 
             restFooter.setTotalNummun(numfm.format(sumNummun));
