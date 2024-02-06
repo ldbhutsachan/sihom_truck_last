@@ -69,35 +69,16 @@ public class ReportAll {
     private String status;
     private String currency;
     private String staff_Curr;
-
-    //========================Fee Waste===========================
-//    private String feeOvertime1;
-//    private String feeJumPo2;
-//    private String feeTaxung4;
-//    private String feeTiew5;
-//    private String feeLakSao;
-//    private String feePassport;
-//    private String feevacin;
-//    private String feesing;
-//    private String feesaphan;
-//    private String feeyoktu;
-//    private String feecontrainer;
-//    private String feepayang;
-
+    private String type;
     private Double runningTotal;
-    //========================Fee Waste===========================
-
     private double totalNummun;
     private double totalBiaLieng;
     private double todtalLaiyJaiyFrist;
     private double todtalLaiyJaiySecond;
-
     private double totalstaff02_payAll ;
     private double totalstaff02_beforepay ;
-
     private double totalPriceFuel;
     private double totalPriceNummun;
-
     private double allLaiyJaiy;
     private double allLaiyJaiyOut;
     private double allLaiyJaiyFrist;
