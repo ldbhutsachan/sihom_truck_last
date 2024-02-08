@@ -108,4 +108,6 @@ public class VicicleFooter {
     private String f_KM_LL14;
     private String f_KM_LL15;
     private String f_KM_LL16;
+
+    private String imgFootTruck;
 }

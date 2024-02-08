@@ -113,6 +113,12 @@ public class VicicleHeaderReq {
     private String exHangMar;
     private String batNo;
 
+    private String saiystay;
+    private String galick;
+    private String leanGia;
+    private String leanFuengThaiy;
+    private String pha_But;
+
 //    private String  h_KM13;
 //    private String  h_KML_13;
 //    private String exCarDate;

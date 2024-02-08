@@ -124,7 +124,6 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setH_KML_10(rs.getString("H_KML_10"));
                     tr.setH_KML_11(rs.getString("H_KML_11"));
                     tr.setH_KML_12(rs.getString("H_KML_12"));
-
                     tr.setBat_StartDate(rs.getString("Bat_StartDate"));
                     tr.setBat_EndDate(rs.getString("Bat_EndDate"));
                     tr.setImageTruck(rs.getString("IMAGE_TRUK"));
@@ -133,16 +132,19 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setExHangMar(rs.getString("HORSEPOWER"));
                     tr.setBatNo(rs.getString("batNo"));
                     tr.setIdMorFai(rs.getString("ID_MORFAI"));
-
                     tr.setImageMorFai(rs.getString("IMAGE_MORFAI"));
-
                     tr.setModalMorfai(rs.getString("MODAL_MORFAI"));
                     tr.setSizeMorfai(rs.getString("SIZE_MORFAI"));
                     tr.setServiceLife(rs.getString("SERVICE_LIFE"));
-
                     tr.setToBatRowStatus(rs.getString("toBatRow"));
                     tr.setToBatRowGalanty(rs.getString("toBatRowGalanty"));
                     tr.setToBatRowtabienLod(rs.getString("toBatRowtabienLod"));
+
+                    tr.setSaiystay(rs.getString("saiystay"));
+                    tr.setGalick(rs.getString("galick"));
+                    tr.setLeanGia(rs.getString("leanGia"));
+                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
+                    tr.setPha_But(rs.getString("Pha_But"));
 
                     return tr ;
                 }
@@ -272,6 +274,12 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setToBatRowStatus(rs.getString("toBatRow"));
                     tr.setToBatRowGalanty(rs.getString("toBatRowGalanty"));
                     tr.setToBatRowtabienLod(rs.getString("toBatRowtabienLod"));
+
+                    tr.setSaiystay(rs.getString("saiystay"));
+                    tr.setGalick(rs.getString("galick"));
+                    tr.setLeanGia(rs.getString("leanGia"));
+                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
+                    tr.setPha_But(rs.getString("Pha_But"));
                     return tr;
                 }
             });
@@ -324,8 +332,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 ,  \n" +
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
-                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS)\n" +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y')";
+                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,Pha_But)\n" +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -426,6 +434,12 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getExCarColor());
             paramList.add(vicicleHeaderReq.getExHangMar());
             paramList.add(vicicleHeaderReq.getBatNo());
+
+            paramList.add(vicicleHeaderReq.getSaiystay());
+            paramList.add(vicicleHeaderReq.getGalick());
+            paramList.add(vicicleHeaderReq.getLeanGia().replace(",",""));
+            paramList.add(vicicleHeaderReq.getLeanFuengThaiy().replace(",",""));
+            paramList.add(vicicleHeaderReq.getPha_But());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -496,7 +510,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,Pha_But=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -601,6 +615,12 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getExCarColor());
             paramList.add(vicicleHeaderReq.getExHangMar());
             paramList.add(vicicleHeaderReq.getBatNo());
+
+            paramList.add(vicicleHeaderReq.getSaiystay());
+            paramList.add(vicicleHeaderReq.getGalick());
+            paramList.add(vicicleHeaderReq.getLeanGia());
+            paramList.add(vicicleHeaderReq.getLeanFuengThaiy());
+            paramList.add(vicicleHeaderReq.getPha_But());
 
             paramList.add(vicicleHeaderReq.getKey_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
@@ -828,8 +848,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
                     "H_KML_12)\n" +
-                    "H_KML_13,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,IMAGE_TRUK,batNo)\n" +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N',now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,?,?)";
+                    "H_KML_13,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,IMAGE_TRUK,batNo,saiystay,galick,leanGia,leanFuengThaiy,Pha_But)\n" +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N',now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,?,?,?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -924,6 +944,14 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getExHangMar());
             paramList.add(vicicleHeaderReq.getImageTruck());
             paramList.add(vicicleHeaderReq.getBatNo());
+
+            paramList.add(vicicleHeaderReq.getSaiystay());
+            paramList.add(vicicleHeaderReq.getGalick());
+            paramList.add(vicicleHeaderReq.getLeanGia());
+            paramList.add(vicicleHeaderReq.getLeanFuengThaiy());
+            paramList.add(vicicleHeaderReq.getPha_But());
+
+
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -1028,6 +1056,12 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setH_KML_10(rs.getString("H_KML_10"));
                     tr.setH_KML_11(rs.getString("H_KML_11"));
                     tr.setH_KML_12(rs.getString("H_KML_12"));
+
+                    tr.setSaiystay(rs.getString("saiystay"));
+                    tr.setGalick(rs.getString("galick"));
+                    tr.setLeanGia(rs.getString("leanGia"));
+                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
+                    tr.setPha_But(rs.getString("Pha_But"));
                     return tr;
                 }
             });
@@ -1145,6 +1179,12 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setModalMorfai(rs.getString("MODAL_MORFAI"));
                     tr.setSizeMorfai(rs.getString("SIZE_MORFAI"));
                     tr.setServiceLife(rs.getString("SERVICE_LIFE"));
+
+                    tr.setSaiystay(rs.getString("saiystay"));
+                    tr.setGalick(rs.getString("galick"));
+                    tr.setLeanGia(rs.getString("leanGia"));
+                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
+                    tr.setPha_But(rs.getString("Pha_But"));
                     return tr;
                 }
             });

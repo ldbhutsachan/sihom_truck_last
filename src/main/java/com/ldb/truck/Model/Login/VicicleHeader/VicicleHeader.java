@@ -138,4 +138,10 @@ public class VicicleHeader {
     private String sizeMorfai;
     private String serviceLife;
 
+    private String saiystay;
+    private String galick;
+    private String leanGia;
+    private String leanFuengThaiy;
+    private String pha_But;
+
 }
