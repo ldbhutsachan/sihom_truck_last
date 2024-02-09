@@ -210,7 +210,7 @@ public Messages saveVicicleHeader(
         @RequestParam("galick") String  galick,
         @RequestParam("leanGia") String  leanGia,
         @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
-        @RequestParam("Pha_But") String  pha_But
+        @RequestParam("pha_But") String  pha_But
 ){
         log.info("===================================save header==================================================");
     Date date = new Date();
@@ -456,7 +456,7 @@ public Messages saveVicicleHeader(
             @RequestParam("galick") String  galick,
             @RequestParam("leanGia") String  leanGia,
             @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
-            @RequestParam("Pha_But") String  pha_But
+            @RequestParam("pha_But") String  pha_But
 
 
     ){

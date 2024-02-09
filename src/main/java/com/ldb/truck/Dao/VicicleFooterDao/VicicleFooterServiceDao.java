@@ -4,6 +4,7 @@ import com.ldb.truck.Dao.VicicleHeaderDao.VicicleHeaderServiceDao;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooter;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterReq;
+import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterRes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -254,6 +255,302 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
             e.printStackTrace();
         }
         return null;
+    }
+
+    public int updateFooterNew(VicicleFooterReq vicicleFooterReq) {
+        try {
+            String sql = " update  TB_FOOTER_TRUCH set IMG_FOOT_TRUCK=?,F_BRANCH=?,F_YEAR=?,F_CAR_TYPE=?,F_DATEEXPRIED=?,F_CARD_NO=?,F_LEKKUNZEE=?,F_PAO=?,F_KORKC=?,F_TOLOCKTU=?,F_SO=?,F_PABUD=?,F_FAIKHANG=?,F_FAITHAIY=?,F_BGTHOM \n" +
+                    "                    =?,F_GALATY_NO=?,F_GALATY_DEP=?,L_TRIES_1=?,L_TRIES_2=?,L_TRIES_3=?,L_TRIES_4=?,L_TRIES_5=?,L_TRIES_6=?,L_TRIES_7=?,L_TRIES_8=?,L_TRIES_DATE_1=?,L_TRIES_DATE_2 \n" +
+                    "                    =?,L_TRIES_DATE_3=?,L_TRIES_DATE_4=?,L_TRIES_DATE_5=?,L_TRIES_DATE_6=?,L_TRIES_DATE_7=?,L_TRIES_DATE_8=?,L_TRIES_KM_1=?,L_TRIES_KM_2=?,L_TRIES_KM_3=?,L_TRIES_KM_4 \n" +
+                    "                    =?,L_TRIES_KM_5=?,L_TRIES_KM_6=?,L_TRIES_KM_7=?,L_TRIES_KM_8=?,R_TRIES_1=?,R_TRIES_2=?,R_TRIES_3=?,R_TRIES_4=?,R_TRIES_5=?,R_TRIES_6=?,R_TRIES_7=?,R_TRIES_8 \n" +
+                    "                    =?,R_TRIES_DATE_1=?,R_TRIES_DATE_2=?,R_TRIES_DATE_3=?,R_TRIES_DATE_4=?,R_TRIES_DATE_5=?,R_TRIES_DATE_6=?,R_TRIES_DATE_7=?,R_TRIES_DATE_8=?,R_TRIES_KM_1=?,R_TRIES_KM_2 \n" +
+                    "                    =?,R_TRIES_KM_3=?,R_TRIES_KM_4=?,R_TRIES_KM_5=?,R_TRIES_KM_6=?,R_TRIES_KM_7=?,R_TRIES_KM_8=?,F_STATUS=?, \n" +
+                    "                    F_KM1=?, \n" +
+                    "                    F_KM2=?, \n" +
+                    "                    F_KM3=?, \n" +
+                    "                    F_KM4=?, \n" +
+                    "                    F_KM5=?, \n" +
+                    "                    F_KM6=?, \n" +
+                    "                    F_KM7=?, \n" +
+                    "                    F_KM8=?, \n" +
+                    "                    F_KM9=?, \n" +
+                    "                    F_KM10=?, \n" +
+                    "                    F_KM11=?, \n" +
+                    "                    F_KM12=?, \n" +
+                    "                    F_KM13=?, \n" +
+                    "                    F_KM14=?, \n" +
+                    "                    F_KM15=?, \n" +
+                    "                    F_KM16=?, \n" +
+                    "                    F_KM_LL1=?, \n" +
+                    "                    F_KM_LL2=?, \n" +
+                    "                    F_KM_LL3=?, \n" +
+                    "                    F_KM_LL4=?, \n" +
+                    "                    F_KM_LL5=?, \n" +
+                    "                    F_KM_LL6=?, \n" +
+                    "                    F_KM_LL7=?, \n" +
+                    "                    F_KM_LL8=?, \n" +
+                    "                    F_KM_LL9=?, \n" +
+                    "                    F_KM_LL10=?, \n" +
+                    "                    F_KM_LL11=?, \n" +
+                    "                    F_KM_LL12=?, \n" +
+                    "                    F_KM_LL13=?, \n" +
+                    "                    F_KM_LL14=?, \n" +
+                    "                    F_KM_LL15=?, \n" +
+                    "                    F_KM_LL16=? where key_id='"+vicicleFooterReq.getKey_id()+"' ";
+
+            log.info("sql:"+sql);
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(vicicleFooterReq.getImgFootTruck());
+            paramList.add(vicicleFooterReq.getF_BRANCH());
+            paramList.add(vicicleFooterReq.getF_YEAR  ());
+            paramList.add(vicicleFooterReq.getF_CAR_TYPE());
+            paramList.add(vicicleFooterReq.getF_DATEEXPRIED());
+            paramList.add(vicicleFooterReq.getF_CARD_NO ());
+            paramList.add(vicicleFooterReq.getF_LEKKUNZEE  ());
+            paramList.add(vicicleFooterReq.getF_PAO());
+            paramList.add(vicicleFooterReq.getF_KORKC());
+            paramList.add(vicicleFooterReq.getF_TOLOCKTU());
+            paramList.add(vicicleFooterReq.getF_SO());
+            paramList.add(vicicleFooterReq.getF_PABUD());
+            paramList.add(vicicleFooterReq.getF_FAIKHANG());
+            paramList.add(vicicleFooterReq.getF_FAITHAIY());
+            paramList.add(vicicleFooterReq.getF_BGTHOM());
+            paramList.add(vicicleFooterReq.getF_GALATY_NO  ());
+            paramList.add(vicicleFooterReq.getF_GALATY_DEP ());
+            paramList.add(vicicleFooterReq.getL_TRIES_1());
+            paramList.add(vicicleFooterReq.getL_TRIES_2());
+            paramList.add(vicicleFooterReq.getL_TRIES_3());
+            paramList.add(vicicleFooterReq.getL_TRIES_4());
+            paramList.add(vicicleFooterReq.getL_TRIES_5());
+            paramList.add(vicicleFooterReq.getL_TRIES_6());
+            paramList.add(vicicleFooterReq.getL_TRIES_7());
+            paramList.add(vicicleFooterReq.getL_TRIES_8());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_1());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_2());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_3());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_4());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_5());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_6());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_7());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_8());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_1  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_2  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_3  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_4  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_5  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_6  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_7  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_8  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_1());
+            paramList.add(vicicleFooterReq.getR_TRIES_2());
+            paramList.add(vicicleFooterReq.getR_TRIES_3());
+            paramList.add(vicicleFooterReq.getR_TRIES_4());
+            paramList.add(vicicleFooterReq.getR_TRIES_5());
+            paramList.add(vicicleFooterReq.getR_TRIES_6());
+            paramList.add(vicicleFooterReq.getR_TRIES_7());
+            paramList.add(vicicleFooterReq.getR_TRIES_8());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_1());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_2());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_3());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_4());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_5());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_6());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_7());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_8());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_1  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_2  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_3  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_4  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_5  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_6  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_7  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_8  ());
+
+            paramList.add(vicicleFooterReq.getF_KM1());
+            paramList.add(vicicleFooterReq.getF_KM2());
+            paramList.add(vicicleFooterReq.getF_KM3());
+            paramList.add(vicicleFooterReq.getF_KM4());
+            paramList.add(vicicleFooterReq.getF_KM5());
+            paramList.add(vicicleFooterReq.getF_KM6());
+            paramList.add(vicicleFooterReq.getF_KM7());
+            paramList.add(vicicleFooterReq.getF_KM8());
+            paramList.add(vicicleFooterReq.getF_KM9());
+            paramList.add(vicicleFooterReq.getF_KM10());
+            paramList.add(vicicleFooterReq.getF_KM11());
+            paramList.add(vicicleFooterReq.getF_KM12());
+            paramList.add(vicicleFooterReq.getF_KM13());
+            paramList.add(vicicleFooterReq.getF_KM14());
+            paramList.add(vicicleFooterReq.getF_KM15());
+            paramList.add(vicicleFooterReq.getF_KM16());
+            paramList.add(vicicleFooterReq.getF_KM_LL1());
+            paramList.add(vicicleFooterReq.getF_KM_LL2());
+            paramList.add(vicicleFooterReq.getF_KM_LL3());
+            paramList.add(vicicleFooterReq.getF_KM_LL4());
+            paramList.add(vicicleFooterReq.getF_KM_LL9());
+            paramList.add(vicicleFooterReq.getF_KM_LL10());
+            paramList.add(vicicleFooterReq.getF_KM_LL11());
+            paramList.add(vicicleFooterReq.getF_KM_LL12());
+            paramList.add(vicicleFooterReq.getF_KM_LL5());
+            paramList.add(vicicleFooterReq.getF_KM_LL6());
+            paramList.add(vicicleFooterReq.getF_KM_LL7());
+            paramList.add(vicicleFooterReq.getF_KM_LL8());
+            paramList.add(vicicleFooterReq.getF_KM_LL13());
+            paramList.add(vicicleFooterReq.getF_KM_LL14());
+            paramList.add(vicicleFooterReq.getF_KM_LL15());
+            paramList.add(vicicleFooterReq.getF_KM_LL16());
+
+            return EBankJdbcTemplate.update(sql, paramList.toArray());
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    public int saveFooterNew(VicicleFooterReq vicicleFooterReq){
+        log.info("show log path:"+vicicleFooterReq.getImgFootTruck());
+        try{
+            String sql = "insert into TB_FOOTER_TRUCH (IMG_FOOT_TRUCK,F_BRANCH,F_YEAR,F_CAR_TYPE,F_DATEEXPRIED,F_CARD_NO,F_LEKKUNZEE,F_PAO,F_KORKC,F_TOLOCKTU,F_SO,F_PABUD,F_FAIKHANG,F_FAITHAIY,F_BGTHOM \n" +
+                    "                    ,F_GALATY_NO,F_GALATY_DEP,L_TRIES_1,L_TRIES_2,L_TRIES_3,L_TRIES_4,L_TRIES_5,L_TRIES_6,L_TRIES_7,L_TRIES_8,L_TRIES_DATE_1,L_TRIES_DATE_2 \n" +
+                    "                    ,L_TRIES_DATE_3,L_TRIES_DATE_4,L_TRIES_DATE_5,L_TRIES_DATE_6,L_TRIES_DATE_7,L_TRIES_DATE_8,L_TRIES_KM_1,L_TRIES_KM_2,L_TRIES_KM_3,L_TRIES_KM_4 \n" +
+                    "                    ,L_TRIES_KM_5,L_TRIES_KM_6,L_TRIES_KM_7,L_TRIES_KM_8,R_TRIES_1,R_TRIES_2,R_TRIES_3,R_TRIES_4,R_TRIES_5,R_TRIES_6,R_TRIES_7,R_TRIES_8 \n" +
+                    "                    ,R_TRIES_DATE_1,R_TRIES_DATE_2,R_TRIES_DATE_3,R_TRIES_DATE_4,R_TRIES_DATE_5,R_TRIES_DATE_6,R_TRIES_DATE_7,R_TRIES_DATE_8,R_TRIES_KM_1,R_TRIES_KM_2 \n" +
+                    "                    ,R_TRIES_KM_3,R_TRIES_KM_4,R_TRIES_KM_5,R_TRIES_KM_6,R_TRIES_KM_7,R_TRIES_KM_8,F_STATUS,F_KM1 , \n" +
+                    "                    F_KM2 , \n" +
+                    "                    F_KM3 , \n" +
+                    "                    F_KM4 , \n" +
+                    "                    F_KM5 , \n" +
+                    "                    F_KM6 , \n" +
+                    "                    F_KM7 , \n" +
+                    "                    F_KM8 , \n" +
+                    "                    F_KM9 , \n" +
+                    "                    F_KM10 , \n" +
+                    "                    F_KM11 , \n" +
+                    "                    F_KM12 , \n" +
+                    "                    F_KM13 , \n" +
+                    "                    F_KM14 , \n" +
+                    "                    F_KM15 , \n" +
+                    "                    F_KM16 , \n" +
+                    "                    F_KM_LL1 , \n" +
+                    "                    F_KM_LL2 , \n" +
+                    "                    F_KM_LL3 , \n" +
+                    "                    F_KM_LL4 , \n" +
+                    "                    F_KM_LL9 , \n" +
+                    "                    F_KM_LL10 , \n" +
+                    "                    F_KM_LL11 , \n" +
+                    "                    F_KM_LL12 , \n" +
+                    "                    F_KM_LL5 , \n" +
+                    "                    F_KM_LL6 , \n" +
+                    "                    F_KM_LL7 , \n" +
+                    "                    F_KM_LL8 , \n" +
+                    "                    F_KM_LL13 , \n" +
+                    "                    F_KM_LL14 , \n" +
+                    "                    F_KM_LL15 , \n" +
+                    "                    F_KM_LL16)  \n" +
+                    "                    values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(vicicleFooterReq.getImgFootTruck());
+            paramList.add(vicicleFooterReq.getF_BRANCH());
+            paramList.add(vicicleFooterReq.getF_YEAR  ());
+            paramList.add(vicicleFooterReq.getF_CAR_TYPE());
+            paramList.add(vicicleFooterReq.getF_DATEEXPRIED());
+            paramList.add(vicicleFooterReq.getF_CARD_NO ());
+            paramList.add(vicicleFooterReq.getF_LEKKUNZEE  ());
+            paramList.add(vicicleFooterReq.getF_PAO());
+            paramList.add(vicicleFooterReq.getF_KORKC());
+            paramList.add(vicicleFooterReq.getF_TOLOCKTU());
+            paramList.add(vicicleFooterReq.getF_SO());
+            paramList.add(vicicleFooterReq.getF_PABUD());
+            paramList.add(vicicleFooterReq.getF_FAIKHANG());
+            paramList.add(vicicleFooterReq.getF_FAITHAIY());
+            paramList.add(vicicleFooterReq.getF_BGTHOM());
+            paramList.add(vicicleFooterReq.getF_GALATY_NO  ());
+            paramList.add(vicicleFooterReq.getF_GALATY_DEP ());
+            paramList.add(vicicleFooterReq.getL_TRIES_1());
+            paramList.add(vicicleFooterReq.getL_TRIES_2());
+            paramList.add(vicicleFooterReq.getL_TRIES_3());
+            paramList.add(vicicleFooterReq.getL_TRIES_4());
+            paramList.add(vicicleFooterReq.getL_TRIES_5());
+            paramList.add(vicicleFooterReq.getL_TRIES_6());
+            paramList.add(vicicleFooterReq.getL_TRIES_7());
+            paramList.add(vicicleFooterReq.getL_TRIES_8());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_1());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_2());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_3());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_4());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_5());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_6());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_7());
+            paramList.add(vicicleFooterReq.getL_TRIES_DATE_8());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_1  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_2  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_3  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_4  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_5  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_6  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_7  ());
+            paramList.add(vicicleFooterReq.getL_TRIES_KM_8  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_1());
+            paramList.add(vicicleFooterReq.getR_TRIES_2());
+            paramList.add(vicicleFooterReq.getR_TRIES_3());
+            paramList.add(vicicleFooterReq.getR_TRIES_4());
+            paramList.add(vicicleFooterReq.getR_TRIES_5());
+            paramList.add(vicicleFooterReq.getR_TRIES_6());
+            paramList.add(vicicleFooterReq.getR_TRIES_7());
+            paramList.add(vicicleFooterReq.getR_TRIES_8());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_1());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_2());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_3());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_4());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_5());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_6());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_7());
+            paramList.add(vicicleFooterReq.getR_TRIES_DATE_8());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_1  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_2  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_3  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_4  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_5  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_6  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_7  ());
+            paramList.add(vicicleFooterReq.getR_TRIES_KM_8  ());
+
+            paramList.add(vicicleFooterReq.getF_KM1());
+            paramList.add(vicicleFooterReq.getF_KM2());
+            paramList.add(vicicleFooterReq.getF_KM3());
+            paramList.add(vicicleFooterReq.getF_KM4());
+            paramList.add(vicicleFooterReq.getF_KM5());
+            paramList.add(vicicleFooterReq.getF_KM6());
+            paramList.add(vicicleFooterReq.getF_KM7());
+            paramList.add(vicicleFooterReq.getF_KM8());
+            paramList.add(vicicleFooterReq.getF_KM9());
+            paramList.add(vicicleFooterReq.getF_KM10());
+            paramList.add(vicicleFooterReq.getF_KM11());
+            paramList.add(vicicleFooterReq.getF_KM12());
+            paramList.add(vicicleFooterReq.getF_KM13());
+            paramList.add(vicicleFooterReq.getF_KM14());
+            paramList.add(vicicleFooterReq.getF_KM15());
+            paramList.add(vicicleFooterReq.getF_KM16());
+            paramList.add(vicicleFooterReq.getF_KM_LL1());
+            paramList.add(vicicleFooterReq.getF_KM_LL2());
+            paramList.add(vicicleFooterReq.getF_KM_LL3());
+            paramList.add(vicicleFooterReq.getF_KM_LL4());
+            paramList.add(vicicleFooterReq.getF_KM_LL9());
+            paramList.add(vicicleFooterReq.getF_KM_LL10());
+            paramList.add(vicicleFooterReq.getF_KM_LL11());
+            paramList.add(vicicleFooterReq.getF_KM_LL12());
+            paramList.add(vicicleFooterReq.getF_KM_LL5());
+            paramList.add(vicicleFooterReq.getF_KM_LL6());
+            paramList.add(vicicleFooterReq.getF_KM_LL7());
+            paramList.add(vicicleFooterReq.getF_KM_LL8());
+            paramList.add(vicicleFooterReq.getF_KM_LL13());
+            paramList.add(vicicleFooterReq.getF_KM_LL14());
+            paramList.add(vicicleFooterReq.getF_KM_LL15());
+            paramList.add(vicicleFooterReq.getF_KM_LL16());
+            return EBankJdbcTemplate.update(sql, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
     }
     @Override
     public int saveVicicleFooter(VicicleFooterReq vicicleFooterReq) {

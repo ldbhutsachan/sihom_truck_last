@@ -144,7 +144,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setGalick(rs.getString("galick"));
                     tr.setLeanGia(rs.getString("leanGia"));
                     tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
-                    tr.setPha_But(rs.getString("Pha_But"));
+                    tr.setPha_But(rs.getString("pha_But"));
 
                     return tr ;
                 }
@@ -279,7 +279,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setGalick(rs.getString("galick"));
                     tr.setLeanGia(rs.getString("leanGia"));
                     tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
-                    tr.setPha_But(rs.getString("Pha_But"));
+                    tr.setPha_But(rs.getString("pha_But"));
                     return tr;
                 }
             });
@@ -332,7 +332,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 ,  \n" +
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
-                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,Pha_But)\n" +
+                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But)\n" +
                     "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
@@ -510,7 +510,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,Pha_But=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -691,7 +691,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -795,6 +795,12 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getExCarDate());
             paramList.add(vicicleHeaderReq.getExCarColor());
             paramList.add(vicicleHeaderReq.getExHangMar());
+
+            paramList.add(vicicleHeaderReq.getSaiystay());
+            paramList.add(vicicleHeaderReq.getGalick());
+            paramList.add(vicicleHeaderReq.getLeanGia());
+            paramList.add(vicicleHeaderReq.getLeanFuengThaiy());
+            paramList.add(vicicleHeaderReq.getPha_But());
 
             paramList.add(vicicleHeaderReq.getKey_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
