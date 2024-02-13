@@ -13,7 +13,7 @@ public class VicicleFooterReq {
     private String key_id;
     private String f_BRANCH;
     private String f_YEAR  ;
-    private String F_CAR_TYPE;
+    private String f_CAR_TYPE;
     private String f_DATEEXPRIED;
     private String f_CARD_NO ;
     private String f_LEKKUNZEE  ;
