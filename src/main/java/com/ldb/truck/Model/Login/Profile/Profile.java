@@ -1,4 +1,4 @@
-package com.ldb.truck.Model.Login.userData;
+package com.ldb.truck.Model.Login.Profile;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,12 +9,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class user {
-    private String key_id;
-    private String token;
-    private String branch;
-    private String username;
-    private String location;
-    private String email;
-    private String tel;
+public class Profile {
+    private String userId;
+    private String userName;
+    private String role;
+    private String branchNo;
+    private String branchName;
 }

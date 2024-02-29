@@ -35,11 +35,11 @@ public class ExpensesBookDao implements ExpensesBookImDao{
         return result;
     }
     @Override
-    public List<ExpenType> ListExpensesTypeAll() {
+    public List<ExpenType> ListExpensesTypeAll(ExpenTypeReq expenTypeReq) {
         List<ExpenType> result = new ArrayList<>();
         try{
-            SQL = "select * from EXPENSE_TYPE";
-            log.info("sql"+SQL);
+            SQL = "select * from EXPENSE_TYPE b inner join LOGIN a on b.userId =a.KEY_ID where a.BRANCH='"+expenTypeReq.getBranch()+"'";
+            log.info("sql0000000000:"+SQL);
             result = EBankJdbcTemplate.query(SQL,new ExpenTypeMapper());
         }catch (Exception e){
             e.printStackTrace();
@@ -49,9 +49,10 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     @Override
     public int storeExpensesType(ExpenTypeReq expenTypeReq) {
         try{
-            SQL="insert into  EXPENSE_TYPE (TYPENAME,C_DATE) values(?,now())";
+            SQL="insert into  EXPENSE_TYPE (TYPENAME,C_DATE,userId) values(?,now(),?)";
             List<Object> paraList = new ArrayList<>();
             paraList.add(expenTypeReq.getTypeName());
+            paraList.add(expenTypeReq.getUserId());
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){
             e.printStackTrace();

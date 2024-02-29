@@ -23,8 +23,6 @@ public class ImplBateryDao implements BateryDao {
     @Autowired
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
-
-
     String SQL="";
 
     @Override

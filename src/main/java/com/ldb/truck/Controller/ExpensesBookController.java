@@ -34,11 +34,11 @@ public class ExpensesBookController {
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getExpensesTypeAll.service")
-    public ExpenTypeRes getExpensesTypeAll(){
+    public ExpenTypeRes getExpensesTypeAll(@RequestBody ExpenTypeReq expenTypeReq){
         ExpenTypeRes result =new ExpenTypeRes();
         try
         {
-            result = expensesBookService.getExpensesTypeAll();
+            result = expensesBookService.getExpensesTypeAll(expenTypeReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

@@ -10,6 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class incomePayReq {
+    private String  toKen;
+    private String  userId;
     private String  startDate;
     private String endDate;
     private String status;

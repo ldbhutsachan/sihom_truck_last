@@ -14,7 +14,7 @@ import com.ldb.truck.Model.Login.ResFromDateReq;
 public interface ExpensesBookImDao {
 
     List<ExpenType>  ListExpensesType(ExpenTypeReq expenTypeReq);
-    List<ExpenType>  ListExpensesTypeAll();
+    List<ExpenType>  ListExpensesTypeAll(ExpenTypeReq expenTypeReq);
     public int storeExpensesType(ExpenTypeReq expenTypeReq);
     public int updateExpensesType(ExpenTypeReq expenTypeReq);
     public int delExpensesType(ExpenTypeReq expenTypeReq);

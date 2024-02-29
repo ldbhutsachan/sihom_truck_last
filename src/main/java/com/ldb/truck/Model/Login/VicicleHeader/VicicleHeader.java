@@ -121,8 +121,10 @@ public class VicicleHeader {
     private String ch_RH05;
     private String ch_RH06;
     private String toBatRowStatus;
-    private String  toBatRowGalanty;
+    private String toBatRowGalanty;
     private String toBatRowtabienLod;
+
+
     private String bat_StartDate;
     private String bat_EndDate;
     private String imageTruck;

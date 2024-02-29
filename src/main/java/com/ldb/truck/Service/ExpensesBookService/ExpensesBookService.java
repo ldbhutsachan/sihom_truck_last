@@ -1,6 +1,8 @@
 package com.ldb.truck.Service.ExpensesBookService;
 import com.ldb.truck.Controller.ExpensesBookController;
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.IncomePay.incomePayReq;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ExpensesBookService {
+    @Autowired
+    ProfileDao profileDao;
     private static final Logger log = LogManager.getLogger(ExpensesBookService.class);
     @Autowired ExpensesBookDao expensesBookDao;
     public ExpenTypeRes getExpensesType(ExpenTypeReq expenTypeReq){
@@ -42,11 +46,26 @@ public class ExpensesBookService {
         return result;
     }
     //--get data all
-    public ExpenTypeRes getExpensesTypeAll(){
+    public ExpenTypeRes getExpensesTypeAll(ExpenTypeReq expenTypeReq){
+        log.info("toKen=======================:"+expenTypeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(expenTypeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        //expenTypeReq.setUserId(userId);
+        expenTypeReq.setBranch(userBranchNo);
+
+        //====================================================================
         ExpenTypeRes result = new ExpenTypeRes();
         List<ExpenType> resData = new ArrayList<>();
         try{
-            resData = expensesBookDao.ListExpensesTypeAll();
+            resData = expensesBookDao.ListExpensesTypeAll(expenTypeReq);
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resData);
@@ -60,6 +79,21 @@ public class ExpensesBookService {
         return result;
     }
     public ExpenTypeRes storeExpensesType(ExpenTypeReq expenTypeReq){
+        log.info("toKen=======================:"+expenTypeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(expenTypeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        expenTypeReq.setUserId(userId);
+        expenTypeReq.setBranch(userBranchNo);
+
+        //====================================================================
         ExpenTypeRes result = new ExpenTypeRes();
       int i = 0;
         try{

@@ -21,5 +21,7 @@ public class UserLogin {
     private String proName;
     private String mobile;
     private String toKen;
+    private String branch;
+
 
 }

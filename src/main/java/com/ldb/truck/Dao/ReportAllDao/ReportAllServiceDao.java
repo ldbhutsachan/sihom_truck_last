@@ -262,7 +262,7 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "                                                STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,  \n" +
                         "                                                FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,  \n" +
                         "                                                H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
+                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feePolish3 + feevacin + feesing + feesaphan + feeyoktu  + \n" +
                         "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
                         "                                                0 as total  \n" +
                         "                                                from V_RE_ALL  \n" ;
@@ -276,7 +276,7 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
                         "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
                         "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
+                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePolish3 + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
                         "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
                         "0 as total\n" +
                         "from V_RE_ALL where d_status ='"+reportAllReq.getStatus()+"'\n" ; }
@@ -290,10 +290,10 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
                         "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
                         "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
+                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePolish3 + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
                         "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where D_STATUS IN ('N', 'Y') AND DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
+                        "from V_RE_ALL where D_STATUS IN ('N', 'Y') AND OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
             }
             else if((reportAllReq.getStartDate() == null) && (reportAllReq.getEndDate() == null) && (!reportAllReq.getStatus().equals("A"))) {
                 sql ="select '1' as type,\n" +
@@ -304,7 +304,7 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
                         "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
                         "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
+                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePolish3 + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
                         "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
                         "0 as total\n" +
                         "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' " ;
@@ -318,10 +318,10 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
                         "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
                         "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
+                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePolish3 + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
                         "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
+                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportAll>() {
                 @Override
