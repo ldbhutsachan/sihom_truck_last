@@ -21,4 +21,5 @@ public class UserReq {
     private String userId;
     private String staff_Id;
     private String branch;
+    private String saveById;
 }

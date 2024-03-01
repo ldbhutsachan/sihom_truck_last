@@ -49,6 +49,7 @@ BeterSerivice beterSerivice;
             ,@RequestParam("modalMorfai") String  modalMorfai
             ,@RequestParam("sizeMorfai") String  sizeMorfai
             ,@RequestParam("serviceLife") String  serviceLife
+            ,@RequestParam("toKen") String  toKen
     ){
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
@@ -60,6 +61,7 @@ BeterSerivice beterSerivice;
             data.setModalMorfai(modalMorfai);
             data.setSizeMorfai(sizeMorfai);
             data.setServiceLife(serviceLife);
+            data.setToKen(toKen);
             logger.error("******file lenght"+files);
             logger.error(data);
             String fileName = "";
@@ -98,7 +100,8 @@ BeterSerivice beterSerivice;
          ,@RequestParam("sizeMorfai") String  sizeMorfai
          ,@RequestParam("serviceLife") String  serviceLife
          ,@RequestParam("imageBatery") String imageBatery
-          ,@RequestParam("keyId") String keyId
+         ,@RequestParam("keyId") String keyId
+         ,@RequestParam("toKen") String  toKen
  ){
      Date date = new Date();
      SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
@@ -112,6 +115,7 @@ BeterSerivice beterSerivice;
          data.setServiceLife(serviceLife);
          data.setKeyId(keyId);
          data.setImageBatery(imageBatery);
+         data.setToKen(toKen);
          logger.error("******file lenght"+files);
          logger.error(data);
          String fileName = "";

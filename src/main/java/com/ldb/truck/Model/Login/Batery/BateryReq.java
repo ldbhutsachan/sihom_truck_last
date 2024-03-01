@@ -11,6 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BateryReq {
     private  String keyId;
+    private  String toKen;
+    private  String branch;
+    private  String userId;
     private String batNo;
     private String imageBatery;
     private String modalMorfai;

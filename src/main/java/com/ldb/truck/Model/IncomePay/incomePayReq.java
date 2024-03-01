@@ -12,6 +12,7 @@ import lombok.Setter;
 public class incomePayReq {
     private String  toKen;
     private String  userId;
+    private String  branch;
     private String  startDate;
     private String endDate;
     private String status;

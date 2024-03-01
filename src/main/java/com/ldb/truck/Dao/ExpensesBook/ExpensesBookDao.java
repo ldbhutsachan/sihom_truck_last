@@ -64,10 +64,11 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     public int updateExpensesType(ExpenTypeReq expenTypeReq) {
         List<ExpenType> result = new ArrayList<>();
         try{
-            SQL ="update  EXPENSE_TYPE set typename=? where key_id ='"+expenTypeReq.getKey_id()+"'";
+            SQL ="update  EXPENSE_TYPE set typename=? ,userId=? where key_id ='"+expenTypeReq.getKey_id()+"'";
             log.info("sql"+SQL);
             List<Object> paraList = new ArrayList<>();
             paraList.add(expenTypeReq.getTypeName());
+            paraList.add(expenTypeReq.getUserId());
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -92,7 +93,7 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     public List<ExpensesBook> ListExpenses(ResFromDateReq expensesBookReq) {
         List<ExpensesBook> result = new ArrayList<>();
         try{
-            SQL = "select * from V_EXPENSES where EXPDATE between '"+expensesBookReq.getStartDate()+"' and '"+expensesBookReq.getEndDate()+"'";
+            SQL = "select * from V_EXPENSES where EXPDATE between '"+expensesBookReq.getStartDate()+"' and '"+expensesBookReq.getEndDate()+"' AND BRANCH = '"+expensesBookReq.getBranch()+"'";
            log.info("sql:"+SQL);
             result = EBankJdbcTemplate.query(SQL,new ExpensesBookMapper());
         }catch (Exception e){
@@ -105,20 +106,20 @@ public class ExpensesBookDao implements ExpensesBookImDao{
         List<ExpensesBook> result = new ArrayList<>();
         try{
              if (incomePayReq.getStartDate() != null && incomePayReq.getEndDate()!= null && incomePayReq.getStatus().equals("0")){
-                SQL = "select * from V_EXPENSES where  EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"'";
+                SQL = "select * from V_EXPENSES where  EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"' AND BRANCH = '"+incomePayReq.getBranch()+"'";
                 log.info( "Q2"+SQL);
             }
             else if (incomePayReq.getStartDate() != null && incomePayReq.getEndDate()!= null && !incomePayReq.getStatus().equals("0")){
-                SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' and EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"'";
+                SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' and EXPDATE between '"+incomePayReq.getStartDate()+"' and '"+incomePayReq.getEndDate()+"' AND BRANCH = '"+incomePayReq.getBranch()+"'";
                 log.info( "Q3"+SQL);
             }
             else if (incomePayReq.getStartDate() == null && incomePayReq.getEndDate()== null && !incomePayReq.getStatus().equals("0")){
-                SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' ";
+                SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' AND BRANCH = '"+incomePayReq.getBranch()+"'";
                 log.info( "Q4"+SQL);
 
             }
              else if (incomePayReq.getStartDate() == null && incomePayReq.getEndDate()== null && incomePayReq.getStatus().equals("0")){
-                 SQL = "select * from V_EXPENSES  ";
+                 SQL = "select * from V_EXPENSES  where BRANCH = '"+incomePayReq.getBranch()+"'";
                  log.info( "Q5"+SQL);
 
              }
@@ -131,8 +132,8 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     @Override
     public int storeExpenses(ExpensesBookReq expensesBookReq) {
         try{
-            SQL="insert into EXPENSE (EXPNAME,EXPENSESTYPE,PERAMOUNT,TOTAL,AMOUNT,EXPDATE,C_DATE,REF_NO,STATUS)" +
-                    " values(?,?,?,?,?,?,now(),?,?)";
+            SQL="insert into EXPENSE (EXPNAME,EXPENSESTYPE,PERAMOUNT,TOTAL,AMOUNT,EXPDATE,C_DATE,REF_NO,STATUS,userId)" +
+                    " values(?,?,?,?,?,?,now(),?,?,?)";
             List<Object> paraList = new ArrayList<>();
             paraList.add(expensesBookReq.getExPName());
             paraList.add(expensesBookReq.getExPType());
@@ -143,6 +144,7 @@ public class ExpensesBookDao implements ExpensesBookImDao{
 //            paraList.add(expensesBookReq.getCDate());
             paraList.add(expensesBookReq.getRef_NO());
             paraList.add(expensesBookReq.getStatus());
+            paraList.add(expensesBookReq.getUserId());
 
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){
@@ -154,7 +156,7 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     @Override
     public int updateExpenses(ExpensesBookReq expensesBookReq) {
         try{
-            SQL="update  EXPENSE set EXPNAME=?,EXPENSESTYPE=?,TOTAL=?,PERAMOUNT=?,AMOUNT=?,EXPDATE=?,REF_NO=?,STATUS=? where key_id= ? ";
+            SQL="update  EXPENSE set EXPNAME=?,EXPENSESTYPE=?,TOTAL=?,PERAMOUNT=?,AMOUNT=?,EXPDATE=?,REF_NO=?,STATUS=? ,userId=? where key_id= ? ";
             log.info("sql"+SQL);
             List<Object> paraList = new ArrayList<>();
             paraList.add(expensesBookReq.getExPName());
@@ -165,6 +167,7 @@ public class ExpensesBookDao implements ExpensesBookImDao{
             paraList.add(expensesBookReq.getExpDate());
             paraList.add(expensesBookReq.getRef_NO());
             paraList.add(expensesBookReq.getStatus());
+            paraList.add(expensesBookReq.getUserId());
             paraList.add(expensesBookReq.getKey_id());
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){

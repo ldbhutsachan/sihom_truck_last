@@ -1,9 +1,11 @@
 package com.ldb.truck.Controller;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Model.Login.Login.GetUserLoginRes;
 import com.ldb.truck.Model.Login.Login.LoginReq;
 import com.ldb.truck.Model.Login.Messages;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Model.Login.Truck.*;
 import com.ldb.truck.Model.Login.customer.CustomerReq;
@@ -39,6 +41,9 @@ import java.util.List;
 @RestController
 @RequestMapping("${base_url}")
 public class Controller {
+
+    @Autowired
+    ProfileDao profileDao;
     private static final Logger logger = LogManager.getLogger(Controller.class);
     @Autowired
     CustomerService customerService;
@@ -62,11 +67,11 @@ public class Controller {
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllCustomer")
-    public CustomerRes  getAllCustomer (){
+    public CustomerRes  getAllCustomer (@RequestBody  CustomerReq customerReq){
         CustomerRes result = new CustomerRes();
         try {
 
-            result = customerService.getAllCustomer();
+            result = customerService.getAllCustomer(customerReq);
 
         }catch (Exception e){
             e.printStackTrace();
@@ -146,10 +151,10 @@ public class Controller {
     //--List<staftOut> getChooseStaft01(
     @CrossOrigin(origins = "*")
     @PostMapping("/getChooseStaft01.service")
-    public staftRes getChooseStaft01(){
+    public staftRes getChooseStaft01(@RequestBody stafReq stafReq){
         staftRes result = new staftRes();
         try {
-            result = staftService.getChooseStaft01();
+            result = staftService.getChooseStaft01(stafReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -204,7 +209,21 @@ public class Controller {
             ,@RequestParam("mobile1") String  mobile1
             ,@RequestParam("gender") String  gender
             ,@RequestParam("userId") String  userId
+            ,@RequestParam("toKen") String  toKen
     ){
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String SaveById = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+//        expenTypeReq.setUserId(userId);
+//        expenTypeReq.setBranch(userBranchNo);
+        //====================================================================
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
         String namefile = formatter.format(date);
@@ -225,6 +244,8 @@ public class Controller {
             data.setMobile1(mobile1);
             data.setGender(gender);
             data.setUserId(userId);
+            data.setSaveById(SaveById);
+
 //            data.setDataTime(dataTime);
 //            data.setImageStaff(imageStaff);
             logger.error("******file lenght"+files);
@@ -271,7 +292,21 @@ public class Controller {
             ,@RequestParam("gender") String  gender
             ,@RequestParam("userId") String  userId
             ,@RequestParam("imageStaff") String  imageStaff
+            ,@RequestParam("toKen") String  toKen
     ){
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String SaveById = userIn.get(0).getUserId();
+//        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+//        expenTypeReq.setUserId(userId);
+//        expenTypeReq.setBranch(userBranchNo);
+        //====================================================================
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
         String namefile = formatter.format(date);
@@ -294,6 +329,7 @@ public class Controller {
             data.setGender(gender);
             data.setUserId(userId);
             data.setImageStaff(imageStaff);
+            data.setSaveById(SaveById);
             logger.error("******file lenght"+files);
             logger.error(data);
             String fileName = "";
@@ -349,10 +385,10 @@ public class Controller {
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllProduct")
-    public ProductRes getAllProduct (){
+    public ProductRes getAllProduct (@RequestBody ProductReq productReq){
         ProductRes result = new ProductRes();
         try {
-            result = productService.getAllProcut();
+            result = productService.getAllProcut(productReq);
 
         }catch (Exception e){
             e.printStackTrace();
@@ -457,10 +493,10 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllLocation")
-    public LocationRes getAllLocation (){
+    public LocationRes getAllLocation (@RequestBody LocationReq locationReq){
         LocationRes result = new LocationRes();
         try {
-            result = locationService.getAllLocation();
+            result = locationService.getAllLocation(locationReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

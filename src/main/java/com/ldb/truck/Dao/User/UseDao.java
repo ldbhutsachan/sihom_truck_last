@@ -70,7 +70,7 @@ public class UseDao implements UserImplDao {
             String toKen = encryptionPassword(fulldata);
             log.info("Gen Token pass:"+toKen);
            // SQL ="insert into LOGIN (USER_LOGIN,PASSOWORD,ROLE,DATE_INSERT,STATUS,STAFT_ID,userId) VALUES (?,?,?,now(),?,?,?) ";
-            SQL ="insert into LOGIN (USER_LOGIN,PASSOWORD,ROLE,DATE_INSERT,STATUS,STAFT_ID,userId,TOKEN,BRANCH) VALUES (?,?,?,now(),?,?,?,?,?) ";
+            SQL ="insert into LOGIN (USER_LOGIN,PASSOWORD,ROLE,DATE_INSERT,STATUS,STAFT_ID,userId,TOKEN,BRANCH,SaveById) VALUES (?,?,?,now(),?,?,?,?,?,?) ";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(userReq.getUser_Login());
             paramList.add(userReq.getPassWord());
@@ -80,6 +80,7 @@ public class UseDao implements UserImplDao {
             paramList.add(userReq.getUserId());
             paramList.add(toKen);
             paramList.add(userReq.getBranch());
+            paramList.add(userReq.getSaveById());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();

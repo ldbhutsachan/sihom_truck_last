@@ -113,6 +113,20 @@ public class ExpensesBookService {
     return result;
     }
     public ExpenTypeRes storeExpensesTypeUpdate(ExpenTypeReq expenTypeReq){
+        log.info("toKen=======================:"+expenTypeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(expenTypeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        expenTypeReq.setUserId(userId);
+        expenTypeReq.setBranch(userBranchNo);
+        //====================================================================
         ExpenTypeRes result = new ExpenTypeRes();
         int i = 0;
         try{
@@ -169,6 +183,22 @@ public class ExpensesBookService {
         return result;
     }
     public ExpensesBookRes getExpensesBookAll(incomePayReq incomePayReq){
+        log.info("toKen=======================:"+incomePayReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(incomePayReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        incomePayReq.setUserId(userId);
+        incomePayReq.setBranch(userBranchNo);
+
+        //====================================================================
+
         DecimalFormat numfm = new DecimalFormat("###,###,###");
         ExpensesBookRes result = new ExpensesBookRes();
         List<ExpensesBook> resData = new ArrayList<>();
@@ -205,6 +235,21 @@ public class ExpensesBookService {
         return result;
     }
     public ExpensesBookRes storeExpenses(ExpensesBookReq expensesBookReq){
+        log.info("toKen=======================:"+expensesBookReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(expensesBookReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        expensesBookReq.setUserId(userId);
+        expensesBookReq.setBranch(userBranchNo);
+
+        //====================================================================
         ExpensesBookRes result = new ExpensesBookRes();
         int i = 0;
         try{
@@ -226,6 +271,21 @@ public class ExpensesBookService {
     }
     //--update
     public ExpensesBookRes storeExpensesUpdate(ExpensesBookReq expensesBookReq){
+        log.info("toKen=======================:"+expensesBookReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(expensesBookReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        expensesBookReq.setUserId(userId);
+        expensesBookReq.setBranch(userBranchNo);
+
+        //====================================================================
         ExpensesBookRes result = new ExpensesBookRes();
         int i = 0;
         try{

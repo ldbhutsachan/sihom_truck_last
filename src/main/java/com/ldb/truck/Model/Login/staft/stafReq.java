@@ -10,6 +10,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class stafReq {
+
+    private String toKen;
+    private String saveById;
+    private String branch;
     private String id;
     private String staftId;
     private String name;
@@ -28,6 +32,4 @@ public class stafReq {
     private String userId;
     private String dataTime;
     private String imageStaff;
-
-
 }

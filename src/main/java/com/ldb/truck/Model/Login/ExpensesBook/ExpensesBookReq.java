@@ -20,5 +20,9 @@ public class ExpensesBookReq {
     private String perAmount;
     private String ref_NO;
     private String status;
+    private String userId;
+    private String toKen;
+    private String branch;
+
 
 }
