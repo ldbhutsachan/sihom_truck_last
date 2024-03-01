@@ -14,4 +14,5 @@ public class v_performanceRes {
     private String status;
     private String message;
     private List<v_performance> data;
+    private String sumAmount;
 }

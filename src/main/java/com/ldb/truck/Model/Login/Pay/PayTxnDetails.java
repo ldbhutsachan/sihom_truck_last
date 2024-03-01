@@ -15,6 +15,7 @@ public class PayTxnDetails {
     private String invoiceNo;
     private String paymentType;
     private String bankName;
+
     private String refNo;
     private String cusId;
     private String cusName;

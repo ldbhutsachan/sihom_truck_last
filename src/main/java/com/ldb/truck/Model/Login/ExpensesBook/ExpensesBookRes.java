@@ -15,4 +15,8 @@ public class ExpensesBookRes {
     private String status;
     private String message;
     private List<ExpensesBook> data;
+
+    private String totalPay;
+    private String totalIncome;
+    private String totalIncome_PayAll;
 }

@@ -308,11 +308,12 @@ public class ImpCustomerDao  implements CustomerDao{
         return 0;
     }
     @Override
-    public List<CustomerOut> getAllCustomer() {
+    public List<CustomerOut> getAllCustomer(CustomerReq custoerReq) {
         List<CustomerOut> result = new ArrayList<>();
         try {
 
-            String SQL = "SELECT KEY_ID , CUSTOMER_ID , CUSTOMER_NAME , ADDRESS , VILLAGE , DISTRICT , PROVICNE , MOBILE1 , MOBILE2 , EMAIL  FROM CUSTOMER  WHERE STATUS='A' ";
+//            String SQL = "SELECT KEY_ID , CUSTOMER_ID , CUSTOMER_NAME , ADDRESS , VILLAGE , DISTRICT , PROVICNE , MOBILE1 , MOBILE2 , EMAIL  FROM CUSTOMER  WHERE STATUS='A' ";
+            String SQL = "SELECT *  FROM CUSTOMER c INNER JOIN LOGIN l ON c.userId =l.KEY_ID WHERE l.BRANCH  ='"+custoerReq.getBranch()+"' and c.STATUS ='A' ";
             System.out.println(SQL);
 
             result = EBankJdbcTemplate.query(SQL , new getAllcustomerMapper());
@@ -324,10 +325,11 @@ public class ImpCustomerDao  implements CustomerDao{
         return result;
     }
     @Override
-    public List<CustomerOut> getCustomerById(String id) {
+    public List<CustomerOut> getCustomerById(CustomerReq custoerReq) {
         List<CustomerOut> result = new ArrayList<>();
         try {
-            String SQL = "SELECT KEY_ID , CUSTOMER_ID , CUSTOMER_NAME , ADDRESS , VILLAGE , DISTRICT , PROVICNE , MOBILE1 , MOBILE2 , EMAIL  FROM CUSTOMER  WHERE STATUS='A'  AND KEY_ID = '"+id+"' ";
+//            String SQL = "SELECT KEY_ID , CUSTOMER_ID , CUSTOMER_NAME , ADDRESS , VILLAGE , DISTRICT , PROVICNE , MOBILE1 , MOBILE2 , EMAIL  FROM CUSTOMER  WHERE STATUS='A'  AND KEY_ID = '"+id+"' ";
+            String SQL = "SELECT *  FROM CUSTOMER c INNER JOIN LOGIN l ON c.userId =l.KEY_ID WHERE l.BRANCH  ='"+custoerReq.getBranch()+"' and c.STATUS ='A' AND KEY_ID = '"+custoerReq.getId()+"'";
             System.out.println(SQL);
             result = EBankJdbcTemplate.query(SQL , new getAllcustomerMapper());
         }catch (Exception e){
@@ -374,12 +376,13 @@ public class ImpCustomerDao  implements CustomerDao{
         String mobile = custoerReq.getMobile();
         String mobile1 = custoerReq.getMobile1();
         String email = custoerReq.getEmail();
+        String userId = custoerReq.getUserId();
 
 
         try {
 
             String SQL = " UPDATE  CUSTOMER SET    CUSTOMER_ID ='"+custId+"'  , CUSTOMER_NAME  = '"+custName+"' , ADDRESS = '"+addrss+"' , VILLAGE ='"+village+"' , DISTRICT ='"+district+"' , PROVICNE ='"+provicnce+"', \n" +
-                    " MOBILE1 = '"+mobile+"', MOBILE2  ='"+mobile1+"', EMAIL ='"+email+"'  WHERE KEY_ID = '"+id+"' " ;
+                    " MOBILE1 = '"+mobile+"', MOBILE2  ='"+mobile1+"', EMAIL ='"+email+"',userId='"+userId+"'  WHERE KEY_ID = '"+id+"' " ;
             i = EBankJdbcTemplate.update(SQL);
 
         }catch (Exception e){
@@ -397,7 +400,7 @@ public class ImpCustomerDao  implements CustomerDao{
 
         try {
 
-            String SQL = "UPDATE CUSTOMER SET STATUS = 'D'  WHERE KEY_ID = '"+id+"' ";
+            String SQL = "DELETE FROM CUSTOMER WHERE KEY_ID = '"+id+"' ";
 
             i = EBankJdbcTemplate.update(SQL);
 
@@ -426,11 +429,12 @@ public class ImpCustomerDao  implements CustomerDao{
     }
     //-----choose staff 01
     @Override
-    public List<staftOut> getChooseStaft01() {
+    public List<staftOut> getChooseStaft01(stafReq stafReq) {
         List<staftOut>  result = new ArrayList<>();
         try {
-            String SQL = "SELECT  KEY_ID , STAFT_ID , STAFT_NAME , STAFT_SURNAME , ID_CARD , LICENCE_ID , VERIFY_BY , " +
-                    "LICENCE_ID_EXP , VILLAGE , DISTRICT , PROVINCE , MOBILE1 , MOBILE2, GENDER , GENDER_STATUS , GENDER_STATUS ,DATE_INSERT, USERID,IMAGE_STAFF   FROM STAFF WHERE OUT_STATUS = 'N'  and STATUS='A'";
+//            String SQL = "SELECT  KEY_ID , STAFT_ID , STAFT_NAME , STAFT_SURNAME , ID_CARD , LICENCE_ID , VERIFY_BY , " +
+//                    "LICENCE_ID_EXP , VILLAGE , DISTRICT , PROVINCE , MOBILE1 , MOBILE2, GENDER , GENDER_STATUS , GENDER_STATUS ,DATE_INSERT, USERID,IMAGE_STAFF   FROM STAFF WHERE OUT_STATUS = 'N'  and STATUS='A'";
+            String SQL = "SELECT * FROM STAFF s INNER JOIN LOGIN l ON s.saveById=l.KEY_ID WHERE s.OUT_STATUS = 'N'  and s.STATUS='A' and BRANCH='"+stafReq.getBranch()+"'";
             System.out.println("show SQL:"+SQL);
             result = EBankJdbcTemplate.query(SQL , new getAllStaftMapper());
         }catch (Exception e){
@@ -498,12 +502,13 @@ public class ImpCustomerDao  implements CustomerDao{
         String gender = stafReq.getGender();
         String genderStatus = stafReq.getGenderStatus();
         String userId = stafReq.getUserId();
+        String SaveById = stafReq.getSaveById();
         String path="http://khounkham.com/images/staff/";
         String imageStaff = path+stafReq.getImageStaff();
         try {
             String SQL  = " INSERT INTO STAFF ( OUT_STATUS,STATUS , STAFT_ID , STAFT_NAME , STAFT_SURNAME , ID_CARD , LICENCE_ID , VERIFY_BY , LICENCE_ID_EXP , VILLAGE , DISTRICT ,\n" +
-                    "PROVINCE , MOBILE1 , MOBILE2 ,GENDER , GENDER_STATUS ,  USERID,IMAGE_STAFF ) VALUES ( 'N','A' ,'"+staftId+"' , '"+name+"' , '"+surname+"' , '"+idCard+"' ,\n " +
-                    " '"+licenceId+"' , '"+verBy+"' , '"+licenceExp+"' , '"+vaillage+"' , '"+district+"'  ,'"+province+"' , '"+mobile+"' , '"+mobile1+"' , '"+gender+"' , '"+genderStatus+"' ,'"+userId+"','"+imageStaff+"') ";
+                    "PROVINCE , MOBILE1 , MOBILE2 ,GENDER , GENDER_STATUS ,  USERID,IMAGE_STAFF ,SaveById) VALUES ( 'N','A' ,'"+staftId+"' , '"+name+"' , '"+surname+"' , '"+idCard+"' ,\n " +
+                    " '"+licenceId+"' , '"+verBy+"' , '"+licenceExp+"' , '"+vaillage+"' , '"+district+"'  ,'"+province+"' , '"+mobile+"' , '"+mobile1+"' , '"+gender+"' , '"+genderStatus+"' ,'"+userId+"','"+imageStaff+"','"+SaveById+"') ";
            System.out.println("SQL:"+SQL);
             i= EBankJdbcTemplate.update(SQL);
         }catch (Exception e){
@@ -533,11 +538,12 @@ public class ImpCustomerDao  implements CustomerDao{
         String userId = stafReq.getUserId();
         String path="http://khounkham.com/images/staff/";
         String imageStaff = path+stafReq.getImageStaff();
+        String saveById = path+stafReq.getSaveById();
         try {
 
             String SQL = " UPDATE STAFF  SET STAFT_NAME = '"+name+"' , STAFT_SURNAME ='"+surname+"' , ID_CARD = '"+idCard+"' , LICENCE_ID = '"+licenceId+"'  , VERIFY_BY = '"+verBy+"' , \n" +
                 "LICENCE_ID_EXP = '"+licenceExp+"'  , VILLAGE = '"+vaillage+"'  , DISTRICT = '"+district+"'  ,\n" +
-                    "PROVINCE ='"+province+"'  , MOBILE1 ='"+mobile+"'  , MOBILE2 = '"+mobile1+"'  ,GENDER = '"+gender+"'  , GENDER_STATUS = '"+genderStatus+"' , USERID = '"+userId+"' ,IMAGE_STAFF='"+imageStaff+"'  WHERE KEY_ID =  '"+id+"' " ;
+                    "PROVINCE ='"+province+"'  , MOBILE1 ='"+mobile+"'  , MOBILE2 = '"+mobile1+"'  ,GENDER = '"+gender+"'  , GENDER_STATUS = '"+genderStatus+"' , USERID = '"+userId+"' ,IMAGE_STAFF='"+imageStaff+"',SaveById='"+saveById+"'  WHERE KEY_ID =  '"+id+"' " ;
             i = EBankJdbcTemplate.update(SQL);
         }catch (Exception e){
             e.printStackTrace();
@@ -563,13 +569,14 @@ public class ImpCustomerDao  implements CustomerDao{
         String gender = stafReq.getGender();
         String genderStatus = stafReq.getGenderStatus();
         String userId = stafReq.getUserId();
+        String saveById = stafReq.getSaveById();
         String path="http://khounkham.com/images/staff/";
         String imageStaff = path+stafReq.getImageStaff();
         try {
 
             String SQL = " UPDATE STAFF  SET STAFT_NAME = '"+name+"' , STAFT_SURNAME ='"+surname+"' , ID_CARD = '"+idCard+"' , LICENCE_ID = '"+licenceId+"'  , VERIFY_BY = '"+verBy+"' , \n" +
                 "LICENCE_ID_EXP = '"+licenceExp+"'  , VILLAGE = '"+vaillage+"'  , DISTRICT = '"+district+"'  ,\n" +
-                    "PROVINCE ='"+province+"'  , MOBILE1 ='"+mobile+"'  , MOBILE2 = '"+mobile1+"'  ,GENDER = '"+gender+"'  , GENDER_STATUS = '"+genderStatus+"' , USERID = '"+userId+"'   WHERE KEY_ID =  '"+id+"' " ;
+                    "PROVINCE ='"+province+"'  , MOBILE1 ='"+mobile+"'  , MOBILE2 = '"+mobile1+"'  ,GENDER = '"+gender+"'  , GENDER_STATUS = '"+genderStatus+"' , USERID = '"+userId+"', SaveById='"+saveById+"'   WHERE KEY_ID =  '"+id+"' " ;
             i = EBankJdbcTemplate.update(SQL);
         }catch (Exception e){
             e.printStackTrace();
@@ -592,13 +599,13 @@ public class ImpCustomerDao  implements CustomerDao{
     }
 
     @Override
-    public List<ProductOut> getAllProduct() {
+    public List<ProductOut> getAllProduct(ProductReq productReq) {
 
         List<ProductOut> restult = new ArrayList<>();
 
         try {
 
-            String SQL = "SELECT KEY_ID , PRO_ID , PRO_NAME , PRO_TYPE , URL , USERID , DATE_INSERT  FROM PRODUCT  WHERE STATUS = 'A' ORDER BY KEY_ID DESC ";
+            String SQL = "SELECT p.KEY_ID , p.PRO_ID , p.PRO_NAME , p.PRO_TYPE , p.URL , p.USERID , p.DATE_INSERT, l.BRANCH  FROM PRODUCT p INNER JOIN LOGIN l ON p.saveById =l.KEY_ID  WHERE p.STATUS = 'A' AND l.BRANCH = '"+productReq.getBranch()+"' ORDER BY KEY_ID DESC ";
             System.out.println(SQL);
 
             restult = EBankJdbcTemplate.query(SQL , new ProductMapper());
@@ -612,12 +619,12 @@ public class ImpCustomerDao  implements CustomerDao{
     }
 
     @Override
-    public List<ProductOut> getProductById(String id) {
+    public List<ProductOut> getProductById(ProductReq productReq) {
         List<ProductOut> restult = new ArrayList<>();
 
         try {
 
-            String SQL = "SELECT KEY_ID , PRO_ID , PRO_NAME , PRO_TYPE , URL , USERID , DATE_INSERT  FROM PRODUCT  WHERE STATUS = 'A'  AND KEY_ID = '"+id+"' ORDER BY KEY_ID DESC ";
+            String SQL = "SELECT p.KEY_ID , p.PRO_ID , p.PRO_NAME , p.PRO_TYPE , p.URL , p.USERID , p.DATE_INSERT, l.BRANCH  FROM PRODUCT p INNER JOIN LOGIN l ON p.saveById =l.KEY_ID  WHERE p.STATUS = 'A' AND l.BRANCH = '"+productReq.getBranch()+"'  AND KEY_ID = '"+productReq.getId()+"' ORDER BY KEY_ID DESC ";
             System.out.println(SQL);
 
             restult = EBankJdbcTemplate.query(SQL , new ProductMapper());
@@ -639,11 +646,12 @@ public class ImpCustomerDao  implements CustomerDao{
         String proType = productReq.getProType();
         String proUrl = productReq.getProUrl();
         String userId = productReq.getUserId();
+        String saveById = productReq.getSaveById();
 
 
         try {
 
-            String SQL = "INSERT INTO PRODUCT ( PRO_ID , PRO_NAME , PRO_TYPE , URL , USERID , DATE_INSERT , STATUS) VALUES ( '"+proId+"' , '"+proName+"' , '"+proType+"' , '"+proUrl+"' , '"+userId+"' , now() , 'A' )";
+            String SQL = "INSERT INTO PRODUCT ( PRO_ID , PRO_NAME , PRO_TYPE , URL , USERID , DATE_INSERT , STATUS,SaveById) VALUES ( '"+proId+"' , '"+proName+"' , '"+proType+"' , '"+proUrl+"' , '"+userId+"' , now() , 'A','"+saveById+"' )";
             System.out.println(SQL);
             i = EBankJdbcTemplate.update(SQL);
 
@@ -665,10 +673,11 @@ public class ImpCustomerDao  implements CustomerDao{
         String proType = productReq.getProType();
         String proUrl = productReq.getProUrl();
         String userId = productReq.getUserId();
+        String saveById = productReq.getSaveById();
 
         try {
 
-            String SQL = " UPDATE PRODUCT  SET  PRO_ID = '"+proId+"'  , PRO_NAME = '"+proName+"'  , PRO_TYPE = '"+proType+"'  , URL  = '"+proUrl+"' , USERID  = '"+userId+"' WHERE KEY_ID = '"+productReq.getId()+"' ";
+            String SQL = " UPDATE PRODUCT  SET  PRO_ID = '"+proId+"'  , PRO_NAME = '"+proName+"'  , PRO_TYPE = '"+proType+"'  , URL  = '"+proUrl+"' , USERID  = '"+userId+"',SaveById='"+saveById+"' WHERE KEY_ID = '"+productReq.getId()+"' ";
             System.out.println(SQL);
             i = EBankJdbcTemplate.update(SQL);
 
@@ -699,13 +708,12 @@ public class ImpCustomerDao  implements CustomerDao{
 
 
     @Override
-    public List<LocationOut> getAllLocatino() {
+    public List<LocationOut> getAllLocatino(LocationReq locationReq) {
 
         List<LocationOut> result = new ArrayList<>();
 
         try {
-
-            String SQL = "SELECT KEY_ID, PROVINCE , DETAIL , STATUS FROM LOCATION WHERE STATUS = 'A' ";
+            String SQL = "SELECT l.KEY_ID, l.PROVINCE , l.DETAIL , l.STATUS, a.BRANCH FROM LOCATION l INNER JOIN LOGIN a ON l.userId=a.KEY_ID WHERE l.STATUS = 'A' AND a.BRANCH ='"+locationReq.getBranch()+"'";
 
             result = EBankJdbcTemplate.query(SQL , new LocationOutMapper());
 
@@ -717,12 +725,12 @@ public class ImpCustomerDao  implements CustomerDao{
     }
 
     @Override
-    public List<LocationOut> getLocationById(String id) {
+    public List<LocationOut> getLocationById(LocationReq locationReq) {
         List<LocationOut> result = new ArrayList<>();
 
         try {
 
-            String SQL = "SELECT KEY_ID, PROVINCE , DETAIL , STATUS FROM LOCATION WHERE STATUS = 'A' WHERE KEY_ID = '"+id+"' ";
+            String SQL = "SELECT l.KEY_ID, l.PROVINCE , l.DETAIL , l.STATUS, a.BRANCH FROM LOCATION l INNER JOIN LOGIN a ON l.userId=a.KEY_ID WHERE l.STATUS = 'A' AND a.BRANCH ='"+locationReq.getBranch()+"' AND l.KEY_ID = '"+locationReq.getId()+"' ";
 
             result = EBankJdbcTemplate.query(SQL , new LocationOutMapper());
 
@@ -738,12 +746,13 @@ public class ImpCustomerDao  implements CustomerDao{
 
         String province = locationReq.getProvince();
         String detail = locationReq.getDetail();
+        String userid = locationReq.getUserId();
 
         int i = 0;
 
         try {
 
-            String SQL = "INSERT INTO LOCATION ( PROVINCE , DETAIL , STATUS) VALUES ( '"+province+"' , '"+detail+"' , 'A' ) " ;
+            String SQL = "INSERT INTO LOCATION ( PROVINCE , DETAIL , STATUS,userId) VALUES ( '"+province+"' , '"+detail+"' , 'A','"+userid+"' ) " ;
 
             i = EBankJdbcTemplate.update(SQL);
 
@@ -761,7 +770,7 @@ public class ImpCustomerDao  implements CustomerDao{
 
         try {
 
-            String SQL = " UPDATE LOCATION SET PROVINCE =  '"+locationReq.getProvince()+"', DETAIL = '"+locationReq.getDetail()+"' WHERE KEY_ID = '"+locationReq.getId()+"' " ;
+            String SQL = " UPDATE LOCATION SET PROVINCE =  '"+locationReq.getProvince()+"', DETAIL = '"+locationReq.getDetail()+"',userId='"+locationReq.getUserId()+"' WHERE KEY_ID = '"+locationReq.getId()+"' " ;
 
             i = EBankJdbcTemplate.update(SQL);
 

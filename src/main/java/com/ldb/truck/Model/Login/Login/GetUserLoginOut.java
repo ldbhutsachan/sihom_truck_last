@@ -17,5 +17,6 @@ public class GetUserLoginOut {
 
     private String status;
     private String toKen;
+    private String branch;
 
 }

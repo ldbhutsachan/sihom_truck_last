@@ -21,6 +21,7 @@ public class LoginMapper implements RowMapper {
             data.setRole(rs.getString("ROLE"));
             data.setPassword(rs.getString("PASSOWORD"));
             data.setDateTime(rs.getString("DATE_INSERT"));
+            data.setBranch(rs.getString("BRANCH"));
         }catch (Exception e){
             e.printStackTrace();
             return data;

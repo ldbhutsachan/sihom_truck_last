@@ -23,4 +23,7 @@ public class Invoice {
     private String currency;
     private String staff_Curr;
 
+//    private String refNO;
+//    private String payType;
+
 }

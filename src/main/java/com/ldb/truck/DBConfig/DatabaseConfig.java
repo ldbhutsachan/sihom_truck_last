@@ -24,5 +24,4 @@ public class DatabaseConfig {
         return new JdbcTemplate(EBankJdbcTemplate);
     }
     //----
-
 }

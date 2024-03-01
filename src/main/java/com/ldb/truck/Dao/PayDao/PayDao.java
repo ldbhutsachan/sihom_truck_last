@@ -281,7 +281,7 @@ public class PayDao  implements PayInDao{
                         data.setInvoiceNo(rs.getString("INVOICE_NO"));
                         data.setPaymentType(rs.getString("PAYMENT_TYPE"));
                         data.setBankName(rs.getString("BANKNAME"));
-                        data.setRefNo(rs.getString("REF"));
+//                        data.setRefNo(rs.getString("REF"));
                         data.setCusId(rs.getString("CUSTOMER_ID"));
                         data.setCusName(rs.getString("CUSTOMER_NAME"));
                         data.setMoBile(rs.getString("MOBILE1"));

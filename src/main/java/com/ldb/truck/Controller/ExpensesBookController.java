@@ -1,4 +1,5 @@
 package com.ldb.truck.Controller;
+import com.ldb.truck.Model.IncomePay.incomePayReq;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenType;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeRes;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
@@ -33,11 +34,11 @@ public class ExpensesBookController {
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getExpensesTypeAll.service")
-    public ExpenTypeRes getExpensesTypeAll(){
+    public ExpenTypeRes getExpensesTypeAll(@RequestBody ExpenTypeReq expenTypeReq){
         ExpenTypeRes result =new ExpenTypeRes();
         try
         {
-            result = expensesBookService.getExpensesTypeAll();
+            result = expensesBookService.getExpensesTypeAll(expenTypeReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -106,11 +107,11 @@ public class ExpensesBookController {
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getExpensesAll.service")
-    public ExpensesBookRes listTxnExpensesAll(){
+    public ExpensesBookRes listTxnExpensesAll(@RequestBody incomePayReq incomePayReq){
         ExpensesBookRes result =new ExpensesBookRes();
         try
         {
-            result = expensesBookService.getExpensesBookAll();
+            result = expensesBookService.getExpensesBookAll(incomePayReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

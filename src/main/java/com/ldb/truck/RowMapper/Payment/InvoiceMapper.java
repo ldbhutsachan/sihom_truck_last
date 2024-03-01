@@ -22,6 +22,9 @@ public class InvoiceMapper implements RowMapper {
             data.setTotalDay(rs.getString("s"));
             data.setCurrency(rs.getString("CURRENCY"));
             data.setStaff_Curr(rs.getString("STAFF_BIALIENG_CUR"));
+
+//            data.setRefNO(rs.getString("REF"));
+//            data.setPayType(rs.getString("PAYMENT_TYPE"));
         }catch (Exception e){
             e.printStackTrace();
             return data;

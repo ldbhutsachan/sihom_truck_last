@@ -15,6 +15,7 @@ public class PerformanceReq {
     private String performanceReDate;
     private String performanceDate;
     private String performanceTotal;
+
     private String performanceOvertime;
     private String performanceJumPho;
     private String performanceFeePolish;

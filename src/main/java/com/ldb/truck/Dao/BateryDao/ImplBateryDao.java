@@ -23,8 +23,6 @@ public class ImplBateryDao implements BateryDao {
     @Autowired
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
-
-
     String SQL="";
 
     @Override
@@ -32,9 +30,9 @@ public class ImplBateryDao implements BateryDao {
         //imageBatery
         try {
             if(bateryReq.getKeyId()==""){
-                SQL= "SELECT * FROM MORFAI";
+                SQL= "SELECT * FROM MORFAI m INNER JOIN LOGIN l ON m.userId=l.KEY_ID where l.BRANCH='"+bateryReq.getBranch()+"'";
             }else {
-                SQL= "SELECT * FROM MORFAI where key_id='"+bateryReq.getKeyId()+"'";
+                SQL= "SELECT * FROM MORFAI m INNER JOIN LOGIN l ON m.userId=l.KEY_ID where m.key_id='"+bateryReq.getKeyId()+"' AND l.BRANCH='"+bateryReq.getBranch()+"'";
             }
             return EBankJdbcTemplate.query(SQL, new RowMapper<Batery>() {
                 @Override
@@ -60,13 +58,14 @@ public class ImplBateryDao implements BateryDao {
         String path="http://khounkham.com/images/batery/";
         String fileName = bateryReq.getImageBatery();
         try{
-            SQL="INSERT INTO MORFAI (ID_MORFAI,IMAGE_MORFAI,MODAL_MORFAI,SIZE_MORFAI,SERVICE_LIFE) VALUES (?,?,?,?,?)";
+            SQL="INSERT INTO MORFAI (ID_MORFAI,IMAGE_MORFAI,MODAL_MORFAI,SIZE_MORFAI,SERVICE_LIFE,userId) VALUES (?,?,?,?,?,?)";
             List<String> paraList = new ArrayList<>();
             paraList.add(bateryReq.getBatNo());
             paraList.add(path+fileName);
             paraList.add(bateryReq.getModalMorfai());
             paraList.add(bateryReq.getSizeMorfai());
             paraList.add(bateryReq.getServiceLife());
+            paraList.add(bateryReq.getUserId());
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -78,13 +77,14 @@ public class ImplBateryDao implements BateryDao {
         String path="http://khounkham.com/images/batery/";
         String fileName = bateryReq.getImageBatery();
         try{
-            SQL="UPDATE MORFAI SET ID_MORFAI=?,IMAGE_MORFAI=?,MODAL_MORFAI=?,SIZE_MORFAI=?,SERVICE_LIFE=? WHERE KEY_ID=?";
+            SQL="UPDATE MORFAI SET ID_MORFAI=?,IMAGE_MORFAI=?,MODAL_MORFAI=?,SIZE_MORFAI=?,SERVICE_LIFE=?, userId=? WHERE KEY_ID=?";
             List<String> paraList = new ArrayList<>();
             paraList.add(bateryReq.getBatNo());
             paraList.add(path+fileName);
             paraList.add(bateryReq.getModalMorfai());
             paraList.add(bateryReq.getSizeMorfai());
             paraList.add(bateryReq.getServiceLife());
+            paraList.add(bateryReq.getUserId());
             paraList.add(bateryReq.getKeyId());
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){
@@ -97,7 +97,7 @@ public class ImplBateryDao implements BateryDao {
         String path="http://khounkham.com/images/batery/";
         String fileName = bateryReq.getImageBatery();
         try{
-            SQL="UPDATE MORFAI SET ID_MORFAI=?,MODAL_MORFAI=?,SIZE_MORFAI=?,SERVICE_LIFE=? WHERE KEY_ID=?";
+            SQL="UPDATE MORFAI SET ID_MORFAI=?,MODAL_MORFAI=?,SIZE_MORFAI=?,SERVICE_LIFE=?, userId=? WHERE KEY_ID=?";
             List<String> paraList = new ArrayList<>();
             paraList.add(bateryReq.getBatNo());
 

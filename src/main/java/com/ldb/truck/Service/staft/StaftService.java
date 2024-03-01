@@ -2,7 +2,9 @@ package com.ldb.truck.Service.staft;
 
 import com.ldb.truck.Controller.BatteryController;
 import com.ldb.truck.Dao.Customer.ImpCustomerDao;
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Messages;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaff;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRes;
@@ -21,6 +23,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class StaftService {
+
+    @Autowired
+    ProfileDao profileDao;
+
     private static final Logger logger = LogManager.getLogger(StaftService.class);
     @Autowired
     ImpCustomerDao impCustomerDao;
@@ -48,11 +54,26 @@ public class StaftService {
         }
     }
     //--List<staftOut> getChooseStaft01()
-    public staftRes getChooseStaft01 (){
+    public staftRes getChooseStaft01 (stafReq stafReq){
+
+        logger.info("toKen=======================:"+stafReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(stafReq.getToKen());
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        stafReq.setSaveById(userId);
+        stafReq.setBranch(userBranchNo);
+        //====================================================================
         staftRes result = new staftRes();
         List<staftOut> data = new ArrayList<>();
         try {
-            data = impCustomerDao.getChooseStaft01();
+            data = impCustomerDao.getChooseStaft01(stafReq);
             if(data.size() < 1 ){
 
                 result.setMessage("data not found ");

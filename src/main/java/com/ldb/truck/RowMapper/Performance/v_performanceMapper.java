@@ -21,6 +21,9 @@ public class v_performanceMapper implements RowMapper {
                     data.setSAINUMMUN(rs.getString("SAINUMMUN"));
                     data.setPRIECENUMNUN(rs.getString("PRIECENUMNUN"));
                     data.setTOTAL_PRICE(rs.getString("TOTAL_PRICE"));
+                    String convert = rs.getString("TOTAL_PRICE").replaceAll(",","");
+                    Double contoDouble = Double.valueOf(convert);
+                    data.setTOTAL_PRICE02(contoDouble);
                     data.setFEETOTAL(rs.getString("FEETOTAL"));
                     data.setTOTALNUMMUN(rs.getString("TOTALNUMMUN"));
                     data.setStatus(rs.getString("status"));

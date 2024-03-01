@@ -1,6 +1,7 @@
 package com.ldb.truck.Service.VicicleFooterService;
 
 import com.ldb.truck.Dao.VicicleFooterDao.VicicleFooterServiceDao;
+import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterRes;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterReq;
@@ -108,6 +109,37 @@ public class VicicleFooterService {
         VicicleFooterRes result = new VicicleFooterRes();
         try {
             vicicleFooterServiceDao.saveVicicleFooter(vicicleFooterReq);
+            result.setMessage("Success");
+            result.setStatus("00");
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
+    public Messages saveVicicleFooter(VicicleFooterReq vicicleFooterReq){
+        log.info("data req:"+vicicleFooterReq);
+        Messages result = new Messages();
+        try {
+            vicicleFooterServiceDao.saveFooterNew(vicicleFooterReq);
+            result.setMessage("Success");
+            result.setStatus("00");
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
+//update footer new
+    public Messages updateVicicleFooter(VicicleFooterReq vicicleFooterReq){
+        log.info("data req:"+vicicleFooterReq);
+        Messages result = new Messages();
+        try {
+            vicicleFooterServiceDao.updateFooterNew(vicicleFooterReq);
             result.setMessage("Success");
             result.setStatus("00");
             return result;

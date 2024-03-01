@@ -10,6 +10,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExpenTypeReq {
+
+    private String toKen;
+    private String userId;
+    private String branch;
     private String key_id;
     private String typeName;
     private String cDate;

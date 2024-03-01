@@ -1,14 +1,19 @@
 package com.ldb.truck.Service.Login;
 
 import com.ldb.truck.Dao.Login.ImploginDao;
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.User.UserImplDao;
 import com.ldb.truck.Model.Login.Login.GetUserLoginOut;
 import com.ldb.truck.Model.Login.Login.GetUserLoginReq;
 import com.ldb.truck.Model.Login.Login.GetUserLoginRes;
 import com.ldb.truck.Model.Login.Login.LoginReq;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.User.UserLogin;
 import com.ldb.truck.Model.Login.User.UserReq;
 import com.ldb.truck.Model.Login.User.UserRes;
+import com.ldb.truck.Service.BranchService.BranchService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.collection.internal.PersistentList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +23,9 @@ import java.util.List;
 
 @Service
 public class LoginService {
+    private static final Logger log = LogManager.getLogger(LoginService.class);
+    @Autowired
+    ProfileDao profileDao;
     @Autowired
     ImploginDao imploginDao;
     @Autowired
@@ -56,6 +64,20 @@ public class LoginService {
 
     }
     public UserRes ListUserLogin(UserReq userReq){
+        log.info("toKen=======================:"+userReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(userReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        userReq.setUserId(userId);
+        userReq.setBranch(userBranchNo);
+        //====================================================================
         UserRes result = new UserRes();
         List<UserLogin> listData = new PersistentList();
         try{

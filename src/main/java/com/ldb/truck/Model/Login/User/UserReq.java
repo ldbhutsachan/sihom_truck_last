@@ -10,7 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserReq {
-    private String token;
+    private String toKen;
     private String key_Id;
     private String user_Login;
     private String userSurName;
@@ -20,4 +20,6 @@ public class UserReq {
     private String status;
     private String userId;
     private String staff_Id;
+    private String branch;
+    private String saveById;
 }

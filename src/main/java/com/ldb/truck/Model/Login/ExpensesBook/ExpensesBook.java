@@ -13,9 +13,11 @@ public class ExpensesBook {
     private String key_id;
     private String exPType;
     private String exPName;
-    private String toTal;
-    private String perAmount;
+    private Double toTal;
     private String amount;
     private String expDate;
     private String cDate;
+    private String perAmount;
+    private String ref_NO;
+    private String status;
 }

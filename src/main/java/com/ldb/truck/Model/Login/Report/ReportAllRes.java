@@ -14,8 +14,6 @@ public class ReportAllRes {
     private String status;
     private String message;
     private List<ReportAll> data;
-    private double totalBiaLieng ;
-    private double totalNummun ;
-    private double todtalLaiyJaiyFrist;
-    private double todtalLaiyJaiySecond;
+    private sumFooterGroup sumFooter;
+
 }

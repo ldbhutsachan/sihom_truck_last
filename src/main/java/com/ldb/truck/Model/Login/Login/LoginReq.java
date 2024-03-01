@@ -5,21 +5,27 @@ public class LoginReq {
     private String password;
     private String role;
     private String userId;
+    private String branch;
 
     public LoginReq() {
     }
 
-    public LoginReq(String user, String password, String role, String userId) {
+    public LoginReq(String user, String password, String role, String userId,String branch) {
         this.user = user;
         this.password = password;
         this.role = role;
         this.userId = userId;
+        this.branch = branch;
     }
 
     public LoginReq(String user, String password) {
         this.user = user;
         this.password = password;
     }
+
+    public String getBranch() {return branch;}
+
+    public void setBranch(String branch) {this.branch = branch;}
 
     public String getUser() {
         return user;
@@ -60,6 +66,7 @@ public class LoginReq {
                 ", password='" + password + '\'' +
                 ", role='" + role + '\'' +
                 ", userId='" + userId + '\'' +
+                ", branch='" + branch + '\'' +
                 '}';
     }
 }

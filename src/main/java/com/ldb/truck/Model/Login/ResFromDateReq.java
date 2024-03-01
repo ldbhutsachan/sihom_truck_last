@@ -10,6 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResFromDateReq {
+
+    private  String branch;
     private  String startDate;
     private String endDate;
 }

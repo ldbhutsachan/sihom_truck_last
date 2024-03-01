@@ -1,9 +1,13 @@
 package com.ldb.truck.Service.customer;
 
 import com.ldb.truck.Dao.Customer.ImpCustomerDao;
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.customer.CustomerOut;
 import com.ldb.truck.Model.Login.customer.CustomerReq;
 import com.ldb.truck.Model.Login.customer.CustomerRes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,15 +16,32 @@ import java.util.ArrayList;
 import java.util.List;
 @Service
 public class CustomerService {
+    @Autowired
+    ProfileDao profileDao;
+    private static final Logger log = LogManager.getLogger(CustomerService.class);
 
     @Autowired
     ImpCustomerDao impCustomerDao;
 
-    public CustomerRes getAllCustomer (){
+    public CustomerRes getAllCustomer (CustomerReq customerReq){
+        log.info("toKen=======================:"+customerReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(customerReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        customerReq.setUserId(userId);
+        customerReq.setBranch(userBranchNo);
+        //====================================================================
         List<CustomerOut> listData = new ArrayList<>();
         CustomerRes result = new CustomerRes();
         try {
-            listData = impCustomerDao.getAllCustomer();
+            listData = impCustomerDao.getAllCustomer(customerReq);
             System.out.println(listData);
             if(listData.size() > 0 ){
                 result.setData(listData);
@@ -41,12 +62,27 @@ public class CustomerService {
     }
 
     public CustomerRes getCustomerById (CustomerReq customerReq){
+        log.info("toKen=======================:"+customerReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(customerReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        customerReq.setUserId(userId);
+        customerReq.setBranch(userBranchNo);
+        //====================================================================
 
         List<CustomerOut> listData = new ArrayList<>();
         CustomerRes result = new CustomerRes();
         try {
 
-            listData = impCustomerDao.getCustomerById(String.valueOf(customerReq.getId()));
+//            listData = impCustomerDao.getCustomerById(String.valueOf(customerReq));
+            listData = impCustomerDao.getCustomerById(customerReq);
 
             System.out.println(listData);
 
@@ -69,6 +105,21 @@ public class CustomerService {
         }
     }
     public CustomerRes StoreCustomer(CustomerReq customerReq){
+
+        log.info("toKen=======================:"+customerReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(customerReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        customerReq.setUserId(userId);
+        customerReq.setBranch(userBranchNo);
+        //====================================================================
         CustomerRes result = new CustomerRes();
         int i = 0 ;
         try {
@@ -90,6 +141,21 @@ public class CustomerService {
 
     }
     public CustomerRes UpdateCustomer (CustomerReq customerReq){
+
+        log.info("toKen=======================:"+customerReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(customerReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        customerReq.setUserId(userId);
+        customerReq.setBranch(userBranchNo);
+        //====================================================================
 
         CustomerRes result = new CustomerRes();
         int i = 0 ;

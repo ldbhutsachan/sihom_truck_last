@@ -5,6 +5,8 @@ import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Model.Login.SumGiveFooter.SumGiveFooter;
 import com.ldb.truck.Model.Login.Truck.*;
 import com.ldb.truck.Model.Login.staft.StaffDetails;
+import com.ldb.truck.Model.sumInCome;
+import com.ldb.truck.Model.sumInComeCount;
 import com.ldb.truck.Service.staft.StaftService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -156,11 +158,11 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
     List<TruckDetails> listTruck = new ArrayList<>();
     TruckDetailsRes result = new TruckDetailsRes();
     List<SumGiveFooter> getSumfooter= new ArrayList<>();
+    List<sumInCome> getSumfooterPay= new ArrayList<>();
+    List<sumInComeCount> getSumfooterPaysum= new ArrayList<>();
     List<TruckDetails> getData= new ArrayList<>();
     try {
         listTruck = impTruckDao.ReportGive(resFromDateReq);
-        String type= listTruck.get(0).getType();
-       logger.info("sumFooter:"+type);
        for (TruckDetails rsList : listTruck) {
            if (rsList.getType().equals("SUMFOOTER")) {
                SumGiveFooter groupFooter = new SumGiveFooter();
@@ -169,10 +171,13 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
                Double carGiveTotal = rsList.getCarGive();
                Double carPayTotal = rsList.getCarPay();
                Double kumLaiyTotal = rsList.getKumLaiy();
+               Double TotalPriceNummun = rsList.getTotalPriceNummun();
+                Double TotalBialieng = rsList.getTotalBialieng();
                groupFooter.setSumCarGive(numfm.format(carGiveTotal));
                groupFooter.setSumCarPay(numfm.format(carPayTotal));
                groupFooter.setSumKumLaiy(numfm.format(kumLaiyTotal));
-
+               groupFooter.setTotalPriceNummun(numfm.format(TotalPriceNummun));
+               groupFooter.setTotalBialieng(numfm.format(TotalBialieng));
                getSumfooter.add(groupFooter);
            }
            else if (rsList.getType().equals("DATA")) {
@@ -186,9 +191,36 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
                tr.setKumLaiy(rsList.getKumLaiy());
                tr.setTotalRow(rsList.getTotalRow());
                tr.setTotalFuel(rsList.getTotalFuel());
+               tr.setTotalPriceNummun(rsList.getTotalPriceNummun());
+               tr.setTotalBialieng(rsList.getTotalBialieng());
                getData.add(tr);
            }
+           else if (rsList.getType().equals("PAYSUMFOOTER")) {
+               sumInCome groupFooter = new sumInCome();
+               Double kumLaiyTotal = rsList.getPayReceipt();
+               groupFooter.setSumKumLaiy(numfm.format(kumLaiyTotal));
+               getSumfooterPay.add(groupFooter);
+           }
+
        }
+       //===========================================================
+       //loop check data 1 && 2 then cal data
+        Double totalAmount=0.0;
+        Double totalAmoun1=0.0;
+        for (TruckDetails rsList2 : listTruck) {
+            sumInComeCount groupFooter2 = new sumInComeCount();
+            if (rsList2.getCheckk().equals("2")) {
+                 totalAmount = rsList2.getPayReceipt();
+                logger.info("show:"+totalAmount);
+            }
+                else if ( rsList2.getCheckk().equals("1")) {
+                 totalAmoun1 = rsList2.getCarGive();
+                logger.info("show:"+totalAmoun1);
+            }
+        }
+        Double countTotal = totalAmount+totalAmoun1;
+        //===========================================================
+
         if(listTruck.size() < 1 ){
             result.setMessage("data not found");
             result.setStatus("01");
@@ -197,6 +229,8 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
         result.setMessage("Success");
         result.setStatus("00");
         result.setSumFooter(getSumfooter);
+        result.setSumFooterPay(getSumfooterPay);
+        result.setCountTotalAll(numfm.format(countTotal));
         result.setData(getData);
         return result;
     }catch (Exception e){
@@ -225,8 +259,8 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
             result.setCarGiveTotal(numRow.format(carGiveTotal));
             result.setCarPayTotal(numRow.format(carPayTotal));
             result.setKumLaiyTotal(numRow.format(kumLaiyTotal));
-            result.setTotalPriceNummun(numfm.format(totakSainummun));
-            result.setTotalBialieng(numfm.format(totalBialieng));
+            result.setTotalPriceNummun(numRow.format(totakSainummun));
+            result.setTotalBialieng(numRow.format(totalBialieng));
             Double totalRow =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalRow).collect(Collectors.summingDouble(Double::doubleValue));
             Double totalFuel =listTruck.stream().distinct().map(TruckDetailsGroupDataDetails::getTotalFuel).collect(Collectors.summingDouble(Double::doubleValue));
             result.setTotalRow(numRow.format(totalRow));

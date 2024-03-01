@@ -204,7 +204,13 @@ public Messages saveVicicleHeader(
         @RequestParam("exCarDate") String  exCarDate,
         @RequestParam("exCarColor") String  exCarColor,
         @RequestParam("exHangMar") String  exHangMar,
-        @RequestParam("batNo") String  batNo
+        @RequestParam("batNo") String  batNo,
+
+        @RequestParam("saiystay") String  saiystay,
+        @RequestParam("galick") String  galick,
+        @RequestParam("leanGia") String  leanGia,
+        @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
+        @RequestParam("pha_But") String  pha_But
 ){
         log.info("===================================save header==================================================");
     Date date = new Date();
@@ -311,6 +317,12 @@ public Messages saveVicicleHeader(
         data.setExCarColor(exCarColor);
         data.setExHangMar(exHangMar);
         data.setBatNo(batNo);
+
+        data.setSaiystay(saiystay);
+        data.setGalick(galick);
+        data.setLeanGia(leanGia);
+        data.setLeanFuengThaiy(leanFuengThaiy);
+        data.setPha_But(pha_But);
         log.error("******file lenght"+files);
         log.error(data);
         String fileName = "";
@@ -438,7 +450,13 @@ public Messages saveVicicleHeader(
             @RequestParam("exCarColor") String  exCarColor,
             @RequestParam("exHangMar") String  exHangMar,
             @RequestParam("batNo") String  batNo,
-            @RequestParam("imageTruck") String  imageTruck
+            @RequestParam("imageTruck") String  imageTruck,
+
+            @RequestParam("saiystay") String  saiystay,
+            @RequestParam("galick") String  galick,
+            @RequestParam("leanGia") String  leanGia,
+            @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
+            @RequestParam("pha_But") String  pha_But
 
 
     ){
@@ -548,6 +566,12 @@ public Messages saveVicicleHeader(
             data.setExCarColor(exCarColor);
             data.setExHangMar(exHangMar);
             data.setBatNo(batNo);
+
+            data.setSaiystay(saiystay);
+            data.setGalick(galick);
+            data.setLeanGia(leanGia);
+            data.setLeanFuengThaiy(leanFuengThaiy);
+            data.setPha_But(pha_But);
            // data.setImageTruck(imageTruck);
             log.error("******file lenght"+files);
             log.info("files:==="+files);

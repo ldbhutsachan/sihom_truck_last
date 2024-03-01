@@ -1,11 +1,15 @@
 package com.ldb.truck.Service.Batery;
 
 import com.ldb.truck.Dao.BateryDao.ImplBateryDao;
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Batery.Batery;
 import com.ldb.truck.Model.Login.Batery.BateryReq;
 import com.ldb.truck.Model.Login.Batery.BateryRes;
 import com.ldb.truck.Model.Login.Messages;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.staft.stafReq;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,9 +19,27 @@ import java.util.List;
 
 @Service
 public class BeterSerivice {
+    @Autowired
+    ProfileDao profileDao;
+    private static final Logger log = LogManager.getLogger(BeterSerivice.class);
 @Autowired
     ImplBateryDao implBateryDao;
 public BateryRes getBateryAll(BateryReq  bateryReq){
+
+    log.info("toKen=======================:"+bateryReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(bateryReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    bateryReq.setUserId(userId);
+    bateryReq.setBranch(userBranchNo);
+    //====================================================================
     BateryRes result =new BateryRes();
     List<Batery> listData = new ArrayList<>();
     try {
@@ -39,6 +61,20 @@ public BateryRes getBateryAll(BateryReq  bateryReq){
 }
 //==========================Save batery
 public Messages saveBatery(BateryReq bateryReq){
+    log.info("toKen=======================:"+bateryReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(bateryReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    bateryReq.setUserId(userId);
+    bateryReq.setBranch(userBranchNo);
+    //====================================================================
     Messages message = new Messages();
     int i = 0;
     try {
@@ -61,6 +97,21 @@ public Messages saveBatery(BateryReq bateryReq){
 }
     //==========================UPDATE batery
     public Messages updateBatery(BateryReq bateryReq){
+
+        log.info("toKen=======================:"+bateryReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(bateryReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        bateryReq.setUserId(userId);
+        bateryReq.setBranch(userBranchNo);
+        //====================================================================
         Messages message = new Messages();
         int i = 0;
         try {
