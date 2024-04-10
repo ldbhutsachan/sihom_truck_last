@@ -11,6 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class StaffPayReq {
     private String staffID;
+    private String toKen;
+    private String userId;
+    private String branch;
     private String lahudPoyLod;
     private String startDate;
     private String endDate;

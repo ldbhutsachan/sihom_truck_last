@@ -2,6 +2,7 @@ package com.ldb.truck.Controller;
 
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRes;
+import com.ldb.truck.Model.Login.ReportStaff.TopFiveRankingRes;
 import com.ldb.truck.Model.Login.staft.StaffDetailsRes;
 import com.ldb.truck.Model.Login.staft.StaffPayReq;
 import com.ldb.truck.Model.Login.staft.StaffPayRes;
@@ -20,11 +21,11 @@ public class StaffController {
     StaftService staftServiceDao;
     @CrossOrigin(origins = "*")
     @PostMapping("/listPaymentStaff.service")
-    public ReportStaffRes listReportStaff() {
+    public ReportStaffRes listReportStaff(@RequestBody StaffPaymentReq staffPaymentReq) {
         log.info("=================================>listPaymentStaff<=================================================");
         ReportStaffRes result = new ReportStaffRes();
         try {
-            result = staftServiceDao.ListWaiyPaymentStaff();
+            result = staftServiceDao.ListWaiyPaymentStaff(staffPaymentReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -33,6 +34,23 @@ public class StaffController {
         }
         return result;
     }
+    //=======================rank top 5 most tiew          begin
+    @CrossOrigin(origins = "*")
+    @PostMapping("/TopFiveRanking.service")
+    public TopFiveRankingRes TopFiveRanking(@RequestBody StaffPaymentReq staffPaymentReq) {
+        log.info("=================================>listPaymentStaff<=================================================");
+        TopFiveRankingRes result = new TopFiveRankingRes();
+        try {
+            result = staftServiceDao.TopFiveRankingService(staffPaymentReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    //=======================rank top 5 most tiew          end
     //=======================payment staff
     @CrossOrigin(origins = "*")
     @PostMapping("/paymentStaff.service")

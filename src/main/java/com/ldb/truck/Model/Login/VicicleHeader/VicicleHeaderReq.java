@@ -9,6 +9,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VicicleHeaderReq {
+
+    private String toKen;
+    private String userId;
+    private String batNo2;
+    private String Bat_StartDate2;
+    private String Bat_EndDate2;
+    private String branch;
     private String key_id;
     private String h_VICIVLE_NUMBER;
     private String h_VICIVLE_GALATY;

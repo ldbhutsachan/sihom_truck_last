@@ -3,6 +3,7 @@ package com.ldb.truck.Dao.ReportAllDao;
 import com.ldb.truck.Dao.VicicleHeaderDao.VicicleHeaderServiceDao;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
+import com.ldb.truck.Model.Login.Report.ReportFuel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,9 +180,9 @@ public class ReportAllServiceDao implements ReportAllDao{
     public List<ReportAll> ListAllReportCustomer(@RequestBody  ReportAllReq reportAllReq) {
         try {
             if(reportAllReq.getStartDate() == null){
-                sql ="select * from V_REPORT_PRODUCT";
+                sql ="select * from V_REPORT_PRODUCT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID WHERE b.BRANCH='"+reportAllReq.getBranch()+"'";
             }else {
-                sql = "select * from V_REPORT_PRODUCT where  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
+                sql = "select * from V_REPORT_PRODUCT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"' AND a.DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportAll>() {
                 @Override
@@ -254,74 +255,47 @@ public class ReportAllServiceDao implements ReportAllDao{
     public List<ReportAll> ListAllReportProduct(@RequestBody  ReportAllReq reportAllReq) {
         try {
             if(reportAllReq.getStartDate() == null  && reportAllReq.getStatus().equals("A")){
-                sql ="select '1' as type,  \n" +
-                        "                                                PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,  \n" +
-                        "                                                H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,  \n" +
-                        "                                                CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,  \n" +
-                        "                                                PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,  \n" +
-                        "                                                STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,  \n" +
-                        "                                                FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,  \n" +
-                        "                                                H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feePolish3 + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
-                        "                                                0 as total  \n" +
-                        "                                                from V_RE_ALL  \n" ;
+                sql ="select '1' as type,   a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal ,\n" +
+                        "0 as total  \n" +
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"'  \n" ;
+                log.info("sql:"+sql);
             }
             else if(reportAllReq.getStartDate() == null && !(reportAllReq.getStatus().equals("A"))){
-                sql ="select '1' as type,\n" +
-                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
-                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
-                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
-                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
-                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
-                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
-                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePolish3 + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type, a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where d_status ='"+reportAllReq.getStatus()+"'\n" ; }
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"' AND a.d_status ='"+reportAllReq.getStatus()+"'\n" ;
+                log.info("sql:"+sql);
+            }
             else if((reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (reportAllReq.getStatus().equals("A")))
             {
-                sql ="select '1' as type,\n" +
-                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
-                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
-                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
-                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
-                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
-                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
-                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePolish3 + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type, a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal ,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where D_STATUS IN ('N', 'Y') AND OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"' AND a.D_STATUS IN ('N', 'Y') AND a.OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
             }
             else if((reportAllReq.getStartDate() == null) && (reportAllReq.getEndDate() == null) && (!reportAllReq.getStatus().equals("A"))) {
-                sql ="select '1' as type,\n" +
-                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
-                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
-                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
-                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
-                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
-                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
-                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePolish3 + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type, a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' " ;
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"' AND a.D_STATUS = '"+reportAllReq.getStatus()+"' " ;
             }
             else if((reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (!reportAllReq.getStatus().equals("A"))) {
-                sql ="select '1' as type,\n" +
-                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
-                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
-                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
-                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
-                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
-                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
-                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePolish3 + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type, a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"' AND a.D_STATUS = '"+reportAllReq.getStatus()+"' and a.OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportAll>() {
                 @Override
@@ -473,22 +447,88 @@ public class ReportAllServiceDao implements ReportAllDao{
         }
         return null;
     }
+    //start  Report Fuel
+    public List<ReportFuel> ReportFuealDao(@RequestBody  ReportAllReq reportAllReq) {
+        try {
+            if(reportAllReq.getStartDate() == null  && reportAllReq.getStatus_fuel() == null && reportAllReq.getFuelStationId() == null){
+                sql ="select * from V_RE_ALL a inner join LOGIN b ON (a.userId=b.KEY_ID) JOIN FUEL_STATION f ON (a.FUEL_STATION_ID = f.FUEL_STATION_ID) where b.BRANCH='"+reportAllReq.getBranch()+"'  \n" ;
+                log.info("SQL.1:"+sql);
+            }
+            else if((reportAllReq.getStartDate() != null) && (reportAllReq.getStatus_fuel() != null) && reportAllReq.getFuelStationId() == null) {
+                log.info("SQL.2:"+sql);
+                sql ="select * from V_RE_ALL a inner join LOGIN b ON (a.userId=b.KEY_ID) JOIN FUEL_STATION f ON (a.FUEL_STATION_ID = f.FUEL_STATION_ID) where b.BRANCH='"+reportAllReq.getBranch()+"'  AND a.FUEL_STATUS = '"+reportAllReq.getStatus_fuel()+"' and a.OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
+            }
+            else if((reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (reportAllReq.getStatus_fuel() == null)) {
+                log.info("SQL.3:"+sql);
+                sql ="select * from V_RE_ALL a inner join LOGIN b ON (a.userId=b.KEY_ID) JOIN FUEL_STATION f ON (a.FUEL_STATION_ID = f.FUEL_STATION_ID) where b.BRANCH='"+reportAllReq.getBranch()+"'  AND a.FUEL_STATUS in ('P','UP') and a.OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" ;
+            }
+            else if((reportAllReq.getStartDate() == null) && (reportAllReq.getEndDate() == null) && (reportAllReq.getStatus_fuel() != null)) {
+                log.info("SQL.5:"+sql);
+                sql ="select * from V_RE_ALL a inner join LOGIN b ON (a.userId=b.KEY_ID) JOIN FUEL_STATION f ON (a.FUEL_STATION_ID = f.FUEL_STATION_ID) where b.BRANCH='"+reportAllReq.getBranch()+"'  AND a.FUEL_STATUS = '"+reportAllReq.getStatus_fuel()+"'" ;
+            }
+            else if((reportAllReq.getFuelStationId() != null) && (reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (reportAllReq.getStatus_fuel() != null))
+            {
+                log.info("SQL.6:"+sql);
+                sql ="select * from V_RE_ALL a join LOGIN b ON (a.userId=b.KEY_ID) JOIN FUEL_STATION f ON (a.FUEL_STATION_ID = f.FUEL_STATION_ID) where b.BRANCH='"+reportAllReq.getBranch()+"'  AND f.FUEL_STATION_ID='"+reportAllReq.getFuelStationId()+"' AND a.FUEL_STATUS = '"+reportAllReq.getStatus_fuel()+"'  and a.OUT_DATE BETWEEN '" +reportAllReq.getStartDate()+"' and '" +reportAllReq.getEndDate() +"'" ;
+            }
+            else if(reportAllReq.getFuelStationId() != null && reportAllReq.getStartDate() == null && reportAllReq.getEndDate() == null && reportAllReq.getStatus_fuel() == null)
+            {
+                log.info("SQL.7:"+sql);
+                sql ="select * from V_RE_ALL a join LOGIN b ON (a.userId=b.KEY_ID) JOIN FUEL_STATION f ON (a.FUEL_STATION_ID = f.FUEL_STATION_ID) where b.BRANCH='"+reportAllReq.getBranch()+"'  AND f.FUEL_STATION_ID='"+reportAllReq.getFuelStationId()+"' " ;
+            }
+            return EBankJdbcTemplate.query(sql, new RowMapper<ReportFuel>() {
+                @Override
+                public ReportFuel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ReportFuel tr =new ReportFuel();
+
+                    tr.setKeyIds(rs.getString("KEY_ID2"));
+                    tr.setDel(rs.getString("LAHUD_POYLOD"));
+                    tr.setPlateTruckHead(rs.getString("H_VICIVLE_NUMBER"));
+                    tr.setDateFillFuel(rs.getString("OUT_DATE"));
+                    tr.setLidFuel(rs.getDouble("SAINUMMUN"));
+                    tr.setPumpName(rs.getString("FUEL_STATION_NAME"));
+                    tr.setVillage(rs.getString("VILLAGE"));
+                    tr.setDistrict(rs.getString("DISTRICT"));
+                    tr.setProvince(rs.getString("PROVICNE"));
+                    tr.setPumpName(rs.getString("FUEL_STATION_NAME"));
+                    tr.setVillage(rs.getString("VILLAGE"));
+                    tr.setDistrict(rs.getString("DISTRICT"));
+                    tr.setProvince(rs.getString("PROVICNE"));
+                    tr.setPrizPerLid(rs.getDouble("PRIECENUMNUN"));
+                    tr.setStatus_fuel(rs.getString("FUEL_STATUS"));
+                    String lidFuel = rs.getString("SAINUMMUN").replaceAll(",","");
+
+                    double conVertnumMun = Double.parseDouble(lidFuel);
+                    tr.setTotalLidFuel(conVertnumMun);
+                    //----------------------total price nammun
+                    String numtotalPriceNammun = rs.getString("PRIECENUMNUN").replaceAll(",","");
+                    double conVerttotalPriceNammun  = Double.parseDouble(numtotalPriceNammun);
+                    tr.setTotalPrizeFuel(conVerttotalPriceNammun);
+
+
+
+                    double countTotalNummun = conVerttotalPriceNammun*conVertnumMun;
+                    tr.setTotalPrizeFuelAll(countTotalNummun);
+                    return tr;
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    //end  Report Fuel
 
     public List<ReportAll> ListAllReportProductType02(@RequestBody  ReportAllReq reportAllReq) {
         try {
             if(reportAllReq.getStartDate() == null  && reportAllReq.getStatus().equals("A")){
-                sql ="select '1' as type,  \n" +
-                        "                                                PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,  \n" +
-                        "                                                H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,  \n" +
-                        "                                                CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,  \n" +
-                        "                                                PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,  \n" +
-                        "                                                STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,  \n" +
-                        "                                                FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,  \n" +
-                        "                                                H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type,   a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal ,\n" +
                         "                                                0 as total  \n" +
-                        "                                                from V_RE_ALL  \n" +
+                        "                                                from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"'  \n" +
                         "                                                union  \n" +
                         "select '2' as type,  \n" +
                         "                                                0 as PRICE,0 as TOTAL_PRICE,0 as PRIECENUMNUN,0 as STAFT_ID,0 as STAFT_NAME,0 as STAFT_SURNAME,0 as STAFT_ID1,0 as STAFT_NAME1,  \n" +
@@ -500,21 +540,15 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "                                                0 as HEADER_ID,0 as FOOTER_ID,0 as OUT_DATE,0 as IN_DATE,0 as LAIYATHANG,0 as SAINUMMUN,0 as NUMNUKLOD,0 as KONGNARLOD,  \n" +
                         "                                                0 as KHG_MUE_TIDLOD,0 as KIM_KILO,0 as LAHUD_POYLOD,0 as H_LEK_NUMMUNKHG,EXPDATE as DETAILS_DATE,0 as D_STATUS,0 as CURRENCY,  \n" +
                         "                                                0 as STAFF_BIALIENG_CUR,0 as totalDay, 0 as RunningTotal, \n" +
-                        "                                                sum (TOTAL) as total from V_EXPENSES where STATUS in('PAY')  ";
+                        "                                                sum (TOTAL) as total from V_EXPENSES where STATUS in('PAY') AND BRANCH='"+reportAllReq.getBranch()+"' ";
             }
             else if(reportAllReq.getStartDate() == null && !(reportAllReq.getStatus().equals("A"))){
-                sql ="select '1' as type,\n" +
-                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
-                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
-                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
-                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
-                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
-                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
-                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type, a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal ,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where d_status ='"+reportAllReq.getStatus()+"'\n" +
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"' AND a.d_status ='"+reportAllReq.getStatus()+"'\n" +
                         "union\n" +
                         "select '2' as type,\n" +
                         "0 PRICE,0 as TOTAL_PRICE,0 as PRIECENUMNUN,0 as STAFT_ID,0 as STAFT_NAME,0 as STAFT_SURNAME,0 as STAFT_ID1,0 as STAFT_NAME1,\n" +
@@ -526,22 +560,16 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "0 as HEADER_ID,0 as FOOTER_ID,0 as OUT_DATE,0 as IN_DATE,0 as LAIYATHANG,0 as SAINUMMUN,0 as NUMNUKLOD,0 as KONGNARLOD,\n" +
                         "0 as KHG_MUE_TIDLOD,0 as KIM_KILO,0 as LAHUD_POYLOD,0 as H_LEK_NUMMUNKHG,EXPDATE as DETAILS_DATE,0 as D_STATUS,0 as CURRENCY,\n" +
                         "0 as STAFF_BIALIENG_CUR,0 as totalDay,0 as RunningTotal,\n" +
-                        "sum (TOTAL) as total from V_EXPENSES where STATUS in('PAY')";
+                        "sum (TOTAL) as total from V_EXPENSES where STATUS in('PAY') AND BRANCH='"+reportAllReq.getBranch()+"'";
             }
             else if((reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (reportAllReq.getStatus().equals("A")))
             {
-                sql ="select '1' as type,\n" +
-                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
-                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
-                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
-                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
-                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
-                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
-                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type, a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where D_STATUS IN ('N', 'Y') AND DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" +
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"' AND a.D_STATUS IN ('N', 'Y') AND a.OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" +
                         "union\n" +
                         "select '2' as type,\n" +
                         "0 PRICE,0 as TOTAL_PRICE,0 as PRIECENUMNUN,0 as STAFT_ID,0 as STAFT_NAME,0 as STAFT_SURNAME,0 as STAFT_ID1,0 as STAFT_NAME1,\n" +
@@ -553,23 +581,17 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "0 as HEADER_ID,0 as FOOTER_ID,0 as OUT_DATE,0 as IN_DATE,0 as LAIYATHANG,0 as SAINUMMUN,0 as NUMNUKLOD,0 as KONGNARLOD,\n" +
                         "0 as KHG_MUE_TIDLOD,0 as KIM_KILO,0 as LAHUD_POYLOD,0 as H_LEK_NUMMUNKHG,EXPDATE as DETAILS_DATE,0 as D_STATUS,0 as CURRENCY,\n" +
                         "0 as STAFF_BIALIENG_CUR,0 as totalDay,0 as RunningTotal,\n" +
-                        "sum (TOTAL) as total from V_EXPENSES where STATUS in ('PAY')";
+                        "sum (TOTAL) as total from V_EXPENSES where STATUS in ('PAY') AND BRANCH='"+reportAllReq.getBranch()+"' and EXPDATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'";
 
                 //sql ="SELECT * FROM V_RE_ALL WHERE D_STATUS IN ('N', 'Y') AND DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             else if((reportAllReq.getStartDate() == null) && (reportAllReq.getEndDate() == null) && (!reportAllReq.getStatus().equals("A"))) {
-                sql ="select '1' as type,\n" +
-                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
-                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
-                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
-                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
-                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
-                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
-                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type, a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' " +
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where a.D_STATUS = '"+reportAllReq.getStatus()+"' AND b.BRANCH='"+reportAllReq.getBranch()+"'" +
                         "union\n" +
                         "select '2' as type,\n" +
                         "0 PRICE,0 as TOTAL_PRICE,0 as PRIECENUMNUN,0 as STAFT_ID,0 as STAFT_NAME,0 as STAFT_SURNAME,0 as STAFT_ID1,0 as STAFT_NAME1,\n" +
@@ -581,22 +603,16 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "0 as HEADER_ID,0 as FOOTER_ID,0 as OUT_DATE,0 as IN_DATE,0 as LAIYATHANG,0 as SAINUMMUN,0 as NUMNUKLOD,0 as KONGNARLOD,\n" +
                         "0 as KHG_MUE_TIDLOD,0 as KIM_KILO,0 as LAHUD_POYLOD,0 as H_LEK_NUMMUNKHG,EXPDATE as DETAILS_DATE,0 as D_STATUS,0 as CURRENCY,\n" +
                         "0 as STAFF_BIALIENG_CUR,0 as totalDay,0 as RunningTotal,\n" +
-                        "sum (TOTAL) as total from V_EXPENSES where STATUS in ('PAY')";
+                        "sum (TOTAL) as total from V_EXPENSES where STATUS in ('PAY') AND BRANCH='"+reportAllReq.getBranch()+"' ";
                // sql = "select * from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             else if((reportAllReq.getStartDate() != null) && (reportAllReq.getEndDate() != null) && (!reportAllReq.getStatus().equals("A"))) {
-                sql ="select '1' as type,\n" +
-                        "PRICE,TOTAL_PRICE,PRIECENUMNUN,STAFT_ID,STAFT_NAME,STAFT_SURNAME,STAFT_ID1,STAFT_NAME1,STAFT_SURNAME1,\n" +
-                        "H_VICIVLE_NUMBER,H_VICIVLE_BRANCHTYPE,F_BRANCH,F_CARD_NO,F_CAR_TYPE,PROVINCE,DETAIL,PROVINCE1,DETAIL1,\n" +
-                        "CUSTOMER_ID,CUSTOMER_NAME,PRODUCT_ID,PRO_NAME,PRO_TYPE,PRODUCT_AMOUNT,PRODUCT_SIZE,PRODUCT_DETAILS,\n" +
-                        "PRODUCT_FROM,PRODUCT_TO,PLACE_PD_FROM,PLACE_PD_TO,STAFF_ID_NUM1,STAFF_ID_NUM2,STAFF_BIALIENG,STAFF_BIALIENG_FRIST,\n" +
-                        "STAFF_BIALINEG_KANGJAIY,STAFF_BIALINEG_KANGsecond,staff02_payAll,staff02_beforepay,staff02_notpay,HEADER_ID,\n" +
-                        "FOOTER_ID,OUT_DATE,IN_DATE,LAIYATHANG,SAINUMMUN,NUMNUKLOD,KONGNARLOD,KHG_MUE_TIDLOD,KIM_KILO,LAHUD_POYLOD,\n" +
-                        "H_LEK_NUMMUNKHG,DETAILS_DATE,D_STATUS,CURRENCY,STAFF_BIALIENG_CUR,totalDay,( feeOvertime1 +  \n" +
-                        "                                                                        feeJumPo2 + feeTaxung4 + feeTiew5 + feeLakSao + feePassport + feevacin + feesing + feesaphan + feeyoktu  + \n" +
-                        "                                                                        feecontrainer + feepayang)  AS RunningTotal ,\n" +
+                sql ="select '1' as type, a.PRICE,a.TOTAL_PRICE,a.PRIECENUMNUN,a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,a.STAFT_ID1,a.STAFT_NAME1,a.STAFT_SURNAME1,\n" +
+                        " a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCHTYPE,a.F_BRANCH,a.F_CARD_NO,a.F_CAR_TYPE,a.PROVINCE,a.DETAIL,a.PROVINCE1,a.DETAIL1,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.PRODUCT_ID,a.PRO_NAME,a.PRO_TYPE,a.PRODUCT_AMOUNT,a.PRODUCT_SIZE,a.PRODUCT_DETAILS,a.PRODUCT_FROM,a.PRODUCT_TO,a.PLACE_PD_FROM,a.PLACE_PD_TO,a.STAFF_ID_NUM1,a.STAFF_ID_NUM2,a.STAFF_BIALIENG,a.STAFF_BIALIENG_FRIST,\n" +
+                        " a.STAFF_BIALINEG_KANGJAIY,a.STAFF_BIALINEG_KANGsecond,a.staff02_payAll,a.staff02_beforepay,a.staff02_notpay,a.HEADER_ID,a.FOOTER_ID,a.OUT_DATE,a.IN_DATE,a.LAIYATHANG,a.SAINUMMUN,a.NUMNUKLOD,a.KONGNARLOD,a.KHG_MUE_TIDLOD,a.KIM_KILO,a.LAHUD_POYLOD,a.H_LEK_NUMMUNKHG,a.DETAILS_DATE,a.D_STATUS,a.CURRENCY,a.STAFF_BIALIENG_CUR,a.totalDay,\n" +
+                        "(a.feeOvertime1 + a.feeJumPo2 + a.feeTaxung4 + a.feeTiew5 + a.feeLakSao + a.feePassport + a.feePolish3 + a.feevacin + a.feesing + a.feesaphan + a.feeyoktu  + a.feecontrainer + a.feepayang + a.add_feeOvertime1 + a.add_feeJumPo2 + a.add_feePolish3 + a.add_feeTaxung4 + a.add_feeTiew5 + a.add_feesing + a.add_feesaphan + a.add_feeyoktu + a.add_feecontrainer + a.add_feepayang)  AS RunningTotal ,\n" +
                         "0 as total\n" +
-                        "from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and DETAILS_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" +
+                        "from V_RE_ALL a inner join LOGIN b ON a.userId=b.KEY_ID where BRANCH='"+reportAllReq.getBranch()+"' AND a.D_STATUS = '"+reportAllReq.getStatus()+"' and a.OUT_DATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'" +
                         "union\n" +
                         "select '2' as type,\n" +
                         "0 PRICE,0 as TOTAL_PRICE,0 as PRIECENUMNUN,0 as STAFT_ID,0 as STAFT_NAME,0 as STAFT_SURNAME,0 as STAFT_ID1,0 as STAFT_NAME1,\n" +
@@ -608,7 +624,7 @@ public class ReportAllServiceDao implements ReportAllDao{
                         "0 as HEADER_ID,0 as FOOTER_ID,0 as OUT_DATE,0 as IN_DATE,0 as LAIYATHANG,0 as SAINUMMUN,0 as NUMNUKLOD,0 as KONGNARLOD,\n" +
                         "0 as KHG_MUE_TIDLOD,0 as KIM_KILO,0 as LAHUD_POYLOD,0 as H_LEK_NUMMUNKHG,EXPDATE as DETAILS_DATE,0 as D_STATUS,0 as CURRENCY,\n" +
                         "0 as STAFF_BIALIENG_CUR,0 as totalDay,0 as RunningTotal,\n" +
-                        "sum (TOTAL) as total from V_EXPENSES where STATUS in ('PAY')";
+                        "sum (TOTAL) as total from V_EXPENSES where STATUS in ('PAY') AND BRANCH='"+reportAllReq.getBranch()+"'  and EXPDATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'";
                 // sql = "select * from V_RE_ALL where D_STATUS = '"+reportAllReq.getStatus()+"' and  DETAILS_DATE between '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "' ";
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportAll>() {

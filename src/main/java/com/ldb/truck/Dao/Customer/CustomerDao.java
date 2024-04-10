@@ -20,7 +20,7 @@ public interface CustomerDao {
     List<StaffDetails> ListDetailStaff(StaffPayReq staffPayReq);
     List<StaffPay> ListStaffPay(StaffPayReq staffPayReq);
     List<ReportStaff> ListStaffPaydetailsByStaffId(StaffPayReq staffPayReq);
-    List<ReportStaff> ListWaiyPaymentStaff();
+    List<ReportStaff> ListWaiyPaymentStaff(StaffPaymentReq staffPaymentReq);
     List<ReportStaff> ReportStaffPeymnet(ResFromDateReq resFromDateReq);
     public int paymentStaff(StaffPaymentReq staffPaymentReq) throws ParseException;
     public int paymentStaffUpdate(StaffPaymentReq staffPaymentReq) throws ParseException;
@@ -30,7 +30,7 @@ public interface CustomerDao {
     int UpdateCustomer (CustomerReq custoerReq);
     int deleteCustomer (String id);
     List<staftOut> getChooseStaft01(stafReq stafReq);
-    public List<staftOut> getChooseStaft02();
+    public List<staftOut> getChooseStaft02(stafReq stafReq);
     List<staftOut> getAllStaft();
     List<staftOut> getStaftById( String id);
     int StoreStaft(stafReq stafReq);

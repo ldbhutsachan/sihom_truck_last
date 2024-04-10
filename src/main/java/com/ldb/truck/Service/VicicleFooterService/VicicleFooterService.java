@@ -1,7 +1,9 @@
 package com.ldb.truck.Service.VicicleFooterService;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.VicicleFooterDao.VicicleFooterServiceDao;
 import com.ldb.truck.Model.Login.Messages;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterRes;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterReq;
@@ -19,6 +21,8 @@ import java.util.List;
 
 @Service
 public class VicicleFooterService {
+    @Autowired
+    ProfileDao profileDao;
     private static final Logger log = LogManager.getLogger(VicicleFooterService.class);
     @Autowired
     private VicicleFooterServiceDao vicicleFooterServiceDao;
@@ -38,11 +42,26 @@ public class VicicleFooterService {
         }
     }
     //--show all data
-    public VicicleFooterRes listViciclefooter (){
+    public VicicleFooterRes listViciclefooter (VicicleFooterReq vicicleFooterReq){
+        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        vicicleFooterReq.setUserId(userId);
+        vicicleFooterReq.setBranch(userBranchNo);
+        //====================================================================
         List<VicicleFooter> vicicleHeaders = new ArrayList<>();
         VicicleFooterRes result = new VicicleFooterRes();
+
         try {
-            vicicleHeaders = vicicleFooterServiceDao.ListVicicleFooter();
+            vicicleHeaders = vicicleFooterServiceDao.ListVicicleFooter(vicicleFooterReq);
             if(vicicleHeaders.size() < 1 ){
                 result.setMessage("data not found");
                 result.setStatus("01");
@@ -60,11 +79,25 @@ public class VicicleFooterService {
         }
     }
     //--combo
-    public VicicleFooterRes listViciclefootercombox1(){
+    public VicicleFooterRes listViciclefootercombox1(VicicleFooterReq vicicleFooterReq){
+        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        vicicleFooterReq.setUserId(userId);
+        vicicleFooterReq.setBranch(userBranchNo);
+        //====================================================================
         List<VicicleFooter> vicicleHeaders = new ArrayList<>();
         VicicleFooterRes result = new VicicleFooterRes();
         try {
-            vicicleHeaders = vicicleFooterServiceDao.ListVicicleFooterCombo1();
+            vicicleHeaders = vicicleFooterServiceDao.ListVicicleFooterCombo1(vicicleFooterReq);
             if(vicicleHeaders.size() < 1 ){
                 result.setMessage("data not found");
                 result.setStatus("01");
@@ -83,6 +116,20 @@ public class VicicleFooterService {
     }
     //--show all data
     public VicicleFooterRes listViciclefooterbyID (VicicleFooterReq vicicleFooterReq){
+        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        vicicleFooterReq.setUserId(userId);
+        vicicleFooterReq.setBranch(userBranchNo);
+        //====================================================================
         List<VicicleFooter> vicicleHeaders = new ArrayList<>();
         VicicleFooterRes result = new VicicleFooterRes();
         try {
@@ -105,6 +152,20 @@ public class VicicleFooterService {
     }
     //--insert data
     public VicicleFooterRes saveVicicleHeader(VicicleFooterReq vicicleFooterReq){
+        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        vicicleFooterReq.setUserId(userId);
+        vicicleFooterReq.setBranch(userBranchNo);
+        //====================================================================
         log.info("data req:"+vicicleFooterReq);
         VicicleFooterRes result = new VicicleFooterRes();
         try {
@@ -120,6 +181,20 @@ public class VicicleFooterService {
         }
     }
     public Messages saveVicicleFooter(VicicleFooterReq vicicleFooterReq){
+        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        vicicleFooterReq.setUserId(userId);
+        vicicleFooterReq.setBranch(userBranchNo);
+        //====================================================================
         log.info("data req:"+vicicleFooterReq);
         Messages result = new Messages();
         try {
@@ -136,6 +211,20 @@ public class VicicleFooterService {
     }
 //update footer new
     public Messages updateVicicleFooter(VicicleFooterReq vicicleFooterReq){
+        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        vicicleFooterReq.setUserId(userId);
+        vicicleFooterReq.setBranch(userBranchNo);
+        //====================================================================
         log.info("data req:"+vicicleFooterReq);
         Messages result = new Messages();
         try {
@@ -152,6 +241,20 @@ public class VicicleFooterService {
     }
     //update data
     public VicicleFooterRes updateVicicleHeader(VicicleFooterReq vicicleFooterReq){
+        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        vicicleFooterReq.setUserId(userId);
+        vicicleFooterReq.setBranch(userBranchNo);
+        //====================================================================
         VicicleFooterRes result = new VicicleFooterRes();
         try {
             vicicleFooterServiceDao.updateVicicleFooter(vicicleFooterReq);
@@ -170,6 +273,20 @@ public class VicicleFooterService {
 
     //Report Footer
     public  VicicleFooterRes ReportFooter(ReportAllReq reportAllReq){
+        log.info("toKen=======================:"+reportAllReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        reportAllReq.setUserId(userId);
+        reportAllReq.setBranch(userBranchNo);
+        //====================================================================
         VicicleFooterRes result = new VicicleFooterRes();
         List<VicicleFooter> listData = new ArrayList<>();
         try {

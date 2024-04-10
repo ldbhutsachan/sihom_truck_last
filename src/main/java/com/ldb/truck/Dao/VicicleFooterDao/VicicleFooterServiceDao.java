@@ -27,9 +27,10 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
     @Override
-    public List<VicicleFooter> ListVicicleFooter() {
+    public List<VicicleFooter> ListVicicleFooter(VicicleFooterReq vicicleFooterReq) {
         try {
-            String sql = "select * from V_ALL_FOOTER_TRUCH ";
+//            String sql = "select * from V_ALL_FOOTER_TRUCH ";
+            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH = '"+vicicleFooterReq.getBranch()+"' ";
             return EBankJdbcTemplate.query(sql, new RowMapper<VicicleFooter>() {
                 @Override
                 public VicicleFooter mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -144,12 +145,12 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
     @Override
     public List<VicicleFooter> ListVicicleFooterByID(VicicleFooterReq vicicleFooterReq) {
         try {
-            String sql = "select * from V_ALL_FOOTER_TRUCH WHERE KEY_ID= '"+vicicleFooterReq.getKey_id()+"'";
+            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b on a.userId =b.KEY_ID WHERE a.KEY_ID= '"+vicicleFooterReq.getKey_id()+"' and b.BRANCH = '"+vicicleFooterReq.getBranch()+"'";
             return EBankJdbcTemplate.query(sql, new RowMapper<VicicleFooter>() {
                 @Override
                 public VicicleFooter mapRow(ResultSet rs, int rowNum) throws SQLException {
                     VicicleFooter tr =new VicicleFooter();
-                    tr.setKey_id(rs.getString("key_id"));
+                    tr.setKey_id(rs.getString("KEY_ID"));
                     tr.setF_BRANCH(rs.getString("F_BRANCH"));
                     tr.setF_YEAR(rs.getString("F_YEAR"));
                     tr.setF_CAR_TYPE(rs.getString("F_CAR_TYPE"));
@@ -299,7 +300,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     "                    F_KM_LL13=?, \n" +
                     "                    F_KM_LL14=?, \n" +
                     "                    F_KM_LL15=?, \n" +
-                    "                    F_KM_LL16=?,IMG_FOOT_TRUCK=? where KEY_ID='"+vicicleFooterReq.getKey_id()+"' ";
+                    "                    F_KM_LL16=?,IMG_FOOT_TRUCK=? , userId=? where KEY_ID='"+vicicleFooterReq.getKey_id()+"' ";
 
             log.info("sql:"+sql);
             List<Object> paramList = new ArrayList<Object>();
@@ -402,6 +403,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
             paramList.add(vicicleFooterReq.getF_KM_LL15());
             paramList.add(vicicleFooterReq.getF_KM_LL16());
             paramList.add(path+fileName);
+            paramList.add(vicicleFooterReq.getUserId());
 //            paramList.add(vicicleFooterReq.getImgFootTruck());
 
             return EBankJdbcTemplate.update(sql, paramList.toArray());
@@ -453,8 +455,8 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     "                    F_KM_LL13 , \n" +
                     "                    F_KM_LL14 , \n" +
                     "                    F_KM_LL15 , \n" +
-                    "                    F_KM_LL16,IMG_FOOT_TRUCK)  \n" +
-                    "                    values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+                    "                    F_KM_LL16,IMG_FOOT_TRUCK,userId)  \n" +
+                    "                    values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleFooterReq.getF_BRANCH());
             paramList.add(vicicleFooterReq.getF_YEAR ());
@@ -553,6 +555,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
             paramList.add(vicicleFooterReq.getF_KM_LL15());
             paramList.add(vicicleFooterReq.getF_KM_LL16());
             paramList.add(path+fileName);
+            paramList.add(vicicleFooterReq.getUserId());
 //            paramList.add(vicicleFooterReq.getImgFootTruck());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
         }catch (Exception e){
@@ -601,8 +604,8 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     "F_KM_LL13 ,\n" +
                     "F_KM_LL14 ,\n" +
                     "F_KM_LL15 ,\n" +
-                    "F_KM_LL16,IMG_FOOT_TRUCK) " +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+                    "F_KM_LL16,IMG_FOOT_TRUCK, userId) " +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
            log.info("sql:"+sql);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleFooterReq.getF_BRANCH());
@@ -703,6 +706,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
             paramList.add(vicicleFooterReq.getF_KM_LL15());
             paramList.add(vicicleFooterReq.getF_KM_LL16());
             paramList.add(vicicleFooterReq.getImgFootTruck());
+            paramList.add(vicicleFooterReq.getUserId());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
 
         }catch (Exception e){
@@ -774,7 +778,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     "F_KM_LL13=?,\n" +
                     "F_KM_LL14=?,\n" +
                     "F_KM_LL15=?,\n" +
-                    "F_KM_LL16=?,IMG_FOOT_TRUCK=? where key_id='"+vicicleFooterReq.getKey_id()+"'";
+                    "F_KM_LL16=?,IMG_FOOT_TRUCK=?,userId=? where key_id='"+vicicleFooterReq.getKey_id()+"'";
             log.info("sql"+sql);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleFooterReq.getF_BRANCH());
@@ -875,6 +879,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
             paramList.add(vicicleFooterReq.getF_KM_LL15());
             paramList.add(vicicleFooterReq.getF_KM_LL16());
             paramList.add(vicicleFooterReq.getImgFootTruck());
+            paramList.add(vicicleFooterReq.getUserId());
 
 
             return EBankJdbcTemplate.update(sql, paramList.toArray());
@@ -890,7 +895,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
         log.info("start:"+reportAllReq.getStartDate());
         log.info("end:"+reportAllReq.getEndDate());
         try {
-            String sql = "select * from V_RE_FOOTER_HIS where HIS_DATE1 BETWEEN '"+reportAllReq.getStartDate()+"' AND '"+reportAllReq.getEndDate()+"'";
+            String sql = "select * from V_RE_FOOTER_HIS a inner join LOGIN b ON a.userId=b.KEY_ID where a.HIS_DATE1 BETWEEN '"+reportAllReq.getStartDate()+"' AND '"+reportAllReq.getEndDate()+"' AND b.BRANCH='"+reportAllReq.getBranch()+"'";
            log.info("sql:"+sql);
             return EBankJdbcTemplate.query(sql, new RowMapper<VicicleFooter>() {
                 @Override
@@ -1006,9 +1011,9 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
     }
 
     @Override
-    public List<VicicleFooter> ListVicicleFooterCombo1() {
+    public List<VicicleFooter> ListVicicleFooterCombo1(VicicleFooterReq vicicleFooterReq) {
         try {
-            String sql = "select * from V_ALL_FOOTER_TRUCH WHERE F_STATUS='Y' ";
+            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b ON a.userId=b.KEY_ID  WHERE F_STATUS='Y' AND b.BRANCH='"+vicicleFooterReq.getBranch()+"'";
             return EBankJdbcTemplate.query(sql, new RowMapper<VicicleFooter>() {
                 @Override
                 public VicicleFooter mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1171,8 +1176,8 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     "F_KM_LL13,\n" +
                     "F_KM_LL14,\n" +
                     "F_KM_LL15,\n" +
-                    "F_KM_LL16) " +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N',now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+                    "F_KM_LL16,userId) " +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N',now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
            // log.info("sql"+sql);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleFooterReq.getF_BRANCH());
@@ -1272,6 +1277,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
             paramList.add(vicicleFooterReq.getF_KM_LL14());
             paramList.add(vicicleFooterReq.getF_KM_LL15());
             paramList.add(vicicleFooterReq.getF_KM_LL16());
+            paramList.add(vicicleFooterReq.getUserId());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
 
         }catch (Exception e){

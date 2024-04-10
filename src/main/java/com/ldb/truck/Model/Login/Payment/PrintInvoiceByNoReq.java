@@ -11,4 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PrintInvoiceByNoReq {
     private String billNo;
+    private String toKen;
+    private String branch;
+    private String userId;
 }

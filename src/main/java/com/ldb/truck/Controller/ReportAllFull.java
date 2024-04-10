@@ -80,6 +80,7 @@ public class ReportAllFull {
     @CrossOrigin(origins = "*")
     @PostMapping("/ReportHeader.service")
     public VicicleHeaderRes ReportHeaderHis(@RequestBody ReportAllReq vicicleHeaderReq){
+
             VicicleHeaderRes result = new VicicleHeaderRes();
             try {
                 result  = vicicleHeaderService.ReportHeaderHis(vicicleHeaderReq);
@@ -129,6 +130,21 @@ public class ReportAllFull {
         ReportAllRes result = new ReportAllRes();
         try {
             result= reportAllService.ListReportAllProduct(reportAllReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/ShowAllReportFuel.service")
+    public ReportFuelRes ReportFuealStation (@RequestBody ReportAllReq reportAllReq){
+        ReportFuelRes result = new ReportFuelRes();
+        try {
+            result = reportAllService.ReportFuealStation(reportAllReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

@@ -31,6 +31,8 @@ public class v_performance {
     private String totalDay;
     private String currency;
     private String staff_Curr;
+    private String lAHUD_POYLOD;
+    private String kEY_ID2;
 
     private String sTAFF_BIALIENG;
     private String pERFORMANCEOVERTIME;
@@ -47,8 +49,20 @@ public class v_performance {
     private String pERFORMANCEFEEYOKTU;
     private String pERFORMANCEFEEOUTCONTAINER;
     private String pERFORMANCEFE_PAYANG;
-    private String proSize;
-
+    private Double proSize;
+    private String prizeProcuctPerT;
 
     private String price;
+
+    private String add_feeOvertime1;
+    private String add_feeJumPo2;
+    private String add_feePolish3;
+    private String add_feeTaxung4;
+    private String add_feeTiew5;
+    private String add_feesing;
+    private String add_feesaphan;
+    private String add_feeyoktu;
+    private String add_feecontrainer;
+    private String add_feepayang;
+
 }

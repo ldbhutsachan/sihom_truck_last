@@ -5,7 +5,10 @@ import com.ldb.truck.Model.Login.Payment.InvoiceDetailReq;
 import com.ldb.truck.Model.Login.Payment.invoiceDetailRes;
 import com.ldb.truck.Model.Login.Performance.Performance;
 import com.ldb.truck.Model.Login.Performance.PerformanceReq;
+import com.ldb.truck.Model.Login.Performance.WastedValueReqq;
+import com.ldb.truck.Model.Login.Performance.WastedValueRes;
 import com.ldb.truck.Model.Login.RevertModel.PerformanceModelRes;
+import com.ldb.truck.Model.Login.WastedValue.WastedValueReq;
 import com.ldb.truck.Service.RevertTransactionService.RevertInvoiceService;
 import com.ldb.truck.Service.RevertTransactionService.RevertPerformanceServcie;
 import org.apache.logging.log4j.LogManager;
@@ -117,6 +120,22 @@ public class RevertTransactionController {
         PerformanceModelRes result =new PerformanceModelRes();
         try{
             result = revertPerformanceServcie.showPerformanceByNo(vPerformanceReq);
+            result.setStatus("00");
+            result.setMessage("success");
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("data not found");
+        }
+        return  result;
+    }
+    //show Wasted value
+    @CrossOrigin(origins = "*")
+    @PostMapping("/showWastedValue.service")
+    public WastedValueRes showWastedValue (@RequestBody WastedValueReqq wastedValueReqq){
+        WastedValueRes result =new WastedValueRes();
+        try{
+            result = revertPerformanceServcie.showWastedValue(wastedValueReqq);
             result.setStatus("00");
             result.setMessage("success");
         }catch (Exception e){

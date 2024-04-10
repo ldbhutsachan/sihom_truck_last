@@ -29,9 +29,11 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
     @Override
-    public List<VicicleHeader> listVicicleHeader() {
+    public List<VicicleHeader> listVicicleHeader(VicicleHeaderReq vicicleHeaderReq) {
         try{
-            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID  ";
+      String SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+vicicleHeaderReq.getBranch()+"' ";
+//            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on " +
+//                    "a.batNo =b.KEY_ID AND (a.batNo2 IS NULL OR a.batNo2 = b.KEY_ID) INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+vicicleHeaderReq.getBranch()+"'";
             log.info("SQL"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<VicicleHeader>() {
                 @Override
@@ -159,12 +161,14 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
         try{
             String SQL="";
             log.info("key:"+vicicleHeaderReq.getKey_id());
-                 SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID where a.key_id='"+vicicleHeaderReq.getKey_id()+"'";
+// old           SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID where a.key_id='"+vicicleHeaderReq.getKey_id()+"'";
+                 SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.key_id='"+vicicleHeaderReq.getKey_id()+"' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"' ";
+// have 2 morfai                SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID  AND (a.batNo2 IS NULL OR a.batNo2 = b.KEY_ID) INNER JOIN LOGIN c ON a.userId = c.KEY_ID where a.key_id='"+vicicleHeaderReq.getKey_id()+"' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"' ";
             return EBankJdbcTemplate.query(SQL, new RowMapper<VicicleHeader>() {
                 @Override
                 public VicicleHeader mapRow(ResultSet rs, int rowNum) throws SQLException {
                     VicicleHeader tr = new VicicleHeader();
-                    tr.setKey_id(rs.getString("key_id"));
+                    tr.setKey_id(rs.getString("KEY_ID"));
                     tr.setH_VICIVLE_NUMBER(rs.getString("H_VICIVLE_NUMBER"));
                     tr.setH_VICIVLE_GALATY(rs.getString("H_VICIVLE_GALATY"));
                     tr.setH_VICIVLE_DATE_GALATY(rs.getString("H_VICIVLE_DATE_GALATY"));
@@ -208,13 +212,15 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setLL_TIRE_KM_5(rs.getString("LL_TIRE_KM_5"));
                     tr.setLL_TIRE_KM_6(rs.getString("LL_TIRE_KM_6"));
                     tr.setLL_TIRE_KM_7(rs.getString("LL_TIRE_KM_7"));
+
                     tr.setR_TIRE_NO_1(rs.getString("R_TIRE_NO_1"));
                     tr.setR_TIRE_NO_2(rs.getString("R_TIRE_NO_2"));
                     tr.setR_TIRE_NO_3(rs.getString("R_TIRE_NO_3"));
                     tr.setR_TIRE_NO_4(rs.getString("R_TIRE_NO_4"));
                     tr.setR_TIRE_NO_5(rs.getString("R_TIRE_NO_5"));
-                    tr.setR_TIRE_NO_6(rs.getString("R_TIRE_NO_5"));
+                    tr.setR_TIRE_NO_6(rs.getString("R_TIRE_NO_6"));
                     tr.setR_TIRE_NO_7(rs.getString("R_TIRE_NO_7"));
+
                     tr.setR_TIRE_DATE_1(rs.getString("R_TIRE_DATE_1"));
                     tr.setR_TIRE_DATE_2(rs.getString("R_TIRE_DATE_2"));
                     tr.setR_TIRE_DATE_3(rs.getString("R_TIRE_DATE_3"));
@@ -260,18 +266,22 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setH_KML_12(rs.getString("H_KML_12"));
                     tr.setH_KML_13(rs.getString("H_KML_13"));
                     tr.setBat_StartDate(rs.getString("Bat_StartDate"));
+//                    tr.setBat_StartDate2(rs.getString("Bat_StartDate2"));
                     tr.setBat_EndDate(rs.getString("Bat_EndDate"));
+//                    tr.setBat_EndDate2(rs.getString("Bat_EndDate2"));
                     tr.setImageTruck(rs.getString("IMAGE_TRUK"));
                     tr.setExCarDate(rs.getString("END_DATE_REGISCAR"));
                     tr.setExCarColor(rs.getString("COLOR_CAR"));
                     tr.setExHangMar(rs.getString("HORSEPOWER"));
                     tr.setBatNo(rs.getString("batNo"));
+//                    tr.setBatNo2(rs.getString("batNo2"));
                     tr.setIdMorFai(rs.getString("ID_MORFAI"));
                     tr.setImageMorFai(rs.getString("IMAGE_MORFAI"));
                     tr.setModalMorfai(rs.getString("MODAL_MORFAI"));
                     tr.setSizeMorfai(rs.getString("SIZE_MORFAI"));
                     tr.setServiceLife(rs.getString("SERVICE_LIFE"));
                     tr.setToBatRowStatus(rs.getString("toBatRow"));
+                    tr.setToBatRowStatus2(rs.getString("toBatRow2"));
                     tr.setToBatRowGalanty(rs.getString("toBatRowGalanty"));
                     tr.setToBatRowtabienLod(rs.getString("toBatRowtabienLod"));
 
@@ -332,8 +342,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 ,  \n" +
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
-                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But)\n" +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?)";
+                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But,userId)\n" +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -440,6 +450,10 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLeanGia().replace(",",""));
             paramList.add(vicicleHeaderReq.getLeanFuengThaiy().replace(",",""));
             paramList.add(vicicleHeaderReq.getPha_But());
+            paramList.add(vicicleHeaderReq.getUserId());
+//            paramList.add(vicicleHeaderReq.getBatNo2());
+//            paramList.add(vicicleHeaderReq.getBat_StartDate2());
+//            paramList.add(vicicleHeaderReq.getBat_EndDate2());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -510,7 +524,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,userId=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -621,6 +635,10 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLeanGia());
             paramList.add(vicicleHeaderReq.getLeanFuengThaiy());
             paramList.add(vicicleHeaderReq.getPha_But());
+            paramList.add(vicicleHeaderReq.getUserId());
+//            paramList.add(vicicleHeaderReq.getBatNo2());
+//            paramList.add(vicicleHeaderReq.getBat_StartDate2());
+//            paramList.add(vicicleHeaderReq.getBat_EndDate2());
 
             paramList.add(vicicleHeaderReq.getKey_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
@@ -691,7 +709,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,userId=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -801,6 +819,10 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLeanGia());
             paramList.add(vicicleHeaderReq.getLeanFuengThaiy());
             paramList.add(vicicleHeaderReq.getPha_But());
+            paramList.add(vicicleHeaderReq.getUserId());
+//            paramList.add(vicicleHeaderReq.getBatNo2());
+//            paramList.add(vicicleHeaderReq.getBat_StartDate2());
+//            paramList.add(vicicleHeaderReq.getBat_EndDate2());
 
             paramList.add(vicicleHeaderReq.getKey_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
@@ -854,8 +876,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
                     "H_KML_12)\n" +
-                    "H_KML_13,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,IMAGE_TRUK,batNo,saiystay,galick,leanGia,leanFuengThaiy,Pha_But)\n" +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N',now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,?,?,?,?,?,?,?)";
+                    "H_KML_13,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,IMAGE_TRUK,batNo,saiystay,galick,leanGia,leanFuengThaiy,Pha_But,userId)\n" +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N',now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,?,?,?,?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -956,6 +978,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLeanGia());
             paramList.add(vicicleHeaderReq.getLeanFuengThaiy());
             paramList.add(vicicleHeaderReq.getPha_But());
+            paramList.add(vicicleHeaderReq.getUserId());
 
 
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
@@ -969,7 +992,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
         log.info("start:"+vicicleHeaderReq.getStartDate());
         log.info("end:"+vicicleHeaderReq.getEndDate());
         try {
-            String  sql = "SELECT * FROM V_RE_HEADER_HIS WHERE HIS_DATE BETWEEN '"+vicicleHeaderReq.getStartDate()+"' AND '"+vicicleHeaderReq.getEndDate()+"' ";
+//   old         String  sql = "SELECT * FROM V_RE_HEADER_HIS WHERE HIS_DATE BETWEEN '"+vicicleHeaderReq.getStartDate()+"' AND '"+vicicleHeaderReq.getEndDate()+"' ";
+            String  sql = "SELECT * FROM V_RE_HEADER_HIS a inner join LOGIN b ON a.userId =b.KEY_ID WHERE HIS_DATE BETWEEN '"+vicicleHeaderReq.getStartDate()+"' AND '"+vicicleHeaderReq.getEndDate()+"'AND b.BRANCH='"+vicicleHeaderReq.getBranch()+"'";
             return EBankJdbcTemplate.query(sql, new RowMapper<VicicleHeader>() {
                 @Override
                 public VicicleHeader mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1078,9 +1102,12 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
     }
     //header combo1
     @Override
-    public List<VicicleHeader> listVicicleHeaderCombox1() {
+    public List<VicicleHeader> listVicicleHeaderCombox1(VicicleHeaderReq vicicleHeaderReq) {
         try{
-            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID where a.H_STATUS='Y' ";
+//            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID where a.H_STATUS='Y' ";
+//            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
+            String SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
+//            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID  AND (a.batNo2 IS NULL OR a.batNo2 = b.KEY_ID) INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
             return EBankJdbcTemplate.query(SQL, new RowMapper<VicicleHeader>() {
                 @Override
                 public VicicleHeader mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1174,12 +1201,15 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setH_KML_12(rs.getString("H_KML_12"));
                     tr.setToBatRowStatus(rs.getString("toBatRow"));
                     tr.setBat_StartDate(rs.getString("Bat_StartDate"));
+//                    tr.setBat_StartDate2(rs.getString("Bat_StartDate2"));
                     tr.setBat_EndDate(rs.getString("Bat_EndDate"));
+//                    tr.setBat_EndDate2(rs.getString("Bat_EndDate2"));
                     tr.setImageTruck(rs.getString("IMAGE_TRUK"));
                     tr.setExCarDate(rs.getString("END_DATE_REGISCAR"));
                     tr.setExCarColor(rs.getString("COLOR_CAR"));
                     tr.setExHangMar(rs.getString("HORSEPOWER"));
                     tr.setBatNo(rs.getString("batNo"));
+//                    tr.setBatNo2(rs.getString("batNo2"));
                     tr.setIdMorFai(rs.getString("ID_MORFAI"));
                     tr.setImageMorFai(rs.getString("IMAGE_MORFAI"));
                     tr.setModalMorfai(rs.getString("MODAL_MORFAI"));

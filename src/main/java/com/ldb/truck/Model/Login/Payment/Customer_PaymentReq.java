@@ -21,4 +21,7 @@ public class Customer_PaymentReq {
     private String tOTALNUMMUN;
     private String  tOTAL_PRICE;
     private String  sTATUS;
+    private String  toKen;
+    private String  branch;
+    private String  userId;
 }

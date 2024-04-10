@@ -9,11 +9,9 @@ import com.ldb.truck.Model.Login.Payment.Invoice;
 import com.ldb.truck.Model.Login.Payment.InvoiceDetail;
 import com.ldb.truck.Model.Login.Payment.InvoiceDetailReq;
 import com.ldb.truck.Model.Login.Payment.InvoiceReq;
-import com.ldb.truck.Model.Login.Performance.Performance;
-import com.ldb.truck.Model.Login.Performance.PerformanceReq;
-import com.ldb.truck.Model.Login.Performance.v_performance;
-import com.ldb.truck.Model.Login.Performance.v_performanceReq;
+import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.RevertModel.PerformanceModelRes;
+import com.ldb.truck.Model.Login.WastedValue.WastedValueReq;
 
 
 public interface RevertDao {
@@ -45,6 +43,11 @@ public interface RevertDao {
  ///revert performance
     List<Performance> showPerformance();
     List<Performance> showPerformanceByNo(PerformanceReq vPerformanceReq);
+//    List<Performance> showWastedValueDao(WastedValueReq wastedValueReq);
+
+    //wasted --start
+    List<Performance> showWastedValueDao(WastedValueReqq wastedValueReqq);
+
     public int updatePerformanceStatusByNo(PerformanceReq performanceReq);
 
     public int updatePerformanceAllTxn(PerformanceReq vPerformanceReq);

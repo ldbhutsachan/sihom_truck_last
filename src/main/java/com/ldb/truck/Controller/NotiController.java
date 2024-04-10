@@ -1,13 +1,11 @@
 package com.ldb.truck.Controller;
 
+import com.ldb.truck.Model.Login.Noti.NoticeReq;
 import com.ldb.truck.Service.NotiService.NotiService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.ldb.truck.Model.Login.Noti.NotiRes;
 @RestController
 @RequestMapping("${base_url}")
@@ -31,10 +29,10 @@ public class NotiController {
     //===========>show noti tab 3 <==========================================
     @CrossOrigin(origins = "*")
     @PostMapping("/getNotiTab3.service")
-    public NotiRes getNotiTab3(){
+    public NotiRes getNotiTab3(@RequestBody NoticeReq noticeReq){
         NotiRes result = new NotiRes();
         try{
-            result = notiService.listNotiTap3();
+            result = notiService.listNotiTap3(noticeReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

@@ -11,7 +11,6 @@ public interface InvoiceInDao {
     List<Invoice> listInvoiceDetails(ResFromDateReq resFromDateReq);
 
     List<PrintInvoiceByNo> viewPintBillBackByNo(PrintInvoiceByNoReq printInvoiceByNoReq);
-    List<Invoice> List_v_popupPerInVoice();
     List<PrintInvoiceByNo> viewPintBillByNo(PrintInvoiceByNoReq printInvoiceByNoReq);
     List<GenerateInvoiceID> gernerateID();
     List<Invoice>  ListInvoiceAll();
@@ -25,9 +24,6 @@ public interface InvoiceInDao {
     public int CreateMoreInvoice(List<InvoiceDetailReq> invoiceDetailReq);
 
     public int updatePerformance(List<InvoiceDetailReq> invoiceDetailReq);
-
-
-
-
-
+    //--
+    List<Invoice> List_v_popupPerInVoice(InvoiceDetailReq invoiceDetailReq);
 }

@@ -1,10 +1,12 @@
 package com.ldb.truck.Service.OweService;
 import com.ldb.truck.Dao.OweDao.OweDao;
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Owe.*;
 import com.ldb.truck.Model.Login.Pay.PayTxnDetails;
 import com.ldb.truck.Model.Login.Pay.PayTxnDetailsRes;
 import com.ldb.truck.Model.Login.Payment.Customer_Payment;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Service.PayService.PayService;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +21,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class OweService {
+
+    @Autowired
+    ProfileDao profileDao;
     private static final Logger log = LogManager.getLogger(OweService.class);
 @Autowired
 OweDao oweDao;
@@ -40,6 +45,20 @@ OweDao oweDao;
     }
     //---Report
     public OwePayBackRes listReportOwe(ResFromDateReq resFromDateReq){
+        log.info("toKen=======================:"+resFromDateReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(resFromDateReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        resFromDateReq.setUserId(userId);
+        resFromDateReq.setBranch(userBranchNo);
+        //====================================================================
         List<sumOweFooter> resgetSumfooter = new ArrayList<>();
         OwePayBackRes result = new OwePayBackRes();
         List<OwePayBack> resData = new ArrayList<>();

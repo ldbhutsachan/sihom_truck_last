@@ -9,6 +9,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class DetailsReq {
     private String  KEY_ID;
+    private String  toKen;
+    private String  userId;
+    private String  branch;
     private String laHud_poyLod;
     private String CUSTOMER_ID;
     private String PRODUCT_ID;
@@ -67,5 +70,21 @@ public class DetailsReq {
     private String feeyoktu;
     private String feecontrainer;
     private String feepayang;
+//    add new
+    private String add_feeOvertime1;
+    private String add_feeJumPo2;
+    private String add_feePolish3;
+    private String add_feeTaxung4;
+    private String add_feeTiew5;
+    private String add_feesing;
+    private String add_feesaphan;
+    private String add_feeyoktu;
+    private String add_feecontrainer;
+    private String add_feepayang;
+    // fuel_status
+    private String fuel_status;
+    private String fuelStationId;
+
+
 
 }

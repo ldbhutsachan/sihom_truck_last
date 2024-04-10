@@ -5,6 +5,7 @@ import com.ldb.truck.Model.Login.Pay.*;
 import com.ldb.truck.Model.Login.Payment.Customer_PaymentRes;
 import com.ldb.truck.Model.Login.Payment.InvoiceDetailReq;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.TokenOnly.TokenReq;
 import com.ldb.truck.Service.PayService.PayService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,11 +41,11 @@ public class PayController {
     //--gen Bill No
     @CrossOrigin(origins = "*")
     @PostMapping("/getBillNoForPay.service")
-    public getBillNoRes getBillNoForPay(){
+    public getBillNoRes getBillNoForPay(@RequestBody PayReq payReq){
         getBillNoRes result = new getBillNoRes();
         try
         {
-            result  = payService.getBillNoForPay();
+            result  = payService.getBillNoForPay(payReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -102,11 +103,11 @@ public PrintBillPaymentRes listBillPaymentByNo(@RequestBody PrintBillPaymentReq 
 //--show txn bill
 @CrossOrigin(origins = "*")
 @PostMapping("/listTxnPay.service")
-public  PayTxnDetailsRes listTxn(){
+public  PayTxnDetailsRes listTxn(@RequestBody TokenReq tokenReq){
     PayTxnDetailsRes result =new PayTxnDetailsRes();
     try
     {
-        result = payService.listTxn();
+        result = payService.listTxn(tokenReq);
     }catch (Exception e){
         e.printStackTrace();
         result.setStatus("01");
@@ -148,11 +149,11 @@ public  PayCashRes listTxnReportLaiHup(@RequestBody ResFromDateReq resFromDateRe
     //--
     @CrossOrigin(origins = "*")
     @PostMapping("/v_popupPay.service")
-    public  PayTxnDetailsRes v_popupPay(){
+    public  PayTxnDetailsRes v_popupPay(@RequestBody PayReq payReq){
         PayTxnDetailsRes result =new PayTxnDetailsRes();
         try
         {
-            result = payService.v_popupPay();
+            result = payService.v_popupPay(payReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

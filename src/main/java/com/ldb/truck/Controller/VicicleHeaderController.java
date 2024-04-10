@@ -28,10 +28,10 @@ public class VicicleHeaderController {
     private MediaUploadService mediaUploadService;
     @CrossOrigin(origins = "*")
     @PostMapping("/listVicicleHeader.service")
-    public VicicleHeaderRes listVicicleHeader(){
+    public VicicleHeaderRes listVicicleHeader(@RequestBody VicicleHeaderReq vicicleHeaderReq){
         VicicleHeaderRes result = new VicicleHeaderRes();
         try {
-            result = vicicleHeaderService.listVicicleHeader();
+            result = vicicleHeaderService.listVicicleHeader(vicicleHeaderReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -43,10 +43,10 @@ public class VicicleHeaderController {
     //---
     @CrossOrigin(origins = "*")
     @PostMapping("/listVicicleHeaderCombo1.service")
-    public VicicleHeaderRes listVicicleHeaderCombo1(){
+    public VicicleHeaderRes listVicicleHeaderCombo1(@RequestBody VicicleHeaderReq vicicleHeaderReq){
         VicicleHeaderRes result = new VicicleHeaderRes();
         try {
-            result = vicicleHeaderService.listVicicleHeaderCombo1();
+            result = vicicleHeaderService.listVicicleHeaderCombo1(vicicleHeaderReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -201,16 +201,21 @@ public Messages saveVicicleHeader(
         @RequestParam("h_KML_13") String  h_KML_13,
         @RequestParam("bat_StartDate") String  bat_StartDate,
         @RequestParam("bat_EndDate") String  bat_EndDate,
+//        @RequestParam("bat_StartDate2") String  bat_StartDate2,
+//        @RequestParam("bat_EndDate2") String  bat_EndDate2,
         @RequestParam("exCarDate") String  exCarDate,
         @RequestParam("exCarColor") String  exCarColor,
         @RequestParam("exHangMar") String  exHangMar,
         @RequestParam("batNo") String  batNo,
+//        @RequestParam("batNo2") String  batNo2,
 
         @RequestParam("saiystay") String  saiystay,
         @RequestParam("galick") String  galick,
         @RequestParam("leanGia") String  leanGia,
         @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
-        @RequestParam("pha_But") String  pha_But
+        @RequestParam("pha_But") String  pha_But,
+        @RequestParam("toKen") String  toKen
+
 ){
         log.info("===================================save header==================================================");
     Date date = new Date();
@@ -313,16 +318,20 @@ public Messages saveVicicleHeader(
         data.setH_KML_13(h_KML_13);
         data.setBat_StartDate(bat_StartDate);
         data.setBat_EndDate(bat_EndDate);
+//        data.setBat_StartDate2(bat_StartDate2);
+//        data.setBat_EndDate2(bat_EndDate2);
         data.setExCarDate(exCarDate);
         data.setExCarColor(exCarColor);
         data.setExHangMar(exHangMar);
         data.setBatNo(batNo);
+//        data.setBatNo2(batNo2);
 
         data.setSaiystay(saiystay);
         data.setGalick(galick);
         data.setLeanGia(leanGia);
         data.setLeanFuengThaiy(leanFuengThaiy);
         data.setPha_But(pha_But);
+        data.setToKen(toKen);
         log.error("******file lenght"+files);
         log.error(data);
         String fileName = "";
@@ -446,17 +455,21 @@ public Messages saveVicicleHeader(
             @RequestParam("h_KML_13") String  h_KML_13,
             @RequestParam("bat_StartDate") String  bat_StartDate,
             @RequestParam("bat_EndDate") String  bat_EndDate,
+//            @RequestParam("bat_StartDate2") String  bat_StartDate2,
+//            @RequestParam("bat_EndDate2") String  bat_EndDate2,
             @RequestParam("exCarDate") String  exCarDate,
             @RequestParam("exCarColor") String  exCarColor,
             @RequestParam("exHangMar") String  exHangMar,
             @RequestParam("batNo") String  batNo,
+//            @RequestParam("batNo2") String  batNo2,
             @RequestParam("imageTruck") String  imageTruck,
 
             @RequestParam("saiystay") String  saiystay,
             @RequestParam("galick") String  galick,
             @RequestParam("leanGia") String  leanGia,
             @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
-            @RequestParam("pha_But") String  pha_But
+            @RequestParam("pha_But") String  pha_But,
+            @RequestParam("toKen") String  toKen
 
 
     ){
@@ -562,17 +575,21 @@ public Messages saveVicicleHeader(
             data.setH_KML_13(h_KML_13);
             data.setBat_StartDate(bat_StartDate);
             data.setBat_EndDate(bat_EndDate);
+//            data.setBat_StartDate2(bat_StartDate2);
+//            data.setBat_EndDate2(bat_EndDate2);
             data.setExCarDate(exCarDate);
             data.setExCarColor(exCarColor);
             data.setExHangMar(exHangMar);
             data.setBatNo(batNo);
+//            data.setBatNo2(batNo2);
 
             data.setSaiystay(saiystay);
             data.setGalick(galick);
             data.setLeanGia(leanGia);
             data.setLeanFuengThaiy(leanFuengThaiy);
             data.setPha_But(pha_But);
-           // data.setImageTruck(imageTruck);
+            data.setToKen(toKen);
+            data.setImageTruck(imageTruck);
             log.error("******file lenght"+files);
             log.info("files:==="+files);
             log.error(data);

@@ -17,8 +17,8 @@ public interface PerformanceInDao {
     public int updateDetailsAmount(PerformanceReq performanceReq);
     public int updateStaffNum01(PerformanceReq performanceReq);
     public int updateStaffNum02(PerformanceReq performanceReq);
-    List<v_performance> v_popupPerformance();
-    List<ReportAll> viewPopup();
+
+    List<ReportAll> viewPopup(PerformanceReq performanceReq);
     public int storePerformanceHis(PerformanceReq performanceReq);
     public List<generateKeyID> genKeyID();
     public int updateDetailsFooter(PerformanceReq performanceReq);
@@ -34,7 +34,9 @@ public interface PerformanceInDao {
 
     List<performance_SmallHeaderGruop> groupSmallGroup(PerformanceReq performanceReq);
 
-    List<v_performance> ListV_performance();
+    List<v_performance> ListV_performance(PerformanceReq performanceReq);
+
+    List<v_performance> v_popupPerformance(PerformanceReq performanceReq);
 
     List<v_performance> ListV_performancebyBillNo(PerformanceReq performanceReq);
 }

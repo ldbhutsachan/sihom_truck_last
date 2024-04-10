@@ -4,6 +4,7 @@ import com.ldb.truck.Dao.Details.DetailsServiceDao;
 import com.ldb.truck.Model.Login.Pay.*;
 import com.ldb.truck.Model.Login.Payment.PayTxnReport;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.TokenOnly.TokenReq;
 import com.ldb.truck.RowMapper.Pay.*;
 import com.ldb.truck.RowMapper.Payment.InvoiceMapper;
 import org.apache.logging.log4j.LogManager;
@@ -41,11 +42,11 @@ public class PayDao  implements PayInDao{
         return result;
     }
     @Override
-    public List<getBillNo> getBillNo() {
+    public List<getBillNo> getBillNo(PayReq payReq) {
         List<getBillNo> result = new ArrayList<>();
         try
         {
-            SQL = "select * from AUTO_BILLNO";
+            SQL = "select * from AUTO_BILLNO a INNER JOIN LOGIN b ON a.userId=b.KEY_ID AND b.BRANCH='"+payReq.getBranch()+"'";
             result = EBankJdbcTemplate.query(SQL, new getBillNoMapper());
         }catch (Exception e){
             e.printStackTrace();
@@ -57,7 +58,7 @@ public class PayDao  implements PayInDao{
         log.info("payReq"+payReq.getBillNo());
         log.info("next:"+payReq.getNextDatePay());
         try{
-            SQL= "insert into PAYMENT (BILLNO,PAY_DATE,INVOICE_NO,PAYMENT_TYPE,BANKNAME,REF,AMOUNT,PAY_AMOUNT,PAY_STATUS,nextDatePay) values (?,now(),?,?,?,?,?,?,?,?)";
+            SQL= "insert into PAYMENT (BILLNO,PAY_DATE,INVOICE_NO,PAYMENT_TYPE,BANKNAME,REF,AMOUNT,PAY_AMOUNT,PAY_STATUS,nextDatePay,userId) values (?,now(),?,?,?,?,?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(payReq.getBillNo());
             paramList.add(payReq.getInvoiceNo());
@@ -68,6 +69,7 @@ public class PayDao  implements PayInDao{
             paramList.add(payReq.getPayAmount());
             paramList.add(payReq.getStatus());
             paramList.add(payReq.getNextDatePay());
+            paramList.add(payReq.getUserId());
             log.info("SQL:"+SQL);
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
 
@@ -83,7 +85,7 @@ public class PayDao  implements PayInDao{
         log.info("NOPAYMENT"+payReq.getNoPayAmount());
         log.info("date"+payReq.getNextDatePay());
         try{
-            SQL= "insert into PAYMENT_HIS (NOPAYAMOUNT,BILLNO,PAY_DATE,INVOICE_NO,PAYMENT_TYPE,BANKNAME,REF,AMOUNT,PAY_AMOUNT,PAY_STATUS,nextDatePay) values (?,?,now(),?,?,?,?,?,?,?,?)";
+            SQL= "insert into PAYMENT_HIS (NOPAYAMOUNT,BILLNO,PAY_DATE,INVOICE_NO,PAYMENT_TYPE,BANKNAME,REF,AMOUNT,PAY_AMOUNT,PAY_STATUS,nextDatePay,userId) values (?,?,now(),?,?,?,?,?,?,?,?,?)";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(payReq.getNoPayAmount());
@@ -96,6 +98,7 @@ public class PayDao  implements PayInDao{
             paramList.add(payReq.getPayAmount());
             paramList.add(payReq.getStatus());
             paramList.add(payReq.getNextDatePay());
+            paramList.add(payReq.getUserId());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -105,7 +108,7 @@ public class PayDao  implements PayInDao{
     @Override
     public int setInvoiceStatus(PayReq payReq) {
         try {
-            SQL = "update INVOICE set status='Y' where INVOICE_ID ='"+payReq.getInvoiceNo()+"' ";
+            SQL = "update INVOICE set status='Y' where INVOICE_ID ='"+payReq.getInvoiceNo()+"'";
             return EBankJdbcTemplate.update(SQL);
         } catch (Exception e){
             e.printStackTrace();
@@ -236,10 +239,10 @@ public class PayDao  implements PayInDao{
         return result;
     }
     @Override
-    public List<PayTxnDetails> listPayment() {
+    public List<PayTxnDetails> listPayment(TokenReq tokenReq) {
         List<PayTxnDetails> result = new ArrayList<>();
         try {
-            SQL = "select * from V_PAYMENTDETAILS  ";
+            SQL = "select * from V_PAYMENTDETAILS a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH ='"+tokenReq.getBranch()+"' ";
             log.info("sql:"+SQL);
             result = EBankJdbcTemplate.query(SQL,new PayTxnMapper());
         }catch (Exception e){
@@ -265,10 +268,10 @@ public class PayDao  implements PayInDao{
         List<PayTxnDetails> result = new ArrayList<>();
 
         if(resFromDateReq.getStartDate()==null){
-            SQL = "select * from V_PAYMENTDETAILS ";
+            SQL = "select * from V_PAYMENTDETAILS a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+resFromDateReq.getBranch()+"' ";
             log.info("SQL"+SQL);
         }else {
-            SQL = "select * from V_PAYMENTDETAILS  where PAY_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"'";
+            SQL = "select * from V_PAYMENTDETAILS a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+resFromDateReq.getBranch()+"' AND PAY_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"'";
             log.info("SQL"+SQL);
         }
         try {
@@ -316,14 +319,14 @@ public class PayDao  implements PayInDao{
     }
     ///--
     @Override
-    public List<PayTxnDetails> v_popupPay() {
+    public List<PayTxnDetails> v_popupPay(PayReq payReq) {
         List<PayTxnDetails> result = new ArrayList<>();
         try {
-            SQL = "select BILLNO,INVOICE_NO,CUSTOMER_ID,CUSTOMER_NAME,CURRENCY,PAY_STATUS,\n" +
-                    "(AMOUNT) as amount,(PAY_AMOUNT) as pay_amount,(NOPAY_AMOUNT) as NOPAY_AMOUNT\n" +
-                    "from V_PAYMENTDETAILS  where pay_status in ('O')  \n" +
-                    " group by BILLNO,INVOICE_NO,CUSTOMER_ID,CUSTOMER_NAME,CURRENCY,PAY_STATUS,AMOUNT,PAY_AMOUNT,NOPAY_AMOUNT\n" +
-                    " order by BILLNO asc";
+            SQL = "select a.BILLNO,a.INVOICE_NO,a.CUSTOMER_ID,a.CUSTOMER_NAME,a.CURRENCY,a.PAY_STATUS, \n" +
+                    "                    (AMOUNT) as amount,(a.PAY_AMOUNT) as pay_amount,(a.NOPAY_AMOUNT) as NOPAY_AMOUNT \n" +
+                    "                    from V_PAYMENTDETAILS a INNER JOIN LOGIN b ON a.userId =b.KEY_ID  where a.pay_status in ('O') AND b.BRANCH='"+payReq.getBranch()+"'    \n" +
+                    "                     group by BILLNO,INVOICE_NO,CUSTOMER_ID,CUSTOMER_NAME,CURRENCY,PAY_STATUS,AMOUNT,PAY_AMOUNT,NOPAY_AMOUNT \n" +
+                    "                     order by BILLNO asc";
             log.info("SQL:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<PayTxnDetails>() {
                 @Override

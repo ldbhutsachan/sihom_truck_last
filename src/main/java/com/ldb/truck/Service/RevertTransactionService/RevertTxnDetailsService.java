@@ -1,8 +1,10 @@
 package com.ldb.truck.Service.RevertTransactionService;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.Revert.RevertDao;
 import com.ldb.truck.Model.Login.Details.Details;
 import com.ldb.truck.Model.Login.Details.DetailsRes;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,8 @@ import java.util.List;
 
 @Service
 public class RevertTxnDetailsService {
+    @Autowired
+    ProfileDao profileDao;
     private static final Logger log = LogManager.getLogger(RevertTxnDetailsService.class);
     @Autowired
     RevertDao revertDao;
@@ -52,6 +56,20 @@ public class RevertTxnDetailsService {
     }
     //update all txn by lahudpoylod
     public DetailsRes UpdateRevertTxn(DetailsReq detailsReq){
+        log.info("toKen=======================:"+detailsReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(detailsReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        detailsReq.setUserId(userId);
+        detailsReq.setBranch(userBranchNo);
+        //====================================================================
         DetailsRes result = new DetailsRes();
         int i = 0;
         try{

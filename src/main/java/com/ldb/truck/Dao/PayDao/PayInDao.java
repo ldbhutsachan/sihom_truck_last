@@ -2,6 +2,7 @@ package com.ldb.truck.Dao.PayDao;
 
 import com.ldb.truck.Model.Login.Pay.*;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.TokenOnly.TokenReq;
 
 import java.text.ParseException;
 import java.util.List;
@@ -14,14 +15,14 @@ public interface PayInDao {
  public int revertPaymentByStatusHis(PrintBillPaymentReq paymentReq);
 
  public List<PrintBillPayment> listBillPaymentByNoBlack(PrintBillPaymentReq paymentReq);
- List<PayTxnDetails> v_popupPay();
+ List<PayTxnDetails> v_popupPay(PayReq payReq);
 List<Bank>  getListBank();
-List<getBillNo>  getBillNo();
+List<getBillNo>  getBillNo(PayReq payReq);
 public int storePayment(PayReq payReq);
 
 public int setInvoiceStatus(PayReq payReq);
 List<PrintBillPayment> PrintBillNo(PrintBillPaymentReq paymentReq);
-List<PayTxnDetails> listPayment();
+List<PayTxnDetails> listPayment(TokenReq tokenReq);
 List<PayTxnDetails> LstPaymentByDate(ResFromDateReq resFromDateReq);
 
  //----ຕິດໜີ້

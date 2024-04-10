@@ -1,6 +1,8 @@
 package com.ldb.truck.Service.Truck;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.Truck.ImpTruckDao;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Model.Login.SumGiveFooter.SumGiveFooter;
 import com.ldb.truck.Model.Login.Truck.*;
@@ -20,6 +22,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class TruckService {
+
+    @Autowired
+    ProfileDao profileDao;
     private static final Logger logger = LogManager.getLogger(TruckService.class);
     @Autowired
     ImpTruckDao impTruckDao;
@@ -154,6 +159,21 @@ public class TruckService {
     }
 //===============================================REPORT CAR ALL
 public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
+
+    logger.info("toKen=======================:"+resFromDateReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(resFromDateReq.getToKen());
+    logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+    logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    logger.info("show=================Role:"+userIn.get(0).getRole());
+    logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    resFromDateReq.setUserId(userId);
+    resFromDateReq.setBranch(userBranchNo);
+    //====================================================================
     DecimalFormat numfm = new DecimalFormat("###,###,###");
     List<TruckDetails> listTruck = new ArrayList<>();
     TruckDetailsRes result = new TruckDetailsRes();
@@ -167,12 +187,12 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
            if (rsList.getType().equals("SUMFOOTER")) {
                SumGiveFooter groupFooter = new SumGiveFooter();
                groupFooter.setSumTotalRow(rsList.getTotalRow());
-               groupFooter.setSumTotalFuel(rsList.getTotalFuel());
+               groupFooter.setSumTotalFuel(numfm.format(rsList.getTotalFuel()));
                Double carGiveTotal = rsList.getCarGive();
                Double carPayTotal = rsList.getCarPay();
                Double kumLaiyTotal = rsList.getKumLaiy();
                Double TotalPriceNummun = rsList.getTotalPriceNummun();
-                Double TotalBialieng = rsList.getTotalBialieng();
+               Double TotalBialieng = rsList.getTotalBialieng();
                groupFooter.setSumCarGive(numfm.format(carGiveTotal));
                groupFooter.setSumCarPay(numfm.format(carPayTotal));
                groupFooter.setSumKumLaiy(numfm.format(kumLaiyTotal));
@@ -242,6 +262,22 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
 }
     //===============================================REPORT CAR ALL
     public TruckDetailsGroupRes ReportGiveCarAllNo(TruckDetailsReq truckDetailsReq){
+
+
+        logger.info("toKen=======================:"+truckDetailsReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(truckDetailsReq.getToKen());
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        truckDetailsReq.setUserId(userId);
+        truckDetailsReq.setBranch(userBranchNo);
+        //====================================================================
 
         DecimalFormat numfm = new DecimalFormat("#########");
         DecimalFormat numRow = new DecimalFormat("###,###");

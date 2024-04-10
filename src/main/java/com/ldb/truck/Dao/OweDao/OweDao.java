@@ -48,19 +48,19 @@ public class OweDao implements OweImDao {
         List<OwePayBack> result = new ArrayList<>();
         try {
             if(resFromDateReq.getStartDate() == null){
-                SQL = "select CUSTOMER_ID,CUSTOMER_NAME,BILLNO,PAY_DATE,PAY_AMOUNT,PAY_STATUS,calTotalDate,\n" +
-                        "                    (CASE When TOTALDATE='01' OR   TOTALDATE='00'  Then payamount Else 0 END)  as payAmount01,\n" +
-                        "                    (CASE When TOTALDATE='02' Then payamount Else 0 END)  as payAmount02,\n" +
-                        "                    (CASE When TOTALDATE='03' Then payamount Else 0 END)  as payAmount03,\n" +
-                        "                    (CASE When TOTALDATE='04' Then payamount Else 0 END)  as payAmount04,currency\n" +
-                        "                    from V_PRINT_REPORT_OWE";
+                SQL = "select a.CUSTOMER_ID,a.CUSTOMER_NAME,a.BILLNO,a.PAY_DATE,a.PAY_AMOUNT,a.PAY_STATUS,a.calTotalDate,b.BRANCH,a.userId,\n" +
+                        "                                            (CASE When TOTALDATE='01' OR   TOTALDATE='00'  Then payamount Else 0 END)  as payAmount01, \n" +
+                        "                                            (CASE When TOTALDATE='02' Then payamount Else 0 END)  as payAmount02, \n" +
+                        "                                            (CASE When TOTALDATE='03' Then payamount Else 0 END)  as payAmount03, \n" +
+                        "                                            (CASE When TOTALDATE='04' Then payamount Else 0 END)  as payAmount04,currency \n" +
+                        "                                            from V_PRINT_REPORT_OWE a INNER JOIN LOGIN b ON a.userId =b.KEY_ID where b.BRANCH ='"+resFromDateReq.getBranch()+"'";
             }else{
-                SQL = "select CUSTOMER_ID,CUSTOMER_NAME,BILLNO,PAY_DATE,PAY_AMOUNT,PAY_STATUS,calTotalDate,\n" +
-                        "                    (CASE When TOTALDATE='01' OR   TOTALDATE='00'  Then payamount Else 0 END)  as payAmount01,\n" +
-                        "                    (CASE When TOTALDATE='02' Then payamount Else 0 END)  as payAmount02,\n" +
-                        "                    (CASE When TOTALDATE='03' Then payamount Else 0 END)  as payAmount03,\n" +
-                        "                    (CASE When TOTALDATE='04' Then payamount Else 0 END)  as payAmount04,currency\n" +
-                        "                    from V_PRINT_REPORT_OWE where PAY_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"'";
+                SQL = "select a.CUSTOMER_ID,a.CUSTOMER_NAME,a.BILLNO,a.PAY_DATE,a.PAY_AMOUNT,a.PAY_STATUS,a.calTotalDate,b.BRANCH,a.userId,\n" +
+                        "                                            (CASE When TOTALDATE='01' OR   TOTALDATE='00'  Then payamount Else 0 END)  as payAmount01, \n" +
+                        "                                            (CASE When TOTALDATE='02' Then payamount Else 0 END)  as payAmount02, \n" +
+                        "                                            (CASE When TOTALDATE='03' Then payamount Else 0 END)  as payAmount03, \n" +
+                        "                                            (CASE When TOTALDATE='04' Then payamount Else 0 END)  as payAmount04,currency \n" +
+                        "                                            from V_PRINT_REPORT_OWE a INNER JOIN LOGIN b ON a.userId =b.KEY_ID where b.BRANCH ='"+resFromDateReq.getBranch()+"' AND a.PAY_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"'";
             }
             result = EBankJdbcTemplate.query(SQL, new OwePayBackMapper());
         } catch (Exception e) {
@@ -73,7 +73,7 @@ public class OweDao implements OweImDao {
     public List<sumOweFooter> getSumfooter(ResFromDateReq resFromDateReq) {
         List<sumOweFooter> result = new ArrayList<>();
         try {
-            SQL = "select * from V_SUMFOOTER_DETAILS";
+            SQL = "select * from V_SUMFOOTER_DETAILS a inner join LOGIN b on a.userId=b.KEY_ID where b.BRANCH ='"+resFromDateReq.getBranch()+"'";
             return EBankJdbcTemplate.query(SQL, new RowMapper<sumOweFooter>() {
                 @Override
                 public sumOweFooter mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -97,20 +97,18 @@ public class OweDao implements OweImDao {
         List<GroupCurr> result = new ArrayList<>();
         try {
             if(resFromDateReq.getStartDate() == null){
-                SQL = "    select CUSTOMER_ID,\n" +
-                        "    sum (CASE When CURRENCY='LAK' Then payamount Else 0 END)as lakCurr,\n" +
-                        "    sum(CASE When CURRENCY='USD' Then payamount Else 0 END)  as usdCurr,\n" +
-                        "    sum(CASE When CURRENCY='THB' Then payamount Else 0 END)  as thbCurr,\n" +
-                        "    sum(CASE When CURRENCY='CNY' Then payamount Else 0 END)  as cnyCurr\n" +
-                        "    from V_PRINT_REPORT_OWE  group by customer_id ";
+                SQL = "  select a.CUSTOMER_ID,      sum (CASE When CURRENCY='LAK' Then payamount Else 0 END)as lakCurr, \n" +
+                        "                            sum(CASE When CURRENCY='USD' Then payamount Else 0 END)  as usdCurr, \n" +
+                        "                            sum(CASE When CURRENCY='THB' Then payamount Else 0 END)  as thbCurr, \n" +
+                        "                            sum(CASE When CURRENCY='CNY' Then payamount Else 0 END)  as cnyCurr \n" +
+                        "                            from V_PRINT_REPORT_OWE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='"+resFromDateReq.getBranch()+"' group by a.customer_id ";
 
             }else {
-                SQL = "    select CUSTOMER_ID,\n" +
-                        "    sum (CASE When CURRENCY='LAK' Then payamount Else 0 END)as lakCurr,\n" +
-                        "    sum(CASE When CURRENCY='USD' Then payamount Else 0 END)  as usdCurr,\n" +
-                        "    sum(CASE When CURRENCY='THB' Then payamount Else 0 END)  as thbCurr,\n" +
-                        "    sum(CASE When CURRENCY='CNY' Then payamount Else 0 END)  as cnyCurr\n" +
-                        "    from V_PRINT_REPORT_OWE   where PAY_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"'  group by customer_id ";
+                SQL = "  select a.CUSTOMER_ID,      sum (CASE When CURRENCY='LAK' Then payamount Else 0 END)as lakCurr, \n" +
+                        "                            sum(CASE When CURRENCY='USD' Then payamount Else 0 END)  as usdCurr, \n" +
+                        "                            sum(CASE When CURRENCY='THB' Then payamount Else 0 END)  as thbCurr, \n" +
+                        "                            sum(CASE When CURRENCY='CNY' Then payamount Else 0 END)  as cnyCurr \n" +
+                        "                            from V_PRINT_REPORT_OWE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='"+resFromDateReq.getBranch()+"' AND a.PAY_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"'  group by a.customer_id ";
             }
              return EBankJdbcTemplate.query(SQL, new RowMapper<GroupCurr>() {
                 @Override

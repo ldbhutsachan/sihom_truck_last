@@ -17,11 +17,12 @@ public class CustomerPaymentDao implements CustomerPaymentInfDao{
     private JdbcTemplate EBankJdbcTemplate;
     String SQL="";
     @Override
-    public List<Customer_Payment> listGetCustomer() {
+    public List<Customer_Payment> listGetCustomer(Customer_PaymentReq customerPaymentReq) {
         List<Customer_Payment> result = new ArrayList<>();
         try
         {
-             SQL = "select * from V_CHOOSE_PAYMENT where status='N' order by PERFORMANCEBILLNO asc";
+//             SQL = "select * from V_CHOOSE_PAYMENT where status='N' order by PERFORMANCEBILLNO asc";
+             SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' order by a.PERFORMANCEBILLNO asc";
             System.out.println("sql:"+SQL);
             result = EBankJdbcTemplate.query(SQL , new Customer_PaymentMapper());
         }catch (Exception e){

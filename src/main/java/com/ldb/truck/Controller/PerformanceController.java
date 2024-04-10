@@ -60,10 +60,10 @@ public class PerformanceController {
     //**----
     @CrossOrigin(origins = "*")
     @PostMapping("/ListViewPerformance.service")
-    public v_performanceRes ListV_Performance(){
+    public v_performanceRes ListV_Performance(@RequestBody PerformanceReq performanceReq){
         v_performanceRes result = new v_performanceRes();
         try {
-            result =  performanceService.ListV_performance();
+            result =  performanceService.ListV_performance(performanceReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -102,10 +102,10 @@ public class PerformanceController {
     //--view popup
     @CrossOrigin(origins = "*")
     @PostMapping("/v_popupDetails.service")
-    public ReportAllRes v_popupDetails(){
+    public ReportAllRes v_popupDetails(@RequestBody PerformanceReq performanceReq){
         ReportAllRes result = new ReportAllRes();
         try {
-            result= performanceService.v_Popup();
+            result= performanceService.v_Popup(performanceReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -117,10 +117,10 @@ public class PerformanceController {
     //--view popup per
     @CrossOrigin(origins = "*")
     @PostMapping("/v_popupPerformance.service")
-    public v_performanceRes v_popupPerformance(){
+    public v_performanceRes v_popupPerformance(@RequestBody PerformanceReq performanceReq){
         v_performanceRes result = new v_performanceRes();
         try {
-            result =  performanceService.v_popupPerformance();
+            result =  performanceService.v_popupPerformance(performanceReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -131,10 +131,10 @@ public class PerformanceController {
     //------show data for update
     @CrossOrigin(origins = "*")
     @PostMapping("/v_popupInvoice.service")
-    public v_performanceRes v_popupInvoice(){
+    public v_performanceRes v_popupInvoice(@RequestBody PerformanceReq performanceReq){
         v_performanceRes result = new v_performanceRes();
         try {
-            result =  performanceService.v_popupPerformance();
+            result =  performanceService.v_popupPerformance(performanceReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

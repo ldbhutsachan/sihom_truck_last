@@ -56,9 +56,10 @@ public class InvoiceDao  implements  InvoiceInDao{
         try {
             if(resFromDateReq.getStartDate()==null){
                 log.info("res:"+resFromDateReq.getStartDate());
-                SQL = "select * from V_PRINTINVOICEBLACK  order by INVOICE_ID asc";
+//                SQL = "select * from V_PRINTINVOICEBLACK  order by INVOICE_ID asc";
+                SQL = "select * from V_PRINTINVOICEBLACK a inner join LOGIN b where b.BRANCH='"+resFromDateReq.getBranch()+"'  order by a.INVOICE_ID asc";
             }else {
-                SQL = "select * from V_PRINTINVOICEBLACK where INVOICE_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"'   order by INVOICE_ID asc";
+                SQL = "select * from V_PRINTINVOICEBLACK a inner join LOGIN b where b.BRANCH='"+resFromDateReq.getBranch()+"' AND a.INVOICE_DATE between '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"' order by INVOICE_ID asc";
             }
             System.out.println("sql:"+SQL);
             result = EBankJdbcTemplate.query(SQL , new InvoiceMapper());
@@ -88,6 +89,7 @@ public class InvoiceDao  implements  InvoiceInDao{
         try {
             //PayDateOwe
                 SQL= "select * from V_PRINTINVOICE where INVOICE_ID ='"+printInvoiceByNoReq.getBillNo()+"'";
+//                SQL= "select * from V_PRINTINVOICE a inner join LOGIN b ON a.userId=b.KEY_ID where a.INVOICE_ID ='"+printInvoiceByNoReq.getBillNo()+"' and b.BRANCH='"+printInvoiceByNoReq.getBranch()+"'";
                 result = EBankJdbcTemplate.query(SQL,new PrintInvoiceOnlyByNoRowMapper());
 
         }catch (Exception e){
@@ -126,8 +128,8 @@ public List<PrintInvoiceByNo> viewPintBillBackByNo(PrintInvoiceByNoReq printInvo
     public int CreateMoreInvoice(List<InvoiceDetailReq> invoiceDetailReq) {
         log.info("key:"+invoiceDetailReq);
         try {
-            SQL ="insert into  INVOICE_DETAILS (CUSTOMER_ID,CUSTOMER_NAME,PERFORMANCEBILLNO,PRO_TYPE,PRODUCT_AMOUNT,PRICE,TOTAL_PRICE,INVOICE_ID,STATUS)" +
-                    "values (?,?,?,?,?,?,?,?,?)";
+            SQL ="insert into  INVOICE_DETAILS (CUSTOMER_ID,CUSTOMER_NAME,PERFORMANCEBILLNO,PRO_TYPE,PRODUCT_AMOUNT,PRICE,TOTAL_PRICE,INVOICE_ID,STATUS,userId)" +
+                    "values (?,?,?,?,?,?,?,?,?,?)";
             log.info("sqL:"+SQL);
             List<Object[]> paramList = new ArrayList<Object[]>();
             String status ="N";
@@ -143,16 +145,18 @@ public List<PrintInvoiceByNo> viewPintBillBackByNo(PrintInvoiceByNoReq printInvo
                         resList.getPriCE(),
                         resList.getTotalPrice(),
                         resList.getInVoiceID(),
-                        status
+                        status,
+                        resList.getUserId()
                 };
                 paramList.add(objectArray);
             }
             EBankJdbcTemplate.batchUpdate(SQL,paramList);
             //--insert invoice frist
             for(InvoiceDetailReq resList1 : invoiceDetailReq){
-                String SQL1 = "insert into  INVOICE (INVOICE_ID,INVOICE_DATE,Status) values  (?,now(),'N')";
+                String SQL1 = "insert into  INVOICE (INVOICE_ID,INVOICE_DATE,Status,userId) values  (?,now(),'N',?)";
                 List<Object> paramList1 = new ArrayList<>();
                 paramList1.add(resList1.getInVoiceID());
+                paramList1.add(resList1.getUserId());
                 return EBankJdbcTemplate.update(SQL1, paramList1.toArray());
             }
         }catch (Exception e){
@@ -186,10 +190,11 @@ public List<PrintInvoiceByNo> viewPintBillBackByNo(PrintInvoiceByNoReq printInvo
     }
     //--
     @Override
-    public List<Invoice> List_v_popupPerInVoice() {
+    public List<Invoice> List_v_popupPerInVoice(InvoiceDetailReq invoiceDetailReq) {
         List<Invoice> result = new ArrayList<>();
         try {
-            SQL = "select * from V_PRINTINVOICEBLACK where INVOICE_STATUS in ('N')  order by INVOICE_ID asc";
+//            SQL = "select * from V_PRINTINVOICEBLACK where INVOICE_STATUS in ('N')  order by INVOICE_ID asc";
+            SQL = "select * from V_PRINTINVOICEBLACK a inner join LOGIN b on a.userId =b.KEY_ID  where a.INVOICE_STATUS in ('N') and b.BRANCH ='"+invoiceDetailReq.getBranch()+"' order by a.INVOICE_ID asc";
             System.out.println("sql:"+SQL);
             result = EBankJdbcTemplate.query(SQL , new InvoiceMapper());
         }catch (Exception e){

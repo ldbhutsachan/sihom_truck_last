@@ -20,7 +20,7 @@ public class PayReq {
     private String nextDatePay;
     private String noPayAmount;
     private String allPayAmountAll;
-
-
-
+    private String toKen;
+    private String userId;
+    private String branch;
 }

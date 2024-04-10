@@ -47,8 +47,21 @@ public class ReverPerFormanceMapper implements RowMapper
             data.setPERFORMANCEFE_PAYANG(rs.getString("PERFORMANCEFE_PAYANG"));
             data.setCurrency(rs.getString("CURRENCY"));
             data.setStaff_Curr(rs.getString("STAFF_BIALIENG_CUR"));
-            data.setProSize(rs.getString("PRODUCT_SIZE"));
+            data.setProSize(rs.getDouble("PRODUCT_SIZE"));
             data.setPrice(rs.getString("PRICE"));
+
+//          ============================  new ============================================
+            data.setAdd_feeOvertime1(rs.getString("add_feeOvertime1"));
+            data.setAdd_feeJumPo2(rs.getString("add_feeJumPo2"));
+            data.setAdd_feePolish3(rs.getString("add_feePolish3"));
+            data.setAdd_feeTaxung4(rs.getString("add_feeTaxung4"));
+            data.setAdd_feeTiew5(rs.getString("add_feeTiew5"));
+            data.setAdd_feesing(rs.getString("add_feesing"));
+            data.setAdd_feesaphan(rs.getString("add_feesaphan"));
+            data.setAdd_feeyoktu(rs.getString("add_feeyoktu"));
+            data.setAdd_feecontrainer(rs.getString("add_feecontrainer"));
+            data.setAdd_feepayang(rs.getString("add_feepayang"));
+//          ============================  new ============================================
         }catch (Exception e){
             e.printStackTrace();
             return  data;

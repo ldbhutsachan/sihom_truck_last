@@ -312,8 +312,8 @@ public class DetailsServiceDao implements  DetailsDao {
                      "feesaphan,\n" +
                      "feeyoktu,\n" +
                      "feecontrainer,\n" +
-                     "feepayang) " +
-                     "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,'N',?,?,?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)  ";
+                     "feepayang,userId,add_feeOvertime1,add_feeJumPo2,add_feePolish3,add_feeTaxung4,add_feeTiew5,add_feesing,add_feesaphan,add_feeyoktu,add_feecontrainer,add_feepayang,FUEL_STATUS,FUEL_STATION_ID) " +
+                     "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,'N',?,?,?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
              log.info("SQL:"+sql);
             List<Object> paramList = new ArrayList<Object>();
           //  paramList.add(detailsReq.getKEY_ID());
@@ -367,6 +367,20 @@ public class DetailsServiceDao implements  DetailsDao {
             paramList.add(detailsReq.getFeeyoktu());
             paramList.add(detailsReq.getFeecontrainer());
             paramList.add(detailsReq.getFeepayang());
+            paramList.add(detailsReq.getUserId());
+
+            paramList.add(detailsReq.getAdd_feeOvertime1());
+            paramList.add(detailsReq.getAdd_feeJumPo2());
+            paramList.add(detailsReq.getAdd_feePolish3());
+            paramList.add(detailsReq.getAdd_feeTaxung4());
+            paramList.add(detailsReq.getAdd_feeTiew5());
+            paramList.add(detailsReq.getAdd_feesing());
+            paramList.add(detailsReq.getAdd_feesaphan());
+            paramList.add(detailsReq.getAdd_feeyoktu());
+            paramList.add(detailsReq.getAdd_feecontrainer());
+            paramList.add(detailsReq.getAdd_feepayang());
+            paramList.add(detailsReq.getFuel_status());
+            paramList.add(detailsReq.getFuelStationId());
           //  paramList.add(detailsReq.getDETAILS_DATE());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
 

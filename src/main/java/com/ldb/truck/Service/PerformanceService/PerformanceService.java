@@ -4,17 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Performance.*;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportAllRes;
 import com.ldb.truck.Model.Login.product.ProductRes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ldb.truck.Dao.Performance.PerformanceDao;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 public class PerformanceService {
+
+    @Autowired
+    ProfileDao profileDao;
+    private static final Logger log = LogManager.getLogger(PerformanceService.class);
 @Autowired
     PerformanceDao performanceDao;
 public getBillNoRes GetBillNo(getBillNoReg getBillNoReg){
@@ -35,6 +44,20 @@ public getBillNoRes GetBillNo(getBillNoReg getBillNoReg){
 }
 //save performance
 public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
+    log.info("toKen=======================:"+performanceReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(performanceReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    performanceReq.setUserId(userId);
+    performanceReq.setBranch(userBranchNo);
+    //====================================================================
     PerformanceSaveRes result = new PerformanceSaveRes();
     int number=0;int i = 0; int number1 =0;int number2=0;
     try {
@@ -99,14 +122,32 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         return  result;
     }
     //--view data
-    public v_performanceRes ListV_performance(){
-        DecimalFormat numRow = new DecimalFormat("###,###");
+    public v_performanceRes ListV_performance(PerformanceReq performanceReq){
+
+        log.info("toKen=======================:"+performanceReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(performanceReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        performanceReq.setUserId(userId);
+        performanceReq.setBranch(userBranchNo);
+        //====================================================================
+        DecimalFormat numRow = new DecimalFormat("###,###.###");
         v_performanceRes result = new v_performanceRes();
         List<v_performance> resdata = new ArrayList<>();
         try {
-            resdata = performanceDao.ListV_performance();
+            resdata = performanceDao.ListV_performance(performanceReq);
             Double carGiveTotal = resdata.stream().distinct().map(v_performance::getTOTAL_PRICE02).collect(Collectors.summingDouble(Double::doubleValue));
-            result.setSumAmount(numRow.format( carGiveTotal));
+            Double sumProsize = resdata.stream().distinct().map(v_performance::getProSize).collect(Collectors.summingDouble(Double::doubleValue));
+//            result.setSumAmount(numRow.format(carGiveTotal));
+            result.setSumAmount(carGiveTotal);
+            result.setSumTonProSize(numRow.format(sumProsize));
             result.setData(resdata);
             result.setMessage("success");
             result.setStatus("00");
@@ -121,10 +162,29 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
     }
     //-print bill lback
     public v_performanceRes PrintBillBlack(PerformanceReq performanceReq){
+        log.info("toKen=======================:"+performanceReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(performanceReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        performanceReq.setUserId(userId);
+        performanceReq.setBranch(userBranchNo);
+        //====================================================================
+        DecimalFormat numRow = new DecimalFormat("###,###.###");
         v_performanceRes result = new v_performanceRes();
         List<v_performance> resdata = new ArrayList<>();
         try {
             resdata = performanceDao.ListV_performancebyBillNo(performanceReq);
+            Double carGiveTotal = resdata.stream().distinct().map(v_performance::getTOTAL_PRICE02).collect(Collectors.summingDouble(Double::doubleValue));
+            Double sumProsize = resdata.stream().distinct().map(v_performance::getProSize).collect(Collectors.summingDouble(Double::doubleValue));
+            result.setSumAmount(carGiveTotal);
+            result.setSumTonProSize(numRow.format(sumProsize));
             result.setData(resdata);
             result.setMessage("success");
             result.setStatus("00");
@@ -156,11 +216,25 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         }
     }
     ///----- List<ReportAll> viewPopup()
-    public ReportAllRes v_Popup(){
+    public ReportAllRes v_Popup(PerformanceReq performanceReq){
+        log.info("toKen=======================:"+performanceReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(performanceReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        performanceReq.setUserId(userId);
+        performanceReq.setBranch(userBranchNo);
+        //====================================================================
         List<ReportAll> listData = new ArrayList<>();
         ReportAllRes result = new ReportAllRes();
         try {
-            listData = performanceDao.viewPopup();
+            listData = performanceDao.viewPopup(performanceReq);
             result.setData(listData);
             result.setStatus("00");
             result.setMessage("success");
@@ -172,11 +246,25 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         return result;
     }
     //--
-    public v_performanceRes v_popupPerformance(){
+    public v_performanceRes v_popupPerformance(@RequestBody PerformanceReq performanceReq){
+        log.info("toKen=======================:"+performanceReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(performanceReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        performanceReq.setUserId(userId);
+        performanceReq.setBranch(userBranchNo);
+        //====================================================================
         v_performanceRes result = new v_performanceRes();
         List<v_performance> resdata = new ArrayList<>();
         try {
-            resdata = performanceDao.v_popupPerformance();
+            resdata = performanceDao.v_popupPerformance(performanceReq);
             result.setData(resdata);
             result.setMessage("success");
             result.setStatus("00");

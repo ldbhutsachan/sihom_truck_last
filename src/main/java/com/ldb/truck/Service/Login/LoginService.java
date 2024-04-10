@@ -100,6 +100,19 @@ public class LoginService {
     }
     public UserRes storeUserLogin(UserReq userReq){
         UserRes result = new UserRes();
+        log.info("toKen=======================:"+userReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(userReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
+        userReq.setSaveById(userId);
         int checkData = 0;
         try{
             checkData = userLogin.storeUser(userReq);
@@ -119,6 +132,17 @@ public class LoginService {
     }
     public UserRes updateUserLogin(UserReq userReq){
         UserRes result = new UserRes();
+        log.info("toKen=======================:"+userReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(userReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
         int checkData = 0;
         try{
             checkData = userLogin.editUser(userReq);

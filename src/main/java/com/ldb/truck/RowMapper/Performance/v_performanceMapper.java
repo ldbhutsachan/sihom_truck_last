@@ -31,6 +31,9 @@ public class v_performanceMapper implements RowMapper {
                     data.setTotalDay(rs.getString("totalDay"));
                     data.setCurrency(rs.getString("CURRENCY"));
                     data.setStaff_Curr(rs.getString("STAFF_BIALIENG_CUR"));
+                    data.setKEY_ID2(rs.getString("KEY_ID2"));
+                    data.setProSize(rs.getDouble("PRODUCT_SIZE"));
+                    data.setPrizeProcuctPerT(rs.getString("PRODUCT_AMOUNT"));
 
             // CURRENCY
             // STAFF_BIALIENG_CUR

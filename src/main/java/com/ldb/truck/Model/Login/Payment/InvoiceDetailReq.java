@@ -10,6 +10,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class InvoiceDetailReq {
     private String key_id;
+    private String userId;
+    private String branch;
+    private String toKen;
     private String cusID;
     private String cusName;
     private String perID;
