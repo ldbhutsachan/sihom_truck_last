@@ -15,7 +15,6 @@ public class ItemReq {
    private String unit_price;
    private Integer qty;
    private String img;
-
    private String branch;
    private String toKen;
    private String userId;

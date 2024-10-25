@@ -28,6 +28,9 @@ public class WastedValueMapper implements RowMapper
             data.setFeeyoktu(rs.getString("feeyoktu"));
             data.setFeecontrainer(rs.getString("feecontrainer"));
             data.setFeepayang(rs.getString("feepayang"));
+            data.setKilometer_before(rs.getString("KIM_KILO"));
+            data.setDistance(rs.getString("LAIYATHANG"));
+            data.setDistance_sum(rs.getString("LAIYATHANG_SUM"));
 //            data.setPERFORMANCEOVERTIME(rs.getString("PERFORMANCEOVERTIME"));
 //            data.setPERFORMANCEJUMPHO(rs.getString("PERFORMANCEJUMPHO"));
 //            data.setPERFORMANCEFEEPOLISH(rs.getString("PERFORMANCEFEEPOLISH"));

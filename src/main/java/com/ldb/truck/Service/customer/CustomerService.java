@@ -240,6 +240,7 @@ public class CustomerService {
         try {
 //            i = impCustomerDao.UpdateStatusFuelStation(fuelStationReq);
             i = impCustomerDao.UpdateStatusFuelStationMulti(fuelStationReq);
+            i = impCustomerDao.insertTotalprice(fuelStationReq);
             if(i == 0 ){
                 result.setMessage("can not pay");
                 result.setStatus("01");

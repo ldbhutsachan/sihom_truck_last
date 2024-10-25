@@ -22,6 +22,7 @@ public class Customer_PaymentMapper implements RowMapper {
             data.setTOTAL_PRICE(rs.getString("TOTAL_PRICE"));
             data.setSTATUS(rs.getString("STATUS"));
             data.setCurrency(rs.getString("CURRENCY"));
+            data.setDatePerformanceCreate(rs.getString("performanceDate"));
 
         }catch (Exception e){
 

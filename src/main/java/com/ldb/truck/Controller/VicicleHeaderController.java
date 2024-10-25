@@ -1,23 +1,52 @@
 package com.ldb.truck.Controller;
 import com.ldb.truck.Dao.upload.MediaUploadService;
+import com.ldb.truck.Model.Login.CarOffice.CarOfficeReq;
+import com.ldb.truck.Model.Login.CarOffice.CarOfficeRes;
+import com.ldb.truck.Model.Login.CarOffice.CarPaidRes;
+import com.ldb.truck.Model.Login.CarOffice.PaidCarDaoReq;
+import com.ldb.truck.Model.Login.Dept_Must_Receive.DeptMustReceivedRes;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderRes;
 import com.ldb.truck.Model.Login.staft.stafReq;
 import com.ldb.truck.Service.VicicleHeaderService.VicicleHeaderService;
+import com.twilio.Twilio;
+import com.twilio.rest.api.v2010.account.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Context;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+//================================  api whatapp
+import com.twilio.Twilio;
+import com.twilio.converter.Promoter;
+import com.twilio.rest.api.v2010.account.Message;
+import com.twilio.type.PhoneNumber;
 
+import java.net.URI;
+import java.math.BigDecimal;
+//================================  api whatapp
 @RestController
 @RequestMapping("${base_url}")
 public class VicicleHeaderController {
@@ -26,6 +55,23 @@ public class VicicleHeaderController {
     VicicleHeaderService vicicleHeaderService;
     @Autowired
     private MediaUploadService mediaUploadService;
+
+    //    test api whatsapp
+//    @CrossOrigin(origins = "*")
+//    @PostMapping("/whatsappApi.service")
+//    public class Apitest {
+//        // Find your Account Sid and Token at twilio.com/console
+//        public static final String ACCOUNT_SID = "AC0f41da64f12a09afba5f8e84efa72eda";
+//        public static final String AUTH_TOKEN = "83f8118f3b5dbc1ece33af5b8b9a1d28";
+//        public static void main(String[] args) {
+//            Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+//            Message message = Message.creator(
+//                    new com.twilio.type.PhoneNumber("whatsapp:+8562091056567"),
+//                    new com.twilio.type.PhoneNumber("whatsapp:+14155238886"),
+//                    "kuyy"
+//            System.out.println(message.getSid());
+//        }
+//    }
     @CrossOrigin(origins = "*")
     @PostMapping("/listVicicleHeader.service")
     public VicicleHeaderRes listVicicleHeader(@RequestBody VicicleHeaderReq vicicleHeaderReq){
@@ -70,6 +116,67 @@ public class VicicleHeaderController {
         }
         return result;
     }
+    // List Car office
+    @CrossOrigin(origins = "*")
+    @PostMapping("/listCarOffice.service")
+    public CarOfficeRes listCarsOffice(@RequestBody  CarOfficeReq carOfficeReq){
+        CarOfficeRes result = new CarOfficeRes();
+        try {
+            result = vicicleHeaderService.listCarOfficeService(carOfficeReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    // list lod t jaiy kha dao history
+    @CrossOrigin(origins = "*")
+    @PostMapping("/listCarThatPaid.service")
+    public CarPaidRes listCarThatPaid(@RequestBody  CarOfficeReq carOfficeReq){
+        CarPaidRes result = new CarPaidRes();
+        try {
+            result = vicicleHeaderService.listCarDaoPaidService(carOfficeReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    //list show ny lod office
+    @CrossOrigin(origins = "*")
+    @PostMapping("/listCarOfficeLodDao.service")
+    public CarOfficeRes listCarsOfficeDaoCar(@RequestBody  CarOfficeReq carOfficeReq){
+        CarOfficeRes result = new CarOfficeRes();
+        try {
+            result = vicicleHeaderService.listDaoCarOfficeService(carOfficeReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    // detail car office
+    @CrossOrigin(origins = "*")
+    @PostMapping("/listCarOfficeDetailById.service")
+    public CarOfficeRes listCarsOfficeDetailById(@RequestBody  CarOfficeReq carOfficeReq){
+        CarOfficeRes result = new CarOfficeRes();
+        try {
+            result = vicicleHeaderService.listCarOfficeServiceDetailById(carOfficeReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+
     //--delete
     @CrossOrigin(origins = "*")
     @PostMapping("/DelVicicleHeaderByID.service")
@@ -78,6 +185,22 @@ public class VicicleHeaderController {
         VicicleHeaderRes result = new VicicleHeaderRes();
         try {
             result = vicicleHeaderService.DelVicicleHeaderByID(vicicleHeaderReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    // delete car office
+    @CrossOrigin(origins = "*")
+    @PostMapping("/DelCarOffice.service")
+    public CarOfficeRes DelCarOffice (@RequestBody CarOfficeReq carOfficeReq) {
+
+        CarOfficeRes result = new CarOfficeRes();
+        try {
+            result = vicicleHeaderService.DelCarOfficeService(carOfficeReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -214,6 +337,8 @@ public Messages saveVicicleHeader(
         @RequestParam("leanGia") String  leanGia,
         @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
         @RequestParam("pha_But") String  pha_But,
+        @RequestParam("lektungsit") String  lektungsit,
+        @RequestParam("date_change_lean") String  date_change_lean,
         @RequestParam("toKen") String  toKen
 
 ){
@@ -331,6 +456,8 @@ public Messages saveVicicleHeader(
         data.setLeanGia(leanGia);
         data.setLeanFuengThaiy(leanFuengThaiy);
         data.setPha_But(pha_But);
+        data.setLektungsit(lektungsit);
+        data.setDate_change_lean(date_change_lean);
         data.setToKen(toKen);
         log.error("******file lenght"+files);
         log.error(data);
@@ -469,6 +596,8 @@ public Messages saveVicicleHeader(
             @RequestParam("leanGia") String  leanGia,
             @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
             @RequestParam("pha_But") String  pha_But,
+            @RequestParam("lektungsit") String  lektungsit,
+            @RequestParam("date_change_lean") String  date_change_lean,
             @RequestParam("toKen") String  toKen
 
 
@@ -588,6 +717,8 @@ public Messages saveVicicleHeader(
             data.setLeanGia(leanGia);
             data.setLeanFuengThaiy(leanFuengThaiy);
             data.setPha_But(pha_But);
+            data.setLektungsit(lektungsit);
+            data.setDate_change_lean(date_change_lean);
             data.setToKen(toKen);
             data.setImageTruck(imageTruck);
             log.error("******file lenght"+files);
@@ -615,4 +746,380 @@ public Messages saveVicicleHeader(
         }
         return  result;
     }
+    // car office
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/insertCarOffice.service" , consumes = {"multipart/form-data"})
+    public Messages InsertCarOffice(
+            @RequestParam("files") MultipartFile files,
+            @RequestParam("license_plate") String  license_plate,
+            @RequestParam("battery_code_name") String  battery_code_name,
+            @RequestParam("license_plate_end") String  license_plate_end,
+            @RequestParam("license_plate_start") String  license_plate_start,
+            @RequestParam("car_year") String  car_year,
+            @RequestParam("car_type") String  car_type,
+            @RequestParam("car_brand") String  car_brand,
+            @RequestParam("lekThung") String  lekThung,
+            @RequestParam("lekJuk") String  lekJuk,
+            @RequestParam("carColor") String  carColor,
+            @RequestParam("cc") String  cc,
+            @RequestParam("car_mileage_now") String  car_mileage_now,
+            @RequestParam("millor_side") String  millor_side,
+            @RequestParam("millor_back") String  millor_back,
+            @RequestParam("back_light") String  back_light,
+            @RequestParam("font_light") String  font_light,
+            @RequestParam("insurance_viet_expireDate") String  insurance_viet_expireDate,
+            @RequestParam("insurance_Lao_expireDate") String  insurance_Lao_expireDate,
+            @RequestParam("insurance_thai_expireDate") String  insurance_thai_expireDate,
+            @RequestParam("insurance_thai") String  insurance_thai,
+            @RequestParam("insurance_viet") String  insurance_viet,
+            @RequestParam("insurance_Lao") String  insurance_Lao,
+            @RequestParam("leanGia") String  leanGia,
+            @RequestParam("steering_wheel") String  steering_wheel,
+            @RequestParam("owner_car") String  owner_car,
+            @RequestParam("car_model") String  car_model,
+            @RequestParam("oil") String  oil,
+            @RequestParam("total_weigh_car") String  total_weigh_car,
+            @RequestParam("technic_check_dateEnd") String  technic_check_dateEnd,
+            @RequestParam("technic_check_dateStart") String  technic_check_dateStart,
+            @RequestParam("serial_wheel_right_font") String  serial_wheel_right_font,
+            @RequestParam("serial_wheel_right_back") String  serial_wheel_right_back,
+            @RequestParam("serial_wheel_left_font") String  serial_wheel_left_font,
+            @RequestParam("serial_wheel_left_back") String  serial_wheel_left_back,
+            @RequestParam("sitPosition_amount") String  sitPosition_amount,
+            @RequestParam("tall") String  tall,
+            @RequestParam("longg") String  longg,
+            @RequestParam("wide") String  wide,
+            @RequestParam("dao") String  dao,
+            @RequestParam("toKen") String  toKen,
+            @RequestParam("lean") String  lean,
+            @RequestParam("tungsitnumber") String  tungsitnumber,
+            @RequestParam("tungsitDateExpire") String  tungsitDateExpire,
+            @RequestParam("serial_tire_second") String  serial_tire_second ,
+            @RequestParam("lekmai_next") String  lekmai_next  ,
+            @RequestParam("date_change_lean") String  date_change_lean ,
+            @RequestParam("date_change_lean_next") String  date_change_lean_next
+    ){
+        log.info("===================================save header==================================================");
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+        String namefile = formatter.format(date);
+        Messages result = new Messages();
+        try {
+            CarOfficeReq data = new CarOfficeReq();
+            data.setLicense_plate(license_plate);
+            data.setBattery_code_name(battery_code_name);
+            data.setLicense_plate_end(license_plate_end);
+            data.setLicense_plate_start(license_plate_start);
+            data.setCar_year(car_year);
+            data.setCarColor(carColor);
+            data.setLekThung(lekThung);
+            data.setLekJuk(lekJuk);
+            data.setCar_brand(car_brand);
+            data.setCar_type(car_type);
+            data.setCc(cc);
+            data.setCar_mileage_now(car_mileage_now);
+            data.setMillor_side(millor_side);
+            data.setMillor_back(millor_back);
+            data.setBack_light(back_light);
+            data.setFont_light(font_light);
+            data.setInsurance_viet_expireDate(insurance_viet_expireDate);
+            data.setInsurance_Lao_expireDate(insurance_Lao_expireDate);
+            data.setInsurance_thai_expireDate(insurance_thai_expireDate);
+            data.setInsurance_thai(insurance_thai);
+            data.setInsurance_viet(insurance_viet);
+            data.setInsurance_Lao(insurance_Lao);
+            data.setLeanGia(leanGia);
+            data.setSteering_wheel(steering_wheel);
+            data.setOwner_car(owner_car);
+            data.setCar_model(car_model);
+            data.setOil(oil);
+            data.setTotal_weigh_car(total_weigh_car);
+            data.setTechnic_check_dateEnd(technic_check_dateEnd);
+            data.setTechnic_check_dateStart(technic_check_dateStart);
+            data.setSerial_wheel_right_font(serial_wheel_right_font);
+            data.setSerial_wheel_right_back(serial_wheel_right_back);
+            data.setSerial_wheel_left_font(serial_wheel_left_font);
+            data.setSerial_wheel_left_back(serial_wheel_left_back);
+            data.setSitPosition_amount(sitPosition_amount);
+            data.setTall(tall);
+            data.setLongg(longg);
+            data.setWide(wide);
+            data.setDao(dao);
+            data.setToKen(toKen);
+            data.setLean(lean);
+            data.setTungsitnumber(tungsitnumber);
+            data.setTungsitDateExpire(tungsitDateExpire);
+            data.setSerial_tire_second(serial_tire_second);
+            data.setLekmai_next(lekmai_next);
+            data.setDate_change_lean(date_change_lean);
+            data.setDate_change_lean_next(date_change_lean_next);
+            log.error("******file lenght"+files);
+            log.error(data);
+            String fileName = "";
+            List<String> fileNames = new ArrayList<>();
+            if(files == null){
+                log.warn("************* file name is null ****************");
+                data.setImg("http://khounkham.com/images/car/image.jpg");
+            }else {
+                Arrays.asList(files).stream().forEach(file -> {
+                    fileNames.add(mediaUploadService.uploadMediacar(file));
+                });
+                log.info("Uploaded the files successfully: " + fileNames );
+                fileName = StringUtils.join(fileNames, ',');
+                data.setImg(fileName);
+            }
+            result = vicicleHeaderService.InsertCarOfficeService(data);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+            return  result;
+        }
+        return  result;
+    }
+    // jaiy lod dao
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/PayLodDao.service" , consumes = {"multipart/form-data"})
+    public Messages InsertCarOffice(
+            @RequestParam("files") MultipartFile files,
+            @RequestParam("carId") String  carId,
+            @RequestParam("cur") String  cur,
+            @RequestParam("pricePaid") String  pricePaid,
+            @RequestParam("toKen") String  toKen
+    ){
+        log.info("===================================save header==================================================");
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+        String namefile = formatter.format(date);
+        Messages result = new Messages();
+        try {
+            PaidCarDaoReq data = new PaidCarDaoReq();
+            data.setCarId(carId);
+            data.setCur(cur);
+            data.setPricePaid(pricePaid);
+            data.setToKen(toKen);
+
+            log.error("******file lenght"+files);
+            log.error(data);
+            String fileName = "";
+            List<String> fileNames = new ArrayList<>();
+            if(files == null){
+                log.warn("************* file name is null ****************");
+                data.setPdfFile("http://khounkham.com/images/car/image.jpg");
+            }else {
+                Arrays.asList(files).stream().forEach(file -> {
+                    fileNames.add(mediaUploadService.uploadMediacar(file));
+                });
+                log.info("Uploaded the files successfully: " + fileNames );
+                fileName = StringUtils.join(fileNames, ',');
+                data.setPdfFile(fileName);
+            }
+            result = vicicleHeaderService.PayLodDaoService(data);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+            return  result;
+        }
+        return  result;
+    }
+    // download pdf file
+    @PostMapping("downloadPdf/{fileName:.+}")
+    public ResponseEntity<?> createPDF(
+            @ApiParam(
+                    name = "Body Request",
+                    value = "JSON body request to check information",
+                    required = true)
+            @Valid
+            @PathVariable(name = "fileName") String fileName,
+            @Context HttpServletRequest request
+    ) throws Exception {
+        log.info("\t\t --> Download File PDF controller >>>>>>>>>>>>>>>>>>>>>>");
+        String clientIpAddress = request.getRemoteAddr();
+        log.info("Client IP Address = " + clientIpAddress);
+        log.info("File name = " + fileName);
+        SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd");
+//        String fileName = "ReportBorder_" + sf.format(new Date()) + ".pdf";
+//        DataResponse response = generateReportToPdfService.createPdfFile();
+//        DataResponse response = new DataResponse();
+//        response.setStatus("00");
+//        if (response.getStatus().equals("00")) {
+        try {
+            String fullPath = "src/main/resources/images/car/" + fileName + ".pdf";
+            File file = new File(fullPath);
+
+            HttpHeaders header = new HttpHeaders();
+//                header.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fullPath); // User for View file
+            header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fullPath);    // User for download file
+            header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+            header.add("Pragma", "no-cache");
+            header.add("Expires", "0");
+
+            Path path = Paths.get(file.getAbsolutePath());
+            ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+
+            log.info("\t\t --> End Download File PDF controller <<<<<<<<<<<<<<<<<<<");
+            return ResponseEntity.ok()
+                    .headers(header)
+                    .contentLength(file.length())
+                    .contentType(MediaType.parseMediaType("application/octet-stream"))
+                    .body(resource);
+        } catch (Exception e) {
+//            throw new NotFoundException(
+//                    initializeMessage.errorMessage("File image not found !!", "System can not generate file")
+//            );
+            log.warn("An error occurs while releasing JMS resources", e);
+        }
+        return null;
+    }
+
+    // update car office
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/UpdateCarOffice.service" , consumes = {"multipart/form-data"})
+    public Messages UpdateCarOffice(
+//            @RequestParam("files") MultipartFile files,
+            @RequestParam("KEY_ID") String KEY_ID,
+            @RequestParam("license_plate") String  license_plate,
+            @RequestParam("battery_code_name") String  battery_code_name,
+            @RequestParam("license_plate_end") String  license_plate_end,
+            @RequestParam("license_plate_start") String  license_plate_start,
+            @RequestParam("car_year") String  car_year,
+            @RequestParam("car_type") String  car_type,
+            @RequestParam("car_brand") String  car_brand,
+            @RequestParam("lekThung") String  lekThung,
+            @RequestParam("lekJuk") String  lekJuk,
+            @RequestParam("carColor") String  carColor,
+            @RequestParam("cc") String  cc,
+            @RequestParam("car_mileage_now") String  car_mileage_now,
+            @RequestParam("millor_side") String  millor_side,
+            @RequestParam("millor_back") String  millor_back,
+            @RequestParam("back_light") String  back_light,
+            @RequestParam("font_light") String  font_light,
+            @RequestParam("insurance_viet_expireDate") String  insurance_viet_expireDate,
+            @RequestParam("insurance_Lao_expireDate") String  insurance_Lao_expireDate,
+            @RequestParam("insurance_thai_expireDate") String  insurance_thai_expireDate,
+            @RequestParam("insurance_thai") String  insurance_thai,
+            @RequestParam("insurance_viet") String  insurance_viet,
+            @RequestParam("insurance_Lao") String  insurance_Lao,
+            @RequestParam("leanGia") String  leanGia,
+            @RequestParam("steering_wheel") String  steering_wheel,
+            @RequestParam("owner_car") String  owner_car,
+            @RequestParam("car_model") String  car_model,
+            @RequestParam("oil") String  oil,
+            @RequestParam("total_weigh_car") String  total_weigh_car,
+            @RequestParam("technic_check_dateEnd") String  technic_check_dateEnd,
+            @RequestParam("technic_check_dateStart") String  technic_check_dateStart,
+            @RequestParam("serial_wheel_right_font") String  serial_wheel_right_font,
+            @RequestParam("serial_wheel_right_back") String  serial_wheel_right_back,
+            @RequestParam("serial_wheel_left_font") String  serial_wheel_left_font,
+            @RequestParam("serial_wheel_left_back") String  serial_wheel_left_back,
+            @RequestParam("sitPosition_amount") String  sitPosition_amount,
+            @RequestParam("tall") String  tall,
+            @RequestParam("longg") String  longg,
+            @RequestParam("wide") String  wide,
+            @RequestParam("dao") String  dao,
+            @RequestParam("toKen") String  toKen,
+//            @RequestParam("lean") String  lean,
+            @RequestParam("tungsitnumber") String  tungsitnumber,
+            @RequestParam("tungsitDateExpire") String  tungsitDateExpire,
+            @RequestParam("serial_tire_second") String  serial_tire_second,
+            @RequestParam("lekmai_next") String  lekmai_next,
+            @RequestParam("date_change_lean") String  date_change_lean ,
+            @RequestParam("date_change_lean_next") String  date_change_lean_next
+
+    ){
+        log.info("===================================save header==================================================");
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+        String namefile = formatter.format(date);
+        Messages result = new Messages();
+        try {
+            CarOfficeReq data = new CarOfficeReq();
+            data.setKEY_ID(KEY_ID);
+            data.setLicense_plate(license_plate);
+            data.setBattery_code_name(battery_code_name);
+            data.setLicense_plate_end(license_plate_end);
+            data.setLicense_plate_start(license_plate_start);
+            data.setCar_year(car_year);
+            data.setCarColor(carColor);
+            data.setLekThung(lekThung);
+            data.setLekJuk(lekJuk);
+            data.setCar_brand(car_brand);
+            data.setCar_type(car_type);
+            data.setCc(cc);
+            data.setCar_mileage_now(car_mileage_now);
+            data.setMillor_side(millor_side);
+            data.setMillor_back(millor_back);
+            data.setBack_light(back_light);
+            data.setFont_light(font_light);
+            data.setInsurance_viet_expireDate(insurance_viet_expireDate);
+            data.setInsurance_Lao_expireDate(insurance_Lao_expireDate);
+            data.setInsurance_thai_expireDate(insurance_thai_expireDate);
+            data.setInsurance_thai(insurance_thai);
+            data.setInsurance_viet(insurance_viet);
+            data.setInsurance_Lao(insurance_Lao);
+            data.setLeanGia(leanGia);
+            data.setSteering_wheel(steering_wheel);
+            data.setOwner_car(owner_car);
+            data.setCar_model(car_model);
+            data.setOil(oil);
+            data.setTotal_weigh_car(total_weigh_car);
+            data.setTechnic_check_dateEnd(technic_check_dateEnd);
+            data.setTechnic_check_dateStart(technic_check_dateStart);
+            data.setSerial_wheel_right_font(serial_wheel_right_font);
+            data.setSerial_wheel_right_back(serial_wheel_right_back);
+            data.setSerial_wheel_left_font(serial_wheel_left_font);
+            data.setSerial_wheel_left_back(serial_wheel_left_back);
+            data.setSitPosition_amount(sitPosition_amount);
+            data.setTall(tall);
+            data.setLongg(longg);
+            data.setWide(wide);
+            data.setDao(dao);
+            data.setToKen(toKen);
+//            data.setLean(lean);
+            data.setTungsitnumber(tungsitnumber);
+            data.setTungsitDateExpire(tungsitDateExpire);
+            data.setSerial_tire_second(serial_tire_second);
+            data.setLekmai_next(lekmai_next);
+            data.setDate_change_lean(date_change_lean);
+            data.setDate_change_lean_next(date_change_lean_next);
+//            log.error("******file lenght"+files);
+//            log.error(data);
+//            String fileName = "";
+//            List<String> fileNames = new ArrayList<>();
+//            if(files == null){
+//                log.warn("************* file name is null ****************");
+//                data.setImg("http://khounkham.com/images/car/image.jpg");
+//            }else {
+//                Arrays.asList(files).stream().forEach(file -> {
+//                    fileNames.add(mediaUploadService.uploadMediacar(file));
+//                });
+//                log.info("Uploaded the files successfully: " + fileNames );
+//                fileName = StringUtils.join(fileNames, ',');
+//                data.setImg(fileName);
+//            }
+            result = vicicleHeaderService.UpdateCarOfficeService(data);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+            return  result;
+        }
+        return  result;
+    }
+//    update notice status
+@CrossOrigin(origins = "*")
+@PostMapping("/UpdateNoticeCaofficeStatus.service")
+public Messages UpdateNoticeCaofficeStatus(@RequestBody CarOfficeReq carOfficeReq){
+    Messages result = new Messages();
+    try {
+        result = vicicleHeaderService.UpdateCarOfficeNoticeStatus(carOfficeReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
 }

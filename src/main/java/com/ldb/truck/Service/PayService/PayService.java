@@ -45,6 +45,20 @@ public class PayService {
     }
     //--get billPayment
     public getBillNoRes getBillNoForPay(PayReq payReq){
+        log.info("toKen=======================:"+payReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(payReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        payReq.setUserId(userId);
+        payReq.setBranch(userBranchNo);
+        //====================================================================
         getBillNoRes result =new getBillNoRes();
         List<getBillNo> resData = new ArrayList<>();
         try {
@@ -223,6 +237,20 @@ public class PayService {
     }
     //--show list txn
     public  PayTxnDetailsRes listTxn(TokenReq tokenReq){
+        log.info("toKen=======================:"+tokenReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(tokenReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        tokenReq.setUserId(userId);
+        tokenReq.setBranch(userBranchNo);
+        //====================================================================
         PayTxnDetailsRes result = new PayTxnDetailsRes();
         List<PayTxnDetails> resList = new ArrayList<>();
         try{

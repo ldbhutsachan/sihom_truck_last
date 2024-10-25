@@ -11,6 +11,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ShopReq {
    private Integer shop_id;
+   private String startDate;
+   private String endDate;
    private String shop_name;
    private String address;
    private String phone;

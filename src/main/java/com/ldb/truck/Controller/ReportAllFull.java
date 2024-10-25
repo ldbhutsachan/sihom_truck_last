@@ -153,5 +153,20 @@ public class ReportAllFull {
         }
         return result;
     }
+//    show total fuel paid
+@CrossOrigin(origins = "*")
+@PostMapping("/ShowTotalOilPaid.service")
+public ShowOilPaidRes ShowTotalOilPaid (@RequestBody ReportAllReq reportAllReq){
+    ShowOilPaidRes result = new ShowOilPaidRes();
+    try {
+        result = reportAllService.ShowTotalOilPaidServiece(reportAllReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
 
 }

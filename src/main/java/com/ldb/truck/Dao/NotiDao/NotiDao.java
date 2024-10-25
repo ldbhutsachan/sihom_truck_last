@@ -1,4 +1,6 @@
 package com.ldb.truck.Dao.NotiDao;
+import com.ldb.truck.Model.Login.Dept_Must_Receive.NotificationDeptList;
+import com.ldb.truck.Model.Login.Dept_Must_Receive.NotificationDeptListY;
 import com.ldb.truck.Model.Login.Noti.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -194,6 +196,42 @@ public class NotiDao implements NotiDaoIn{
         }
         return null;
     }
+    // noti off paper
+    public List<NotiOffer> NotiOffer(NoticeReq noticeReq) {
+        try {
+            log.info("sql:"+SQL);
+            SQL="select COUNT(*) AS OFFER  from V_OFFER_PAPER where BRANCH ='"+noticeReq.getBranch()+"' AND statusPO = 'NO' ";
+            return EBankJdbcTemplate.query(SQL, new RowMapper<NotiOffer>() {
+                @Override
+                public NotiOffer mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    NotiOffer tr =new NotiOffer();
+                    tr.setTotal_Offer_List(rs.getDouble("OFFER"));
+                    return tr;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    // noti PO
+    public List<NotiPO> NotiPurchaseOrder (NoticeReq noticeReq) {
+        try {
+            log.info("sql:"+SQL);
+            SQL="select COUNT(*) AS PO  from PURCHASE_ORDER a inner join LOGIN l ON a.userId =l.KEY_ID  where l.BRANCH ='"+noticeReq.getBranch()+"' AND a.stockSatus = 'wait' ";
+            return EBankJdbcTemplate.query(SQL, new RowMapper<NotiPO>() {
+                @Override
+                public NotiPO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    NotiPO tr =new NotiPO();
+                    tr.setTotal_PO(rs.getDouble("PO"));
+                    return tr;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
     public List<NotiFuel> NotiFuelUP(NoticeReq noticeReq) {
         try {
             log.info("sql:"+SQL);
@@ -211,6 +249,108 @@ public class NotiDao implements NotiDaoIn{
         }
         return null;
     }
+    // bialieng staus
+    public List<NoticeBialieng> NotiBialieng (NoticeReq noticeReq) {
+        try {
+            log.info("sql:"+SQL);
+            SQL="select COUNT(*) AS BL_STATUS  from bialeing_status a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH ='"+noticeReq.getBranch()+"' AND a.STATUS_PAY_BIALEING='PAY'";
+            return EBankJdbcTemplate.query(SQL, new RowMapper<NoticeBialieng>() {
+                @Override
+                public NoticeBialieng mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    NoticeBialieng tr =new NoticeBialieng();
+                    tr.setTotal_Bialieng(rs.getDouble("BL_STATUS"));
+                    return tr;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    // pay oil
+    public List<NoticePayOil> NoticePayOil (NoticeReq noticeReq) {
+        try {
+            log.info("sql:"+SQL);
+            SQL="select COUNT(*) AS PAYOIL_STATUS  from STATUS_PAY_PUMP a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH ='"+noticeReq.getBranch()+"' AND a.PAYOIL_STATUS='PAY'";
+            return EBankJdbcTemplate.query(SQL, new RowMapper<NoticePayOil>() {
+                @Override
+                public NoticePayOil mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    NoticePayOil tr =new NoticePayOil();
+                    tr.setTotal_PayOil(rs.getDouble("PAYOIL_STATUS"));
+                    return tr;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    // wait std
+    public List<NoticeStatusWaitToMoveToWhereHouse> NoticeWait (NoticeReq noticeReq) {
+        try {
+            log.info("sql:"+SQL);
+            SQL="SELECT COUNT(*) AS total_wait from V_OFFER_PAPER  WHERE stock_status = 'wait' and statusPO='YES' and BRANCH ='"+noticeReq.getBranch()+"'";
+            return EBankJdbcTemplate.query(SQL, new RowMapper<NoticeStatusWaitToMoveToWhereHouse>() {
+                @Override
+                public NoticeStatusWaitToMoveToWhereHouse mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    NoticeStatusWaitToMoveToWhereHouse tr =new NoticeStatusWaitToMoveToWhereHouse();
+                    tr.setTotalWait(rs.getDouble("total_wait"));
+                    return tr;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+//    dept must recieved
+public List<NotificationDeptList> DeptStatusNDAOs (NoticeReq noticeReq) {
+    try {
+        if (noticeReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF"))
+        {
+            log.info("sql:" + SQL);
+            SQL = "SELECT COUNT(*) AS total_N from V_DEPT_MUST_RECEIVED  WHERE STATUS_WAIT_APPROVE ='N'";
+        }else {
+            log.info("sql:" + SQL);
+            SQL = "SELECT COUNT(*) AS total_N from V_DEPT_MUST_RECEIVED  WHERE STATUS_WAIT_APPROVE ='N' and userId ='" + noticeReq.getUserId() + "'";
+        }
+        return EBankJdbcTemplate.query(SQL, new RowMapper<NotificationDeptList>() {
+            @Override
+            public NotificationDeptList mapRow(ResultSet rs, int rowNum) throws SQLException {
+                NotificationDeptList tr =new NotificationDeptList();
+                tr.setTotaldeptStatusN(rs.getDouble("total_N"));
+                return tr;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
+//dept status Y
+public List<NotificationDeptListY> DeptStatusYDAOs (NoticeReq noticeReq) {
+    try {
+        if (noticeReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF"))
+        {
+            log.info("sql:" + SQL);
+            SQL = "SELECT COUNT(*) AS total_Y from V_DEPT_MUST_RECEIVED  WHERE STATUS_WAIT_APPROVE ='Y'";
+        }else {
+            log.info("sql:" + SQL);
+            SQL = "SELECT COUNT(*) AS total_Y from V_DEPT_MUST_RECEIVED  WHERE STATUS_WAIT_APPROVE ='Y' and userId ='" + noticeReq.getUserId() + "'";
+        }
+        return EBankJdbcTemplate.query(SQL, new RowMapper<NotificationDeptListY>() {
+            @Override
+            public NotificationDeptListY mapRow(ResultSet rs, int rowNum) throws SQLException {
+                NotificationDeptListY tr =new NotificationDeptListY();
+                tr.setTotaldeptStatusY(rs.getDouble("total_Y"));
+                return tr;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
     //==================================>show noti in box<===========================================================
 
 }

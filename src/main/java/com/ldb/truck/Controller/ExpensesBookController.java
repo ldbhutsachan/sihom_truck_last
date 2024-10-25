@@ -60,6 +60,7 @@ public class ExpensesBookController {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/storeExpensesTypeUpdate.service")
     public ExpenTypeRes storeExpensesTypeUpdate(@RequestBody ExpenTypeReq expenTypeReq){

@@ -24,5 +24,7 @@ public class ExpensesBookReq {
     private String toKen;
     private String branch;
 
+//    private String currency;
+
 
 }

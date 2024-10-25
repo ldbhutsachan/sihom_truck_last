@@ -1,6 +1,7 @@
 package com.ldb.truck.Dao.ReportAllDao;
 
 import com.ldb.truck.Dao.VicicleHeaderDao.VicicleHeaderServiceDao;
+import com.ldb.truck.Model.Login.ForShowTotalOil.ForShowTotalOilPaid;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportFuel;
@@ -518,6 +519,29 @@ public class ReportAllServiceDao implements ReportAllDao{
         }
         return null;
     }
+//    show total price oil
+public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAllReq) {
+    try {
+        if (reportAllReq.getStartDate() == null) {
+            sql = "select * from SPEND_OILS a inner join LOGIN b ON (a.userId=b.KEY_ID) where b.BRANCH='" + reportAllReq.getBranch() + "'";
+        }
+        else {
+            sql = "select * from SPEND_OILS a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+reportAllReq.getBranch()+"' AND a.DATECREATE BETWEEN '" + reportAllReq.getStartDate() +"' AND '" + reportAllReq.getEndDate()+"'";
+        }
+        return EBankJdbcTemplate.query(sql, new RowMapper<ForShowTotalOilPaid>() {
+            @Override
+            public ForShowTotalOilPaid mapRow(ResultSet rs, int rowNum) throws SQLException {
+                ForShowTotalOilPaid tr =new ForShowTotalOilPaid();
+                tr.setTotalOilPaid(rs.getDouble("TOTAL_PRICE"));
+                return tr;
+            }
+        });
+
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
     //end  Report Fuel
 
     public List<ReportAll> ListAllReportProductType02(@RequestBody  ReportAllReq reportAllReq) {

@@ -17,8 +17,8 @@ public class Shops {
    private String country;
    private String currency;
    private String amount_money;
-   private String branch;
-   private String toKen;
-   private String userId;
+//   private String branch;
+//   private String toKen;
+//   private String userId;
 
 }

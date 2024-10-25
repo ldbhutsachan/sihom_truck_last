@@ -39,4 +39,7 @@ public class v_wastedValue {
     private String feeyoktu;
     private String feecontrainer;
     private String feepayang;
+    private String kilometer_before;
+    private String distance;
+    private String distance_sum;
 }

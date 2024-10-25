@@ -2,8 +2,10 @@ package com.ldb.truck.Service.ReportAllService;
 
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.ReportAllDao.ReportAllServiceDao;
+import com.ldb.truck.Model.Login.ForShowTotalOil.ForShowTotalOilPaid;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.*;
+import com.ldb.truck.Model.Login.Report.Bialieng.sumfooterOilPaid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -208,5 +210,51 @@ public ReportFuelRes ReportFuealStation(ReportAllReq reportAllReq){
 }
 // service report fuel
 
+//    show total oils paid
+public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
+    log.info("toKen=======================:"+reportAllReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    reportAllReq.setUserId(userId);
+    reportAllReq.setBranch(userBranchNo);
+    //====================================================================
+
+//    double totalNummun =0.0;
+//    double totalPriceFuel =0.0;
+
+//    List<ReportFuel> groupListData = new ArrayList<>();
+    DecimalFormat numfm = new DecimalFormat("###,###.###");
+    List<ForShowTotalOilPaid> data = new ArrayList<>();
+    ShowOilPaidRes result = new ShowOilPaidRes();
+    try {
+        data = reportStaffServiceDao.ShowOilPaid(reportAllReq);
+        //================================sum footer=================================
+
+        double sumtotalOilPaid =  data.stream().map(ForShowTotalOilPaid::getTotalOilPaid).collect(Collectors.summingDouble(Double::doubleValue));
+//        double sumtotalPriceFuel =  listData.stream().map(ReportFuel::getTotalPrizeFuelAll).collect(Collectors.summingDouble(Double::doubleValue));
+//
+        sumfooterOilPaid restFooter = new sumfooterOilPaid();
+        restFooter.setSumtotalOilPaid(numfm.format(sumtotalOilPaid));
+//
+        result.setSumFooter(restFooter);
+        //================================sum footer=================================
+        result.setData(data);
+        result.setStatus("00");
+        result.setMessage("success");
+    }catch (Exception e ){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("data not found ");
+    }
+    return result;
+}
 
 }

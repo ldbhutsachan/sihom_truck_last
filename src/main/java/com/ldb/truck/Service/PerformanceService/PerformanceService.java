@@ -10,6 +10,7 @@ import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportAllRes;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import com.ldb.truck.Model.Login.product.ProductRes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -180,14 +181,30 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         v_performanceRes result = new v_performanceRes();
         List<v_performance> resdata = new ArrayList<>();
         try {
-            resdata = performanceDao.ListV_performancebyBillNo(performanceReq);
-            Double carGiveTotal = resdata.stream().distinct().map(v_performance::getTOTAL_PRICE02).collect(Collectors.summingDouble(Double::doubleValue));
-            Double sumProsize = resdata.stream().distinct().map(v_performance::getProSize).collect(Collectors.summingDouble(Double::doubleValue));
-            result.setSumAmount(carGiveTotal);
-            result.setSumTonProSize(numRow.format(sumProsize));
-            result.setData(resdata);
-            result.setMessage("success");
-            result.setStatus("00");
+            if(performanceReq.getStatus()==null){
+                log.info("show================con 1 -> if");
+                resdata = performanceDao.ListV_performancebyBillNo(performanceReq);
+                Double carGiveTotal = resdata.stream().distinct().map(v_performance::getTOTAL_PRICE02).collect(Collectors.summingDouble(Double::doubleValue));
+                Double sumProsize = resdata.stream().distinct().map(v_performance::getProSize).collect(Collectors.summingDouble(Double::doubleValue));
+                result.setSumAmount(carGiveTotal);
+                result.setSumTonProSize(numRow.format(sumProsize));
+                result.setData(resdata);
+                result.setMessage("success");
+                result.setStatus("00");
+            }
+            else {
+                log.info("show================con 2 -else");
+//                resdata = performanceDao.ListV_performancebyBillNo(performanceReq);
+                resdata = performanceDao.PerformanceSearchStatus(performanceReq);
+                Double carGiveTotal = resdata.stream().distinct().map(v_performance::getTOTAL_PRICE02).collect(Collectors.summingDouble(Double::doubleValue));
+                Double sumProsize = resdata.stream().distinct().map(v_performance::getProSize).collect(Collectors.summingDouble(Double::doubleValue));
+                result.setSumAmount(carGiveTotal);
+                result.setSumTonProSize(numRow.format(sumProsize));
+                result.setData(resdata);
+                result.setMessage("success");
+                result.setStatus("00");
+            }
+
 
         }catch (Exception e){
             e.printStackTrace();
@@ -198,11 +215,25 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         return result;
     }
     //---gen ID
-    public generateKeyIDRes listGenPerNo(){
+    public generateKeyIDRes listGenPerNo(TogenTheCodeReq togenTheCodeReq ){
+        log.info("toKen=======================:"+togenTheCodeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(togenTheCodeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        togenTheCodeReq.setUserId(userId);
+        togenTheCodeReq.setBranch(userBranchNo);
+        //====================================================================
         generateKeyIDRes result =new generateKeyIDRes();
         List<generateKeyID> resData = new ArrayList<>();
         try{
-            resData = performanceDao.genKeyID();
+            resData = performanceDao.genKeyID(togenTheCodeReq);
             result.setData(resData);
             result.setMessage("success");
             result.setStatus("00");

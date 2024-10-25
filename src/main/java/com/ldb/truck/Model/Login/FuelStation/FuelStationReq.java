@@ -24,6 +24,7 @@ public class FuelStationReq {
         private String province;
         private String mobile;
         private String email;
+        private String totalPriceOil;
 
         private String del;
         private String key_id;

@@ -3,15 +3,13 @@ package com.ldb.truck.Controller;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Details.DetailsRes;
 import com.ldb.truck.Model.Login.Details.Details;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.ldb.truck.Service.DetailsService.DetailsService;
 
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceNoRes;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceNoReq;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceNo;
 @RestController
 @RequestMapping("${base_url}")
 public class DetailController {
@@ -20,10 +18,10 @@ public class DetailController {
     //get invoice No
     @CrossOrigin(origins = "*")
     @PostMapping("/listInvoiceNo.service")
-    public getInvoiceNoRes listInvoiceNo(){
+    public getInvoiceNoRes listInvoiceNo(@RequestBody TogenTheCodeReq togenTheCodeReq){
         getInvoiceNoRes result = new getInvoiceNoRes();
         try {
-            result = detailsService.ListInvoicedetails();
+            result = detailsService.ListInvoicedetails(togenTheCodeReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -32,6 +30,36 @@ public class DetailController {
         }
         return result;
     }
+//    gent QUOTATION_CODE
+@CrossOrigin(origins = "*")
+@PostMapping("/GenQuotationCodeKKT.service")
+public QuotationRes GenQuotationCodeKKT(){
+    QuotationRes result = new QuotationRes();
+    try {
+        result = detailsService.genQuotationCodeService();
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+//gen invoice dept
+@CrossOrigin(origins = "*")
+@PostMapping("/GenInvoiceCodeINV.service")
+public GenInvoiceDeptRes GenInvoiceCodeINV(){
+    GenInvoiceDeptRes result = new GenInvoiceDeptRes();
+    try {
+        result = detailsService.genInvoiceDeptCodeService();
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
     @CrossOrigin(origins = "*")
     @PostMapping("/listDeatilsAll.service")
     public DetailsRes listVicicleHeader(){

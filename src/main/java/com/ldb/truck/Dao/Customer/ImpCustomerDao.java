@@ -2,6 +2,7 @@ package com.ldb.truck.Dao.Customer;
 
 import com.ldb.truck.Model.Login.FuelStation.FuelStationOut;
 import com.ldb.truck.Model.Login.FuelStation.FuelStationReq;
+import com.ldb.truck.Model.Login.ReportStaff.AmountThatPaidStaffModel;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaff;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRanking;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
@@ -247,6 +248,25 @@ public class ImpCustomerDao  implements CustomerDao{
         }
         return null;
     }
+//    amount that paid staff bialieng
+@Override
+public List<AmountThatPaidStaffModel>AmountThatPaidStaffDAOs (StaffPaymentReq staffPaymentReq) {
+    try
+    {
+        String sql ="select a.ALL_OF_THEM from PAYMENT_STAFF a join LOGIN b on a.userId = b.KEY_ID where b.BRANCH = '"+staffPaymentReq.getBranch()+"' and a.PAY_DATE between '"+staffPaymentReq.getStartDate()+"' and '"+staffPaymentReq.getEndDate()+"'";
+        return  EBankJdbcTemplate.query(sql, new RowMapper<AmountThatPaidStaffModel>() {
+            @Override
+            public AmountThatPaidStaffModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                AmountThatPaidStaffModel tr =new AmountThatPaidStaffModel();
+                tr.setAmoutTotalpaid(rs.getDouble("ALL_OF_THEM"));
+                return tr;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
     //============Qeury top 5 ranking staff
     public List<ReportStaffRanking> TopFiveRankingDao(StaffPaymentReq staffPaymentReq) {
         String sql = null;
@@ -442,7 +462,7 @@ public int paymentStaff(StaffPaymentReq staffPaymentReq) {
                 String del = dels.get(i);
                 String keyId = keyIds.get(i);
 
-                String SQL = "UPDATE TB_DETAILS SET staff_01_status ='done'  WHERE LAHUD_POYLOD = '" + del + "' AND KEY_ID='" + keyId + "'";
+                String SQL = "UPDATE TB_DETAILS SET staff_01_status ='done',STAFF_BIALINEG_KANGJAIY='0',STAFF_BIALIENG=STAFF_BIALIENG_FRIST  WHERE LAHUD_POYLOD = '" + del + "' AND KEY_ID='" + keyId + "'";
                 System.out.println(SQL);
                 totalUpdated_2 += EBankJdbcTemplate.update(SQL);
             }
@@ -593,6 +613,19 @@ public int paymentStaff(StaffPaymentReq staffPaymentReq) {
 
         return totalUpdated;
     }
+//    insert totoalprice to table
+public int insertTotalprice (FuelStationReq fuelStationReq) {
+    try{
+        String SQL = "insert into SPEND_OILS (TOTAL_PRICE,DATECREATE,userId)values (?,now(),'"+fuelStationReq.getUserId()+"')";
+        List<Object> paramList = new ArrayList<Object>();
+        paramList.add(fuelStationReq.getTotalPriceOil());
+        paramList.add(fuelStationReq.getUserId());
+        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+    }catch (Exception e){
+        e.printStackTrace();
+        return -1;
+    }
+}
 
     // ===================Update fuel tation =========================================================
 

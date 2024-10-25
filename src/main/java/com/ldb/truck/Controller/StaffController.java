@@ -1,5 +1,6 @@
 package com.ldb.truck.Controller;
 
+import com.ldb.truck.Model.Login.ReportStaff.AmountthatPaidStaffRes;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRes;
 import com.ldb.truck.Model.Login.ReportStaff.TopFiveRankingRes;
@@ -26,6 +27,22 @@ public class StaffController {
         ReportStaffRes result = new ReportStaffRes();
         try {
             result = staftServiceDao.ListWaiyPaymentStaff(staffPaymentReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    //show amout that paid bialieng
+    @CrossOrigin(origins = "*")
+    @PostMapping("/AmountThatPaidStaff.service")
+    public AmountthatPaidStaffRes AmountThatPaidStaff(@RequestBody StaffPaymentReq staffPaymentReq) {
+        log.info("=================================>listPaymentStaff<=================================================");
+        AmountthatPaidStaffRes result = new AmountthatPaidStaffRes();
+        try {
+            result = staftServiceDao.AmountThatPaidStaffServiece(staffPaymentReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

@@ -21,9 +21,17 @@ public class CustomerPaymentDao implements CustomerPaymentInfDao{
         List<Customer_Payment> result = new ArrayList<>();
         try
         {
+            if(customerPaymentReq.getStartDate() == null && customerPaymentReq.getEndDate() == null)
+            {
+                SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' order by a.PERFORMANCEBILLNO asc";
+                System.out.println("sql:"+SQL);
+            }else
+            {
+                SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' AND a.OUT_DATE between '"+customerPaymentReq.getStartDate()+"' AND '"+customerPaymentReq.getEndDate()+"' order by a.PERFORMANCEBILLNO asc";
+                System.out.println("sql:"+SQL);
+            }
 //             SQL = "select * from V_CHOOSE_PAYMENT where status='N' order by PERFORMANCEBILLNO asc";
-             SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' order by a.PERFORMANCEBILLNO asc";
-            System.out.println("sql:"+SQL);
+
             result = EBankJdbcTemplate.query(SQL , new Customer_PaymentMapper());
         }catch (Exception e){
             e.printStackTrace();

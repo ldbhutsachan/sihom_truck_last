@@ -6,13 +6,14 @@ import com.ldb.truck.Model.Login.Payment.*;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNoReq;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 
 public interface InvoiceInDao {
     List<Invoice> listInvoiceDetails(ResFromDateReq resFromDateReq);
 
     List<PrintInvoiceByNo> viewPintBillBackByNo(PrintInvoiceByNoReq printInvoiceByNoReq);
     List<PrintInvoiceByNo> viewPintBillByNo(PrintInvoiceByNoReq printInvoiceByNoReq);
-    List<GenerateInvoiceID> gernerateID();
+    List<GenerateInvoiceID> gernerateID(TogenTheCodeReq togenTheCodeReq);
     List<Invoice>  ListInvoiceAll();
 
 //    List<Invoice>  listInvoiceDetails();

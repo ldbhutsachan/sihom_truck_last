@@ -2,6 +2,7 @@ package com.ldb.truck.Dao.PayDao;
 
 import com.ldb.truck.Dao.Details.DetailsServiceDao;
 import com.ldb.truck.Model.Login.Pay.*;
+import com.ldb.truck.Model.Login.Payment.GenerateInvoiceID;
 import com.ldb.truck.Model.Login.Payment.PayTxnReport;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Model.Login.TokenOnly.TokenReq;
@@ -41,13 +42,56 @@ public class PayDao  implements PayInDao{
          }
         return result;
     }
+    private String getSqlForBranch5() {
+        return "select billNo5,pay_date from AUTO_BILLNO";
+    }
+
+    private String getSqlForBranch2() {
+        return "select billNo2,pay_date from AUTO_BILLNO";
+    }
+
+    private String getSqlForBranch3() {
+        return "select billNo3,pay_date from AUTO_BILLNO";
+    }
+
+    private String getSqlForBranch4() {
+        return "select billNo4,pay_date from AUTO_BILLNO";
+    }
     @Override
     public List<getBillNo> getBillNo(PayReq payReq) {
+        String sql;
         List<getBillNo> result = new ArrayList<>();
         try
         {
-            SQL = "select * from AUTO_BILLNO a INNER JOIN LOGIN b ON a.userId=b.KEY_ID AND b.BRANCH='"+payReq.getBranch()+"'";
-            result = EBankJdbcTemplate.query(SQL, new getBillNoMapper());
+            int branch = Integer.parseInt(payReq.getBranch());
+            switch (branch) {
+                case 5:
+                    sql = getSqlForBranch5();
+                    break;
+                case 2:
+                    sql = getSqlForBranch2();
+                    break;
+                case 3:
+                    sql = getSqlForBranch3();
+                    break;
+                case 4:
+                    sql = getSqlForBranch4();
+                    break;
+                default:
+                    // Handle invalid branch case (e.g., throw exception)
+                    throw new IllegalArgumentException("Invalid branch code: " + branch);
+            }
+            return EBankJdbcTemplate.query(sql, new RowMapper<getBillNo>() {
+                @Override
+                public getBillNo mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    getBillNo data = new getBillNo();
+                    data.setBillNo(rs.getString("billNo"+ branch));
+                    data.setPayDate(rs.getString("pay_date"));
+                    return data;
+                }
+            });
+//            SQL = "select * from AUTO_BILLNO a INNER JOIN LOGIN b ON a.userId=b.KEY_ID AND b.BRANCH='"+payReq.getBranch()+"'";
+//            result = EBankJdbcTemplate.query(sql, new getBillNoMapper());
         }catch (Exception e){
             e.printStackTrace();
         }

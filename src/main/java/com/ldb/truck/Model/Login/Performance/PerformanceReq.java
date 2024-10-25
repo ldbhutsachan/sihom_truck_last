@@ -22,6 +22,7 @@ public class PerformanceReq {
     private String productId;
     private String custormerId;
 
+
     private String performanceOvertime;
     private String performanceJumPho;
     private String performanceFeePolish;

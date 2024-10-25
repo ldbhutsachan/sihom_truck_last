@@ -3,6 +3,7 @@ import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Payment.*;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import com.ldb.truck.Service.PaymentService.CustomerPaymentService;
 import com.ldb.truck.Service.PaymentService.InvoiceService;
 import org.apache.logging.log4j.LogManager;
@@ -65,10 +66,10 @@ public class InvoiceController {
     //---get invoice generate  gernerateID
     @CrossOrigin(origins = "*")
     @PostMapping("/gernerateID.service")
-    public GenerateInvoiceIDRes gernerateID(){
+    public GenerateInvoiceIDRes gernerateID( @RequestBody TogenTheCodeReq togenTheCodeReq){
         GenerateInvoiceIDRes result = new GenerateInvoiceIDRes();
         try {
-            result =  invoiceService.gernerateID();
+            result =  invoiceService.gernerateID(togenTheCodeReq);
             return result;
         }catch (Exception e){
             e.printStackTrace();

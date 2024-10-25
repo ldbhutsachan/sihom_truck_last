@@ -84,6 +84,7 @@ public class DetailsReq {
     // fuel_status
     private String fuel_status;
     private String fuelStationId;
+    private String lAIYATHANG_SUM;
 
 
 

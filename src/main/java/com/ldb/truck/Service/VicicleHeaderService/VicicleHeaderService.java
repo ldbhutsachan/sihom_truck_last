@@ -2,6 +2,7 @@ package com.ldb.truck.Service.VicicleHeaderService;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.VicicleHeaderDao.VicicleHeaderDao;
 import com.ldb.truck.Dao.VicicleHeaderDao.VicicleHeaderServiceDao;
+import com.ldb.truck.Model.Login.CarOffice.*;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
@@ -17,9 +18,14 @@ import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeader;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderRes;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VicicleHeaderService  {
@@ -137,6 +143,138 @@ public class VicicleHeaderService  {
             return result;
         }
     }
+    // list Car office
+    public CarOfficeRes listCarOfficeService (@RequestBody CarOfficeReq carOfficeReq){
+        log.info("toKen=======================:"+carOfficeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        carOfficeReq.setUserId(userId);
+        carOfficeReq.setBranch(userBranchNo);
+        //====================================================================
+        List<CarOfficeModel> CarOfficeModel = new ArrayList<>();
+        CarOfficeRes result = new CarOfficeRes();
+        try {
+            CarOfficeModel = vicicleHeaderDao.listCarOfficeDAOs(carOfficeReq);
+            if(CarOfficeModel.size() < 1 ){
+                result.setMessage("have No List of Car yet");
+                result.setStatus("01");
+                return result;
+            }else {
+
+                result.setMessage("Success");
+                result.setStatus("00");
+                result.setData(CarOfficeModel);
+                return result;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
+    // list lod dao that paid
+    public CarPaidRes listCarDaoPaidService (@RequestBody CarOfficeReq carOfficeReq){
+        log.info("toKen=======================:"+carOfficeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        carOfficeReq.setUserId(userId);
+        carOfficeReq.setBranch(userBranchNo);
+        //====================================================================
+        List<CarPaidModel> CarPaidModel = new ArrayList<>();
+        CarPaidRes result = new CarPaidRes();
+        try {
+            CarPaidModel = vicicleHeaderDao.listCarDaoPaid(carOfficeReq);
+            if(CarPaidModel.size() < 1 ){
+                result.setMessage("have No List of Car yet");
+                result.setStatus("01");
+                return result;
+            }else {
+
+                result.setMessage("Success");
+                result.setStatus("00");
+                result.setData(CarPaidModel);
+                return result;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
+    //list lod dao
+    public CarOfficeRes listDaoCarOfficeService (@RequestBody CarOfficeReq carOfficeReq){
+        log.info("toKen=======================:"+carOfficeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        carOfficeReq.setUserId(userId);
+        carOfficeReq.setBranch(userBranchNo);
+        //====================================================================
+        List<CarOfficeModel> CarOfficeModel = new ArrayList<>();
+        CarOfficeRes result = new CarOfficeRes();
+        try {
+            CarOfficeModel = vicicleHeaderDao.listLodDaoOfficeDAOs(carOfficeReq);
+            if(CarOfficeModel.size() < 1 ){
+                result.setMessage("have No List of Car yet");
+                result.setStatus("01");
+                return result;
+            }else {
+
+                result.setMessage("Success");
+                result.setStatus("00");
+                result.setData(CarOfficeModel);
+                return result;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
+    // list car detail by id
+    public CarOfficeRes listCarOfficeServiceDetailById (@RequestBody CarOfficeReq carOfficeReq){
+
+        List<CarOfficeModel> CarOfficeModel = new ArrayList<>();
+        CarOfficeRes result = new CarOfficeRes();
+        try {
+            CarOfficeModel = vicicleHeaderDao.listCarOfficeDAOsDetailById(carOfficeReq);
+                result.setMessage("Success");
+                result.setStatus("00");
+                result.setData(CarOfficeModel);
+                return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
     //--del
     public VicicleHeaderRes DelVicicleHeaderByID (VicicleHeaderReq vicicleHeaderReq){
         VicicleHeaderRes result = new VicicleHeaderRes();
@@ -148,6 +286,21 @@ public class VicicleHeaderService  {
         }catch (Exception e){
             e.printStackTrace();
             result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
+    //del car office
+    public CarOfficeRes DelCarOfficeService (CarOfficeReq carOfficeReq){
+        CarOfficeRes result = new CarOfficeRes();
+        try {
+            vicicleHeaderDao.delCarOfficeDAOs(carOfficeReq);
+            result.setMessage("Delete Success");
+            result.setStatus("00");
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("Can not Delete");
             result.setStatus("01");
             return result;
         }
@@ -189,6 +342,134 @@ public class VicicleHeaderService  {
         }
         return message;
     }
+    // insert car office Service
+    public Messages InsertCarOfficeService (CarOfficeReq carOfficeReq ){
+        log.info("toKen=======================:"+carOfficeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        carOfficeReq.setUserId(userId);
+        carOfficeReq.setBranch(userBranchNo);
+        Messages message = new Messages();
+        int i = 0;
+        try {
+            i = vicicleHeaderDao.InsertCarOfficeDAOs(carOfficeReq);
+            if(i == 0){
+                message.setStatus("01");
+                message.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+                return message;
+            }
+            message.setStatus("00");
+            message.setMessage("ບັນທຶກສຳເລັດ");
+
+        }catch (Exception e){
+            e.printStackTrace();
+            message.setStatus("01");
+            message.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+            return message;
+        }
+        return message;
+    }
+    //pay lod dao service
+    public Messages PayLodDaoService (PaidCarDaoReq paidCarDaoReq){
+        log.info("toKen=======================:"+paidCarDaoReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(paidCarDaoReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        paidCarDaoReq.setUserId(userId);
+        paidCarDaoReq.setBranch(userBranchNo);
+        Messages message = new Messages();
+        int i = 0;
+        try {
+            i = vicicleHeaderDao.PayCarDao(paidCarDaoReq);
+            if(i == 0){
+                message.setStatus("01");
+                message.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+                return message;
+            }
+            message.setStatus("00");
+            message.setMessage("ບັນທຶກສຳເລັດ");
+
+        }catch (Exception e){
+            e.printStackTrace();
+            message.setStatus("01");
+            message.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+            return message;
+        }
+        return message;
+    }
+
+    // update car office
+    public Messages UpdateCarOfficeService (CarOfficeReq carOfficeReq ){
+        log.info("toKen=======================:"+carOfficeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        carOfficeReq.setUserId(userId);
+        carOfficeReq.setBranch(userBranchNo);
+        Messages message = new Messages();
+        int i = 0;
+        try {
+//            if(carOfficeReq.getImg().equals("1") || carOfficeReq.getImg() == null  ){
+//                i =vicicleHeaderDao.updateCarOfficeUppicHaveData(carOfficeReq);
+//            }else {
+                i = vicicleHeaderDao.UpdateCarOfficeDAOs(carOfficeReq);
+//            }
+
+            if(i == 0){
+                message.setStatus("01");
+                message.setMessage("ບໍ່ມີຂໍ້ມຸນໃຫ້ແກ້ໄຂ");
+                return message;
+            }
+            message.setStatus("00");
+            message.setMessage("ແກ້ໄຂສຳເລັດ");
+
+        }catch (Exception e){
+            e.printStackTrace();
+            message.setStatus("01");
+            message.setMessage("ບໍ່ສາມາດແກ້ໄຂໄດ້");
+            return message;
+        }
+        return message;
+    }
+
+//    update car office notice status
+public Messages UpdateCarOfficeNoticeStatus (CarOfficeReq carOfficeReq ){
+    Messages message = new Messages();
+    try {
+        vicicleHeaderDao.UpdateCarOfficenoticeStatusDAOs(carOfficeReq);
+        message.setStatus("00");
+        message.setMessage("ແກ້ໄຂສຳເລັດ");
+
+    }catch (Exception e){
+        e.printStackTrace();
+        message.setStatus("01");
+        message.setMessage("ບໍ່ສາມາດແກ້ໄຂໄດ້");
+        return message;
+    }
+    return message;
+}
 //---update
 //public VicicleHeaderRes updateVicicleHeader(VicicleHeaderReq vicicleHeaderReq){
 //    VicicleHeaderRes result = new VicicleHeaderRes();

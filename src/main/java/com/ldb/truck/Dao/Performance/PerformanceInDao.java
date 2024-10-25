@@ -3,6 +3,7 @@ import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
@@ -20,7 +21,7 @@ public interface PerformanceInDao {
 
     List<ReportAll> viewPopup(PerformanceReq performanceReq);
     public int storePerformanceHis(PerformanceReq performanceReq);
-    public List<generateKeyID> genKeyID();
+    public List<generateKeyID> genKeyID(TogenTheCodeReq togenTheCodeReq);
     public int updateDetailsFooter(PerformanceReq performanceReq);
     public int updateDetailsHeader(PerformanceReq performanceReq);
     List<getBillNo> getBillNo(getBillNoReg getBillNoReg);

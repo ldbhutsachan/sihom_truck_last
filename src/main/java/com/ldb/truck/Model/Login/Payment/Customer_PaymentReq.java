@@ -24,4 +24,6 @@ public class Customer_PaymentReq {
     private String  toKen;
     private String  branch;
     private String  userId;
+    private String  startDate;
+    private String  endDate;
 }

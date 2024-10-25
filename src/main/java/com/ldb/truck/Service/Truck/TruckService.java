@@ -187,7 +187,7 @@ public TruckDetailsRes ReportGive(ResFromDateReq resFromDateReq){
            if (rsList.getType().equals("SUMFOOTER")) {
                SumGiveFooter groupFooter = new SumGiveFooter();
                groupFooter.setSumTotalRow(rsList.getTotalRow());
-               groupFooter.setSumTotalFuel(numfm.format(rsList.getTotalFuel()));
+               groupFooter.setSumTotalFuel(rsList.getTotalFuel());
                Double carGiveTotal = rsList.getCarGive();
                Double carPayTotal = rsList.getCarPay();
                Double kumLaiyTotal = rsList.getKumLaiy();

@@ -4,6 +4,7 @@ import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Payment.*;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,29 +40,29 @@ public class InvoiceService {
         return result;
     }
     //---generate ID
-    public GenerateInvoiceIDRes gernerateID(){
-//        log.info("toKen=======================:"+invoiceReq.getToKen());
-//        //============================get User info=======================
-//        List<Profile> userIn = profileDao.getProfileInfoByToken(invoiceReq.getToKen());
-//        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-//        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-//        log.info("show=================Role:"+userIn.get(0).getRole());
-//        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-//        //================================================================
-//        String userId = userIn.get(0).getUserId();
-//        String userBranchNo = userIn.get(0).getBranchNo();
-//        //===================set data to userId===============================
-//        invoiceReq.setUserId(userId);
-//        invoiceReq.setBranch(userBranchNo);
-//        log.info("user=======================:"+userId);
-//        log.info("band=======================:"+userBranchNo);
-//
-//        //====================================================================
+    public GenerateInvoiceIDRes gernerateID(TogenTheCodeReq togenTheCodeReq){
+        log.info("toKen=======================:"+togenTheCodeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(togenTheCodeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        togenTheCodeReq.setUserId(userId);
+        togenTheCodeReq.setBranch(userBranchNo);
+        log.info("user=======================:"+userId);
+        log.info("band=======================:"+userBranchNo);
+
+        //====================================================================
 
         GenerateInvoiceIDRes result = new GenerateInvoiceIDRes();
         List<GenerateInvoiceID> resData = new ArrayList<>();
         try{
-            resData = invoiceDao.gernerateID();
+            resData = invoiceDao.gernerateID(togenTheCodeReq);
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resData);

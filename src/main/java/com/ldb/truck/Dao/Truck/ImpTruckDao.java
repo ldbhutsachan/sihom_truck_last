@@ -661,7 +661,7 @@ log.info("sql:"+SQL);
                         "                        -cast(replace(a.staff02_payAll, ',', '') as unsigned)) - a.PRIECENUMNUN AS kumLaiy,COUNT(a.H_VICIVLE_NUMBER) AS totalRow,\n" +
                         "                        SUM(a.SAINUMMUN) as TotalFuel,sum(a.PRIECENUMNUN) as PRIECENUMNUN, +\n" +
                         "                        SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(a.staff02_payAll, ',', '') as unsigned)) as totalBialieng \n" +
-                        "                        FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID  where   b.BRANCH ='"+truckDetailsReq.getBranch()+"' AND a.H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE,a.LAHUD_POYLOD,a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL";
+                        "                        FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID  where   b.BRANCH ='"+truckDetailsReq.getBranch()+"' AND a.H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE,a.LAHUD_POYLOD,a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL,a.PERFORMANCEDATE";
 
             }else {
                 SQL = "SELECT a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL,a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.LAHUD_POYLOD,a.H_VICIVLE_BRANCHTYPE, \n" +
@@ -671,7 +671,7 @@ log.info("sql:"+SQL);
                         "                        -cast(replace(a.staff02_payAll, ',', '') as unsigned)) - a.PRIECENUMNUN AS kumLaiy,COUNT(a.H_VICIVLE_NUMBER) AS totalRow,\n" +
                         "                        SUM(a.SAINUMMUN) as TotalFuel,sum(a.PRIECENUMNUN) as PRIECENUMNUN, +\n" +
                         "                        SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(a.staff02_payAll, ',', '') as unsigned)) as totalBialieng \n" +
-                        "                        FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID  WHERE   b.BRANCH ='"+truckDetailsReq.getBranch()+"' AND a.OUT_DATE BETWEEN '" + truckDetailsReq.getStartDate() + "' and '" + truckDetailsReq.getEndDate() + "' and a.H_VICIVLE_NUMBER='" + truckDetailsReq.getCarLodNo() + "' GROUP BY  a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE,a.LAHUD_POYLOD,a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL";
+                        "                        FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID  WHERE   b.BRANCH ='"+truckDetailsReq.getBranch()+"' AND a.PERFORMANCEDATE BETWEEN '" + truckDetailsReq.getStartDate() + "' and '" + truckDetailsReq.getEndDate() + "' and a.H_VICIVLE_NUMBER='" + truckDetailsReq.getCarLodNo() + "' GROUP BY  a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE,a.LAHUD_POYLOD,a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL,a.PERFORMANCEDATE";
             }
             log.info("sql:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<TruckDetailsGroupDataDetails>() {

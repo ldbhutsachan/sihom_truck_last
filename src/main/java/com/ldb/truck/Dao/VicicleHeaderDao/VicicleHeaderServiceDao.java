@@ -1,5 +1,9 @@
 package com.ldb.truck.Dao.VicicleHeaderDao;
 
+import com.ldb.truck.Model.Login.CarOffice.CarOfficeModel;
+import com.ldb.truck.Model.Login.CarOffice.CarOfficeReq;
+import com.ldb.truck.Model.Login.CarOffice.CarPaidModel;
+import com.ldb.truck.Model.Login.CarOffice.PaidCarDaoReq;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportHeader;
 import com.ldb.truck.Model.Login.Report.ReportHeaderReq;
@@ -20,6 +24,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import com.twilio.Twilio;
+import com.twilio.converter.Promoter;
+import com.twilio.rest.api.v2010.account.Message;
+import com.twilio.type.PhoneNumber;
+
+
+import java.net.URI;
+import java.math.BigDecimal;
 
 @Component
 @Repository
@@ -147,7 +159,284 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setLeanGia(rs.getString("leanGia"));
                     tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
                     tr.setPha_But(rs.getString("pha_But"));
+                    tr.setLektungsit(rs.getString("lektungsit"));
+                    tr.setDate_change_lean(rs.getString("date_change_lean"));
 
+                    return tr ;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    // list car office
+    @Override
+    public List<CarOfficeModel> listCarOfficeDAOs (CarOfficeReq carOfficeReq) {
+        try{
+            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' ORDER BY arange ASC ";
+            log.info("SQL"+SQL);
+            return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
+                @Override
+                public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    CarOfficeModel tr = new CarOfficeModel();
+                    tr.setKEY_ID(rs.getString("KEY_ID"));
+                    tr.setImg(rs.getString("img"));
+                    tr.setLicense_plate(rs.getString("license_plate"));
+                    tr.setBattery_code_name(rs.getString("battery_code_name"));
+                    tr.setLicense_plate_end(rs.getString("license_plate_end"));
+                    tr.setLicense_plate_start(rs.getString("license_plate_start"));
+                    tr.setCar_year(rs.getString("car_year"));
+                    tr.setCar_type(rs.getString("car_type"));
+                    tr.setCar_brand(rs.getString("car_brand"));
+                    tr.setLekJuk(rs.getString("lekJuk"));
+                    tr.setLekThung(rs.getString("lekThung"));
+                    tr.setCarColor(rs.getString("carColor"));
+                    tr.setFont_light(rs.getString("font_light"));
+                    tr.setBack_light(rs.getString("back_light"));
+                    tr.setMillor_back(rs.getString("millor_back"));
+                    tr.setMillor_side(rs.getString("millor_side"));
+                    tr.setCar_mileage_now(rs.getString("car_mileage_now"));
+                    tr.setCc(rs.getString("cc"));
+                    tr.setLeanGia(rs.getString("leanGia"));
+                    tr.setInsurance_Lao(rs.getString("insurance_Lao"));
+                    tr.setInsurance_viet(rs.getString("insurance_viet"));
+                    tr.setInsurance_thai(rs.getString("insurance_thai"));
+                    tr.setInsurance_Lao_expireDate(rs.getString("insurance_Lao_expireDate"));
+                    tr.setInsurance_viet_expireDate(rs.getString("insurance_viet_expireDate"));
+                    tr.setInsurance_thai_expireDate(rs.getString("insurance_thai_expireDate"));
+                    tr.setTechnic_check_dateStart(rs.getString("technic_check_dateStart"));
+                    tr.setTechnic_check_dateEnd(rs.getString("technic_check_dateEnd"));
+                    tr.setTotal_weigh_car(rs.getString("total_weigh_car"));
+                    tr.setOil(rs.getString("oil"));
+                    tr.setCar_model(rs.getString("car_model"));
+                    tr.setOwner_car(rs.getString("owner_car"));
+                    tr.setSteering_wheel(rs.getString("steering_wheel"));
+                    tr.setDao(rs.getString("dao"));
+                    tr.setWide(rs.getString("wide"));
+                    tr.setLongg(rs.getString("longg"));
+                    tr.setTall(rs.getString("tall"));
+                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+                    tr.setSerial_wheel_left_font(rs.getString("serial_wheel_left_font"));
+                    tr.setSerial_wheel_left_back(rs.getString("serial_wheel_left_back"));
+                    tr.setSerial_wheel_right_font(rs.getString("serial_wheel_right_font"));
+                    tr.setSerial_wheel_right_back(rs.getString("serial_wheel_right_back"));
+                    tr.setLICENSE_STATUS(rs.getString("LICENSE_STATUS"));
+                    tr.setInsurance_Lao_STATUS(rs.getString("insurance_Lao_STATUS"));
+                    tr.setInsurance_thai_STATUS(rs.getString("insurance_thai_STATUS"));
+                    tr.setInsurance_viet_STATUS(rs.getString("insurance_viet_STATUS"));
+                    tr.setTechnic_check_STATUS(rs.getString("technic_check_STATUS"));
+                    tr.setLean_STATUS(rs.getString("LEAN_STATUS"));
+                    tr.setLean(rs.getString("lean"));
+                    tr.setLean_gia_STATUS(rs.getString("LEAN_GIA_STATUS"));
+                    tr.setTungsitnumber(rs.getString("tungsitnumber"));
+                    tr.setTungsitDateExpire(rs.getString("tungsitDateExpire"));
+                    tr.setTUNGSIT_STATUS(rs.getString("TUNGSIT_STATUS"));
+                    tr.setLekmai_next(rs.getString("lekmai_next"));
+                    tr.setSerial_tire_second(rs.getString("serial_tire_second"));
+                    tr.setLean_engine_date_next_status(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"));
+                    tr.setLekmai_next_status(rs.getString("LEKMAI_NEXT_STATUS"));
+                    tr.setDateChangeLeean(rs.getString("date_change_lean"));
+                    tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
+
+                    return tr ;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    // list car dao that paid
+    @Override
+    public List<CarPaidModel> listCarDaoPaid (CarOfficeReq carOfficeReq) {
+        String SQL =null;
+        try{
+            if (carOfficeReq.getStartDate()!=null && carOfficeReq.getEndDate()!=null ) {
+                SQL = "select * from V_CAR_PAID_HIS  where BRANCH='" + carOfficeReq.getBranch() + "' and dateCreate between '"+carOfficeReq.getStartDate()+"' and '"+carOfficeReq.getEndDate()+"'";
+                log.info("SQL_select_date" + SQL);
+            }else
+            {
+                SQL = "select * from V_CAR_PAID_HIS  where BRANCH='" + carOfficeReq.getBranch() + "' ";
+                log.info("SQL_select_all:" + SQL);
+            }
+            return EBankJdbcTemplate.query(SQL, new RowMapper<CarPaidModel>() {
+                @Override
+                public CarPaidModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    CarPaidModel tr = new CarPaidModel();
+                    tr.setImg(rs.getString("img"));
+                    tr.setLicense_plate(rs.getString("license_plate"));
+                    tr.setPdfFile(rs.getString("pdfFile"));
+                    tr.setCur(rs.getString("cur"));
+                    tr.setPricePaid(rs.getString("pricePaid"));
+                    tr.setDateCreate(rs.getString("dateCreate"));
+                    return tr ;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    // list lod dao
+    @Override
+    public List<CarOfficeModel> listLodDaoOfficeDAOs (CarOfficeReq carOfficeReq) {
+        try{
+            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' and a.dao='YES'";
+            log.info("SQL"+SQL);
+            return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
+                @Override
+                public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    CarOfficeModel tr = new CarOfficeModel();
+                    tr.setKEY_ID(rs.getString("KEY_ID"));
+                    tr.setImg(rs.getString("img"));
+                    tr.setLicense_plate(rs.getString("license_plate"));
+                    tr.setBattery_code_name(rs.getString("battery_code_name"));
+                    tr.setLicense_plate_end(rs.getString("license_plate_end"));
+                    tr.setLicense_plate_start(rs.getString("license_plate_start"));
+                    tr.setCar_year(rs.getString("car_year"));
+                    tr.setCar_type(rs.getString("car_type"));
+                    tr.setCar_brand(rs.getString("car_brand"));
+                    tr.setLekJuk(rs.getString("lekJuk"));
+                    tr.setLekThung(rs.getString("lekThung"));
+                    tr.setCarColor(rs.getString("carColor"));
+                    tr.setFont_light(rs.getString("font_light"));
+                    tr.setBack_light(rs.getString("back_light"));
+                    tr.setMillor_back(rs.getString("millor_back"));
+                    tr.setMillor_side(rs.getString("millor_side"));
+                    tr.setCar_mileage_now(rs.getString("car_mileage_now"));
+                    tr.setCc(rs.getString("cc"));
+                    tr.setLeanGia(rs.getString("leanGia"));
+                    tr.setInsurance_Lao(rs.getString("insurance_Lao"));
+                    tr.setInsurance_viet(rs.getString("insurance_viet"));
+                    tr.setInsurance_thai(rs.getString("insurance_thai"));
+                    tr.setInsurance_Lao_expireDate(rs.getString("insurance_Lao_expireDate"));
+                    tr.setInsurance_viet_expireDate(rs.getString("insurance_viet_expireDate"));
+                    tr.setInsurance_thai_expireDate(rs.getString("insurance_thai_expireDate"));
+                    tr.setTechnic_check_dateStart(rs.getString("technic_check_dateStart"));
+                    tr.setTechnic_check_dateEnd(rs.getString("technic_check_dateEnd"));
+                    tr.setTotal_weigh_car(rs.getString("total_weigh_car"));
+                    tr.setOil(rs.getString("oil"));
+                    tr.setCar_model(rs.getString("car_model"));
+                    tr.setOwner_car(rs.getString("owner_car"));
+                    tr.setSteering_wheel(rs.getString("steering_wheel"));
+                    tr.setDao(rs.getString("dao"));
+                    tr.setWide(rs.getString("wide"));
+                    tr.setLongg(rs.getString("longg"));
+                    tr.setTall(rs.getString("tall"));
+                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+                    tr.setSerial_wheel_left_font(rs.getString("serial_wheel_left_font"));
+                    tr.setSerial_wheel_left_back(rs.getString("serial_wheel_left_back"));
+                    tr.setSerial_wheel_right_font(rs.getString("serial_wheel_right_font"));
+                    tr.setSerial_wheel_right_back(rs.getString("serial_wheel_right_back"));
+                    tr.setLICENSE_STATUS(rs.getString("LICENSE_STATUS"));
+                    tr.setInsurance_Lao_STATUS(rs.getString("insurance_Lao_STATUS"));
+                    tr.setInsurance_thai_STATUS(rs.getString("insurance_thai_STATUS"));
+                    tr.setInsurance_viet_STATUS(rs.getString("insurance_viet_STATUS"));
+                    tr.setTechnic_check_STATUS(rs.getString("technic_check_STATUS"));
+                    tr.setLean_STATUS(rs.getString("LEAN_STATUS"));
+                    tr.setLean(rs.getString("lean"));
+                    tr.setTungsitnumber(rs.getString("tungsitnumber"));
+                    tr.setTungsitDateExpire(rs.getString("tungsitDateExpire"));
+                    tr.setLean_gia_STATUS(rs.getString("LEAN_GIA_STATUS"));
+                    tr.setTUNGSIT_STATUS(rs.getString("TUNGSIT_STATUS"));
+                    tr.setLekmai_next(rs.getString("lekmai_next"));
+                    tr.setSerial_tire_second(rs.getString("serial_tire_second"));
+
+                    return tr ;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    // car office detail
+    @Override
+    public List<CarOfficeModel> listCarOfficeDAOsDetailById (CarOfficeReq carOfficeReq) {
+//        final String ACCOUNT_SID = "AC0f41da64f12a09afba5f8e84efa72eda";
+//        final String AUTH_TOKEN = "83f8118f3b5dbc1ece33af5b8b9a1d28";
+        try{
+//            public class Example {
+                // Find your Account Sid and Token at twilio.com/console
+
+//                    Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+//                     Message message = Message.creator(
+//                            new com.twilio.type.PhoneNumber("whatsapp:+8562091056567"),
+//                            new com.twilio.type.PhoneNumber("whatsapp:+15005550006"),
+//                            "HXXXXXXXXX")
+//                    .setContentVariables("{\"1\":\"pid\"}")
+//                    .setMessagingServiceSid("MGXXXXXXXX")
+//                    .create();
+//            System.out.println(message.getBody());
+// ________________________________________________________________________________________________________
+            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.KEY_ID ='"+carOfficeReq.getKeyId()+"' ";
+            log.info("SQL"+SQL);
+            return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
+                @Override
+                public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    CarOfficeModel tr = new CarOfficeModel();
+                    tr.setKEY_ID(rs.getString("KEY_ID"));
+                    tr.setImg(rs.getString("img"));
+                    tr.setLicense_plate(rs.getString("license_plate"));
+                    tr.setBattery_code_name(rs.getString("battery_code_name"));
+                    tr.setLicense_plate_end(rs.getString("license_plate_end"));
+                    tr.setLicense_plate_start(rs.getString("license_plate_start"));
+                    tr.setCar_year(rs.getString("car_year"));
+                    tr.setCar_type(rs.getString("car_type"));
+                    tr.setCar_brand(rs.getString("car_brand"));
+                    tr.setLekJuk(rs.getString("lekJuk"));
+                    tr.setLekThung(rs.getString("lekThung"));
+                    tr.setCarColor(rs.getString("carColor"));
+                    tr.setFont_light(rs.getString("font_light"));
+                    tr.setBack_light(rs.getString("back_light"));
+                    tr.setMillor_back(rs.getString("millor_back"));
+                    tr.setMillor_side(rs.getString("millor_side"));
+                    tr.setCar_mileage_now(rs.getString("car_mileage_now"));
+                    tr.setCc(rs.getString("cc"));
+                    tr.setLeanGia(rs.getString("leanGia"));
+                    tr.setInsurance_Lao(rs.getString("insurance_Lao"));
+                    tr.setInsurance_viet(rs.getString("insurance_viet"));
+                    tr.setInsurance_thai(rs.getString("insurance_thai"));
+                    tr.setInsurance_Lao_expireDate(rs.getString("insurance_Lao_expireDate"));
+                    tr.setInsurance_viet_expireDate(rs.getString("insurance_viet_expireDate"));
+                    tr.setInsurance_thai_expireDate(rs.getString("insurance_thai_expireDate"));
+                    tr.setTechnic_check_dateStart(rs.getString("technic_check_dateStart"));
+                    tr.setTechnic_check_dateEnd(rs.getString("technic_check_dateEnd"));
+                    tr.setTotal_weigh_car(rs.getString("total_weigh_car"));
+                    tr.setOil(rs.getString("oil"));
+                    tr.setCar_model(rs.getString("car_model"));
+                    tr.setOwner_car(rs.getString("owner_car"));
+                    tr.setSteering_wheel(rs.getString("steering_wheel"));
+                    tr.setDao(rs.getString("dao"));
+                    tr.setWide(rs.getString("wide"));
+                    tr.setLongg(rs.getString("longg"));
+                    tr.setTall(rs.getString("tall"));
+                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+                    tr.setSerial_wheel_left_font(rs.getString("serial_wheel_left_font"));
+                    tr.setSerial_wheel_left_back(rs.getString("serial_wheel_left_back"));
+                    tr.setSerial_wheel_right_font(rs.getString("serial_wheel_right_font"));
+                    tr.setSerial_wheel_right_back(rs.getString("serial_wheel_right_back"));
+                    tr.setLICENSE_STATUS(rs.getString("LICENSE_STATUS"));
+                    tr.setInsurance_Lao_STATUS(rs.getString("insurance_Lao_STATUS"));
+                    tr.setInsurance_thai_STATUS(rs.getString("insurance_thai_STATUS"));
+                    tr.setInsurance_viet_STATUS(rs.getString("insurance_viet_STATUS"));
+                    tr.setTechnic_check_STATUS(rs.getString("technic_check_STATUS"));
+                    tr.setLean_STATUS(rs.getString("LEAN_STATUS"));
+                    tr.setLean(rs.getString("lean"));
+                    tr.setTungsitnumber(rs.getString("tungsitnumber"));
+                    tr.setTungsitDateExpire(rs.getString("tungsitDateExpire"));
+                    tr.setLean_gia_STATUS(rs.getString("LEAN_GIA_STATUS"));
+                    tr.setTUNGSIT_STATUS(rs.getString("TUNGSIT_STATUS"));
+                    tr.setLekmai_next(rs.getString("lekmai_next"));
+                    tr.setSerial_tire_second(rs.getString("serial_tire_second"));
+                    tr.setLean_engine_date_next_status(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"));
+                    tr.setLekmai_next_status(rs.getString("LEKMAI_NEXT_STATUS"));
+                    tr.setDateChangeLeean(rs.getString("date_change_lean"));
+                    tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
                     return tr ;
                 }
             });
@@ -290,6 +579,10 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setLeanGia(rs.getString("leanGia"));
                     tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
                     tr.setPha_But(rs.getString("pha_But"));
+                    tr.setLeanGia_Status(rs.getString("leanGia_Status"));
+                    tr.setLeanFuengThaiy_Status(rs.getString("leanFuengThaiy_Status"));
+                    tr.setLektungsit(rs.getString("lektungsit"));
+                    tr.setDate_change_lean(rs.getString("date_change_lean"));
                     return tr;
                 }
             });
@@ -342,8 +635,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 ,  \n" +
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
-                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But,userId)\n" +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?)";
+                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But,lektungsit,userId,date_change_lean)\n" +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -450,10 +743,281 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLeanGia().replace(",",""));
             paramList.add(vicicleHeaderReq.getLeanFuengThaiy().replace(",",""));
             paramList.add(vicicleHeaderReq.getPha_But());
+            paramList.add(vicicleHeaderReq.getLektungsit());
             paramList.add(vicicleHeaderReq.getUserId());
+            paramList.add(vicicleHeaderReq.getDate_change_lean());
 //            paramList.add(vicicleHeaderReq.getBatNo2());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
+            return EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
+    // insert car office DAOs
+    @Override
+    public int InsertCarOfficeDAOs (CarOfficeReq carOfficeReq) throws ParseException {
+//        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD");
+//        Date Insurance_thai_expireDate = sdf.parse(carOfficeReq.getInsurance_thai_expireDate());
+//        Date Insurance_viet_expireDate = sdf.parse(carOfficeReq.getInsurance_viet_expireDate());
+//        Date Insurance_Lao_expireDate = sdf.parse(carOfficeReq.getInsurance_Lao_expireDate());
+//        Date Technic_check_dateEnd = sdf.parse(carOfficeReq.getTechnic_check_dateEnd());
+//        Date Technic_check_dateStart = sdf.parse(carOfficeReq.getTechnic_check_dateStart());
+//        Date License_plate_start = sdf.parse(carOfficeReq.getLicense_plate_start());
+//        Date License_plate_end = sdf.parse(carOfficeReq.getLicense_plate_end());
+//        Date LeanGia = sdf.parse(carOfficeReq.getLeanGia());
+//
+//        java.sql.Date sql_insurance_thai_expireDate = new java.sql.Date(Insurance_thai_expireDate.getTime());
+//        java.sql.Date sql_insurance_viet_expireDate = new java.sql.Date(Insurance_viet_expireDate.getTime());
+//        java.sql.Date sql_insurance_Lao_expireDate = new java.sql.Date(Insurance_Lao_expireDate.getTime());
+//        java.sql.Date sql_technic_check_dateEnd = new java.sql.Date(Technic_check_dateEnd.getTime());
+//        java.sql.Date sql_technic_check_dateStart = new java.sql.Date(Technic_check_dateStart.getTime());
+//        java.sql.Date sql_license_plate_start = new java.sql.Date(License_plate_start.getTime());
+//        java.sql.Date sql_license_plate_end = new java.sql.Date(License_plate_end.getTime());
+//        java.sql.Date sql_LeanGia = new java.sql.Date(LeanGia.getTime());
+        String path="http://khounkham.com/images/car/";
+        String fileName = carOfficeReq.getImg();
+        log.info("path:"+path+fileName);
+//        log.info("sqlEndDate:"+sqlEndDate);
+        List<VicicleHeader> data = new ArrayList<>();
+        try{
+            String SQL = "insert into CARS_OFFICE (img,license_plate,battery_code_name,license_plate_end,license_plate_start," +
+                    "car_year,car_type,car_brand,lekJuk,lekThung,carColor,font_light,back_light,millor_back,millor_side,car_mileage_now,cc,leanGia," +
+                    "insurance_Lao,insurance_viet,insurance_thai,insurance_Lao_expireDate,insurance_viet_expireDate,insurance_thai_expireDate," +
+                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            log.info("SQL:"+SQL);
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(path + fileName);
+            paramList.add(carOfficeReq.getLicense_plate());
+            paramList.add(carOfficeReq.getBattery_code_name());
+            paramList.add(carOfficeReq.getLicense_plate_end());
+//            paramList.add(sql_license_plate_end);
+            paramList.add(carOfficeReq.getLicense_plate_start());
+//            paramList.add(sql_license_plate_start);
+            paramList.add(carOfficeReq.getCar_year());
+            paramList.add(carOfficeReq.getCar_type());
+            paramList.add(carOfficeReq.getCar_brand());
+            paramList.add(carOfficeReq.getLekJuk());
+            paramList.add(carOfficeReq.getLekThung());
+            paramList.add(carOfficeReq.getCarColor());
+            paramList.add(carOfficeReq.getFont_light());
+            paramList.add(carOfficeReq.getBack_light());
+            paramList.add(carOfficeReq.getMillor_back());
+            paramList.add(carOfficeReq.getMillor_side());
+            paramList.add(carOfficeReq.getCar_mileage_now());
+            paramList.add(carOfficeReq.getCc());
+            paramList.add(carOfficeReq.getLeanGia());
+//            paramList.add(sql_LeanGia);
+            paramList.add(carOfficeReq.getInsurance_Lao());
+            paramList.add(carOfficeReq.getInsurance_viet());
+            paramList.add(carOfficeReq.getInsurance_thai());
+            paramList.add(carOfficeReq.getInsurance_Lao_expireDate());
+//            paramList.add(sql_insurance_Lao_expireDate);
+            paramList.add(carOfficeReq.getInsurance_viet_expireDate());
+//            paramList.add(sql_insurance_viet_expireDate);
+            paramList.add(carOfficeReq.getInsurance_thai_expireDate());
+//            paramList.add(sql_insurance_thai_expireDate);
+            paramList.add(carOfficeReq.getTechnic_check_dateStart());
+//            paramList.add(sql_technic_check_dateStart);
+            paramList.add(carOfficeReq.getTechnic_check_dateEnd());
+//            paramList.add(sql_technic_check_dateEnd);
+            paramList.add(carOfficeReq.getTotal_weigh_car());
+            paramList.add(carOfficeReq.getOil());
+            paramList.add(carOfficeReq.getCar_model());
+            paramList.add(carOfficeReq.getOwner_car());
+            paramList.add(carOfficeReq.getSteering_wheel());
+            paramList.add(carOfficeReq.getDao());
+            paramList.add(carOfficeReq.getWide());
+            paramList.add(carOfficeReq.getLongg());
+            paramList.add(carOfficeReq.getTall());
+            paramList.add(carOfficeReq.getSitPosition_amount());
+            paramList.add(carOfficeReq.getSerial_wheel_left_font());
+            paramList.add(carOfficeReq.getSerial_wheel_left_back());
+            paramList.add(carOfficeReq.getSerial_wheel_right_font());
+            paramList.add(carOfficeReq.getSerial_wheel_right_back());
+            paramList.add(carOfficeReq.getUserId());
+            paramList.add(carOfficeReq.getLean());
+            paramList.add(carOfficeReq.getTungsitnumber());
+            paramList.add(carOfficeReq.getTungsitDateExpire());
+            paramList.add(carOfficeReq.getLekmai_next());
+            paramList.add(carOfficeReq.getSerial_tire_second());
+            paramList.add(carOfficeReq.getDate_change_lean());
+            paramList.add(carOfficeReq.getDate_change_lean_next());
+            return EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
+    //pay car dao
+    @Override
+    public int PayCarDao (PaidCarDaoReq paidCarDaoReq) throws ParseException {
+        String path="http://khounkham.com/images/car/";
+        String fileName = paidCarDaoReq.getPdfFile();
+        log.info("path:"+path+fileName);
+        List<VicicleHeader> data = new ArrayList<>();
+        try{
+            String SQL = "insert into JAIY_LOD_DAO (pdfFile,carId,cur,pricePaid,dateCreate,userId) value(?,?,?,?,now(),?) ";
+            log.info("SQL:"+SQL);
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(path + fileName);
+            paramList.add(paidCarDaoReq.getCarId());
+            paramList.add(paidCarDaoReq.getCur());
+            paramList.add(paidCarDaoReq.getPricePaid());
+            paramList.add(paidCarDaoReq.getUserId());
+            return EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    //update car office
+    @Override
+    public int UpdateCarOfficeDAOs (CarOfficeReq carOfficeReq) throws ParseException {
+//
+//        String path="http://khounkham.com/images/car/";
+//        String fileName = carOfficeReq.getImg();
+//        log.info("path:"+path+fileName);
+//        log.info("sqlEndDate:"+sqlEndDate);
+        List<VicicleHeader> data = new ArrayList<>();
+        try{
+            String SQL = "update CARS_OFFICE set license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,tungsitnumber=?,tungsitDateExpire=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
+            log.info("SQL:"+SQL);
+            List<Object> paramList = new ArrayList<Object>();
+//            paramList.add(path + fileName);
+            paramList.add(carOfficeReq.getLicense_plate());
+            paramList.add(carOfficeReq.getBattery_code_name());
+            paramList.add(carOfficeReq.getLicense_plate_end());
+            paramList.add(carOfficeReq.getLicense_plate_start());
+            paramList.add(carOfficeReq.getCar_year());
+            paramList.add(carOfficeReq.getCar_type());
+            paramList.add(carOfficeReq.getCar_brand());
+            paramList.add(carOfficeReq.getLekJuk());
+            paramList.add(carOfficeReq.getLekThung());
+            paramList.add(carOfficeReq.getCarColor());
+            paramList.add(carOfficeReq.getFont_light());
+            paramList.add(carOfficeReq.getBack_light());
+            paramList.add(carOfficeReq.getMillor_back());
+            paramList.add(carOfficeReq.getMillor_side());
+            paramList.add(carOfficeReq.getCar_mileage_now());
+            paramList.add(carOfficeReq.getCc());
+            paramList.add(carOfficeReq.getLeanGia());
+            paramList.add(carOfficeReq.getInsurance_Lao());
+            paramList.add(carOfficeReq.getInsurance_viet());
+            paramList.add(carOfficeReq.getInsurance_thai());
+            paramList.add(carOfficeReq.getInsurance_Lao_expireDate());
+            paramList.add(carOfficeReq.getInsurance_viet_expireDate());
+            paramList.add(carOfficeReq.getInsurance_thai_expireDate());
+            paramList.add(carOfficeReq.getTechnic_check_dateStart());
+            paramList.add(carOfficeReq.getTechnic_check_dateEnd());
+            paramList.add(carOfficeReq.getTotal_weigh_car());
+            paramList.add(carOfficeReq.getOil());
+            paramList.add(carOfficeReq.getCar_model());
+            paramList.add(carOfficeReq.getOwner_car());
+            paramList.add(carOfficeReq.getSteering_wheel());
+            paramList.add(carOfficeReq.getDao());
+            paramList.add(carOfficeReq.getWide());
+            paramList.add(carOfficeReq.getLongg());
+            paramList.add(carOfficeReq.getTall());
+            paramList.add(carOfficeReq.getSitPosition_amount());
+            paramList.add(carOfficeReq.getSerial_wheel_left_font());
+            paramList.add(carOfficeReq.getSerial_wheel_left_back());
+            paramList.add(carOfficeReq.getSerial_wheel_right_font());
+            paramList.add(carOfficeReq.getSerial_wheel_right_back());
+            paramList.add(carOfficeReq.getUserId());
+//            paramList.add(carOfficeReq.getLean());
+            paramList.add(carOfficeReq.getTungsitnumber());
+            paramList.add(carOfficeReq.getTungsitDateExpire());
+            paramList.add(carOfficeReq.getLekmai_next());
+            paramList.add(carOfficeReq.getSerial_tire_second());
+            paramList.add(carOfficeReq.getDate_change_lean());
+            paramList.add(carOfficeReq.getDate_change_lean_next());
+            paramList.add(carOfficeReq.getKEY_ID());
+            return EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
+//    update car office notice status
+public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
+    List<VicicleHeader> data = new ArrayList<>();
+    try{
+        String SQL = "update CARS_OFFICE set lean='"+carOfficeReq.getLean()+"'where KEY_ID ='"+carOfficeReq.getKeyId()+"'";
+        log.info("SQL:"+SQL);
+        List<Object> paramList = new ArrayList<Object>();
+
+        paramList.add(carOfficeReq.getLean());
+        paramList.add(carOfficeReq.getKeyId());
+        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+    }catch (Exception e){
+        e.printStackTrace();
+        return -1;
+    }
+}
+    // update car office by already have pic
+    @Override
+    public int updateCarOfficeUppicHaveData (CarOfficeReq carOfficeReq) throws ParseException {
+
+        String path="http://khounkham.com/images/car/";
+        String fileName = carOfficeReq.getImg();
+        log.info("path:"+path+fileName);
+//        log.info("sqlEndDate:"+sqlEndDate);
+        List<VicicleHeader> data = new ArrayList<>();
+        try{
+            String SQL = "update CARS_OFFICE set img=? ,license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
+            log.info("SQL:"+SQL);
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(path + fileName);
+            paramList.add(carOfficeReq.getLicense_plate());
+            paramList.add(carOfficeReq.getBattery_code_name());
+            paramList.add(carOfficeReq.getLicense_plate_end());
+            paramList.add(carOfficeReq.getLicense_plate_start());
+            paramList.add(carOfficeReq.getCar_year());
+            paramList.add(carOfficeReq.getCar_type());
+            paramList.add(carOfficeReq.getCar_brand());
+            paramList.add(carOfficeReq.getLekJuk());
+            paramList.add(carOfficeReq.getLekThung());
+            paramList.add(carOfficeReq.getCarColor());
+            paramList.add(carOfficeReq.getFont_light());
+            paramList.add(carOfficeReq.getBack_light());
+            paramList.add(carOfficeReq.getMillor_back());
+            paramList.add(carOfficeReq.getMillor_side());
+            paramList.add(carOfficeReq.getCar_mileage_now());
+            paramList.add(carOfficeReq.getCc());
+            paramList.add(carOfficeReq.getLeanGia());
+            paramList.add(carOfficeReq.getToKen());
+            paramList.add(carOfficeReq.getInsurance_Lao());
+            paramList.add(carOfficeReq.getInsurance_viet());
+            paramList.add(carOfficeReq.getInsurance_thai());
+            paramList.add(carOfficeReq.getInsurance_Lao_expireDate());
+            paramList.add(carOfficeReq.getInsurance_viet_expireDate());
+            paramList.add(carOfficeReq.getInsurance_thai_expireDate());
+            paramList.add(carOfficeReq.getTechnic_check_dateStart());
+            paramList.add(carOfficeReq.getTechnic_check_dateEnd());
+            paramList.add(carOfficeReq.getTotal_weigh_car());
+            paramList.add(carOfficeReq.getOil());
+            paramList.add(carOfficeReq.getCar_model());
+            paramList.add(carOfficeReq.getOwner_car());
+            paramList.add(carOfficeReq.getSteering_wheel());
+            paramList.add(carOfficeReq.getDao());
+            paramList.add(carOfficeReq.getWide());
+            paramList.add(carOfficeReq.getLongg());
+            paramList.add(carOfficeReq.getTall());
+            paramList.add(carOfficeReq.getSitPosition_amount());
+            paramList.add(carOfficeReq.getSerial_wheel_left_font());
+            paramList.add(carOfficeReq.getSerial_wheel_left_back());
+            paramList.add(carOfficeReq.getSerial_wheel_right_font());
+            paramList.add(carOfficeReq.getSerial_wheel_right_back());
+            paramList.add(carOfficeReq.getUserId());
+//            paramList.add(carOfficeReq.getLean());
+            paramList.add(carOfficeReq.getLekmai_next());
+            paramList.add(carOfficeReq.getSerial_tire_second());
+            paramList.add(carOfficeReq.getDate_change_lean());
+            paramList.add(carOfficeReq.getDate_change_lean_next());
+            paramList.add(carOfficeReq.getKEY_ID());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -524,7 +1088,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,userId=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -635,8 +1199,9 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLeanGia());
             paramList.add(vicicleHeaderReq.getLeanFuengThaiy());
             paramList.add(vicicleHeaderReq.getPha_But());
+            paramList.add(vicicleHeaderReq.getLektungsit());
             paramList.add(vicicleHeaderReq.getUserId());
-//            paramList.add(vicicleHeaderReq.getBatNo2());
+            paramList.add(vicicleHeaderReq.getDate_change_lean());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
 
@@ -646,7 +1211,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             e.printStackTrace();
             return -1;
         }
-    } @Override
+    }
+    @Override
     public int updateVicicleHeaderUppicHaveData(VicicleHeaderReq vicicleHeaderReq) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date Bat_StartDateGalaty = sdf.parse(vicicleHeaderReq.getH_VICIVLE_DATE_GALATY());
@@ -709,7 +1275,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,userId=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -819,12 +1385,14 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
             paramList.add(vicicleHeaderReq.getLeanGia());
             paramList.add(vicicleHeaderReq.getLeanFuengThaiy());
             paramList.add(vicicleHeaderReq.getPha_But());
+            paramList.add(vicicleHeaderReq.getLektungsit());
             paramList.add(vicicleHeaderReq.getUserId());
-//            paramList.add(vicicleHeaderReq.getBatNo2());
+            paramList.add(vicicleHeaderReq.getDate_change_lean());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
 
             paramList.add(vicicleHeaderReq.getKey_id());
+            log.info("SQL:"+SQL);
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -837,6 +1405,21 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
         try {
             String SQL = "delete from TB_HEADER_TRUCK where key_id='" + vicicleHeaderReq.getKey_id() + "'";
            i= EBankJdbcTemplate.update(SQL);
+        }catch (Exception e){
+            e.printStackTrace();
+            return i;
+        }
+        return i;
+    }
+    // del car office DAOs
+    @Override
+    public int delCarOfficeDAOs (CarOfficeReq carOfficeReq) {
+        String keyId = carOfficeReq.getKeyId();
+        int i =0;
+        try {
+            String SQL = "delete from CARS_OFFICE where KEY_ID = '" + keyId +"'";
+            log.info("SQL:"+SQL);
+            i= EBankJdbcTemplate.update(SQL);
         }catch (Exception e){
             e.printStackTrace();
             return i;
@@ -1108,6 +1691,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
 //            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
             String SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
 //            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID  AND (a.batNo2 IS NULL OR a.batNo2 = b.KEY_ID) INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
+            log.info("SQL: "+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<VicicleHeader>() {
                 @Override
                 public VicicleHeader mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1221,6 +1805,8 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setLeanGia(rs.getString("leanGia"));
                     tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
                     tr.setPha_But(rs.getString("Pha_But"));
+                    tr.setLektungsit(rs.getString("lektungsit"));
+                    tr.setDate_change_lean(rs.getString("date_change_lean"));
                     return tr;
                 }
             });

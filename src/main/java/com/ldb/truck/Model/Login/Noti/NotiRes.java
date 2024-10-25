@@ -24,6 +24,13 @@ public class NotiRes {
 
     private String total_FuelPaid;
     private String total_FuelUnpaid;
+    private String total_Offer_List;
+    private String total_PO;
+    private String total_BL;
+    private String total_PayOil;
+    private String total_Wait;
+    private String total_status_N_deptMustReceived;
+    private String total_status_Y_deptMustReceived;
 //    private List<NotiDetails> notiDetails;
 //    private List<NotiInvoice> notiInvoice;
 //    private List<NotiPerFormace> notiPerForMance;

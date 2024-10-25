@@ -279,6 +279,44 @@ public class StaftService {
         }
         return result;
     }
+//    amount that paid staff serviece
+public AmountthatPaidStaffRes AmountThatPaidStaffServiece (StaffPaymentReq staffPaymentReq){
+    logger.info("toKen=======================:"+staffPaymentReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(staffPaymentReq.getToKen());
+    logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+    logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    logger.info("show=================Role:"+userIn.get(0).getRole());
+    logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    staffPaymentReq.setUserId(userId);
+    staffPaymentReq.setBranch(userBranchNo);
+    //====================================================================
+    List<AmountThatPaidStaffModel> data = new ArrayList<>();
+    AmountthatPaidStaffRes result = new AmountthatPaidStaffRes();
+    DecimalFormat numfm = new DecimalFormat("###,###.###");
+    try{
+        data = impCustomerDao.AmountThatPaidStaffDAOs(staffPaymentReq);
+        double totalBialiengthatPaid =  data.stream().map(AmountThatPaidStaffModel::getAmoutTotalpaid).collect(Collectors.summingDouble(Double::doubleValue));
+
+        sumfooterGroupBL restFooter = new sumfooterGroupBL();
+
+        restFooter.setTotalBialiengthatPaid(numfm.format(totalBialiengthatPaid));
+        result.setSumFooter(restFooter);
+        logger.info("show================sum:"+totalBialiengthatPaid);
+        result.setData(data);
+        result.setStatus("00");
+        result.setMessage("success");
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("data not found");
+    }
+    return result;
+}
     // ===========ranking staff service
     public TopFiveRankingRes TopFiveRankingService(StaffPaymentReq staffPaymentReq){
         logger.info("toKen=======================:"+staffPaymentReq.getToKen());

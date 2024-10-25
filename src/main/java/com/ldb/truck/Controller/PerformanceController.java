@@ -2,6 +2,7 @@ package com.ldb.truck.Controller;
 import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportAllRes;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import com.ldb.truck.Service.PerformanceService.PerformanceService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,10 +88,10 @@ public class PerformanceController {
     //--get list gen ID
     @CrossOrigin(origins = "*")
     @PostMapping("/getPerByGenID.service")
-    public generateKeyIDRes getGenNo(){
+    public generateKeyIDRes getGenNo(@RequestBody TogenTheCodeReq togenTheCodeReq ){
         generateKeyIDRes result = new generateKeyIDRes();
         try {
-            result =  performanceService.listGenPerNo();
+            result =  performanceService.listGenPerNo(togenTheCodeReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -178,4 +177,60 @@ public class MediaUploadServiceImpl implements MediaUploadService {
         }
 
     }
+//    modify pdf upload  old base64
+@Override
+public String uploadPDF(MultipartFile file) {
+    try {
+        log.info("Begin Convert MultiPart File To Base64String");
+        String base64String = new String(Base64.encodeBase64(file.getBytes()));
+        log.info("Convert To Base64 String Completed");
+
+        log.info("Get Original Filename");
+        String originalFilename = file.getOriginalFilename();
+
+        //==============upload images (using original filename)========================================================
+        File targetDirectory = new File(uploadDirectoryCar);
+        if (!targetDirectory.exists()) {
+            targetDirectory.mkdirs();
+        }
+        Path filePath = Path.of(uploadDirectoryCar, originalFilename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        //==============upload images========================================================
+
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("BASE64", base64String));
+        params.add(new BasicNameValuePair("filename", originalFilename));
+        log.info("Start To Post Upload Image ...");
+        log.info("Finish Image Upload");
+        return originalFilename;
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        return "";
+    }
+}
+//    new
+//@Override
+//public String uploadPDF(MultipartFile file) {
+//    try {
+//        log.info("Begin Upload File");
+//
+//        String originalFilename = file.getOriginalFilename();
+//
+//        //==============upload images (using original filename)========================================================
+//        File targetDirectory = new File(uploadDirectoryCar);
+//        if (!targetDirectory.exists()) {
+//            targetDirectory.mkdirs();
+//        }
+//        Path filePath = Path.of(uploadDirectoryCar, originalFilename);
+//        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+//        //==============upload images========================================================
+//
+//        log.info("File Upload Completed");
+//        return originalFilename;
+//    } catch (Exception ex) {
+//        ex.printStackTrace();
+//        return "";
+//    }
+//}
+
 }

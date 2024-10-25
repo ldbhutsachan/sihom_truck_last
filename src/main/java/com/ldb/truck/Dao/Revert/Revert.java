@@ -231,7 +231,8 @@ public class Revert implements RevertDao{
     public List<Performance> showWastedValueDao(WastedValueReqq wastedValueReqq) {
         List<Performance> result = new ArrayList<>();
         try{
-            sql="SELECT a.feeOvertime1,a.feeJumPo2,a.feePolish3,a.feeTaxung4,a.feeTiew5,a.feeLakSao,a.feePassport,a.feevacin,a.feesing,a.feesaphan,a.feeyoktu,a.feecontrainer,a.feepayang FROM TB_DETAILS a inner join LOGIN b on a.userId =b.KEY_ID WHERE LAHUD_POYLOD ='"+wastedValueReqq.getLahudBaiPoy()+"' AND b.BRANCH ='"+wastedValueReqq.getBranch()+"'";
+            sql="SELECT a.feeOvertime1,a.feeJumPo2,a.feePolish3,a.feeTaxung4,a.feeTiew5,a.feeLakSao,a.feePassport,a.feevacin,a.feesing,a.feesaphan,a.feeyoktu,a.feecontrainer,a.feepayang,a.KIM_KILO,a.LAIYATHANG,a.LAIYATHANG_SUM FROM TB_DETAILS a inner join LOGIN b on a.userId =b.KEY_ID WHERE a.LAHUD_POYLOD ='"+wastedValueReqq.getLahudBaiPoy()+"' AND b.BRANCH ='"+wastedValueReqq.getBranch()+"'";
+            log.info("sql:"+sql);
             result = EBankJdbcTemplate.query(sql,new WastedValueMapper());
         }catch (Exception e){
             e.printStackTrace();

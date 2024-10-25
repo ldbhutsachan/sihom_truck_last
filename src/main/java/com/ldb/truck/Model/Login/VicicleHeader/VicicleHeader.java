@@ -151,5 +151,9 @@ public class VicicleHeader {
     private String leanGia;
     private String leanFuengThaiy;
     private String pha_But;
+    private String lektungsit;
+    private String leanGia_Status;
+    private String leanFuengThaiy_Status;
+    private String date_change_lean;
 
 }

@@ -3,6 +3,7 @@ package com.ldb.truck.Dao.Performance;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.Report.ReportAll;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooter;
 import com.ldb.truck.RowMapper.Performance.*;
 import org.apache.logging.log4j.LogManager;
@@ -199,7 +200,7 @@ public class PerformanceDao implements PerformanceInDao {
                     "performanceOvertime,performanceJumPho,performanceFeePolish,performanceFeeTaxung," +
                     "performanceFeeTiew,performanceOverVN,performanceBoderLak20,performancePassport," +
                     "performanceVaccine,performanceFeeSing,performanceFeeSaPhan,performanceFeeYoktu," +
-                    "performanceFeeOutContainer,feeUnit,feeTotal,status,PERFORMANCEFE_PAYANG,Last_LEKMAI,PRODUCT_AMOUNT,PRODUCT_QTY,PRODUCT_TOTALAMOUNT,PRODUCT_SIZE,CURRENCY,STAFF_BIALIENG_CUR,userId) values (?,?,?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N',?,?,?,?,?,?,?,?,?)";
+                    "performanceFeeOutContainer,feeUnit,feeTotal,status,PERFORMANCEFE_PAYANG,Last_LEKMAI,PRODUCT_AMOUNT,PRODUCT_QTY,PRODUCT_TOTALAMOUNT,PRODUCT_SIZE,CURRENCY,STAFF_BIALIENG_CUR,userId) values (?,?,?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'N',?,?,?,?,?,?,'LAK',?,?)";
             log.info("sql his:"+sql);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(performanceReq.getKey_id());
@@ -237,20 +238,54 @@ public class PerformanceDao implements PerformanceInDao {
         }
     }
     @Override
-    public List<generateKeyID> genKeyID() {
+    public List<generateKeyID> genKeyID(TogenTheCodeReq togenTheCodeReq) {
+        String sql;
         List<generateKeyID> result = new ArrayList<>();
         try{
-        String sql ="select  * from AUTO_PERFORMANCENO ";
+            int branch = Integer.parseInt(togenTheCodeReq.getBranch());
+            switch (branch) {
+                case 5:
+                    sql = getSqlForBranch5();
+                    break;
+                case 2:
+                    sql = getSqlForBranch2();
+                    break;
+                case 3:
+                    sql = getSqlForBranch3();
+                    break;
+                case 4:
+                    sql = getSqlForBranch4();
+                    break;
+                default:
+                    // Handle invalid branch case (e.g., throw exception)
+                    throw new IllegalArgumentException("Invalid branch code: " + branch);
+            }
+            log.info("SQL:" + sql);
             result = EBankJdbcTemplate.query(sql, new RowMapper<generateKeyID>() {
                 @Override
                 public generateKeyID mapRow(ResultSet rs, int rowNum) throws SQLException {
                     generateKeyID tr = new generateKeyID();
-                    tr.setKey_id(rs.getString("KEY_ID"));
+                    tr.setKey_id(rs.getString("KEY_ID"+ branch));
                     return tr;
                 }
             });
         }catch (Exception e){e.printStackTrace();}
         return result;
+    }
+    private String getSqlForBranch5() {
+        return "select KEY_ID5 from AUTO_PERFORMANCENO";
+    }
+
+    private String getSqlForBranch2() {
+        return "select KEY_ID2 from AUTO_PERFORMANCENO";
+    }
+
+    private String getSqlForBranch3() {
+        return "select KEY_ID3 from AUTO_PERFORMANCENO";
+    }
+
+    private String getSqlForBranch4() {
+        return "select KEY_ID4 from AUTO_PERFORMANCENO";
     }
     //---update header status then car black
     @Override
@@ -458,7 +493,7 @@ public class PerformanceDao implements PerformanceInDao {
     public List<v_performance> ListV_performance(PerformanceReq performanceReq) {
         List<v_performance> result = new ArrayList<>();
         try {
-            String SQL = "select * from V_PERFORMANCE a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH ='"+performanceReq.getBranch()+"' order by a.PERFORMANCEDATE desc";
+            String SQL = "select * from V_PERFORMANCE a join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH ='"+performanceReq.getBranch()+"' order by a.PERFORMANCEDATE desc";
             System.out.println(SQL);
             result = EBankJdbcTemplate.query(SQL , new v_performanceMapper());
         }catch (Exception e){
@@ -489,11 +524,11 @@ public class PerformanceDao implements PerformanceInDao {
         List<v_performance> result = new ArrayList<>();
         try {
             if(performanceReq.getProductId()==null){
-                 SQL = "select * from V_PERFORMANCE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='"+performanceReq.getBranch()+"' AND a.PERFORMANCEDATE between '"+performanceReq.getPerformanceReDate()+"' and '"+performanceReq.getPerformanceDate()+"' order by a.OUT_DATE desc";
-
+                 SQL = "select * from V_PERFORMANCE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='"+performanceReq.getBranch()+"' AND a.PERFORMANCEDATE between '"+performanceReq.getPerformanceReDate()+"' and '"+performanceReq.getPerformanceDate()+"' order by a.PERFORMANCEDATE desc";
             }
             else {
-                SQL = "select * from V_PERFORMANCE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='"+performanceReq.getBranch()+"' AND PRODUCT_ID='"+performanceReq.getProductId()+"' AND CUSTOMER_ID = '"+performanceReq.getCustormerId()+"'AND a.PERFORMANCEDATE between '"+performanceReq.getPerformanceReDate()+"' and '"+performanceReq.getPerformanceDate()+"' order by a.OUT_DATE desc";
+                SQL = "select * from V_PERFORMANCE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='"+performanceReq.getBranch()+"' AND a.PRODUCT_ID='"+performanceReq.getProductId()+"' AND a.CUSTOMER_ID = '"+performanceReq.getCustormerId()+"' AND a.PERFORMANCEDATE between '"+performanceReq.getPerformanceReDate()+"' and '"+performanceReq.getPerformanceDate()+"' order by a.PERFORMANCEDATE desc";
+//                SQL = "select * from V_PERFORMANCE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='"+performanceReq.getBranch()+"' AND a.PRODUCT_ID='"+performanceReq.getProductId()+"'  AND a.PERFORMANCEDATE between '"+performanceReq.getPerformanceReDate()+"' and '"+performanceReq.getPerformanceDate()+"' order by a.PERFORMANCEDATE desc";
             }
 // original           String SQL = "select * from V_PERFORMANCE where  PERFORMANCEBILLNO like '%"+performanceReq.getPerformanceBillNo()+"%' or customer_NAME like '%"+performanceReq.getPerformanceBillNo()+"%' " +
 //                    " or PERFORMANCEDATE between '"+performanceReq.getPerformanceReDate()+"' and '"+performanceReq.getPerformanceDate()+"' order by PERFORMANCEDATE desc";
@@ -502,6 +537,25 @@ public class PerformanceDao implements PerformanceInDao {
  //3           String SQL = "select * from V_PERFORMANCE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='"+performanceReq.getBranch()+"' AND a.PERFORMANCEDATE between '"+performanceReq.getPerformanceReDate()+"' and '"+performanceReq.getPerformanceDate()+"' order by a.PERFORMANCEDATE desc";
 
             System.out.println(SQL);
+            result = EBankJdbcTemplate.query(SQL , new v_performanceMapper());
+        }catch (Exception e){
+            e.printStackTrace();
+            return result;
+        }
+        return result;
+    }
+    //performance search status
+    public List<v_performance> PerformanceSearchStatus (PerformanceReq performanceReq) {
+        String SQL = null;
+        List<v_performance> result = new ArrayList<>();
+        try {
+            if (performanceReq.getPerformanceReDate()==null) {
+                SQL = "select * from V_PERFORMANCE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='" + performanceReq.getBranch() + "' AND a.STATUS='" + performanceReq.getStatus() + "'";
+                System.out.println(SQL);
+            }else {
+                SQL = "select * from V_PERFORMANCE a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH ='" + performanceReq.getBranch() + "' AND a.STATUS='" + performanceReq.getStatus() + "' AND a.PERFORMANCEDATE between '"+performanceReq.getPerformanceReDate()+"' and '"+performanceReq.getPerformanceDate()+"'";
+                System.out.println(SQL);
+            }
             result = EBankJdbcTemplate.query(SQL , new v_performanceMapper());
         }catch (Exception e){
             e.printStackTrace();
