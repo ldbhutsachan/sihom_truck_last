@@ -3,7 +3,10 @@ package com.ldb.truck.Dao.Details;
 import com.ldb.truck.Dao.Truck.ImpTruckDao;
 import com.ldb.truck.Model.Login.Details.Details;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceDeptCode;
 import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceNo;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getQuotationCode;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterReq;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
 import com.ldb.truck.RowMapper.DetailsMapper.DetailsMapper;
@@ -80,24 +83,95 @@ public class DetailsServiceDao implements  DetailsDao {
 
     //show invoice No
     @Override
-    public List<getInvoiceNo> showMaxLahudPoyLod() {
+    public List<getInvoiceNo> showMaxLahudPoyLod(TogenTheCodeReq togenTheCodeReq) {
+        String sql;
         try {
-            String sql = "select  * from AUTO_DETAILNO";
+            int branch = Integer.parseInt(togenTheCodeReq.getBranch());
+            switch (branch) {
+                case 5:
+                    sql = getSqlForBranch5();
+                    break;
+                case 2:
+                    sql = getSqlForBranch2();
+                    break;
+                case 3:
+                    sql = getSqlForBranch3();
+                    break;
+                case 4:
+                    sql = getSqlForBranch4();
+                    break;
+                default:
+                    // Handle invalid branch case (e.g., throw exception)
+                    throw new IllegalArgumentException("Invalid branch code: " + branch);
+            }
+
+            log.info("SQL:" + sql);
             return EBankJdbcTemplate.query(sql, new RowMapper<getInvoiceNo>() {
                 @Override
                 public getInvoiceNo mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        getInvoiceNo tr = new getInvoiceNo();
-                        tr.setLAHUD_POYLOD(rs.getString("LAHUD_POYLOD"));
+                    getInvoiceNo tr = new getInvoiceNo();
+                    tr.setLAHUD_POYLOD(rs.getString("LAHUD_POYLOD" + branch)); // Assuming suffix based on branch
                     return tr;
                 }
             });
-        }catch (Exception e)
-        {
-            e.printStackTrace();
+        } catch (Exception e) {
+            // Handle exception appropriately (e.g., log error and throw a specific exception)
+            throw new RuntimeException("Error fetching invoice number", e);
         }
-        return null;
     }
-//PRICE,TOTAL_PRICE
+//    get KKT- code quotation
+public List<getQuotationCode> showKKTcode () {
+    String sql;
+    try {
+        sql="select * from GEN_QUOTATION_CODE";
+        return EBankJdbcTemplate.query(sql, new RowMapper<getQuotationCode>() {
+            @Override
+            public getQuotationCode mapRow(ResultSet rs, int rowNum) throws SQLException {
+                getQuotationCode tr = new getQuotationCode();
+                tr.setKkt_code(rs.getString("QUOTATION_CODE"));
+                return tr;
+            }
+        });
+    } catch (Exception e) {
+        // Handle exception appropriately (e.g., log error and throw a specific exception)
+        throw new RuntimeException("Error fetching invoice number", e);
+    }
+}
+//get invoice dept code DAOs
+public List<getInvoiceDeptCode> showINVcode () {
+    String sql;
+    try {
+        sql="select * from GEN_INVOICE_OUT";
+        return EBankJdbcTemplate.query(sql, new RowMapper<getInvoiceDeptCode>() {
+            @Override
+            public getInvoiceDeptCode mapRow(ResultSet rs, int rowNum) throws SQLException {
+                getInvoiceDeptCode tr = new getInvoiceDeptCode();
+                tr.setInvoice_code_out(rs.getString("INVOICE_CODE"));
+                return tr;
+            }
+        });
+    } catch (Exception e) {
+        // Handle exception appropriately (e.g., log error and throw a specific exception)
+        throw new RuntimeException("Error fetching invoice number", e);
+    }
+}
+    private String getSqlForBranch5() {
+        return "select LAHUD_POYLOD5 from AUTO_DETAILNO";
+    }
+
+    private String getSqlForBranch2() {
+        return "select LAHUD_POYLOD2 from AUTO_DETAILNO";
+    }
+
+    private String getSqlForBranch3() {
+        return "select LAHUD_POYLOD3 from AUTO_DETAILNO";
+    }
+
+    private String getSqlForBranch4() {
+        return "select LAHUD_POYLOD4 from AUTO_DETAILNO";
+    }
+
+    //PRICE,TOTAL_PRICE
     @Override
     public List<Details> ListDetails() {
         try{
@@ -312,8 +386,8 @@ public class DetailsServiceDao implements  DetailsDao {
                      "feesaphan,\n" +
                      "feeyoktu,\n" +
                      "feecontrainer,\n" +
-                     "feepayang) " +
-                     "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,'N',?,?,?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)  ";
+                     "feepayang,userId,add_feeOvertime1,add_feeJumPo2,add_feePolish3,add_feeTaxung4,add_feeTiew5,add_feesing,add_feesaphan,add_feeyoktu,add_feecontrainer,add_feepayang,FUEL_STATUS,FUEL_STATION_ID,LAIYATHANG_SUM) " +
+                     "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,?,'N',?,?,?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,KIM_KILO+LAIYATHANG) ";
              log.info("SQL:"+sql);
             List<Object> paramList = new ArrayList<Object>();
           //  paramList.add(detailsReq.getKEY_ID());
@@ -367,6 +441,21 @@ public class DetailsServiceDao implements  DetailsDao {
             paramList.add(detailsReq.getFeeyoktu());
             paramList.add(detailsReq.getFeecontrainer());
             paramList.add(detailsReq.getFeepayang());
+            paramList.add(detailsReq.getUserId());
+
+            paramList.add(detailsReq.getAdd_feeOvertime1());
+            paramList.add(detailsReq.getAdd_feeJumPo2());
+            paramList.add(detailsReq.getAdd_feePolish3());
+            paramList.add(detailsReq.getAdd_feeTaxung4());
+            paramList.add(detailsReq.getAdd_feeTiew5());
+            paramList.add(detailsReq.getAdd_feesing());
+            paramList.add(detailsReq.getAdd_feesaphan());
+            paramList.add(detailsReq.getAdd_feeyoktu());
+            paramList.add(detailsReq.getAdd_feecontrainer());
+            paramList.add(detailsReq.getAdd_feepayang());
+            paramList.add(detailsReq.getFuel_status());
+            paramList.add(detailsReq.getFuelStationId());
+            paramList.add(detailsReq.getLAIYATHANG_SUM());
           //  paramList.add(detailsReq.getDETAILS_DATE());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
 

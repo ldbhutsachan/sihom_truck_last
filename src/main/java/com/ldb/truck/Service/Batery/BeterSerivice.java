@@ -45,7 +45,7 @@ public BateryRes getBateryAll(BateryReq  bateryReq){
     try {
         listData = implBateryDao.getBateryAll(bateryReq);
 
-        if(listData.size()> 1){
+        if(listData.size()> 0){
             result.setStatus("00");
             result.setMessage("suscess ");
             result.setData(listData);

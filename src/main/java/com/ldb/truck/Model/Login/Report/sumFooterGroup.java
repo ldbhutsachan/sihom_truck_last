@@ -11,13 +11,17 @@ import lombok.Setter;
 @NoArgsConstructor
 public class sumFooterGroup {
     private String totalBiaLieng ;
+    private String totalSopher ;
+    private String TotalBiaLiengAndlaiJaiyOutFrist ;
     private String totalNummun ;
+    private String totalLidFuel ;
     private String todtalLaiyJaiyFrist;
     private String todtalLaiyJaiySecond;
     private String totalPriceFuel;
     private String totalPriceNammun;
     private String laiJaiyOutTotal;
     private String laiJaiyOutFrist;
+    private String biaOutWasted;
 
    // ==================== sum ค่าสิ้นเปือง===========================
    private String RunningTotal;
@@ -30,4 +34,5 @@ public class sumFooterGroup {
     private String totalstaff02_beforepay ;
 
     private String allLaiyJaiy ;
+    private String alltotalBialiengKangjaiy ;
 }

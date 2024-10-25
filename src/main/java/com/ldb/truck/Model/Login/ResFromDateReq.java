@@ -12,6 +12,8 @@ import lombok.Setter;
 public class ResFromDateReq {
 
     private  String branch;
+    private  String toKen;
+    private  String userId;
     private  String startDate;
     private String endDate;
 }

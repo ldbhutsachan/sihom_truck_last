@@ -22,4 +22,5 @@ public class Customer_Payment {
     private String  tOTAL_PRICE;
     private String  sTATUS;
     private String currency;
+    private String datePerformanceCreate;
 }

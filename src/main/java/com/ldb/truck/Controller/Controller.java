@@ -2,6 +2,8 @@ package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
+import com.ldb.truck.Model.Login.FuelStation.FuelStationReq;
+import com.ldb.truck.Model.Login.FuelStation.FuelStationRes;
 import com.ldb.truck.Model.Login.Login.GetUserLoginRes;
 import com.ldb.truck.Model.Login.Login.LoginReq;
 import com.ldb.truck.Model.Login.Messages;
@@ -24,11 +26,8 @@ import com.ldb.truck.Service.location.LocationService;
 import com.ldb.truck.Service.staft.StaftService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.Message;
 import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -81,7 +80,24 @@ public class Controller {
         }
         return result;
     }
+    // start================= fuel station ===========================
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getAllFuelStation.service")
+    public FuelStationRes getAllFuelStation (@RequestBody FuelStationReq fuelStationReq ){
+        FuelStationRes result = new FuelStationRes();
+        try {
 
+            result = customerService.getAllFuelStation(fuelStationReq);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    // end================= fuel station ===========================
     @CrossOrigin(origins = "*")
     @PostMapping("/getCustomerById")
     public CustomerRes  getCustomerById (@RequestBody  CustomerReq customerReq){
@@ -112,6 +128,72 @@ public class Controller {
         }
         return result;
     }
+    //=========store fuel starion================================start============
+    @CrossOrigin(origins = "*")
+    @PostMapping("/StoreFuelStation.service")
+    public FuelStationRes  StoreFuelStation (@RequestBody  FuelStationReq fuelStationReq){
+        FuelStationRes result = new FuelStationRes();
+        try {
+            result = customerService.StoreFuelStation(fuelStationReq);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    //=========store fuel starion================================start============
+    //=========update fuel starion================================start============
+    @CrossOrigin(origins = "*")
+    @PostMapping("/UpdateFuelStation.service")
+    public FuelStationRes  UpdateFuelStation (@RequestBody  FuelStationReq fuelStationReq){
+        FuelStationRes result = new FuelStationRes();
+        try {
+            result = customerService.UpdateFuelStation(fuelStationReq);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    //=========update fuel starion================================start============
+    @CrossOrigin(origins = "*")
+    @PostMapping("/UpdateStatusFuelStation.service")
+    public FuelStationRes  UpdateStatusFuelStation (@RequestBody  FuelStationReq fuelStationReq){
+        FuelStationRes result = new FuelStationRes();
+        try {
+            result = customerService.UpdateStatusFuelStationService(fuelStationReq);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    //=========Delete fuel starion================================start============
+    @CrossOrigin(origins = "*")
+    @PostMapping("/DeleteFuelStation.service")
+    public FuelStationRes  DeleteFuelStation (@RequestBody  FuelStationReq fuelStationReq){
+        FuelStationRes result = new FuelStationRes();
+//        String id = String.valueOf(fuelStationReq.getId());
+        try {
+            result = customerService.deleteFuelStation(fuelStationReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    //=========Delete fuel starion================================start============
 
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateCustomer")
@@ -164,10 +246,10 @@ public class Controller {
         return result;
     }    @CrossOrigin(origins = "*")
     @PostMapping("/getChooseStaft02.service")
-    public staftRes getChooseStaft02(){
+    public staftRes getChooseStaft02(@RequestBody stafReq stafReq){
         staftRes result = new staftRes();
         try {
-            result = staftService.getChooseStaft02();
+            result = staftService.getChooseStaft02(stafReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

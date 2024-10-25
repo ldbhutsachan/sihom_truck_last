@@ -19,4 +19,7 @@ public class InvoiceReq {
   private String priceUnit;
   private String inVoiceAmount;
   private String inVoiceStatus;
+//  private String toKen;
+//  private String userId;
+//  private String branch;
 }

@@ -564,71 +564,60 @@ String SQL="";
     public List<TruckDetails> ReportGive(ResFromDateReq resFromDateReq) {
         try{
             if(resFromDateReq.getStartDate() == null || resFromDateReq.getEndDate() == null ){
-                SQL = "SELECT '0' as check02,0 as payRe,'DATA'AS TYPE,H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,\n" +
-                        "                                                                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
-                        "                                                                        SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+\n" +
-                        "                                                                        cast(replace(staff02_payAll, ',', '') as unsigned))\n" +
-                        "                                                                        +SUM(PRIECENUMNUN) AS carPay,\n" +
-                        "                                                                        COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                        "                                                                        SUM(SAINUMMUN) as TotalFuel,\n" +
-                        "                                                                        sum(PRIECENUMNUN) as PRIECENUMNUN,\n" +
-                        "                                                                         SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+\n" +
-                        "                                                                       cast(replace(staff02_payAll, ',', '') as unsigned)) as staffBialiengAll,\n" +
-                        "                                                                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- \n" +
-                        "                                                sum (cast(replace(staff02_payAll, ',', '') as unsigned)) -SUM(PRIECENUMNUN) AS kumLaiy\n" +
-                        "                                                                        FROM V_REPORT_GIVE_OUT_CAR  GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE\n" +
+                SQL = "SELECT '0' as check02,0 as payRe,'DATA'AS TYPE,a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE,SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) AS carGive, \n" +
+                        "SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned) +\n" +
+                        "cast(replace(a.staff02_payAll, ',', '') as unsigned)) + SUM(a.PRIECENUMNUN) AS carPay, COUNT(a.H_VICIVLE_NUMBER) AS totalRow,SUM(a.SAINUMMUN) as TotalFuel,\n" +
+                        "sum(a.PRIECENUMNUN) as PRIECENUMNUN, \n" +
+                        "SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned) +\n" +
+                        "cast(replace(a.staff02_payAll, ',', '') as unsigned)) as staffBialiengAll, \n" +
+                        "SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- sum (cast(replace(a.staff02_payAll, ',', '') as unsigned)) -SUM(a.PRIECENUMNUN) AS kumLaiy \n" +
+                        "FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+resFromDateReq.getBranch()+"' GROUP BY  a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE\n" +
                         "                                                                      \n" +
                         "                                                                        UNION \n" +
-                        "                                                     SELECT '1' as check02,0 as payRe,'SUMFOOTER'AS TYPE,'' AS H_VICIVLE_NUMBER,'' AS H_VICIVLE_BRANCH,'' AS H_VICIVLE_BRANCHTYPE,\n" +
-                        "                                                                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
-                        "                                                                        SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+\n" +
-                        "                                                                        cast(replace(staff02_payAll, ',', '') as unsigned))\n" +
-                        "                                                                        +SUM(PRIECENUMNUN) AS carPay,\n" +
-                        "                                                                        COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                        "                                                                        SUM(SAINUMMUN) as TotalFuel,\n" +
-                        "                                                                        SUM(PRIECENUMNUN) as PRIECENUMNUN,\n" +
-                        "                                                                        SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+\n" +
-                        "                                                                        cast(replace(staff02_payAll, ',', '') as unsigned)) as staffBialiengAll,\n" +
-                        "                                                                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- \n" +
-                        "                                                sum (cast(replace(staff02_payAll, ',', '') as unsigned)) -SUM(PRIECENUMNUN) AS kumLaiy\n" +
-                        "                                                                        FROM V_REPORT_GIVE_OUT_CAR\n" +
+                        " SELECT '1' as check02,0 as payRe,'SUMFOOTER'AS TYPE,'' AS H_VICIVLE_NUMBER,'' AS H_VICIVLE_BRANCH,'' AS H_VICIVLE_BRANCHTYPE, \n" +
+                        "                                                                                                SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) AS carGive, \n" +
+                        "                                                                                                SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+ \n" +
+                        "                                                                                                cast(replace(a.staff02_payAll, ',', '') as unsigned)) \n" +
+                        "                                                                                                +SUM(a.PRIECENUMNUN) AS carPay, \n" +
+                        "                                                                                                COUNT(a.H_VICIVLE_NUMBER) AS totalRow, \n" +
+                        "                                                                                                SUM(a.SAINUMMUN) as TotalFuel, \n" +
+                        "                                                                                                SUM(a.PRIECENUMNUN) as PRIECENUMNUN, \n" +
+                        "                                                                                                SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+ \n" +
+                        "                                                                                                cast(replace(a.staff02_payAll, ',', '') as unsigned)) as staffBialiengAll, \n" +
+                        "                                                                                                SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned))-  \n" +
+                        "                                                                        sum (cast(replace(a.staff02_payAll, ',', '') as unsigned)) -SUM(a.PRIECENUMNUN) AS kumLaiy \n" +
+                        "                                                                                                FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH ='"+resFromDateReq.getBranch()+"'\n" +
                         "                                               UNION\n" +
                         "                                               \n" +
-                        "                                               select '2' as check02,sum(total) as payRe,'PAYSUMFOOTER' as TYPE,0 as H_VICIVLE_NUMBER,0 as H_VICIVLE_BRANCH,0 as H_VICIVLE_BRANCHTYPE,0 as carGive,0 as carPay,0 as totalRow,0 as TotalFuel,0 as PRIECENUMNUN,0 as staffBialiengAll,0 as kumLaiy  from EXPENSE WHERE STATUS='INCOME' \n";
+                        "                                               select '2' as check02,sum(total) as payRe,'PAYSUMFOOTER' as TYPE,0 as H_VICIVLE_NUMBER,0 as H_VICIVLE_BRANCH,0 as H_VICIVLE_BRANCHTYPE,0 as carGive,0 as carPay,0 as totalRow,0 as TotalFuel,0 as PRIECENUMNUN,0 as staffBialiengAll,0 as kumLaiy  from EXPENSE a inner join LOGIN b ON a.userId=b.KEY_ID WHERE a.STATUS='INCOME' and b.BRANCH ='"+resFromDateReq.getBranch()+"' \n";
 log.info("sql:"+SQL);
             }else {
-                SQL = "SELECT '0' as check02,0 as payRe,'DATA'AS TYPE,H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,\n" +
-                        "                                                                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
-                        "                                                                        SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+\n" +
-                        "                                                                        cast(replace(staff02_payAll, ',', '') as unsigned))\n" +
-                        "                                                                        +SUM(PRIECENUMNUN) AS carPay,\n" +
-                        "                                                                        COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                        "                                                                        SUM(SAINUMMUN) as TotalFuel,\n" +
-                        "                                                                        sum(PRIECENUMNUN) as PRIECENUMNUN,\n" +
-                        "                                                                         SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+\n" +
-                        "                                                                       cast(replace(staff02_payAll, ',', '') as unsigned)) as staffBialiengAll,\n" +
-                        "                                                                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- \n" +
-                        "                                                sum (cast(replace(staff02_payAll, ',', '') as unsigned)) -SUM(PRIECENUMNUN) AS kumLaiy\n" +
-                        "                                                                        FROM V_REPORT_GIVE_OUT_CAR  GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE\n" +
+                SQL = "SELECT '0' as check02,0 as payRe,'DATA'AS TYPE,a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE,SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) AS carGive, \n" +
+                        "SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned) +\n" +
+                        "cast(replace(a.staff02_payAll, ',', '') as unsigned)) + SUM(a.PRIECENUMNUN) AS carPay, COUNT(a.H_VICIVLE_NUMBER) AS totalRow,SUM(a.SAINUMMUN) as TotalFuel,\n" +
+                        "sum(a.PRIECENUMNUN) as PRIECENUMNUN, \n" +
+                        "SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned) +\n" +
+                        "cast(replace(a.staff02_payAll, ',', '') as unsigned)) as staffBialiengAll, \n" +
+                        "SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- sum (cast(replace(a.staff02_payAll, ',', '') as unsigned)) -SUM(a.PRIECENUMNUN) AS kumLaiy \n" +
+                        "FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+resFromDateReq.getBranch()+"' AND a.PERFORMANCEDATE BETWEEN '"+resFromDateReq.getStartDate()+"' and '"+resFromDateReq.getEndDate()+"' GROUP BY  a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE\n" +
                         "                                                                      \n" +
                         "                                                                        UNION \n" +
-                        "                                                     SELECT '1' as check02,0 as payRe,'SUMFOOTER'AS TYPE,'' AS H_VICIVLE_NUMBER,'' AS H_VICIVLE_BRANCH,'' AS H_VICIVLE_BRANCHTYPE,\n" +
-                        "                                                                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
-                        "                                                                        SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+\n" +
-                        "                                                                        cast(replace(staff02_payAll, ',', '') as unsigned))\n" +
-                        "                                                                        +SUM(PRIECENUMNUN) AS carPay,\n" +
-                        "                                                                        COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                        "                                                                        SUM(SAINUMMUN) as TotalFuel,\n" +
-                        "                                                                        SUM(PRIECENUMNUN) as PRIECENUMNUN,\n" +
-                        "                                                                        SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+\n" +
-                        "                                                                        cast(replace(staff02_payAll, ',', '') as unsigned)) as staffBialiengAll,\n" +
-                        "                                                                        SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned))- \n" +
-                        "                                                sum (cast(replace(staff02_payAll, ',', '') as unsigned)) -SUM(PRIECENUMNUN) AS kumLaiy\n" +
-                        "                                                                        FROM V_REPORT_GIVE_OUT_CAR where OUT_DATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "'\n" +
+                        " SELECT '1' as check02,0 as payRe,'SUMFOOTER'AS TYPE,'' AS H_VICIVLE_NUMBER,'' AS H_VICIVLE_BRANCH,'' AS H_VICIVLE_BRANCHTYPE, \n" +
+                        "                                                                                                SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) AS carGive, \n" +
+                        "                                                                                                SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+ \n" +
+                        "                                                                                                cast(replace(a.staff02_payAll, ',', '') as unsigned)) \n" +
+                        "                                                                                                +SUM(a.PRIECENUMNUN) AS carPay, \n" +
+                        "                                                                                                COUNT(a.H_VICIVLE_NUMBER) AS totalRow, \n" +
+                        "                                                                                                SUM(a.SAINUMMUN) as TotalFuel, \n" +
+                        "                                                                                                SUM(a.PRIECENUMNUN) as PRIECENUMNUN, \n" +
+                        "                                                                                                SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+ \n" +
+                        "                                                                                                cast(replace(a.staff02_payAll, ',', '') as unsigned)) as staffBialiengAll, \n" +
+                        "                                                                                                SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned))-  \n" +
+                        "                                                                        sum (cast(replace(a.staff02_payAll, ',', '') as unsigned)) -SUM(a.PRIECENUMNUN) AS kumLaiy \n" +
+                        "                                                                                                FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH ='"+resFromDateReq.getBranch()+"' AND a.PERFORMANCEDATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "'\n" +
                         "                                               UNION\n" +
                         "                                               \n" +
-                        "                                               select '2' as check02,sum(total) as payRe,'PAYSUMFOOTER' as TYPE,0 as H_VICIVLE_NUMBER,0 as H_VICIVLE_BRANCH,0 as H_VICIVLE_BRANCHTYPE," +
-                        "0 as carGive,0 as carPay,0 as totalRow,0 as TotalFuel,0 as PRIECENUMNUN,0 as staffBialiengAll,0 as kumLaiy  from EXPENSE WHERE STATUS='INCOME' and EXPDATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "'\n";
+                        "                                               select '2' as check02,sum(total) as payRe,'PAYSUMFOOTER' as TYPE,0 as H_VICIVLE_NUMBER,0 as H_VICIVLE_BRANCH,0 as H_VICIVLE_BRANCHTYPE,0 as carGive,0 as carPay,0 as totalRow,0 as TotalFuel,0 as PRIECENUMNUN,0 as staffBialiengAll,0 as kumLaiy  from EXPENSE a inner join LOGIN b ON a.userId=b.KEY_ID WHERE a.STATUS='INCOME' and b.BRANCH ='"+resFromDateReq.getBranch()+"' and a.EXPDATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "' \n";
 
                 // "from EXPENSE WHERE STATUS='INCOME' and EXPDATE BETWEEN '" + resFromDateReq.getStartDate() + "' and '" + resFromDateReq.getEndDate() + "' ";
                 log.info("sql:"+SQL);
@@ -665,24 +654,24 @@ log.info("sql:"+SQL);
         try{
             if(truckDetailsReq.getStartDate()==null || truckDetailsReq.getEndDate()==null
                     || truckDetailsReq.getStartDate().equals(null) || truckDetailsReq.getEndDate().equals(null)){
-                SQL ="SELECT OUT_DATE,IN_DATE,PRO_NAME,DETAIL,H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,LAHUD_POYLOD,H_VICIVLE_BRANCHTYPE,\n" +
-                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
-                        "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay,\n" +
-                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
-                        "-cast(replace(staff02_payAll, ',', '') as unsigned)) -PRIECENUMNUN AS kumLaiy,COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                        "SUM(SAINUMMUN) as TotalFuel,sum(PRIECENUMNUN) as PRIECENUMNUN,\n" +
-                        "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned)) as totalBialieng\n" +
-                        "FROM V_REPORT_GIVE_OUT_CAR where   H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
+                SQL ="SELECT a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL,a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.LAHUD_POYLOD,a.H_VICIVLE_BRANCHTYPE, \n" +
+                        "                        SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) AS carGive, \n" +
+                        "                        SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(a.staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay, \n" +
+                        "                        SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned) \n" +
+                        "                        -cast(replace(a.staff02_payAll, ',', '') as unsigned)) - a.PRIECENUMNUN AS kumLaiy,COUNT(a.H_VICIVLE_NUMBER) AS totalRow,\n" +
+                        "                        SUM(a.SAINUMMUN) as TotalFuel,sum(a.PRIECENUMNUN) as PRIECENUMNUN, +\n" +
+                        "                        SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(a.staff02_payAll, ',', '') as unsigned)) as totalBialieng \n" +
+                        "                        FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID  where   b.BRANCH ='"+truckDetailsReq.getBranch()+"' AND a.H_VICIVLE_NUMBER='"+truckDetailsReq.getCarLodNo()+"' GROUP BY  a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE,a.LAHUD_POYLOD,a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL,a.PERFORMANCEDATE";
 
             }else {
-                SQL = "SELECT OUT_DATE,IN_DATE,PRO_NAME,DETAIL,H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,LAHUD_POYLOD,H_VICIVLE_BRANCHTYPE,\n" +
-                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) AS carGive,\n" +
-                        "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay,\n" +
-                        "SUM(cast(replace(TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)\n" +
-                        "-cast(replace(staff02_payAll, ',', '') as unsigned)) -PRIECENUMNUN AS kumLaiy,COUNT(H_VICIVLE_NUMBER) AS totalRow,\n" +
-                        "SUM(SAINUMMUN) as TotalFuel,sum(PRIECENUMNUN) as PRIECENUMNUN,\n" +
-                        "SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(staff02_payAll, ',', '') as unsigned)) as totalBialieng\n" +
-                        "FROM V_REPORT_GIVE_OUT_CAR where   OUT_DATE BETWEEN '" + truckDetailsReq.getStartDate() + "' and '" + truckDetailsReq.getEndDate() + "' and H_VICIVLE_NUMBER='" + truckDetailsReq.getCarLodNo() + "' GROUP BY  H_VICIVLE_NUMBER,H_VICIVLE_BRANCH,H_VICIVLE_BRANCHTYPE,LAHUD_POYLOD,OUT_DATE,IN_DATE,PRO_NAME,DETAIL";
+                SQL = "SELECT a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL,a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.LAHUD_POYLOD,a.H_VICIVLE_BRANCHTYPE, \n" +
+                        "                        SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) AS carGive, \n" +
+                        "                        SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(a.staff02_payAll, ',', '') as unsigned))+PRIECENUMNUN AS carPay, \n" +
+                        "                        SUM(cast(replace(a.TOTAL_PRICE, ',', '') as unsigned)) - SUM (cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned) \n" +
+                        "                        -cast(replace(a.staff02_payAll, ',', '') as unsigned)) - a.PRIECENUMNUN AS kumLaiy,COUNT(a.H_VICIVLE_NUMBER) AS totalRow,\n" +
+                        "                        SUM(a.SAINUMMUN) as TotalFuel,sum(a.PRIECENUMNUN) as PRIECENUMNUN, +\n" +
+                        "                        SUM (cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+cast(replace(a.staff02_payAll, ',', '') as unsigned)) as totalBialieng \n" +
+                        "                        FROM V_REPORT_GIVE_OUT_CAR a inner join LOGIN b ON a.userId=b.KEY_ID  WHERE   b.BRANCH ='"+truckDetailsReq.getBranch()+"' AND a.PERFORMANCEDATE BETWEEN '" + truckDetailsReq.getStartDate() + "' and '" + truckDetailsReq.getEndDate() + "' and a.H_VICIVLE_NUMBER='" + truckDetailsReq.getCarLodNo() + "' GROUP BY  a.H_VICIVLE_NUMBER,a.H_VICIVLE_BRANCH,a.H_VICIVLE_BRANCHTYPE,a.LAHUD_POYLOD,a.OUT_DATE,a.IN_DATE,a.PRO_NAME,a.DETAIL,a.PERFORMANCEDATE";
             }
             log.info("sql:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<TruckDetailsGroupDataDetails>() {

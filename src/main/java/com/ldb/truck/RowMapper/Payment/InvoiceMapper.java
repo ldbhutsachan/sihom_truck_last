@@ -19,7 +19,7 @@ public class InvoiceMapper implements RowMapper {
             data.setPriceUnit(rs.getString("PRICE_UNIT"));
             data.setInVoiceAmount(rs.getString("INVOICE_AMOUNT"));
             data.setInVoiceStatus(rs.getString("INVOICE_STATUS"));
-            data.setTotalDay(rs.getString("s"));
+//            data.setTotalDay(rs.getString("totalDay"));
             data.setCurrency(rs.getString("CURRENCY"));
             data.setStaff_Curr(rs.getString("STAFF_BIALIENG_CUR"));
 

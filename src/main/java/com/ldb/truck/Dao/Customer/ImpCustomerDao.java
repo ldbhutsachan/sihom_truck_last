@@ -1,6 +1,10 @@
 package com.ldb.truck.Dao.Customer;
 
+import com.ldb.truck.Model.Login.FuelStation.FuelStationOut;
+import com.ldb.truck.Model.Login.FuelStation.FuelStationReq;
+import com.ldb.truck.Model.Login.ReportStaff.AmountThatPaidStaffModel;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaff;
+import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRanking;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Model.Login.customer.CustomerOut;
@@ -10,6 +14,7 @@ import com.ldb.truck.Model.Login.location.LocationReq;
 import com.ldb.truck.Model.Login.product.ProductOut;
 import com.ldb.truck.Model.Login.product.ProductReq;
 import com.ldb.truck.Model.Login.staft.*;
+import com.ldb.truck.RowMapper.FuelStation.getAllFuelStationMapper;
 import com.ldb.truck.RowMapper.Location.LocationOutMapper;
 import com.ldb.truck.RowMapper.Product.ProductMapper;
 import com.ldb.truck.RowMapper.customer.getAllcustomerMapper;
@@ -81,22 +86,21 @@ public class ImpCustomerDao  implements CustomerDao{
         try{
             String SQL="";
             if(staffPayReq.getStartDate() == null || staffPayReq.getEndDate() == null){
-                 SQL="SELECT \n" +
-                        "ID_CARD,LICENCE_ID,VILLAGE,DISTRICT,PROVINCE,\n" +
-                        "STAFT_ID,STAFT_NAME,STAFT_SURNAME,COUNT(*) AS TOTALROW, \n" +
-                        " cast(replace(STAFF_BIALIENG, ',', '') as unsigned)+ cast(replace(staff02_payAll, ',', '') as unsigned) AS staff02_payAll,\n" +
-                        " cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+ cast(replace(staff02_beforepay, ',', '') as unsigned) AS staff02_beforepay,\n" +
-                        " cast(replace(STAFF_BIALINEG_KANGJAIY, ',', '') as unsigned)+ cast(replace(staff02_notpay, ',', '') as unsigned) AS staff02_notpay "+
-                        "FROM CEHCK_PAY_STATFF GROUP BY STAFT_ID,STAFT_NAME,STAFT_SURNAME ORDER BY OUT_DATE  ASC";
+                 SQL="SELECT\n" +
+                         "                        a.ID_CARD,a.LICENCE_ID,a.VILLAGE,a.DISTRICT,a.PROVINCE, \n" +
+                         "                        a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,COUNT(*) AS TOTALROW,  \n" +
+                         "                         cast(replace(a.STAFF_BIALIENG, ',', '') as unsigned)+ cast(replace(a.staff02_payAll, ',', '') as unsigned) AS staff02_payAll, \n" +
+                         "                         cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+ cast(replace(a.staff02_beforepay, ',', '') as unsigned) AS staff02_beforepay, \n" +
+                         "                         cast(replace(a.STAFF_BIALINEG_KANGJAIY, ',', '') as unsigned)+ cast(replace(a.staff02_notpay, ',', '') as unsigned) AS staff02_notpay \n" +
+                         "                        FROM CEHCK_PAY_STATFF a INNER JOIN LOGIN b ON a.userId =b.KEY_ID WHERE b.BRANCH ='"+staffPayReq.getBranch()+"' GROUP BY a.STAFT_ID,STAFT_NAME,a.STAFT_SURNAME ORDER BY a.OUT_DATE  ASC";
             }else {
-                 SQL = "SELECT \n" +
-                        "ID_CARD,LICENCE_ID,VILLAGE,DISTRICT,PROVINCE,\n" +
-                        "STAFT_ID,STAFT_NAME,STAFT_SURNAME,COUNT(*) AS TOTALROW, \n" +
-                        " cast(replace(STAFF_BIALIENG, ',', '') as unsigned)+ cast(replace(staff02_payAll, ',', '') as unsigned) AS staff02_payAll,\n" +
-                        " cast(replace(STAFF_BIALIENG_FRIST, ',', '') as unsigned)+ cast(replace(staff02_beforepay, ',', '') as unsigned) AS staff02_beforepay,\n" +
-                        " cast(replace(STAFF_BIALINEG_KANGJAIY, ',', '') as unsigned)+ cast(replace(staff02_notpay, ',', '') as unsigned) AS staff02_notpay " +
-                        "FROM CEHCK_PAY_STATFF where OUT_DATE between '" + staffPayReq.getStartDate() + "' and '" + staffPayReq.getEndDate() + "'\n" +
-                        "GROUP BY STAFT_ID,STAFT_NAME,STAFT_SURNAME ORDER BY OUT_DATE  ASC";
+                 SQL = "SELECT\n" +
+                         "                        a.ID_CARD,a.LICENCE_ID,a.VILLAGE,a.DISTRICT,a.PROVINCE, \n" +
+                         "                        a.STAFT_ID,a.STAFT_NAME,a.STAFT_SURNAME,COUNT(*) AS TOTALROW,  \n" +
+                         "                         cast(replace(a.STAFF_BIALIENG, ',', '') as unsigned)+ cast(replace(a.staff02_payAll, ',', '') as unsigned) AS staff02_payAll, \n" +
+                         "                         cast(replace(a.STAFF_BIALIENG_FRIST, ',', '') as unsigned)+ cast(replace(a.staff02_beforepay, ',', '') as unsigned) AS staff02_beforepay, \n" +
+                         "                         cast(replace(a.STAFF_BIALINEG_KANGJAIY, ',', '') as unsigned)+ cast(replace(a.staff02_notpay, ',', '') as unsigned) AS staff02_notpay \n" +
+                         "                        FROM CEHCK_PAY_STATFF a INNER JOIN LOGIN b ON a.userId =b.KEY_ID WHERE b.BRANCH ='"+staffPayReq.getBranch()+"' AND OUT_DATE between '" +staffPayReq.getStartDate()+ "' and '" +staffPayReq.getEndDate()+"' GROUP BY a.STAFT_ID,STAFT_NAME,a.STAFT_SURNAME ORDER BY a.OUT_DATE  ASC";
             }
             System.out.println("SQL:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<StaffPay>() {
@@ -168,14 +172,41 @@ public class ImpCustomerDao  implements CustomerDao{
     }
 
     @Override
-    public List<ReportStaff> ListWaiyPaymentStaff() {
+    public List<ReportStaff> ListWaiyPaymentStaff(StaffPaymentReq staffPaymentReq) {
+        String sql = null;
         try
         {
-            String sql="select * from CEHCK_PAY_STATFF where staff_01_status='not-pay' or staff_01_status='not-pay' order by OUT_DATE asc";
+            switch (staffPaymentReq.getStartDate() == null ? "null" : "not_null") {
+                case "null":
+                    // Check if product ID is not null
+                    if (staffPaymentReq.getProductID() != null) {
+                        sql = "select * from CEHCK_PAY_STATFF a join LOGIN b ON a.userId =b.KEY_ID  where b.BRANCH ='" + staffPaymentReq.getBranch() + "' AND PRODUCT_ID ='" + staffPaymentReq.getProductID() + "' AND (a.staff_01_status='not-pay')";
+                        System.out.println("SQL4:" + sql);
+                    } else {
+                        // Existing logic from original case (no dates and no product ID)
+                        sql = "select * from CEHCK_PAY_STATFF a join LOGIN b ON a.userId =b.KEY_ID  where b.BRANCH ='" + staffPaymentReq.getBranch() + "' AND (a.staff_01_status='not-pay')";
+                        System.out.println("SQL1:" + sql);
+                    }
+                    break;
+                case "not_null":
+                    // Existing logic from original case (dates provided)
+                    if (staffPaymentReq.getProductID() != null) {
+                        sql = "select * from CEHCK_PAY_STATFF a join LOGIN b ON a.userId =b.KEY_ID  where b.BRANCH ='" + staffPaymentReq.getBranch() + "' AND OUT_DATE BETWEEN '" + staffPaymentReq.getStartDate() + "' AND '" + staffPaymentReq.getEndDate() + "' AND PRODUCT_ID ='"+ staffPaymentReq.getProductID() +"' AND (a.staff_01_status='not-pay')";
+                    } else {
+                        sql = "select * from CEHCK_PAY_STATFF a join LOGIN b ON a.userId =b.KEY_ID  where b.BRANCH ='" + staffPaymentReq.getBranch() + "' AND a.OUT_DATE BETWEEN '" + staffPaymentReq.getStartDate() + "' AND '" + staffPaymentReq.getEndDate() + "' AND (a.staff_01_status='not-pay')";
+                    }
+                    System.out.println("SQL2 or SQL3:" + sql);
+                    break;
+            }
+
+
+
             return  EBankJdbcTemplate.query(sql, new RowMapper<ReportStaff>() {
                 @Override
                 public ReportStaff mapRow(ResultSet rs, int rowNum) throws SQLException {
                     ReportStaff tr =new ReportStaff();
+                    tr.setKeyIds(rs.getString("KEY_ID"));
+                    tr.setDels(rs.getString("LAHUD_POYLOD"));
                     tr.setLahudPoyLod(rs.getString("LAHUD_POYLOD"));
                     tr.setSTAFT_ID(rs.getString("STAFT_ID"));
                     tr.setSTAFT_NAME(rs.getString("STAFT_NAME"));
@@ -203,9 +234,12 @@ public class ImpCustomerDao  implements CustomerDao{
                     tr.setStaff02_payAll(rs.getString("staff02_payAll"));
                     tr.setStaff02_beforepay(rs.getString("staff02_beforepay"));
                     tr.setStaff02_notpay(rs.getString("staff02_notpay"));
+                    tr.setProductID(rs.getString("PRODUCT_ID"));
+                    tr.setProductName(rs.getString("PRO_NAME"));
 
-//                    tr.setBatStartDate(rs.getString(""));
-//                    tr.setBatEndDate(rs.getString(""));
+                    String numtotalStaffbialieng01 = rs.getString("STAFF_BIALINEG_KANGJAIY").replaceAll(",","");
+                    double conVertStaffbialieng01  = Double.parseDouble(numtotalStaffbialieng01);
+                    tr.setTotalBialiengKangjaiy(conVertStaffbialieng01);
                     return tr;
                 }
             });
@@ -214,6 +248,73 @@ public class ImpCustomerDao  implements CustomerDao{
         }
         return null;
     }
+//    amount that paid staff bialieng
+@Override
+public List<AmountThatPaidStaffModel>AmountThatPaidStaffDAOs (StaffPaymentReq staffPaymentReq) {
+    try
+    {
+        String sql ="select a.ALL_OF_THEM from PAYMENT_STAFF a join LOGIN b on a.userId = b.KEY_ID where b.BRANCH = '"+staffPaymentReq.getBranch()+"' and a.PAY_DATE between '"+staffPaymentReq.getStartDate()+"' and '"+staffPaymentReq.getEndDate()+"'";
+        return  EBankJdbcTemplate.query(sql, new RowMapper<AmountThatPaidStaffModel>() {
+            @Override
+            public AmountThatPaidStaffModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                AmountThatPaidStaffModel tr =new AmountThatPaidStaffModel();
+                tr.setAmoutTotalpaid(rs.getDouble("ALL_OF_THEM"));
+                return tr;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
+    //============Qeury top 5 ranking staff
+    public List<ReportStaffRanking> TopFiveRankingDao(StaffPaymentReq staffPaymentReq) {
+        String sql = null;
+        try
+        {
+            if (staffPaymentReq.getStartDate()==null){
+                sql = "SELECT *\n" +
+                        "FROM (\n" +
+                        "  SELECT COUNT(a.LAHUD_POYLOD) AS allTiew, a.STAFT_NAME,STAFT_SURNAME\n" +
+                        "  FROM CEHCK_PAY_STATFF a\n" +
+                        "  JOIN LOGIN b ON a.userId = b.KEY_ID\n" +
+                        "  WHERE b.BRANCH = '"+staffPaymentReq.getBranch()+"'\n" +
+                        "  AND (a.staff_01_status='not-pay') \n" +
+                        "  GROUP BY a.STAFT_ID\n" +
+                        "  ORDER BY allTiew DESC\n" +
+                        ") AS ranked_data\n" +
+                        "LIMIT 5";
+
+            } else{
+                sql = "SELECT *\n" +
+                        "FROM (\n" +
+                        "  SELECT COUNT(a.LAHUD_POYLOD) AS allTiew, a.STAFT_NAME,STAFT_SURNAME\n" +
+                        "  FROM CEHCK_PAY_STATFF a\n" +
+                        "  JOIN LOGIN b ON a.userId = b.KEY_ID\n" +
+                        "  WHERE b.BRANCH = '"+staffPaymentReq.getBranch()+"'\n" +
+                        "  AND (a.staff_01_status='not-pay') AND a.OUT_DATE BETWEEN '"+staffPaymentReq.getStartDate()+"' and '"+staffPaymentReq.getEndDate()+"'\n" +
+                        "  GROUP BY a.STAFT_ID\n" +
+                        "  ORDER BY allTiew DESC\n" +
+                        ") AS ranked_data\n" +
+                        "LIMIT 5";
+            }
+
+            return  EBankJdbcTemplate.query(sql, new RowMapper<ReportStaffRanking>() {
+                @Override
+                public ReportStaffRanking mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ReportStaffRanking tr =new ReportStaffRanking();
+                    tr.setAllTiew(rs.getString("allTiew"));
+                    tr.setStaffName(rs.getString("STAFT_NAME"));
+                    tr.setStaffSurname(rs.getString("STAFT_SURNAME"));
+                    return tr;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    //============Qeury top 5 ranking staff
     @Override
     public List<ReportStaff> ReportStaffPeymnet(ResFromDateReq resFromDateReq) {
         try
@@ -251,61 +352,126 @@ public class ImpCustomerDao  implements CustomerDao{
         }
         return null;
     }
-    @Override
-    public int paymentStaff(StaffPaymentReq staffPaymentReq) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = sdf.parse(staffPaymentReq.getPayDate());
-        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-        try{
-            String SQL="insert into PAYMENT_STAFF (PAY_DATE,staffID01,staffID02,payAmount_NotPay01,payAmount_NotPay02,payAmount_Pay01,payAmount_Pay02," +
-                    "payAmount_TotalPay01,payAmount_TotalPay02,payAmount_status01,payAmount_status02) values (?,?,?,?,?,?,?,?,?,?,?)";
-            List<Object> paramList = new ArrayList<Object>();
-            paramList.add(sqlDate);
-            paramList.add(staffPaymentReq.getStaffID01());
-            paramList.add(staffPaymentReq.getStaffID02());
-            paramList.add(staffPaymentReq.getPayAmount_NotPay01());
-            paramList.add(staffPaymentReq.getPayAmount_NotPay02());
-            paramList.add(staffPaymentReq.getPayAmount_Pay01());
-            paramList.add(staffPaymentReq.getPayAmount_Pay02());
-            paramList.add(staffPaymentReq.getPayAmount_TotalPay01());
-            paramList.add(staffPaymentReq.getPayAmount_TotalPay02());
-            paramList.add(staffPaymentReq.getPayAmount_status01());
-            paramList.add(staffPaymentReq.getPayAmount_status02());
-            return EBankJdbcTemplate.update(SQL,paramList.toArray());
-        }catch (Exception e){
-            e.printStackTrace();
+//    @Override
+//    public int paymentStaff(StaffPaymentReq staffPaymentReq) throws ParseException {
+//        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+//        Date date = sdf.parse(staffPaymentReq.getPayDate());
+//        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+//        try{
+//            String SQL="insert into PAYMENT_STAFF (PAY_DATE,staffID01,staffID02,payAmount_NotPay01,payAmount_NotPay02,payAmount_Pay01,payAmount_Pay02," +
+//                    "payAmount_TotalPay01,payAmount_TotalPay02,payAmount_status01,payAmount_status02,userId) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+//            List<Object> paramList = new ArrayList<Object>();
+//            paramList.add(sqlDate);
+//            paramList.add(staffPaymentReq.getStaffID01());
+//            paramList.add(staffPaymentReq.getStaffID02());
+//            paramList.add(staffPaymentReq.getPayAmount_NotPay01());
+//            paramList.add(staffPaymentReq.getPayAmount_NotPay02());
+//            paramList.add(staffPaymentReq.getPayAmount_Pay01());
+//            paramList.add(staffPaymentReq.getPayAmount_Pay02());
+//            paramList.add(staffPaymentReq.getPayAmount_TotalPay01());
+//            paramList.add(staffPaymentReq.getPayAmount_TotalPay02());
+//            paramList.add(staffPaymentReq.getPayAmount_status01());
+//            paramList.add(staffPaymentReq.getPayAmount_status02());
+//            paramList.add(staffPaymentReq.getUserId());
+//            return EBankJdbcTemplate.update(SQL,paramList.toArray());
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        return 0;
+//    }
+    ///====================================new
+@Override
+public int paymentStaff(StaffPaymentReq staffPaymentReq) {
+    // Initialize a placeholder for sqlDate
+    java.sql.Date sqlDate = null;
+
+    try {
+        // Ensure payDate is not null before parsing
+        if (staffPaymentReq.getPayDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            Date date = sdf.parse(staffPaymentReq.getPayDate());
+            sqlDate = new java.sql.Date(date.getTime());
+        } else {
+            // Handle the case where payDate is null
+            System.out.println("WARNING: payDate is null. Using current date for PAY_DATE.");
+            sqlDate = new java.sql.Date(System.currentTimeMillis()); // Use current date
         }
+
+        String SQL = "insert into PAYMENT_STAFF (PAY_DATE, ALL_OF_THEM, userId) values (?, ?, ?)";
+        List<Object> paramList = new ArrayList<>();
+        paramList.add(sqlDate);
+        paramList.add(staffPaymentReq.getAllofthem());
+        paramList.add(staffPaymentReq.getUserId());
+
+        System.out.println("SQL:" + SQL);
+        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+    } catch (ParseException e) {
+        System.err.println("Error parsing payDate: " + e.getMessage());
+        e.printStackTrace();
+        return 0;
+    } catch (Exception e) {
+        System.err.println("Unexpected error: " + e.getMessage());
+        e.printStackTrace();
         return 0;
     }
+}
+
     //git alll
     @Override
     public int paymentStaffUpdate(StaffPaymentReq staffPaymentReq) throws ParseException {
-        System.out.println("KEY DETAILS 01:"+staffPaymentReq.getKey_Id());
-        System.out.println("staffPaymentReq 01:"+staffPaymentReq.getStaffID01());
-        System.out.println("staffPaymentReq 02:"+staffPaymentReq.getStaffID02());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = sdf.parse(staffPaymentReq.getPayDate());
-        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-        try{
-            String SQL="update TB_DETAILS set staff_01_status='"+staffPaymentReq.getPayAmount_status01()+"',staff_02_status='"+staffPaymentReq.getPayAmount_status02()+"' where LAHUD_POYLOD='"+staffPaymentReq.getKey_Id()+"'";
-            System.out.println("SQL:"+SQL);
-            List<Object> paramList = new ArrayList<Object>();
-            paramList.add(sqlDate);
-            paramList.add(staffPaymentReq.getStaffID01());
-            paramList.add(staffPaymentReq.getStaffID02());
-            paramList.add(staffPaymentReq.getPayAmount_NotPay01());
-            paramList.add(staffPaymentReq.getPayAmount_NotPay02());
-            paramList.add(staffPaymentReq.getPayAmount_Pay01());
-            paramList.add(staffPaymentReq.getPayAmount_Pay02());
-            paramList.add(staffPaymentReq.getPayAmount_TotalPay01());
-            paramList.add(staffPaymentReq.getPayAmount_TotalPay02());
-            paramList.add(staffPaymentReq.getPayAmount_status01());
-            paramList.add(staffPaymentReq.getPayAmount_status02());
-            return EBankJdbcTemplate.update(SQL,paramList.toArray());
-        }catch (Exception e){
-            e.printStackTrace();
+//        System.out.println("KEY DETAILS 01:"+staffPaymentReq.getKey_Id());
+//        System.out.println("staffPaymentReq 01:"+staffPaymentReq.getStaffID01());
+//        System.out.println("staffPaymentReq 02:"+staffPaymentReq.getStaffID02());
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//        Date date = sdf.parse(staffPaymentReq.getPayDate());
+//        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+//        try{
+//            String SQL="update TB_DETAILS set staff_01_status='"+staffPaymentReq.getPayAmount_status01()+"',staff_02_status='"+staffPaymentReq.getPayAmount_status02()+"' where LAHUD_POYLOD='"+staffPaymentReq.getKey_Id()+"'";
+//            System.out.println("SQL:"+SQL);
+//            List<Object> paramList = new ArrayList<Object>();
+//            paramList.add(sqlDate);
+//            paramList.add(staffPaymentReq.getStaffID01());
+//            paramList.add(staffPaymentReq.getStaffID02());
+//            paramList.add(staffPaymentReq.getPayAmount_NotPay01());
+//            paramList.add(staffPaymentReq.getPayAmount_NotPay02());
+//            paramList.add(staffPaymentReq.getPayAmount_Pay01());
+//            paramList.add(staffPaymentReq.getPayAmount_Pay02());
+//            paramList.add(staffPaymentReq.getPayAmount_TotalPay01());
+//            paramList.add(staffPaymentReq.getPayAmount_TotalPay02());
+//            paramList.add(staffPaymentReq.getPayAmount_status01());
+//            paramList.add(staffPaymentReq.getPayAmount_status02());
+//            return EBankJdbcTemplate.update(SQL,paramList.toArray());
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        return 0;
+
+        // ======================================================= ข้างเทิงโตเก่า
+        int totalUpdated_2 = 0;
+
+        List<String> dels = staffPaymentReq.getDels();
+        List<String> keyIds = staffPaymentReq.getKeyIds();
+
+        if (dels.size() != keyIds.size()) {
+            // Handle potential size mismatch between dels and keyIds
+            throw new IllegalArgumentException("Number of dels and keyIds must be equal");
         }
-        return 0;
+
+        try {
+            for (int i = 0; i < dels.size(); i++) {
+                String del = dels.get(i);
+                String keyId = keyIds.get(i);
+
+                String SQL = "UPDATE TB_DETAILS SET staff_01_status ='done',STAFF_BIALINEG_KANGJAIY='0',STAFF_BIALIENG=STAFF_BIALIENG_FRIST  WHERE LAHUD_POYLOD = '" + del + "' AND KEY_ID='" + keyId + "'";
+                System.out.println(SQL);
+                totalUpdated_2 += EBankJdbcTemplate.update(SQL);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return totalUpdated_2;
+        }
+
+        return totalUpdated_2;
     }
     @Override
     public List<CustomerOut> getAllCustomer(CustomerReq custoerReq) {
@@ -324,6 +490,22 @@ public class ImpCustomerDao  implements CustomerDao{
         }
         return result;
     }
+    //===================start-fuel-station-dao===============================================
+    public List<FuelStationOut> getAllFuelStation(FuelStationReq fuelStationReq) {
+        List<FuelStationOut> result = new ArrayList<>();
+        try {
+            String SQL = "SELECT *  FROM FUEL_STATION a INNER JOIN LOGIN b ON a.userId =b.KEY_ID WHERE b.BRANCH  ='"+fuelStationReq.getBranch()+"' ";
+            System.out.println(SQL);
+
+            result = EBankJdbcTemplate.query(SQL , new getAllFuelStationMapper());
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return result;
+        }
+        return result;
+    }
+    //===================start-fuel-station-dao===============================================
     @Override
     public List<CustomerOut> getCustomerById(CustomerReq custoerReq) {
         List<CustomerOut> result = new ArrayList<>();
@@ -351,8 +533,8 @@ public class ImpCustomerDao  implements CustomerDao{
         String mobile1 = custoerReq.getMobile1();
         String email = custoerReq.getEmail();
         try {
-            String SQL = "INSERT INTO CUSTOMER (CUSTOMER_ID , CUSTOMER_NAME , ADDRESS , VILLAGE , DISTRICT , PROVICNE , MOBILE1 , MOBILE2 , EMAIL , STATUS)\n" +
-                    "VALUES ( '"+custId+"' , '"+custName+"' , '"+addrss+"' , '"+village+"' , '"+district+"' , '"+provicnce+"' , '"+mobile+"' , '"+mobile1+"' , '"+email+"' , 'A') ";
+            String SQL = "INSERT INTO CUSTOMER (CUSTOMER_ID , CUSTOMER_NAME , ADDRESS , VILLAGE , DISTRICT , PROVICNE , MOBILE1 , MOBILE2 , EMAIL , STATUS,userId)\n" +
+                    "VALUES ( '"+custId+"' , '"+custName+"' , '"+addrss+"' , '"+village+"' , '"+district+"' , '"+provicnce+"' , '"+mobile+"' , '"+mobile1+"' , '"+email+"' , 'A','"+custoerReq.getUserId()+"') ";
             System.out.println(SQL);
             i = EBankJdbcTemplate.update(SQL);
         }catch (Exception e){
@@ -361,6 +543,118 @@ public class ImpCustomerDao  implements CustomerDao{
         }
         return i;
     }
+    // ===================store fuel tation =========================================================
+    public int StoreFuelStation(FuelStationReq fuelStationReq) {
+        int i = 0;
+        String fuelId = fuelStationReq.getFuelStationId();
+        String fuelName = fuelStationReq.getFuelStationName();
+        String addrss =  fuelStationReq.getAddress();
+        String village = fuelStationReq.getVillage();
+        String district = fuelStationReq.getDistrict();
+        String provicnce = fuelStationReq.getProvince();
+        String mobile = fuelStationReq.getMobile();
+        String email = fuelStationReq.getEmail();
+        String userId = fuelStationReq.getUserId();
+        try {
+//            String SQL = "INSERT INTO FUEL_STATION (FUEL_STATION_ID,FUEL_STATION_NAME,ADDRESS,VILLAGE,DISTRICT,PROVICNE,MOBILE,EMAIL,userId) VALUES(?,?,?,?,?,?,?,?,'"+fuelStationReq.getUserId()+"') ";
+            String SQL = "INSERT INTO FUEL_STATION (FUEL_STATION_ID,FUEL_STATION_NAME,ADDRESS,VILLAGE,DISTRICT,PROVICNE,MOBILE,EMAIL,userId) " +
+                    "VALUES ('"+fuelId+"','"+fuelName+"','"+addrss+"','"+village+"','"+district+"','"+provicnce+"', '"+mobile+"','"+email+"','"+userId+"')";
+
+            System.out.println(SQL);
+            i = EBankJdbcTemplate.update(SQL);
+        }catch (Exception e){
+            e.printStackTrace();
+            return i;
+        }
+        return i;
+    }
+    // ===================store fuel tation =========================================================
+    public int UpdateStatusFuelStation(FuelStationReq fuelStationReq) {
+        int i = 0;
+
+        String key_id = fuelStationReq.getKey_id();
+        String del = fuelStationReq.getDel();
+        try {
+            String SQL = "UPDATE  TB_DETAILS SET FUEL_STATUS ='P'  WHERE LAHUD_POYLOD = '"+del+"' and KEY_ID='"+key_id+"'" ;
+
+            System.out.println(SQL);
+            i = EBankJdbcTemplate.update(SQL);
+        }catch (Exception e){
+            e.printStackTrace();
+            return i;
+        }
+        return i;
+    }
+    //update multi
+    public int UpdateStatusFuelStationMulti(FuelStationReq fuelStationReq) {
+        int totalUpdated = 0;
+
+        List<String> dels = fuelStationReq.getDels(); // Assuming dels is a list of strings
+        List<String> keyIds = fuelStationReq.getKeyIds(); // Assuming keyIds is a list of strings
+
+        if (dels.size() != keyIds.size()) {
+            // Handle potential size mismatch between dels and keyIds
+            throw new IllegalArgumentException("Number of dels and keyIds must be equal");
+        }
+
+        try {
+            for (int i = 0; i < dels.size(); i++) {
+                String del = dels.get(i);
+                String keyId = keyIds.get(i);
+
+                String SQL = "UPDATE TB_DETAILS SET FUEL_STATUS ='P'  WHERE LAHUD_POYLOD = '" + del + "' AND KEY_ID='" + keyId + "'";
+                System.out.println(SQL);
+                totalUpdated += EBankJdbcTemplate.update(SQL);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return totalUpdated; // Return the number of rows updated so far in case of error
+        }
+
+        return totalUpdated;
+    }
+//    insert totoalprice to table
+public int insertTotalprice (FuelStationReq fuelStationReq) {
+    try{
+        String SQL = "insert into SPEND_OILS (TOTAL_PRICE,DATECREATE,userId)values (?,now(),'"+fuelStationReq.getUserId()+"')";
+        List<Object> paramList = new ArrayList<Object>();
+        paramList.add(fuelStationReq.getTotalPriceOil());
+        paramList.add(fuelStationReq.getUserId());
+        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+    }catch (Exception e){
+        e.printStackTrace();
+        return -1;
+    }
+}
+
+    // ===================Update fuel tation =========================================================
+
+    public int UpdateFuelStation(FuelStationReq fuelStationReq) {
+        int i = 0;
+        int id = fuelStationReq.getId();
+        String fuelId = fuelStationReq.getFuelStationId();
+        String fuelName = fuelStationReq.getFuelStationName();
+        String addrss =  fuelStationReq.getAddress();
+        String village = fuelStationReq.getVillage();
+        String district = fuelStationReq.getDistrict();
+        String provicnce = fuelStationReq.getProvince();
+        String mobile = fuelStationReq.getMobile();
+        String email = fuelStationReq.getEmail();
+        String userId = fuelStationReq.getUserId();
+        try {
+
+            String SQL = " UPDATE  FUEL_STATION SET    FUEL_STATION_ID ='"+fuelId+"'  , FUEL_STATION_NAME  = '"+fuelName+"' , ADDRESS = '"+addrss+"' , VILLAGE ='"+village+"' , DISTRICT ='"+district+"' , PROVICNE ='"+provicnce+"', \n" +
+                    " MOBILE = '"+mobile+"', EMAIL ='"+email+"',userId='"+userId+"'  WHERE KEY_ID = '"+id+"' " ;
+            i = EBankJdbcTemplate.update(SQL);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return  i;
+        }
+
+        return i;
+    }
+    // ===================Update fuel tation =========================================================
 
     @Override
     public int UpdateCustomer(CustomerReq custoerReq) {
@@ -410,6 +704,25 @@ public class ImpCustomerDao  implements CustomerDao{
         }
         return i;
     }
+    //delete fuel station=================================================
+
+    public int deleteFuelStation(FuelStationReq fuelStationReq) {
+
+        int i = 0;
+
+        try {
+
+            String SQL = "DELETE FROM FUEL_STATION WHERE KEY_ID = '"+fuelStationReq.getId()+"' ";
+
+            i = EBankJdbcTemplate.update(SQL);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return i;
+        }
+        return i;
+    }
+    //delete fuel station=================================================
 
 
     @Override
@@ -444,21 +757,31 @@ public class ImpCustomerDao  implements CustomerDao{
         return result;
     }
     @Override
-    public List<staftOut> getChooseStaft02() {
+    public List<staftOut> getChooseStaft02(stafReq stafReq) {
         List<staftOut>  result = new ArrayList<>();
         try {
-            String SQL = "\n" +
-                    "select \n" +
-                    "'116' as KEY_ID , '0' as STAFT_ID ,'ບໍ່ເລືອກຄົນຂັບທີ 2' as  STAFT_NAME , '' as STAFT_SURNAME ,null as  ID_CARD ,null as  LICENCE_ID ,null as  VERIFY_BY ,\n" +
-                    "null as LICENCE_ID_EXP , null as VILLAGE ,null as  DISTRICT ,null as  PROVINCE ,null as  MOBILE1 ,null as  MOBILE2,null as  GENDER ,\n" +
-                    "null as  GENDER_STATUS , \n" +
-                    "null as GENDER_STATUS ,null as  DATE_INSERT, null as  USERID,null as  IMAGE_STAFF \n" +
-                    "union \n" +
-                    "SELECT \n" +
-                    "KEY_ID , STAFT_ID , STAFT_NAME , STAFT_SURNAME , ID_CARD , LICENCE_ID , VERIFY_BY ,\n" +
-                    "LICENCE_ID_EXP , VILLAGE , DISTRICT , PROVINCE , MOBILE1 , MOBILE2, GENDER , GENDER_STATUS , \n" +
-                    "GENDER_STATUS ,DATE_INSERT, USERID,IMAGE_STAFF \n" +
-                    "FROM STAFF WHERE OUT_STATUS = 'N'  and STATUS='A'";
+//            String SQL = "\n" +
+//                    "select \n" +
+//                    "'116' as KEY_ID , '0' as STAFT_ID ,'ບໍ່ເລືອກຄົນຂັບທີ 2' as  STAFT_NAME , '' as STAFT_SURNAME ,null as  ID_CARD ,null as  LICENCE_ID ,null as  VERIFY_BY ,\n" +
+//                    "null as LICENCE_ID_EXP , null as VILLAGE ,null as  DISTRICT ,null as  PROVINCE ,null as  MOBILE1 ,null as  MOBILE2,null as  GENDER ,\n" +
+//                    "null as  GENDER_STATUS , \n" +
+//                    "null as GENDER_STATUS ,null as  DATE_INSERT, null as  USERID,null as  IMAGE_STAFF \n" +
+//                    "union \n" +
+//                    "SELECT \n" +
+//                    "KEY_ID , STAFT_ID , STAFT_NAME , STAFT_SURNAME , ID_CARD , LICENCE_ID , VERIFY_BY ,\n" +
+//                    "LICENCE_ID_EXP , VILLAGE , DISTRICT , PROVINCE , MOBILE1 , MOBILE2, GENDER , GENDER_STATUS , \n" +
+//                    "GENDER_STATUS ,DATE_INSERT, USERID,IMAGE_STAFF \n" +
+//                    "FROM STAFF WHERE OUT_STATUS = 'N'  and STATUS='A'";
+            String SQL = "select '116' as KEY_ID , '0' as STAFT_ID ,'ບໍ່ເລືອກຄົນຂັບທີ 2' as  STAFT_NAME , '' as STAFT_SURNAME ,null as  ID_CARD ,null as  LICENCE_ID ,null as  VERIFY_BY , \n" +
+                    "                    null as LICENCE_ID_EXP , null as VILLAGE ,null as  DISTRICT ,null as  PROVINCE ,null as  MOBILE1 ,null as  MOBILE2,null as  GENDER , \n" +
+                    "                    null as  GENDER_STATUS ,  \n" +
+                    "                    null as GENDER_STATUS ,null as  DATE_INSERT, null as  USERID,null as  IMAGE_STAFF  \n" +
+                    "                    union  \n" +
+                    "                    SELECT  \n" +
+                    "                    a.KEY_ID , a.STAFT_ID , a.STAFT_NAME , a.STAFT_SURNAME , a.ID_CARD , a.LICENCE_ID , a.VERIFY_BY , \n" +
+                    "                    a.LICENCE_ID_EXP , a.VILLAGE , a.DISTRICT , a.PROVINCE , a.MOBILE1 , a.MOBILE2, a.GENDER , a.GENDER_STATUS ,  \n" +
+                    "                    a.GENDER_STATUS ,a.DATE_INSERT, a.USERID,a.IMAGE_STAFF  \n" +
+                    "                    FROM STAFF a inner join LOGIN b ON a.saveById=b.KEY_ID WHERE a.OUT_STATUS = 'N'  and a.STATUS='A' and b.BRANCH='"+stafReq.getBranch()+"'";
             System.out.println("show SQL:"+SQL);
             result = EBankJdbcTemplate.query(SQL , new getAllStaftMapper());
         }catch (Exception e){

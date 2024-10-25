@@ -16,7 +16,7 @@ public class ExpensesBookRes {
     private String message;
     private List<ExpensesBook> data;
 
-    private String totalPay;
-    private String totalIncome;
-    private String totalIncome_PayAll;
+    private Double totalPay;
+    private Double totalIncome;
+    private Double totalIncome_PayAll;
 }

@@ -11,10 +11,17 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PerformanceReq {
     private String key_id;
+    private String toKen;
+    private String userId;
+    private String branch;
     private String performanceBillNo;
     private String performanceReDate;
     private String performanceDate;
     private String performanceTotal;
+    private String lahudBaiPoy;
+    private String productId;
+    private String custormerId;
+
 
     private String performanceOvertime;
     private String performanceJumPho;
@@ -49,4 +56,17 @@ public class PerformanceReq {
     private String staff_Curr;
     private String total_PRICE;
     private String dpay_Money;
+
+    //new add
+    private String add_feeOvertime1;
+    private String add_feeJumPo2;
+    private String add_feePolish3;
+    private String add_feeTaxung4;
+    private String add_feeTiew5;
+    private String add_feesing;
+    private String add_feesaphan;
+    private String add_feeyoktu;
+    private String add_feecontrainer;
+    private String add_feepayang;
+    private String lAHUD_POYLOD;
 }

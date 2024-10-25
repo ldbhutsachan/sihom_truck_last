@@ -1,8 +1,11 @@
 package com.ldb.truck.Service.PayService;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Pay.*;
 import com.ldb.truck.Model.Login.Payment.PayTxnReport;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.TokenOnly.TokenReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,9 @@ import java.util.stream.Stream;
 
 @Service
 public class PayService {
+
+    @Autowired
+    ProfileDao profileDao;
     private static final Logger log = LogManager.getLogger(PayService.class);
     @Autowired PayDao payDao;
 
@@ -38,11 +44,25 @@ public class PayService {
         return result;
     }
     //--get billPayment
-    public getBillNoRes getBillNoForPay(){
+    public getBillNoRes getBillNoForPay(PayReq payReq){
+        log.info("toKen=======================:"+payReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(payReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        payReq.setUserId(userId);
+        payReq.setBranch(userBranchNo);
+        //====================================================================
         getBillNoRes result =new getBillNoRes();
         List<getBillNo> resData = new ArrayList<>();
         try {
-            resData = payDao.getBillNo();
+            resData = payDao.getBillNo(payReq);
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resData);
@@ -54,6 +74,20 @@ public class PayService {
     }
     //---store paryment
     public PayRes StorePayment(PayReq payReq){
+        log.info("toKen=======================:"+payReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(payReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        payReq.setUserId(userId);
+        payReq.setBranch(userBranchNo);
+        //====================================================================
         PayRes result = new PayRes();
         int checkData = 0;
         int checkSetInvoice = 0;
@@ -77,6 +111,21 @@ public class PayService {
     }
     //
     public PayRes storePayOwe(PayReq payReq){
+
+        log.info("toKen=======================:"+payReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(payReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        payReq.setUserId(userId);
+        payReq.setBranch(userBranchNo);
+        //====================================================================
         PayRes result = new PayRes();
         int checkData = 0;
         int checkSetInvoice = 0;
@@ -187,11 +236,25 @@ public class PayService {
         return result;
     }
     //--show list txn
-    public  PayTxnDetailsRes listTxn(){
+    public  PayTxnDetailsRes listTxn(TokenReq tokenReq){
+        log.info("toKen=======================:"+tokenReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(tokenReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        tokenReq.setUserId(userId);
+        tokenReq.setBranch(userBranchNo);
+        //====================================================================
         PayTxnDetailsRes result = new PayTxnDetailsRes();
         List<PayTxnDetails> resList = new ArrayList<>();
         try{
-            resList = payDao.listPayment();
+            resList = payDao.listPayment(tokenReq);
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resList);
@@ -303,6 +366,21 @@ public class PayService {
     }
     //--LstPaymentByDateAll
     public  PayCashRes LstPaymentByDateAll(ResFromDateReq resFromDateReq){
+        log.info("toKen=======================:"+resFromDateReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(resFromDateReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        resFromDateReq.setUserId(userId);
+        resFromDateReq.setBranch(userBranchNo);
+        //====================================================================
+
         List<PayTxnDetails> resDataItems = new ArrayList<>();
         List<PayTxnDetails> resDataItemsHeader2 = new ArrayList<>();
         PayCashRes result = new PayCashRes();
@@ -450,7 +528,21 @@ public class PayService {
         return  result;
     }
     ///-----Pay OWE
-    public  PayTxnDetailsRes v_popupPay(){
+    public  PayTxnDetailsRes v_popupPay(PayReq payReq){
+        log.info("toKen=======================:"+payReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(payReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        payReq.setUserId(userId);
+        payReq.setBranch(userBranchNo);
+        //====================================================================
         double pay = 0.0;
         double noPay = 0.0;
         double amount =0.0;
@@ -458,7 +550,7 @@ public class PayService {
         List<PayTxnDetails> resList = new ArrayList<>();
         List<PayTxnDetails> resList02 = new ArrayList<>();
         try{
-            resList = payDao.v_popupPay();
+            resList = payDao.v_popupPay(payReq);
             log.info("log:"+resList);
             result.setMessage("success");
             result.setStatus("00");

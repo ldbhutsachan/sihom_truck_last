@@ -38,6 +38,11 @@ public class ReportStaff {
     private String staff02_payAll;
     private String staff02_beforepay;
     private String staff02_notpay;
+    private String productName;
+    private String productID;
+    private Double totalBialiengKangjaiy;
+    private String dels;
+    private String keyIds;
 
 
 //    private String batStartDate;

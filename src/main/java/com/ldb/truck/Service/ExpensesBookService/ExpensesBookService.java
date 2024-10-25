@@ -196,9 +196,7 @@ public class ExpensesBookService {
         //===================set data to userId===============================
         incomePayReq.setUserId(userId);
         incomePayReq.setBranch(userBranchNo);
-
         //====================================================================
-
         DecimalFormat numfm = new DecimalFormat("###,###,###");
         ExpensesBookRes result = new ExpensesBookRes();
         List<ExpensesBook> resData = new ArrayList<>();
@@ -222,9 +220,9 @@ public class ExpensesBookService {
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resData);
-            result.setTotalPay(numfm.format(countTotalPay));
-            result.setTotalIncome(numfm.format(countTotalIncome));
-            result.setTotalIncome_PayAll(numfm.format(countIncome_Pay));
+            result.setTotalPay((countTotalPay));
+            result.setTotalIncome((countTotalIncome));
+            result.setTotalIncome_PayAll((countIncome_Pay));
 
         }catch (Exception e){
             e.printStackTrace();
@@ -234,6 +232,7 @@ public class ExpensesBookService {
         }
         return result;
     }
+
     public ExpensesBookRes storeExpenses(ExpensesBookReq expensesBookReq){
         log.info("toKen=======================:"+expensesBookReq.getToKen());
         //============================get User info=======================

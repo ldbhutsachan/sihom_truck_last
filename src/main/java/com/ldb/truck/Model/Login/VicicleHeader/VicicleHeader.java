@@ -55,6 +55,7 @@ public class VicicleHeader {
     private String lL_TIRE_KM_5 ;
     private String lL_TIRE_KM_6 ;
     private String lL_TIRE_KM_7 ;
+
     private String r_TIRE_NO_1  ;
     private String r_TIRE_NO_2  ;
     private String r_TIRE_NO_3  ;
@@ -62,6 +63,7 @@ public class VicicleHeader {
     private String r_TIRE_NO_5  ;
     private String r_TIRE_NO_6  ;
     private String r_TIRE_NO_7  ;
+
     private String r_TIRE_DATE_1;
     private String r_TIRE_DATE_2;
     private String r_TIRE_DATE_3;
@@ -121,18 +123,22 @@ public class VicicleHeader {
     private String ch_RH05;
     private String ch_RH06;
     private String toBatRowStatus;
+    private String toBatRowStatus2;
     private String toBatRowGalanty;
     private String toBatRowtabienLod;
 
 
     private String bat_StartDate;
+    private String bat_StartDate2;
     private String bat_EndDate;
+    private String bat_EndDate2;
     private String imageTruck;
 
     private String exCarDate;
     private String exCarColor;
     private String exHangMar;
     private String batNo;
+    private String batNo2;
 
     private String idMorFai;
     private String imageMorFai;
@@ -145,5 +151,9 @@ public class VicicleHeader {
     private String leanGia;
     private String leanFuengThaiy;
     private String pha_But;
+    private String lektungsit;
+    private String leanGia_Status;
+    private String leanFuengThaiy_Status;
+    private String date_change_lean;
 
 }

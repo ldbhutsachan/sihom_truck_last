@@ -13,4 +13,7 @@ public class TruckDetailsReq {
 private String carLodNo;
 private String startDate;
 private String endDate;
+private String toKen;
+private String userId;
+private String branch;
 }

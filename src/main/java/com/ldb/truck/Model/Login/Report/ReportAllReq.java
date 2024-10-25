@@ -14,4 +14,11 @@ public class ReportAllReq {
     private String startDate;
     private String endDate;
     private String status;
+    private String toKen;
+    private String userId;
+    private String branch;
+    private String status_fuel;
+    private String fuelStationId;
+    private String productId;
+
 }

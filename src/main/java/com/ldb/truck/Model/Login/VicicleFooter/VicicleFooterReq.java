@@ -10,6 +10,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VicicleFooterReq {
+    private String toKen;
+    private String userId;
+    private String branch;
     private String key_id;
     private String f_BRANCH;
     private String f_YEAR  ;

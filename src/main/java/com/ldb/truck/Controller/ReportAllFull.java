@@ -80,6 +80,7 @@ public class ReportAllFull {
     @CrossOrigin(origins = "*")
     @PostMapping("/ReportHeader.service")
     public VicicleHeaderRes ReportHeaderHis(@RequestBody ReportAllReq vicicleHeaderReq){
+
             VicicleHeaderRes result = new VicicleHeaderRes();
             try {
                 result  = vicicleHeaderService.ReportHeaderHis(vicicleHeaderReq);
@@ -137,5 +138,35 @@ public class ReportAllFull {
         }
         return result;
     }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/ShowAllReportFuel.service")
+    public ReportFuelRes ReportFuealStation (@RequestBody ReportAllReq reportAllReq){
+        ReportFuelRes result = new ReportFuelRes();
+        try {
+            result = reportAllService.ReportFuealStation(reportAllReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+//    show total fuel paid
+@CrossOrigin(origins = "*")
+@PostMapping("/ShowTotalOilPaid.service")
+public ShowOilPaidRes ShowTotalOilPaid (@RequestBody ReportAllReq reportAllReq){
+    ShowOilPaidRes result = new ShowOilPaidRes();
+    try {
+        result = reportAllService.ShowTotalOilPaidServiece(reportAllReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
 
 }

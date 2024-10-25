@@ -5,10 +5,10 @@ import com.ldb.truck.Dao.Customer.ImpCustomerDao;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
-import com.ldb.truck.Model.Login.ReportStaff.ReportStaff;
-import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
-import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRes;
-import com.ldb.truck.Model.Login.ReportStaff.Staff;
+import com.ldb.truck.Model.Login.Report.Bialieng.sumFooterGroup2;
+import com.ldb.truck.Model.Login.Report.ReportAll;
+import com.ldb.truck.Model.Login.Report.sumFooterGroup;
+import com.ldb.truck.Model.Login.ReportStaff.*;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Model.Login.staft.*;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +17,7 @@ import org.apache.logging.log4j.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,11 +92,26 @@ public class StaftService {
             return result;
         }
     }
-    public staftRes getChooseStaft02 (){
+    public staftRes getChooseStaft02 (stafReq stafReq){
+        logger.info("toKen=======================:"+stafReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(stafReq.getToKen());
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        stafReq.setSaveById(userId);
+        stafReq.setBranch(userBranchNo);
+        //====================================================================
+
         staftRes result = new staftRes();
         List<staftOut> data = new ArrayList<>();
         try {
-            data = impCustomerDao.getChooseStaft02();
+            data = impCustomerDao.getChooseStaft02(stafReq);
             if(data.size() < 1 ){
 
                 result.setMessage("data not found ");
@@ -227,11 +243,32 @@ public class StaftService {
         }
     }
     //-------wait pay staff
-    public ReportStaffRes ListWaiyPaymentStaff(){
+    public ReportStaffRes ListWaiyPaymentStaff(StaffPaymentReq staffPaymentReq){
+        logger.info("toKen=======================:"+staffPaymentReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(staffPaymentReq.getToKen());
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        staffPaymentReq.setUserId(userId);
+        staffPaymentReq.setBranch(userBranchNo);
+        //====================================================================
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
         List<ReportStaff> listdata = new ArrayList<>();
         ReportStaffRes result = new ReportStaffRes();
+        double todtalLaiyJaiyFrist =0.0;
         try{
-            listdata = impCustomerDao.ListWaiyPaymentStaff();
+            listdata = impCustomerDao.ListWaiyPaymentStaff(staffPaymentReq);
+            sumFooterGroup2 restFooter = new sumFooterGroup2();
+            double sumtotalBialiengKangjaiy =  listdata.stream().map(ReportStaff::getTotalBialiengKangjaiy).collect(Collectors.summingDouble(Double::doubleValue));
+            restFooter.setAlltotalBialiengKangjaiy(numfm.format(sumtotalBialiengKangjaiy));
+            result.setSumFooter(restFooter);
+
             result.setData(listdata);
             result.setStatus("00");
             result.setMessage("success");
@@ -242,8 +279,92 @@ public class StaftService {
         }
         return result;
     }
+//    amount that paid staff serviece
+public AmountthatPaidStaffRes AmountThatPaidStaffServiece (StaffPaymentReq staffPaymentReq){
+    logger.info("toKen=======================:"+staffPaymentReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(staffPaymentReq.getToKen());
+    logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+    logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    logger.info("show=================Role:"+userIn.get(0).getRole());
+    logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    staffPaymentReq.setUserId(userId);
+    staffPaymentReq.setBranch(userBranchNo);
+    //====================================================================
+    List<AmountThatPaidStaffModel> data = new ArrayList<>();
+    AmountthatPaidStaffRes result = new AmountthatPaidStaffRes();
+    DecimalFormat numfm = new DecimalFormat("###,###.###");
+    try{
+        data = impCustomerDao.AmountThatPaidStaffDAOs(staffPaymentReq);
+        double totalBialiengthatPaid =  data.stream().map(AmountThatPaidStaffModel::getAmoutTotalpaid).collect(Collectors.summingDouble(Double::doubleValue));
+
+        sumfooterGroupBL restFooter = new sumfooterGroupBL();
+
+        restFooter.setTotalBialiengthatPaid(numfm.format(totalBialiengthatPaid));
+        result.setSumFooter(restFooter);
+        logger.info("show================sum:"+totalBialiengthatPaid);
+        result.setData(data);
+        result.setStatus("00");
+        result.setMessage("success");
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("data not found");
+    }
+    return result;
+}
+    // ===========ranking staff service
+    public TopFiveRankingRes TopFiveRankingService(StaffPaymentReq staffPaymentReq){
+        logger.info("toKen=======================:"+staffPaymentReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(staffPaymentReq.getToKen());
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        staffPaymentReq.setUserId(userId);
+        staffPaymentReq.setBranch(userBranchNo);
+        //====================================================================
+
+        List<ReportStaffRanking> listdata = new ArrayList<>();
+        TopFiveRankingRes result = new TopFiveRankingRes();
+        try{
+            listdata = impCustomerDao.TopFiveRankingDao(staffPaymentReq);
+            result.setData(listdata);
+            result.setStatus("00");
+            result.setMessage("success");
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("data not found");
+        }
+        return result;
+    }
+    // ===========ranking staff service
     //=======payment staff========================
     public ReportStaffRes paymentStaff(StaffPaymentReq staffPaymentReq){
+        logger.info("toKen=======================:"+staffPaymentReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(staffPaymentReq.getToKen());
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        staffPaymentReq.setUserId(userId);
+        staffPaymentReq.setBranch(userBranchNo);
+        //====================================================================
         List<ReportStaff> listdata = new ArrayList<>();
         ReportStaffRes result = new ReportStaffRes();
         int checkData= 0;
@@ -289,6 +410,20 @@ public class StaftService {
     }
     //================================>ListStaffPay<============================================
     public StaffPayRes ReportListStaffPay(StaffPayReq staffPayReq){
+        logger.info("toKen=======================:"+staffPayReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(staffPayReq.getToKen());
+        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
+        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        logger.info("show=================Role:"+userIn.get(0).getRole());
+        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        staffPayReq.setUserId(userId);
+        staffPayReq.setBranch(userBranchNo);
+        //====================================================================
         List<StaffPay> listdata = new ArrayList<>();
         StaffPayRes result = new StaffPayRes();
         List<Staff> liststaff = new ArrayList<>();

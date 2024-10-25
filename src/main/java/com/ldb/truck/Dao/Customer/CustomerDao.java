@@ -1,5 +1,6 @@
 package com.ldb.truck.Dao.Customer;
 
+import com.ldb.truck.Model.Login.ReportStaff.AmountThatPaidStaffModel;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaff;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ResFromDateReq;
@@ -20,17 +21,18 @@ public interface CustomerDao {
     List<StaffDetails> ListDetailStaff(StaffPayReq staffPayReq);
     List<StaffPay> ListStaffPay(StaffPayReq staffPayReq);
     List<ReportStaff> ListStaffPaydetailsByStaffId(StaffPayReq staffPayReq);
-    List<ReportStaff> ListWaiyPaymentStaff();
+    List<ReportStaff> ListWaiyPaymentStaff(StaffPaymentReq staffPaymentReq);
     List<ReportStaff> ReportStaffPeymnet(ResFromDateReq resFromDateReq);
     public int paymentStaff(StaffPaymentReq staffPaymentReq) throws ParseException;
     public int paymentStaffUpdate(StaffPaymentReq staffPaymentReq) throws ParseException;
     List<CustomerOut> getAllCustomer(CustomerReq custoerReq);
+    public List<AmountThatPaidStaffModel>AmountThatPaidStaffDAOs (StaffPaymentReq staffPaymentReq);
     List<CustomerOut> getCustomerById(CustomerReq custoerReq);
     int StoreCustomer (CustomerReq custoerReq);
     int UpdateCustomer (CustomerReq custoerReq);
     int deleteCustomer (String id);
     List<staftOut> getChooseStaft01(stafReq stafReq);
-    public List<staftOut> getChooseStaft02();
+    public List<staftOut> getChooseStaft02(stafReq stafReq);
     List<staftOut> getAllStaft();
     List<staftOut> getStaftById( String id);
     int StoreStaft(stafReq stafReq);

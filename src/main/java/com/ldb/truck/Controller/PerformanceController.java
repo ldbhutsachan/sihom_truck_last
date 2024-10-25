@@ -2,6 +2,7 @@ package com.ldb.truck.Controller;
 import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportAllRes;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import com.ldb.truck.Service.PerformanceService.PerformanceService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,10 +61,10 @@ public class PerformanceController {
     //**----
     @CrossOrigin(origins = "*")
     @PostMapping("/ListViewPerformance.service")
-    public v_performanceRes ListV_Performance(){
+    public v_performanceRes ListV_Performance(@RequestBody PerformanceReq performanceReq){
         v_performanceRes result = new v_performanceRes();
         try {
-            result =  performanceService.ListV_performance();
+            result =  performanceService.ListV_performance(performanceReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -87,10 +88,10 @@ public class PerformanceController {
     //--get list gen ID
     @CrossOrigin(origins = "*")
     @PostMapping("/getPerByGenID.service")
-    public generateKeyIDRes getGenNo(){
+    public generateKeyIDRes getGenNo(@RequestBody TogenTheCodeReq togenTheCodeReq ){
         generateKeyIDRes result = new generateKeyIDRes();
         try {
-            result =  performanceService.listGenPerNo();
+            result =  performanceService.listGenPerNo(togenTheCodeReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -102,10 +103,10 @@ public class PerformanceController {
     //--view popup
     @CrossOrigin(origins = "*")
     @PostMapping("/v_popupDetails.service")
-    public ReportAllRes v_popupDetails(){
+    public ReportAllRes v_popupDetails(@RequestBody PerformanceReq performanceReq){
         ReportAllRes result = new ReportAllRes();
         try {
-            result= performanceService.v_Popup();
+            result= performanceService.v_Popup(performanceReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -117,10 +118,10 @@ public class PerformanceController {
     //--view popup per
     @CrossOrigin(origins = "*")
     @PostMapping("/v_popupPerformance.service")
-    public v_performanceRes v_popupPerformance(){
+    public v_performanceRes v_popupPerformance(@RequestBody PerformanceReq performanceReq){
         v_performanceRes result = new v_performanceRes();
         try {
-            result =  performanceService.v_popupPerformance();
+            result =  performanceService.v_popupPerformance(performanceReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -131,10 +132,10 @@ public class PerformanceController {
     //------show data for update
     @CrossOrigin(origins = "*")
     @PostMapping("/v_popupInvoice.service")
-    public v_performanceRes v_popupInvoice(){
+    public v_performanceRes v_popupInvoice(@RequestBody PerformanceReq performanceReq){
         v_performanceRes result = new v_performanceRes();
         try {
-            result =  performanceService.v_popupPerformance();
+            result =  performanceService.v_popupPerformance(performanceReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

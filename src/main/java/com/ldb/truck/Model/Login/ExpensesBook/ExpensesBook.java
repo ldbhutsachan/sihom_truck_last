@@ -20,4 +20,5 @@ public class ExpensesBook {
     private String perAmount;
     private String ref_NO;
     private String status;
+//    private String cur;
 }

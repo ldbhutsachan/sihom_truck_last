@@ -1,7 +1,10 @@
 package com.ldb.truck.Service.PaymentService;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Payment.*;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ResFromDateReq;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class InvoiceService {
+    @Autowired
+    ProfileDao profileDao;
     private static final Logger log = LogManager.getLogger(InvoiceService.class);
     @Autowired
     InvoiceDao invoiceDao;
@@ -35,11 +40,29 @@ public class InvoiceService {
         return result;
     }
     //---generate ID
-    public GenerateInvoiceIDRes gernerateID(){
+    public GenerateInvoiceIDRes gernerateID(TogenTheCodeReq togenTheCodeReq){
+        log.info("toKen=======================:"+togenTheCodeReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(togenTheCodeReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        togenTheCodeReq.setUserId(userId);
+        togenTheCodeReq.setBranch(userBranchNo);
+        log.info("user=======================:"+userId);
+        log.info("band=======================:"+userBranchNo);
+
+        //====================================================================
+
         GenerateInvoiceIDRes result = new GenerateInvoiceIDRes();
         List<GenerateInvoiceID> resData = new ArrayList<>();
         try{
-            resData = invoiceDao.gernerateID();
+            resData = invoiceDao.gernerateID(togenTheCodeReq);
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resData);
@@ -78,6 +101,24 @@ public class InvoiceService {
     }
     //---store more info
     public  invoiceDetailRes CreateInvoiceAll(List<InvoiceDetailReq> invoiceDetailReq){
+
+        log.info("toKen=======================:"+invoiceDetailReq.get(0).getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(invoiceDetailReq.get(0).getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        invoiceDetailReq.get(0).setUserId(userId);
+        invoiceDetailReq.get(0).setBranch(userBranchNo);
+        log.info("user=======================:"+userId);
+        log.info("band=======================:"+userBranchNo);
+
+        //====================================================================
         int checkData=0;
         int checkUpdate=0;
         invoiceDetailRes result = new invoiceDetailRes();
@@ -167,6 +208,20 @@ public class InvoiceService {
     }
     //----list txn
     public InvoiceRes ListviewBlackPrintNo(ResFromDateReq resFromDateReq){
+        log.info("toKen=======================:"+resFromDateReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(resFromDateReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        resFromDateReq.setUserId(userId);
+        resFromDateReq.setBranch(userBranchNo);
+        //====================================================================
         InvoiceRes result = new InvoiceRes();
         List<Invoice> resdata = new ArrayList<>();
         try {
@@ -187,6 +242,21 @@ public class InvoiceService {
 //    ResFromDateReq resFromDateReq
     //--viewPintBillByNo
     public  PrintInvoiceByNoRes PintBillByNo(PrintInvoiceByNoReq printInvoiceByNoReq){
+
+//        log.info("toKen=======================:"+printInvoiceByNoReq.getToKen());
+//        //============================get User info=======================
+//        List<Profile> userIn = profileDao.getProfileInfoByToken(printInvoiceByNoReq.getToKen());
+//        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+//        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+//        log.info("show=================Role:"+userIn.get(0).getRole());
+//        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+//        //================================================================
+//        String userId = userIn.get(0).getUserId();
+//        String userBranchNo = userIn.get(0).getBranchNo();
+//        //===================set data to userId===============================
+//        printInvoiceByNoReq.setUserId(userId);
+//        printInvoiceByNoReq.setBranch(userBranchNo);
+//        //====================================================================
         List<PrintInvoiceByNoSumFooter> listSumFooter = new ArrayList<>();
         PrintInvoiceByNoSumFooter sumFooter = new PrintInvoiceByNoSumFooter();
         PrintInvoiceByNoRes result = new PrintInvoiceByNoRes();
@@ -246,11 +316,26 @@ public class InvoiceService {
         return result;
     }
     //--
-    public InvoiceRes v_popupPerInVoice(){
+    public InvoiceRes v_popupPerInVoice(InvoiceDetailReq invoiceDetailReq){
+        log.info("toKen=======================:"+invoiceDetailReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(invoiceDetailReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        invoiceDetailReq.setUserId(userId);
+        invoiceDetailReq.setBranch(userBranchNo);
+        //====================================================================
+
         InvoiceRes result = new InvoiceRes();
         List<Invoice> resdata = new ArrayList<>();
         try {
-            resdata = invoiceDao.List_v_popupPerInVoice();
+            resdata = invoiceDao.List_v_popupPerInVoice(invoiceDetailReq);
             result.setMessage("success");
             result.setStatus("00");
             result.setData(resdata);

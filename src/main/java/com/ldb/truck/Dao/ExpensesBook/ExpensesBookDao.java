@@ -116,12 +116,10 @@ public class ExpensesBookDao implements ExpensesBookImDao{
             else if (incomePayReq.getStartDate() == null && incomePayReq.getEndDate()== null && !incomePayReq.getStatus().equals("0")){
                 SQL = "select * from V_EXPENSES where STATUS='"+incomePayReq.getStatus()+"' AND BRANCH = '"+incomePayReq.getBranch()+"'";
                 log.info( "Q4"+SQL);
-
             }
              else if (incomePayReq.getStartDate() == null && incomePayReq.getEndDate()== null && incomePayReq.getStatus().equals("0")){
                  SQL = "select * from V_EXPENSES  where BRANCH = '"+incomePayReq.getBranch()+"'";
                  log.info( "Q5"+SQL);
-
              }
             result = EBankJdbcTemplate.query(SQL,new ExpensesBookMapper());
         }catch (Exception e){
@@ -132,19 +130,20 @@ public class ExpensesBookDao implements ExpensesBookImDao{
     @Override
     public int storeExpenses(ExpensesBookReq expensesBookReq) {
         try{
-            SQL="insert into EXPENSE (EXPNAME,EXPENSESTYPE,PERAMOUNT,TOTAL,AMOUNT,EXPDATE,C_DATE,REF_NO,STATUS,userId)" +
-                    " values(?,?,?,?,?,?,now(),?,?,?)";
+            SQL="insert into EXPENSE (EXPENSESTYPE,EXPNAME,TOTAL,AMOUNT,EXPDATE,C_DATE,PERAMOUNT,REF_NO,STATUS,userId) values(?,?,?,?,?,now(),?,?,?,?)";
+            log.info( "sql_store:"+SQL);
             List<Object> paraList = new ArrayList<>();
-            paraList.add(expensesBookReq.getExPName());
             paraList.add(expensesBookReq.getExPType());
-            paraList.add(expensesBookReq.getPerAmount());
+            paraList.add(expensesBookReq.getExPName());
             paraList.add(expensesBookReq.getToTal());
             paraList.add(expensesBookReq.getAmount());
             paraList.add(expensesBookReq.getExpDate());
 //            paraList.add(expensesBookReq.getCDate());
+            paraList.add(expensesBookReq.getPerAmount());
             paraList.add(expensesBookReq.getRef_NO());
             paraList.add(expensesBookReq.getStatus());
             paraList.add(expensesBookReq.getUserId());
+//            paraList.add(expensesBookReq.getCurrency());
 
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){
@@ -168,6 +167,7 @@ public class ExpensesBookDao implements ExpensesBookImDao{
             paraList.add(expensesBookReq.getRef_NO());
             paraList.add(expensesBookReq.getStatus());
             paraList.add(expensesBookReq.getUserId());
+//            paraList.add(expensesBookReq.getCurrency());
             paraList.add(expensesBookReq.getKey_id());
             return EBankJdbcTemplate.update(SQL,paraList.toArray());
         }catch (Exception e){

@@ -12,4 +12,7 @@ import lombok.Setter;
 public class ReportHeaderReq {
     private  String startDate;
     private String endDate;
+    private String toKen;
+    private String userId;
+    private String branch;
 }

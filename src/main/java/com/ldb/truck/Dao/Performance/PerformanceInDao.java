@@ -3,6 +3,7 @@ import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Performance.*;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
@@ -17,10 +18,10 @@ public interface PerformanceInDao {
     public int updateDetailsAmount(PerformanceReq performanceReq);
     public int updateStaffNum01(PerformanceReq performanceReq);
     public int updateStaffNum02(PerformanceReq performanceReq);
-    List<v_performance> v_popupPerformance();
-    List<ReportAll> viewPopup();
+
+    List<ReportAll> viewPopup(PerformanceReq performanceReq);
     public int storePerformanceHis(PerformanceReq performanceReq);
-    public List<generateKeyID> genKeyID();
+    public List<generateKeyID> genKeyID(TogenTheCodeReq togenTheCodeReq);
     public int updateDetailsFooter(PerformanceReq performanceReq);
     public int updateDetailsHeader(PerformanceReq performanceReq);
     List<getBillNo> getBillNo(getBillNoReg getBillNoReg);
@@ -34,7 +35,9 @@ public interface PerformanceInDao {
 
     List<performance_SmallHeaderGruop> groupSmallGroup(PerformanceReq performanceReq);
 
-    List<v_performance> ListV_performance();
+    List<v_performance> ListV_performance(PerformanceReq performanceReq);
+
+    List<v_performance> v_popupPerformance(PerformanceReq performanceReq);
 
     List<v_performance> ListV_performancebyBillNo(PerformanceReq performanceReq);
 }

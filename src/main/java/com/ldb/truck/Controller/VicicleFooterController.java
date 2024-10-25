@@ -30,10 +30,10 @@ public class VicicleFooterController {
     private MediaUploadService mediaUploadService;
     @CrossOrigin(origins = "*")
     @PostMapping("/listViciclefooter.service")
-    public VicicleFooterRes listVicicleHeader(){
+    public VicicleFooterRes listVicicleHeader(@RequestBody VicicleFooterReq vicicleFooterReq){
         VicicleFooterRes result = new VicicleFooterRes();
         try {
-            result = vicicleFooterService.listViciclefooter();
+            result = vicicleFooterService.listViciclefooter(vicicleFooterReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -44,10 +44,10 @@ public class VicicleFooterController {
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/listViciclefooterCombo1.service")
-    public VicicleFooterRes listVicicleHeaderFooterBox1(){
+    public VicicleFooterRes listVicicleHeaderFooterBox1(@RequestBody VicicleFooterReq vicicleFooterReq){
         VicicleFooterRes result = new VicicleFooterRes();
         try {
-            result = vicicleFooterService.listViciclefootercombox1();
+            result = vicicleFooterService.listViciclefootercombox1(vicicleFooterReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");
@@ -78,6 +78,7 @@ public class VicicleFooterController {
                                       @RequestParam("f_YEAR") String f_YEAR,
                                       @RequestParam("f_DATEEXPRIED") String f_DATEEXPRIED,
                                       @RequestParam("f_CARD_NO") String f_CARD_NO,
+                                      @RequestParam("toKen") String toKen,
                                       @RequestParam("f_LEKKUNZEE") String f_LEKKUNZEE,
                                       @RequestParam("f_PAO") String f_PAO,
                                       @RequestParam("f_KORKC") String f_KORKC ,
@@ -182,6 +183,7 @@ public class VicicleFooterController {
             data.setF_CAR_TYPE(f_CAR_TYPE);
             data.setF_DATEEXPRIED(f_DATEEXPRIED);
             data.setF_CARD_NO(f_CARD_NO );
+            data.setToKen(toKen);
             data.setF_LEKKUNZEE(f_LEKKUNZEE  );
             data.setF_PAO(f_PAO   );
             data.setF_KORKC(f_KORKC );
@@ -305,6 +307,7 @@ public class VicicleFooterController {
     @PostMapping("/updateVicicleFooter.service")
     public Messages updateVicicleHeader( @RequestParam("f_BRANCH") String f_BRANCH,
                                         @RequestParam("f_YEAR") String f_YEAR,
+                                        @RequestParam("toKen") String toKen,
                                         @RequestParam("f_DATEEXPRIED") String f_DATEEXPRIED,
                                         @RequestParam("f_CARD_NO") String f_CARD_NO,
                                         @RequestParam("f_LEKKUNZEE") String f_LEKKUNZEE,
@@ -410,6 +413,7 @@ public class VicicleFooterController {
             VicicleFooterReq data = new VicicleFooterReq();
             data.setF_BRANCH  ( f_BRANCH);
             data.setF_YEAR ( f_YEAR  );
+            data.setToKen ( toKen  );
             data.setF_CAR_TYPE  ( f_CAR_TYPE);
             data.setF_DATEEXPRIED  ( f_DATEEXPRIED);
             data.setF_CARD_NO  ( f_CARD_NO );

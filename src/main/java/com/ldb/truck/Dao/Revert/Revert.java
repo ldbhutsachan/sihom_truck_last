@@ -1,29 +1,22 @@
 package com.ldb.truck.Dao.Revert;
 
-import com.ldb.truck.Dao.OweDao.OweDao;
 import com.ldb.truck.Model.Login.Details.Details;
-import com.ldb.truck.Model.Login.Details.DetailsRes;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
-import com.ldb.truck.Model.Login.Payment.Invoice;
 import com.ldb.truck.Model.Login.Payment.InvoiceDetail;
 import com.ldb.truck.Model.Login.Payment.InvoiceDetailReq;
-import com.ldb.truck.Model.Login.Payment.InvoiceReq;
 import com.ldb.truck.Model.Login.Performance.*;
-import com.ldb.truck.Model.Login.RevertModel.PerformanceModelRes;
 import com.ldb.truck.RowMapper.Payment.InvoiceMapper;
+import com.ldb.truck.RowMapper.WastedValue.WastedValueMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import com.ldb.truck.RowMapper.DetailsMapper.DetailsMapper;
 import com.ldb.truck.RowMapper.Revert.ReverPerFormanceMapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,7 +150,7 @@ public class Revert implements RevertDao{
                         "SAINUMMUN=?,  \n" +
                         "NUMNUKLOD=?,  \n" +
                         "KONGNARLOD=?,  \n" +
-                        "KHG_MUE_TIDLOD=?,PRICE=?,TOTAL_PRICE=?,PRIECENUMNUN=?,KIM_KILO=?,CURRENCY=?,STAFF_BIALIENG_CUR=? where LAHUD_POYLOD=?";
+                        "KHG_MUE_TIDLOD=?,PRICE=?,TOTAL_PRICE=?,PRIECENUMNUN=?,KIM_KILO=?,CURRENCY=?,STAFF_BIALIENG_CUR=?,userId=? where LAHUD_POYLOD=?";
                 log.info("sql:"+sql);
                 List<Object> paramList = new ArrayList<Object>();
                 paramList.add(detailsReq.getCUSTOMER_ID());
@@ -185,7 +178,9 @@ public class Revert implements RevertDao{
                 paramList.add(detailsReq.getKim_KILO());
                 paramList.add(detailsReq.getCurrency());
                 paramList.add(detailsReq.getStaff_Curr());
+                paramList.add(detailsReq.getUserId());
                 paramList.add(detailsReq.getLaHud_poyLod());
+
                 return EBankJdbcTemplate.update(sql, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -222,13 +217,29 @@ public class Revert implements RevertDao{
     public List<Performance> showPerformanceByNo(PerformanceReq vPerformanceReq) {
         List<Performance> result = new ArrayList<>();
         try{
-            sql="select * from V_PRINT_BILL_PROFORMANCE where LAHUD_POYLOD like '"+vPerformanceReq.getPerformanceBillNo()+"' OR KEY_ID like '"+vPerformanceReq.getPerformanceBillNo()+"' order by key_id asc";
+//            sql="select * from V_PRINT_BILL_PROFORMANCE where LAHUD_POYLOD like '"+vPerformanceReq.getPerformanceBillNo()+"' OR KEY_ID like '"+vPerformanceReq.getPerformanceBillNo()+"' order by key_id asc";
+            sql="select * from V_PRINT_BILL_PROFORMANCE a inner join LOGIN b ON a.userId=b.KEY_ID where b.BRANCH='"+vPerformanceReq.getBranch()+"' AND LAHUD_POYLOD = '"+vPerformanceReq.getLahudBaiPoy()+"' OR  a.KEY_ID2='"+vPerformanceReq.getPerformanceBillNo()+"' order by a.performanceNo asc";
             result = EBankJdbcTemplate.query(sql,new ReverPerFormanceMapper());
         }catch (Exception e){
             e.printStackTrace();
         }
         return result;
     }
+
+    // wates value begin
+    @Override
+    public List<Performance> showWastedValueDao(WastedValueReqq wastedValueReqq) {
+        List<Performance> result = new ArrayList<>();
+        try{
+            sql="SELECT a.feeOvertime1,a.feeJumPo2,a.feePolish3,a.feeTaxung4,a.feeTiew5,a.feeLakSao,a.feePassport,a.feevacin,a.feesing,a.feesaphan,a.feeyoktu,a.feecontrainer,a.feepayang,a.KIM_KILO,a.LAIYATHANG,a.LAIYATHANG_SUM FROM TB_DETAILS a inner join LOGIN b on a.userId =b.KEY_ID WHERE a.LAHUD_POYLOD ='"+wastedValueReqq.getLahudBaiPoy()+"' AND b.BRANCH ='"+wastedValueReqq.getBranch()+"'";
+            log.info("sql:"+sql);
+            result = EBankJdbcTemplate.query(sql,new WastedValueMapper());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+    // wates value end
     @Override
     public int updatePerformanceStatusByNo(PerformanceReq vPerformanceReq) {
         try{
@@ -238,41 +249,56 @@ public class Revert implements RevertDao{
             e.printStackTrace();
         }
         return 0;
-        ///
     }
     @Override
     public int updatePerformanceAllTxn(PerformanceReq performanceReq) {
         log.info("key:"+performanceReq.getKey_id());
         v_performance data = new v_performance();
         try{
-            sql="update TB_PERFORMANCE set performanceReDate=?,performanceTotal=?,\n" +
-                    "performanceOvertime=?,performanceJumPho=?,performanceFeePolish=?,performanceFeeTaxung=?,\n" +
-                    "performanceFeeTiew=?,performanceOverVN=?,performanceBoderLak20=?,performancePassport=?,\n" +
-                    "performanceVaccine=?,performanceFeeSing=?,performanceFeeSaPhan=?,performanceFeeYoktu=?,\n" +
-                    "performanceFeeOutContainer=?,feeUnit=?,feeTotal=?,PERFORMANCEFE_PAYANG=?,PRODUCT_SIZE=?,PRODUCT_AMOUNT=?,PRODUCT_TOTALAMOUNT=?  where key_id='"+performanceReq.getKey_id()+"' OR  performanceBillNo='"+performanceReq.getPerformanceBillNo()+"'";
+//            sql="update TB_PERFORMANCE set performanceReDate=?,performanceTotal=?,\n" +
+//                    "performanceOvertime=?,performanceJumPho=?,performanceFeePolish=?,performanceFeeTaxung=?,\n" +
+//                    "performanceFeeTiew=?,performanceOverVN=?,performanceBoderLak20=?,performancePassport=?,\n" +
+//                    "performanceVaccine=?,performanceFeeSing=?,performanceFeeSaPhan=?,performanceFeeYoktu=?,\n" +
+//                    "performanceFeeOutContainer=?,feeUnit=?,feeTotal=?,PERFORMANCEFE_PAYANG=?,PRODUCT_SIZE=?,PRODUCT_AMOUNT=?,PRODUCT_TOTALAMOUNT=?,userId=?  where key_id='"+performanceReq.getKey_id()+"' OR  performanceBillNo='"+performanceReq.getPerformanceBillNo()+"'";
+            sql="update TB_DETAILS set add_feeOvertime1=?,add_feeJumPo2=?,add_feePolish3=?,add_feeTaxung4=?,add_feeTiew5=?,add_feesing=?,add_feesaphan=?,add_feeyoktu=?,add_feecontrainer=?,add_feepayang=?,userId=?  where key_id='"+performanceReq.getKey_id()+"'";
             log.info("sql:"+sql);
             List<String> paramList = new ArrayList<>();
-            paramList.add(performanceReq.getPerformanceReDate());
-            paramList.add(performanceReq.getPerformanceTotal());
-            paramList.add(performanceReq.getPerformanceOvertime());
-            paramList.add(performanceReq.getPerformanceJumPho());
-            paramList.add(performanceReq.getPerformanceFeePolish());
-            paramList.add(performanceReq.getPerformanceFeeTaxung());
-            paramList.add(performanceReq.getPerformanceFeeTiew());
-            paramList.add(performanceReq.getPerformanceOverVN());
-            paramList.add(performanceReq.getPerformanceBoderLak20());
-            paramList.add(performanceReq.getPerformancePassport());
-            paramList.add(performanceReq.getPerformanceVaccine());
-            paramList.add(performanceReq.getPerformanceFeeSing());
-            paramList.add(performanceReq.getPerformanceFeeSaPhan());
-            paramList.add(performanceReq.getPerformanceFeeYoktu());
-            paramList.add(performanceReq.getPerformanceFeeOutContainer());
-            paramList.add(performanceReq.getFeeUnit());
-            paramList.add(performanceReq.getFeeTotal());
-            paramList.add(performanceReq.getPer_PA());
-            paramList.add(performanceReq.getProSize());
-            paramList.add(performanceReq.getProAmount());
-            paramList.add(performanceReq.getTotal_PRICE());
+//          ================================= new add =================================================
+            paramList.add(performanceReq.getAdd_feeOvertime1());
+            paramList.add(performanceReq.getAdd_feeJumPo2());
+            paramList.add(performanceReq.getAdd_feePolish3());
+            paramList.add(performanceReq.getAdd_feeTaxung4());
+            paramList.add(performanceReq.getAdd_feeTiew5());
+            paramList.add(performanceReq.getAdd_feesing());
+            paramList.add(performanceReq.getAdd_feesaphan());
+            paramList.add(performanceReq.getAdd_feeyoktu());
+            paramList.add(performanceReq.getAdd_feecontrainer());
+            paramList.add(performanceReq.getAdd_feepayang());
+            paramList.add(performanceReq.getUserId());
+//          ================================= new add =================================================
+//            paramList.add(performanceReq.getPerformanceReDate());
+//            paramList.add(performanceReq.getPerformanceTotal());
+//            paramList.add(performanceReq.getPerformanceOvertime());
+//            paramList.add(performanceReq.getPerformanceJumPho());
+//            paramList.add(performanceReq.getPerformanceFeePolish());
+//            paramList.add(performanceReq.getPerformanceFeeTaxung());
+//            paramList.add(performanceReq.getPerformanceFeeTiew());
+//            paramList.add(performanceReq.getPerformanceOverVN());
+//            paramList.add(performanceReq.getPerformanceBoderLak20());
+//            paramList.add(performanceReq.getPerformancePassport());
+//            paramList.add(performanceReq.getPerformanceVaccine());
+//            paramList.add(performanceReq.getPerformanceFeeSing());
+//            paramList.add(performanceReq.getPerformanceFeeSaPhan());
+//            paramList.add(performanceReq.getPerformanceFeeYoktu());
+//            paramList.add(performanceReq.getPerformanceFeeOutContainer());
+//            paramList.add(performanceReq.getFeeUnit());
+//            paramList.add(performanceReq.getFeeTotal());
+//            paramList.add(performanceReq.getPer_PA());
+//            paramList.add(performanceReq.getProSize());
+//            paramList.add(performanceReq.getProAmount());
+//            paramList.add(performanceReq.getTotal_PRICE());
+//            paramList.add(performanceReq.getUserId());
+
             return EBankJdbcTemplate.update(sql,paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -288,7 +314,7 @@ public class Revert implements RevertDao{
                     "performanceOvertime=?,performanceJumPho=?,performanceFeePolish=?,performanceFeeTaxung=?,\n" +
                     "performanceFeeTiew=?,performanceOverVN=?,performanceBoderLak20=?,performancePassport=?,\n" +
                     "performanceVaccine=?,performanceFeeSing=?,performanceFeeSaPhan=?,performanceFeeYoktu=?,\n" +
-                    "performanceFeeOutContainer=?,feeUnit=?,feeTotal=?,PERFORMANCEFE_PAYANG=? ,PRODUCT_SIZE=?,PRODUCT_AMOUNT=?,PRODUCT_TOTALAMOUNT=?,CURRENCY=? where key_id='"+performanceReq.getKey_id()+"' OR  performanceBillNo='"+performanceReq.getPerformanceBillNo()+"'";
+                    "performanceFeeOutContainer=?,feeUnit=?,feeTotal=?,PERFORMANCEFE_PAYANG=? ,PRODUCT_SIZE=?,PRODUCT_AMOUNT=?,PRODUCT_TOTALAMOUNT=?,CURRENCY=?,userId=? where key_id='"+performanceReq.getKey_id()+"' OR  performanceBillNo='"+performanceReq.getPerformanceBillNo()+"'";
             log.info("sql:"+sql);
             List<String> paramList = new ArrayList<>();
 
@@ -314,6 +340,7 @@ public class Revert implements RevertDao{
             paramList.add(performanceReq.getTotal_PRICE());
             paramList.add(performanceReq.getTotal_PRICE());
             paramList.add(performanceReq.getCurrency());
+            paramList.add(performanceReq.getUserId());
 
             return EBankJdbcTemplate.update(sql,paramList.toArray());
         }catch (Exception e){
