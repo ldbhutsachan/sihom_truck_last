@@ -1188,7 +1188,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
             paramList.add(purchaseOrderReq.getStatusStock());
             EBankJdbcTemplate.update(sql, paramList.toArray());
 
-            String sqlUpdate = "update OFFER_PAPER set statusPO = 'YES' where offer_CODE = '"+purchaseOrderReq.getOffer_CODE()+"'";
+            String sqlUpdate = "update OFFER_PAPER set statusPO = 'YES' ,Real_totalMoney = Real_totalMoney - '"+purchaseOrderReq.getPaid()+"' where offer_CODE = '"+purchaseOrderReq.getOffer_CODE()+"'";
             paramList.add(purchaseOrderReq.getStatusPO());
             log.info("SQL:"+sqlUpdate);
             EBankJdbcTemplate.update(sqlUpdate, paramList.toArray());

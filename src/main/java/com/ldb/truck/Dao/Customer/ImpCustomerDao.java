@@ -616,9 +616,10 @@ public int paymentStaff(StaffPaymentReq staffPaymentReq) {
 //    insert totoalprice to table
 public int insertTotalprice (FuelStationReq fuelStationReq) {
     try{
-        String SQL = "insert into SPEND_OILS (TOTAL_PRICE,DATECREATE,userId)values (?,now(),'"+fuelStationReq.getUserId()+"')";
+        String SQL = "insert into SPEND_OILS (TOTAL_PRICE,DATECREATE,userId)values (?,?,'"+fuelStationReq.getUserId()+"')";
         List<Object> paramList = new ArrayList<Object>();
         paramList.add(fuelStationReq.getTotalPriceOil());
+        paramList.add(fuelStationReq.getDatecreate());
         paramList.add(fuelStationReq.getUserId());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){

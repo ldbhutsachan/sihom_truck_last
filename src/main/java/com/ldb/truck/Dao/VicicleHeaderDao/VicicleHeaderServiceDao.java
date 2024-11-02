@@ -9,6 +9,11 @@ import com.ldb.truck.Model.Login.Report.ReportHeader;
 import com.ldb.truck.Model.Login.Report.ReportHeaderReq;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeader;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
+import com.ldb.truck.Service.GenTransectionID.TransactionIDGenerator;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,17 +34,21 @@ import com.twilio.converter.Promoter;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
-
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
 import java.net.URI;
 import java.math.BigDecimal;
 
 @Component
 @Repository
 public class VicicleHeaderServiceDao implements VicicleHeaderDao {
+    TransactionIDGenerator transactionIDGenerator;
     private static final Logger log = LogManager.getLogger(VicicleHeaderServiceDao.class);
     @Autowired
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
+
     @Override
     public List<VicicleHeader> listVicicleHeader(VicicleHeaderReq vicicleHeaderReq) {
         try{
@@ -173,10 +182,15 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
     // list car office
     @Override
     public List<CarOfficeModel> listCarOfficeDAOs (CarOfficeReq carOfficeReq) {
+        String transactionID = transactionIDGenerator.generateTransactionID();
+        log.info("=======================TransactionID=======================:"+transactionID);
         try{
+
             String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' ORDER BY arange ASC ";
             log.info("SQL"+SQL);
+//            new adapt
             return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
+                @SneakyThrows
                 @Override
                 public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
                     CarOfficeModel tr = new CarOfficeModel();
@@ -240,6 +254,44 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setDateChangeLeean(rs.getString("date_change_lean"));
                     tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
 
+
+                    // Check the condition for sending SMS
+                    if ("E".equals(rs.getString("technic_check_STATUS"))) {
+                        // ====================================================================== SMS =============================================
+                        ArrayList<String> phoneNumbers = new ArrayList<>();
+                        phoneNumbers.add("8562092607628");
+//            phoneNumbers.add("8562092661111");
+//            phoneNumbers.add("8562092607630");
+//            phoneNumbers.add("8562092607631");
+//            phoneNumbers.add("8562092607632");
+//            phoneNumbers.add("8562092607633");
+//            phoneNumbers.add("8562092607634");
+//            phoneNumbers.add("8562092607635");
+
+                        String baseJsonBody = "{\n" +
+                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                                "  \"header\": \"Khounkham\",\n" +
+                                "  \"phoneNumber\": \"8562092607628\",\n" +
+                                "  \"message\": \"ໃບກວດກາເຕັກນິກໃກ້ຈະໝົດອາຍຸແລ້ວ\"\n" +
+                                "}";
+                        for (String phoneNumber : phoneNumbers) {
+                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+
+                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                                    .header("Content-Type", "application/json")
+                                    .body(jsonBody)
+                                    .asJson();
+                            // Handle the response for each SMS
+                            if (response.getStatus() == 200) {
+                                log.info("SMS sent to " + phoneNumber + " successfully!");
+                            } else {
+                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+                            }
+                        }
+                        // ================================================================================================================================
+                    }
                     return tr ;
                 }
             });
