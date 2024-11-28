@@ -11,6 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class sumFooterGroupOfferReportCurrency {
     private String sumMoneyCurrencyTHB;
-    private String sumMoneycurrencyUSD;
+    private String thb;
     private String sumMoneycurrencyLAK;
+    private String lak;
+    private String sumMoneycurrencyUSD;
+    private String usd;
 }

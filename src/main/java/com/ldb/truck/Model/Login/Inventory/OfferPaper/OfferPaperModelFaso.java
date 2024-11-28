@@ -32,6 +32,7 @@ public class OfferPaperModelFaso {
     private String img1,img2,img3,img4,img5,img6,img7,img8,img9;
     private String item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9;
     private Double real_totalMoney;
+    private Double moneyCreditWithRate;
     private Double real_totalMoneyCredit;
     private String item_id,item_id1,item_id2,item_id3,item_id4,item_id5,item_id6,item_id7,item_id8,item_id9;
     private String size,brand,ber,size1,brand1,ber1,size2,brand2,ber2,size3,brand3,ber3,size4,brand4,ber4,size5,brand5,ber5,size6,brand6,ber6,size7,brand7,ber7,size8,brand8,ber8,size9,brand9,ber9;

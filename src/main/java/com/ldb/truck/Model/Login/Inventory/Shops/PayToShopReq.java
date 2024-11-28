@@ -20,4 +20,6 @@ public class PayToShopReq {
     private String moneyRate;
     private String offer_CODE;
     private String datePay;
+    private String realTotalMoney;
+    private String cur;
 }

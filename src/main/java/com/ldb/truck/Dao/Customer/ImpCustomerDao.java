@@ -616,9 +616,10 @@ public int paymentStaff(StaffPaymentReq staffPaymentReq) {
 //    insert totoalprice to table
 public int insertTotalprice (FuelStationReq fuelStationReq) {
     try{
-        String SQL = "insert into SPEND_OILS (TOTAL_PRICE,DATECREATE,userId)values (?,now(),'"+fuelStationReq.getUserId()+"')";
+        String SQL = "insert into SPEND_OILS (TOTAL_PRICE,DATECREATE,userId)values (?,?,'"+fuelStationReq.getUserId()+"')";
         List<Object> paramList = new ArrayList<Object>();
         paramList.add(fuelStationReq.getTotalPriceOil());
+        paramList.add(fuelStationReq.getDatecreate());
         paramList.add(fuelStationReq.getUserId());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
@@ -747,7 +748,8 @@ public int insertTotalprice (FuelStationReq fuelStationReq) {
         try {
 //            String SQL = "SELECT  KEY_ID , STAFT_ID , STAFT_NAME , STAFT_SURNAME , ID_CARD , LICENCE_ID , VERIFY_BY , " +
 //                    "LICENCE_ID_EXP , VILLAGE , DISTRICT , PROVINCE , MOBILE1 , MOBILE2, GENDER , GENDER_STATUS , GENDER_STATUS ,DATE_INSERT, USERID,IMAGE_STAFF   FROM STAFF WHERE OUT_STATUS = 'N'  and STATUS='A'";
-            String SQL = "SELECT * FROM STAFF s INNER JOIN LOGIN l ON s.saveById=l.KEY_ID WHERE s.OUT_STATUS = 'N'  and s.STATUS='A' and BRANCH='"+stafReq.getBranch()+"'";
+            String SQL = "SELECT * FROM STAFF s INNER JOIN LOGIN l ON s.saveById=l.KEY_ID WHERE s.STATUS='A' and BRANCH='"+stafReq.getBranch()+"'";
+//            เอาออก 5/11/2024  s.OUT_STATUS = 'N'  and
             System.out.println("show SQL:"+SQL);
             result = EBankJdbcTemplate.query(SQL , new getAllStaftMapper());
         }catch (Exception e){

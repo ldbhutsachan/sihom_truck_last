@@ -1,8 +1,11 @@
 package com.ldb.truck.Controller;
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Model.Login.CarOffice.CarOfficeReq;
+import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilReq;
+import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilRes;
 import com.ldb.truck.Model.Login.Inventory.Fix.FixReportRes;
 import com.ldb.truck.Model.Login.Inventory.Fix.FixReq;
+import com.ldb.truck.Model.Login.Inventory.Fix.FixReqListProve.ShowFixRequest;
 import com.ldb.truck.Model.Login.Inventory.Fix.FixRes;
 import com.ldb.truck.Model.Login.Inventory.Fix.ShowFix;
 import com.ldb.truck.Model.Login.Inventory.Items.ItemHisReq;
@@ -83,6 +86,37 @@ public ShopRes InsertShops (@RequestBody ShopReq shopReq ){
     }
     return result;
 }
+//fill oill insert
+@CrossOrigin(origins = "*")
+@PostMapping("/InsertOil.service")
+public FillOilRes InsertOil (@RequestBody FillOilReq fillOilReq ){
+    FillOilRes result = new FillOilRes();
+    try {
+        result = inventoryService.InsertOil(fillOilReq);
+
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+//show oill fill his
+@CrossOrigin(origins = "*")
+@PostMapping("/ListHisFillOill.service")
+public FillOilRes ListHisFillOill(@RequestBody FillOilReq fillOilReq ){
+    FillOilRes result = new FillOilRes();
+    try {
+        result = inventoryService.ListOilFillService(fillOilReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
 // offer paper
 @CrossOrigin(origins = "*")
 @PostMapping("/saveofferpaper.service")
@@ -116,6 +150,53 @@ public OfferpaperRes offerpaper (@RequestBody OfferPaperReq offerPaperReq ){
     }
         return result;
     }
+//    approve fix
+@CrossOrigin(origins = "*")
+@PostMapping("/approvefix.service")
+public FixRes approvefixRes (@RequestBody FixReq fixReq){
+    FixRes result = new FixRes();
+    try {
+        result = inventoryService.approveFixService(fixReq);
+    }
+    catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+//proof fix
+@CrossOrigin(origins = "*")
+@PostMapping("/proofFixReq.service")
+public FixRes proofFixReq (@RequestBody FixReq fixReq){
+    FixRes result = new FixRes();
+    try {
+        result = inventoryService.proofFixReqService(fixReq);
+    }
+    catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+//show req fix
+@CrossOrigin(origins = "*")
+@PostMapping("/showListofFixReq.service")
+public ShowFixRequest showListofFixReq(@RequestBody FixReq fixReq){
+    ShowFixRequest result = new ShowFixRequest();
+    try {
+        result = inventoryService.showListofFixReqService(fixReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
     // Purchase Order
     @CrossOrigin(origins = "*")
     @PostMapping("/SavePurchaseOrder.service")
@@ -259,6 +340,48 @@ public ReportShowOfferPaper reportShowofferpaperCurrencyUSD(@RequestBody OfferPa
     }
     return result;
 }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/CurrencyUSDinKip.service")
+    public ReportShowOfferPaper CurrencyUSDinKip(@RequestBody OfferPaperReq offerPaperReq){
+        ReportShowOfferPaper result = new ReportShowOfferPaper();
+        try {
+            result = inventoryService.CurrencyUSDinKip(offerPaperReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/CurrencyTHBinKip.service")
+    public ReportShowOfferPaper CurrencyTHBinKip(@RequestBody OfferPaperReq offerPaperReq){
+        ReportShowOfferPaper result = new ReportShowOfferPaper();
+        try {
+            result = inventoryService.CurrencyTHBinKip(offerPaperReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/CurrencyLAKinKip.service")
+    public ReportShowOfferPaper CurrencyLAKinKip(@RequestBody OfferPaperReq offerPaperReq){
+        ReportShowOfferPaper result = new ReportShowOfferPaper();
+        try {
+            result = inventoryService.CurrencyLAKinKip(offerPaperReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
     @CrossOrigin(origins = "*")
     @PostMapping("/reportShowofferpaperCurrencyTHB.service")
     public ReportShowOfferPaper reportShowofferpaperCurrencyTHB(@RequestBody OfferPaperReq offerPaperReq){
@@ -446,6 +569,22 @@ public ShopRes DelShop (@RequestBody ShopReq shopReq) {
     ShopRes result = new ShopRes();
     try {
         result = inventoryService.DelShops(shopReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+//delete his fill oill
+@CrossOrigin(origins = "*")
+@PostMapping("/DelHisOil.service")
+public FillOilRes DelHisOil (@RequestBody FillOilReq fillOilReq) {
+
+    FillOilRes result = new FillOilRes();
+    try {
+        result = inventoryService.DelFillOilHis(fillOilReq);
     }catch (Exception e){
         e.printStackTrace();
         result.setStatus("01");

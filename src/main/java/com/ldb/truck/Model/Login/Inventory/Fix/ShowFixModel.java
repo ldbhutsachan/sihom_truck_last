@@ -24,5 +24,4 @@ public class ShowFixModel {
     private  String detail_A_lai;
     private  String img;
     private  Double finalTotalPrice;
-
 }

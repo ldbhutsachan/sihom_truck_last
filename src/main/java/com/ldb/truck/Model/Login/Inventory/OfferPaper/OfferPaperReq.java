@@ -58,6 +58,7 @@ public class OfferPaperReq {
     private String statusPO;
     private String currency;
     private String moneyRate;
+    private String statusCredit;
 
     private String item_id1;
     private String item_id2;

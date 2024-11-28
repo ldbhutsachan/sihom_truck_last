@@ -1013,7 +1013,8 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
     @Override
     public List<VicicleFooter> ListVicicleFooterCombo1(VicicleFooterReq vicicleFooterReq) {
         try {
-            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b ON a.userId=b.KEY_ID  WHERE F_STATUS='Y' AND b.BRANCH='"+vicicleFooterReq.getBranch()+"'";
+            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b ON a.userId=b.KEY_ID  WHERE b.BRANCH='"+vicicleFooterReq.getBranch()+"'";
+//            เอาออก 5/11/2024   F_STATUS='Y' AND
             return EBankJdbcTemplate.query(sql, new RowMapper<VicicleFooter>() {
                 @Override
                 public VicicleFooter mapRow(ResultSet rs, int rowNum) throws SQLException {

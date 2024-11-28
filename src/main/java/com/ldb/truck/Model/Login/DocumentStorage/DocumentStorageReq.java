@@ -18,6 +18,7 @@ public class DocumentStorageReq {
     private String branch;
     private String userId;
     private String toKen;
+    private String folderName;
     private String inboundnumber;
     private String outboundnumber;
     private String dateExpDoc;

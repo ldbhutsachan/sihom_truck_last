@@ -10,6 +10,10 @@ import com.ldb.truck.Model.Login.Report.ReportHeader;
 import com.ldb.truck.Model.Login.Report.ReportHeaderReq;
 import com.ldb.truck.Model.Login.Report.ReportHeaderRes;
 import com.ldb.truck.Model.Login.staft.stafReq;
+import com.ldb.truck.Service.GenTransectionID.TransactionIDGenerator;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +35,7 @@ import java.util.Optional;
 public class VicicleHeaderService  {
     @Autowired
     ProfileDao profileDao;
+    TransactionIDGenerator transactionIDGenerator;
     private static final Logger log = LogManager.getLogger(VicicleHeaderService.class);
     @Autowired private VicicleHeaderDao vicicleHeaderDao;
     public VicicleHeaderRes listVicicleHeader (VicicleHeaderReq vicicleHeaderReq){
@@ -161,7 +166,44 @@ public class VicicleHeaderService  {
         //====================================================================
         List<CarOfficeModel> CarOfficeModel = new ArrayList<>();
         CarOfficeRes result = new CarOfficeRes();
+//        String transactionID = transactionIDGenerator.generateTransactionID();
+//        log.info("=======================TransactionID=======================:"+transactionID);
         try {
+//======================================================================SMS============================================
+//            ArrayList<String> phoneNumbers = new ArrayList<>();
+//            phoneNumbers.add("8562092607628");
+////            phoneNumbers.add("8562092661111");
+////            phoneNumbers.add("8562092607630");
+////            phoneNumbers.add("8562092607631");
+////            phoneNumbers.add("8562092607632");
+////            phoneNumbers.add("8562092607633");
+////            phoneNumbers.add("8562092607634");
+////            phoneNumbers.add("8562092607635");
+//
+//            String baseJsonBody = "{\n" +
+//                    "  \"transaction_id\": \"" + transactionID + "\",\n" +
+//                    "  \"header\": \"Khounkham\",\n" +
+//                    "  \"phoneNumber\": \"8562092607628\",\n" +
+//                    "  \"message\": \"pida test SMS\"\n" +
+//                    "}";
+//            for (String phoneNumber : phoneNumbers) {
+//                String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+//                        "\"phoneNumber\": \"" + phoneNumber + "\"");
+//
+//                HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+//                        .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+//                        .header("Content-Type", "application/json")
+//                        .body(jsonBody)
+//                        .asJson();
+//
+//                // Handle the response for each SMS
+//                if (response.getStatus() == 200) {
+//                    log.info("SMS sent to " + phoneNumber + " successfully!");
+//                } else {
+//                    System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+//                }
+//            }
+//======================================================================================================================================================
             CarOfficeModel = vicicleHeaderDao.listCarOfficeDAOs(carOfficeReq);
             if(CarOfficeModel.size() < 1 ){
                 result.setMessage("have No List of Car yet");

@@ -9,6 +9,11 @@ import com.ldb.truck.Model.Login.Report.ReportHeader;
 import com.ldb.truck.Model.Login.Report.ReportHeaderReq;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeader;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
+import com.ldb.truck.Service.GenTransectionID.TransactionIDGenerator;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,17 +34,21 @@ import com.twilio.converter.Promoter;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 
-
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
 import java.net.URI;
 import java.math.BigDecimal;
 
 @Component
 @Repository
 public class VicicleHeaderServiceDao implements VicicleHeaderDao {
+    TransactionIDGenerator transactionIDGenerator;
     private static final Logger log = LogManager.getLogger(VicicleHeaderServiceDao.class);
     @Autowired
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
+
     @Override
     public List<VicicleHeader> listVicicleHeader(VicicleHeaderReq vicicleHeaderReq) {
         try{
@@ -172,11 +181,125 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
     }
     // list car office
     @Override
-    public List<CarOfficeModel> listCarOfficeDAOs (CarOfficeReq carOfficeReq) {
-        try{
-            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' ORDER BY arange ASC ";
-            log.info("SQL"+SQL);
+//    public List<CarOfficeModel> listCarOfficeDAOs (CarOfficeReq carOfficeReq) {
+//        String transactionID = transactionIDGenerator.generateTransactionID();
+//        log.info("=======================TransactionID=======================:"+transactionID);
+//        try{
+//
+//            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' ORDER BY arange ASC ";
+//            log.info("SQL"+SQL);
+////            new adapt
+//            return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
+//                @SneakyThrows
+//                @Override
+//                public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                    CarOfficeModel tr = new CarOfficeModel();
+//                    tr.setKEY_ID(rs.getString("KEY_ID"));
+//                    tr.setImg(rs.getString("img"));
+//                    tr.setLicense_plate(rs.getString("license_plate"));
+//                    tr.setBattery_code_name(rs.getString("battery_code_name"));
+//                    tr.setLicense_plate_end(rs.getString("license_plate_end"));
+//                    tr.setLicense_plate_start(rs.getString("license_plate_start"));
+//                    tr.setCar_year(rs.getString("car_year"));
+//                    tr.setCar_type(rs.getString("car_type"));
+//                    tr.setCar_brand(rs.getString("car_brand"));
+//                    tr.setLekJuk(rs.getString("lekJuk"));
+//                    tr.setLekThung(rs.getString("lekThung"));
+//                    tr.setCarColor(rs.getString("carColor"));
+//                    tr.setFont_light(rs.getString("font_light"));
+//                    tr.setBack_light(rs.getString("back_light"));
+//                    tr.setMillor_back(rs.getString("millor_back"));
+//                    tr.setMillor_side(rs.getString("millor_side"));
+//                    tr.setCar_mileage_now(rs.getString("car_mileage_now"));
+//                    tr.setCc(rs.getString("cc"));
+//                    tr.setLeanGia(rs.getString("leanGia"));
+//                    tr.setInsurance_Lao(rs.getString("insurance_Lao"));
+//                    tr.setInsurance_viet(rs.getString("insurance_viet"));
+//                    tr.setInsurance_thai(rs.getString("insurance_thai"));
+//                    tr.setInsurance_Lao_expireDate(rs.getString("insurance_Lao_expireDate"));
+//                    tr.setInsurance_viet_expireDate(rs.getString("insurance_viet_expireDate"));
+//                    tr.setInsurance_thai_expireDate(rs.getString("insurance_thai_expireDate"));
+//                    tr.setTechnic_check_dateStart(rs.getString("technic_check_dateStart"));
+//                    tr.setTechnic_check_dateEnd(rs.getString("technic_check_dateEnd"));
+//                    tr.setTotal_weigh_car(rs.getString("total_weigh_car"));
+//                    tr.setOil(rs.getString("oil"));
+//                    tr.setCar_model(rs.getString("car_model"));
+//                    tr.setOwner_car(rs.getString("owner_car"));
+//                    tr.setSteering_wheel(rs.getString("steering_wheel"));
+//                    tr.setDao(rs.getString("dao"));
+//                    tr.setWide(rs.getString("wide"));
+//                    tr.setLongg(rs.getString("longg"));
+//                    tr.setTall(rs.getString("tall"));
+//                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+//                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+//                    tr.setSerial_wheel_left_font(rs.getString("serial_wheel_left_font"));
+//                    tr.setSerial_wheel_left_back(rs.getString("serial_wheel_left_back"));
+//                    tr.setSerial_wheel_right_font(rs.getString("serial_wheel_right_font"));
+//                    tr.setSerial_wheel_right_back(rs.getString("serial_wheel_right_back"));
+//                    tr.setLICENSE_STATUS(rs.getString("LICENSE_STATUS"));
+//                    tr.setInsurance_Lao_STATUS(rs.getString("insurance_Lao_STATUS"));
+//                    tr.setInsurance_thai_STATUS(rs.getString("insurance_thai_STATUS"));
+//                    tr.setInsurance_viet_STATUS(rs.getString("insurance_viet_STATUS"));
+//                    tr.setTechnic_check_STATUS(rs.getString("technic_check_STATUS"));
+//                    tr.setLean_STATUS(rs.getString("LEAN_STATUS"));
+//                    tr.setLean(rs.getString("lean"));
+//                    tr.setLean_gia_STATUS(rs.getString("LEAN_GIA_STATUS"));
+//                    tr.setTungsitnumber(rs.getString("tungsitnumber"));
+//                    tr.setTungsitDateExpire(rs.getString("tungsitDateExpire"));
+//                    tr.setTUNGSIT_STATUS(rs.getString("TUNGSIT_STATUS"));
+//                    tr.setLekmai_next(rs.getString("lekmai_next"));
+//                    tr.setSerial_tire_second(rs.getString("serial_tire_second"));
+//                    tr.setLean_engine_date_next_status(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"));
+//                    tr.setLekmai_next_status(rs.getString("LEKMAI_NEXT_STATUS"));
+//                    tr.setDateChangeLeean(rs.getString("date_change_lean"));
+//                    tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
+//
+//                    // Check the condition for sending SMS
+//                    if ("E".equals(rs.getString("technic_check_STATUS"))) {
+//                        // ====================================================================== SMS =============================================
+//                        ArrayList<String> phoneNumbers = new ArrayList<>();
+//                        phoneNumbers.add("8562092607628");
+//                        String baseJsonBody = "{\n" +
+//                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+//                                "  \"header\": \"Khounkham\",\n" +
+//                                "  \"phoneNumber\": \"8562092607628\",\n" +
+//                                "  \"message\": \"ໃບກວດກາເຕັກນິກໃກ້ຈະໝົດອາຍຸແລ້ວ\"\n"
+//                                "}";
+//                        for (String phoneNumber : phoneNumbers) {
+//                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+//                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+//
+//                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+//                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+//                                    .header("Content-Type", "application/json")
+//                                    .body(jsonBody)
+//                                    .asJson();
+//                            // Handle the response for each SMS
+//                            if (response.getStatus() == 200) {
+//                                log.info("SMS sent to " + phoneNumber + " successfully!");
+//                            } else {
+//                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+//                            }
+//                        }
+//                        // ================================================================================================================================
+//                    }
+//                    return tr ;
+//                }
+//            });
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+    public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq) {
+
+        try {
+
+            String SQL = "SELECT * FROM V_OFFIE_CAR_STATUS a JOIN LOGIN c ON a.userId = c.KEY_ID WHERE c.BRANCH='" + carOfficeReq.getBranch() + "' ORDER BY arange ASC";
+            log.info("SQL: " + SQL);
+
             return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
+                @SneakyThrows
                 @Override
                 public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
                     CarOfficeModel tr = new CarOfficeModel();
@@ -240,14 +363,271 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setDateChangeLeean(rs.getString("date_change_lean"));
                     tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
 
-                    return tr ;
+                    // ใบกวดกาเตักนิก
+                    String transactionID = transactionIDGenerator.generateTransactionID();
+                    log.info("=======================TransactionID=======================:" + transactionID);
+                    if ("E".equals(rs.getString("technic_check_STATUS"))) {
+                        ArrayList<String> phoneNumbers = new ArrayList<>();
+                        phoneNumbers.add("8562092607628");
+
+                        // Prepare the message body with relevant fields
+                        String messageBody1 = String.format(
+                                "ລົດ :%s\n",tr.getCar_brand() +
+                                        "ທະບຽນ: %s\n", tr.getLicense_plate() +
+                                        "ໃບກວດກາເຕັກນິກ ໃກ້ຈະໝົດອາຍໃນວັນທີຸ່: %s",tr.getTechnic_check_dateEnd()
+                        );
+
+                        // Create JSON body for SMS request
+                        String baseJsonBody = "{\n" +
+                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                                "  \"header\": \"Khounkham\",\n" +
+                                "  \"phoneNumber\": \"8562092607628\",\n" +
+                                "  \"message\": \"" + messageBody1 + "\"\n" +
+                                "}";
+
+                        for (String phoneNumber : phoneNumbers) {
+                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+
+                            // Send the SMS request
+                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                                    .header("Content-Type", "application/json")
+                                    .body(jsonBody)
+                                    .asJson();
+
+                            // Handle the response for each SMS
+                            if (response.getStatus() == 200) {
+                                log.info("SMS sent to " + phoneNumber + " successfully!");
+                            } else {
+                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+                            }
+                        }
+                    }
+                    //  2
+                    else if ("E".equals(rs.getString("LICENSE_STATUS"))) {
+                        ArrayList<String> phoneNumbers = new ArrayList<>();
+                        phoneNumbers.add("8562092607628");
+                        // Prepare the message body with relevant fields
+                        String messageBody = String.format(
+                                "ລົດ :%s\n",tr.getCar_brand() +
+                                        "ທະບຽນ: %s\n", tr.getLicense_plate() +
+                                        "ໃບທະບຽນລົດໃກ້ຈະໝົດອາຍໃນວັນທີຸ: %s" ,tr.getLicense_plate_end()
+                        );
+                        // Create JSON body for SMS request
+                        String baseJsonBody = "{\n" +
+                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                                "  \"header\": \"Khounkham\",\n" +
+                                "  \"phoneNumber\": \"8562092607628\",\n" +
+                                "  \"message\": \"" + messageBody + "\"\n" +
+                                "}";
+
+                        for (String phoneNumber : phoneNumbers) {
+                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+
+                            // Send the SMS request
+                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                                    .header("Content-Type", "application/json")
+                                    .body(jsonBody)
+                                    .asJson();
+
+                            // Handle the response for each SMS
+                            if (response.getStatus() == 200) {
+                                log.info("SMS sent to " + phoneNumber + " successfully!");
+                            } else {
+                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+                            }
+                        }
+                    }
+                    // 3
+                    else if ("E".equals(rs.getString("insurance_Lao_STATUS"))) {
+                        ArrayList<String> phoneNumbers = new ArrayList<>();
+                        phoneNumbers.add("8562092607628");
+
+                        // Prepare the message body with relevant fields
+                        String messageBody = String.format(
+                                "ລົດ :%s\n",tr.getCar_brand() +
+                                        "ທະບຽນ: %s\n", tr.getLicense_plate() +
+                                        "ປະກັນໄພລາວໃກ້ຈະໝົດອາຍຸໃນວັນທີ່: %s",tr.getInsurance_Lao_expireDate()
+                        );
+                        String baseJsonBody = "{\n" +
+                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                                "  \"header\": \"Khounkham\",\n" +
+                                "  \"phoneNumber\": \"8562092607628\",\n" +
+                                "  \"message\": \"" + messageBody + "\"\n" +
+                                "}";
+                        for (String phoneNumber : phoneNumbers) {
+                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+                            // Send the SMS request
+                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                                    .header("Content-Type", "application/json")
+                                    .body(jsonBody)
+                                    .asJson();
+                            // Handle the response for each SMS
+                            if (response.getStatus() == 200) {
+                                log.info("SMS sent to " + phoneNumber + " successfully!");
+                            } else {
+                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+                            }
+                        }
+                    }
+                    // 4
+                    else if ("E".equals(rs.getString("insurance_thai_STATUS"))) {
+                        ArrayList<String> phoneNumbers = new ArrayList<>();
+                        phoneNumbers.add("8562092607628");
+                        // Prepare the message body with relevant fields
+                        String messageBody = String.format(
+                                "ລົດ :%s\n",tr.getCar_brand() +
+                                        "ທະບຽນ: %s\n", tr.getLicense_plate() +
+                                        "ປະກັນໄພໄທໃກ້ຈະໝົດອາຍໃນວັນທີຸ່: %s",tr.getInsurance_thai_expireDate()
+                        );
+                        // Create JSON body for SMS request
+                        String baseJsonBody = "{\n" +
+                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                                "  \"header\": \"Khounkham\",\n" +
+                                "  \"phoneNumber\": \"8562092607628\",\n" +
+                                "  \"message\": \"" + messageBody + "\"\n" +
+                                "}";
+                        for (String phoneNumber : phoneNumbers) {
+                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+                            // Send the SMS request
+                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                                    .header("Content-Type", "application/json")
+                                    .body(jsonBody)
+                                    .asJson();
+                            // Handle the response for each SMS
+                            if (response.getStatus() == 200) {
+                                log.info("SMS sent to " + phoneNumber + " successfully!");
+                            } else {
+                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+                            }
+                        }
+                    }
+                    // 5
+                    else if ("E".equals(rs.getString("insurance_viet_STATUS"))) {
+                        ArrayList<String> phoneNumbers = new ArrayList<>();
+                        phoneNumbers.add("8562092607628");
+
+                        String messageBody = String.format(
+                                "ລົດ :%s\n",tr.getCar_brand() +
+                                        "ທະບຽນ: %s\n", tr.getLicense_plate() +
+                                        "ປະກັນໄພຫວຽດໃກ້ຈະໝົດອາຍຸໃນວັນທີ: %s",tr.getInsurance_viet_expireDate()
+                        );
+                        // Create JSON body for SMS request
+                        String baseJsonBody = "{\n" +
+                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                                "  \"header\": \"Khounkham\",\n" +
+                                "  \"phoneNumber\": \"8562092607628\",\n" +
+                                "  \"message\": \"" + messageBody + "\"\n" +
+                                "}";
+                        for (String phoneNumber : phoneNumbers) {
+                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+
+                            // Send the SMS request
+                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                                    .header("Content-Type", "application/json")
+                                    .body(jsonBody)
+                                    .asJson();
+
+                            // Handle the response for each SMS
+                            if (response.getStatus() == 200) {
+                                log.info("SMS sent to " + phoneNumber + " successfully!");
+                            } else {
+                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+                            }
+                        }
+                    }
+                    // 6
+                    else if ("E".equals(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"))) {
+                        ArrayList<String> phoneNumbers = new ArrayList<>();
+                        phoneNumbers.add("8562092607628");
+                        // Prepare the message body with relevant fields
+                        String messageBody = String.format(
+                                "ລົດ :%s\n",tr.getCar_brand() +
+                                        "ທະບຽນ: %s\n", tr.getLicense_plate() +
+                                        "ໃກ້ຈະຮອດວັນທີກຳນົດປ່ຽນນ້ຳມັນເຄື່ອງໃນວັນທີ່: %s",tr.getDateChangeLeeanNext()
+                        );
+                        // Create JSON body for SMS request
+                        String baseJsonBody = "{\n" +
+                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                                "  \"header\": \"Khounkham\",\n" +
+                                "  \"phoneNumber\": \"8562092607628\",\n" +
+                                "  \"message\": \"" + messageBody + "\"\n" +
+                                "}";
+
+                        for (String phoneNumber : phoneNumbers) {
+                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+
+                            // Send the SMS request
+                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                                    .header("Content-Type", "application/json")
+                                    .body(jsonBody)
+                                    .asJson();
+
+                            // Handle the response for each SMS
+                            if (response.getStatus() == 200) {
+                                log.info("SMS sent to " + phoneNumber + " successfully!");
+                            } else {
+                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+                            }
+                        }
+                    }
+                    // 7
+                    else if ("E".equals(rs.getString("TUNGSIT_STATUS()")) ) {
+                        ArrayList<String> phoneNumbers = new ArrayList<>();
+                        phoneNumbers.add("8562092607628");
+
+                        // Prepare the message body with relevant fields
+                        String messageBody = String.format(
+                                "ລົດ :%s\n",tr.getCar_brand() +
+                                        "ທະບຽນ: %s\n", tr.getLicense_plate() +
+                                        "ຕັງຊິດໃກ້ຈະໝົດອາຍຸໃນວັນທີ່: %s",tr.getTungsitDateExpire()
+                        );
+                        // Create JSON body for SMS request
+                        String baseJsonBody = "{\n" +
+                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                                "  \"header\": \"Khounkham\",\n" +
+                                "  \"phoneNumber\": \"8562092607628\",\n" +
+                                "  \"message\": \"" + messageBody + "\"\n" +
+                                "}";
+                        for (String phoneNumber : phoneNumbers) {
+                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
+                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
+                            // Send the SMS request
+                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                                    .header("Content-Type", "application/json")
+                                    .body(jsonBody)
+                                    .asJson();
+
+                            // Handle the response for each SMS
+                            if (response.getStatus() == 200) {
+                                log.info("SMS sent to " + phoneNumber + " successfully!");
+                            } else {
+                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+                            }
+                        }
+
+                    }
+                    return tr;
                 }
             });
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
     // list car dao that paid
     @Override
     public List<CarPaidModel> listCarDaoPaid (CarOfficeReq carOfficeReq) {
@@ -1689,9 +2069,10 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
         try{
 //            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID where a.H_STATUS='Y' ";
 //            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
-            String SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
+            String SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
 //            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID  AND (a.batNo2 IS NULL OR a.batNo2 = b.KEY_ID) INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.H_STATUS='Y' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"'";
             log.info("SQL: "+SQL);
+//   เอาออก 5/11/2024         a.H_STATUS='Y' and
             return EBankJdbcTemplate.query(SQL, new RowMapper<VicicleHeader>() {
                 @Override
                 public VicicleHeader mapRow(ResultSet rs, int rowNum) throws SQLException {

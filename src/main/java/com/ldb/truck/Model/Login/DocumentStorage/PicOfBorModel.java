@@ -9,11 +9,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResultOfSurveyModel {
-    private String key_id;
-    private String file;
-    private String type;
-    private String name;
-    private String dateInsert;
-    private String nameDetail;
+public class PicOfBorModel {
+//    private String key_id;
+    private String pic;
+//    private String userId;
+//    private String branch;
+//    private String folderName;
 }
