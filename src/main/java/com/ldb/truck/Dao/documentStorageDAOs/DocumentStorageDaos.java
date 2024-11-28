@@ -65,6 +65,53 @@ public class DocumentStorageDaos implements DocumentInterface{
             return -1;
         }
     }
+//    insert pic of borhin
+//public int InsertMultiPic (DocumentStorageReq documentStorageReq) throws ParseException {
+//    String path="http://khounkham.com/images/car/";
+//    String fileName = documentStorageReq.getPdf();
+//    log.info("path:"+path+fileName);
+//    List<DocumentStorageModel> data = new ArrayList<>();
+//    try{
+//        String SQL = "insert into TB_PICTURE (pic,userId,branch) value(?,'"+documentStorageReq.getBranch()+"','"+documentStorageReq.getBranch()+"')";
+//        log.info("SQL:"+SQL);
+//        List<Object> paramList = new ArrayList<Object>();
+//        paramList.add(path + fileName);
+//        paramList.add(documentStorageReq.getUserId());
+//        paramList.add(documentStorageReq.getBranch());
+//        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+//    }catch (Exception e){
+//        e.printStackTrace();
+//        return -1;
+//    }
+//}
+public int InsertMultiPic(DocumentStorageReq[] documentStorageReqs) throws ParseException {
+    int totalInserted = 0; // Track total inserted records
+
+    String path = "http://khounkham.com/images/car/";
+
+    try {
+        String SQL = "insert into TB_PICTURE (pic,userId,branch) values(?, ?, ?)";
+
+        for (DocumentStorageReq documentStorageReq : documentStorageReqs) {
+            String fileName = documentStorageReq.getPdf();
+            log.info("Processing request for: " + fileName);
+
+            List<Object> paramList = new ArrayList<>();
+            paramList.add(path + fileName);
+            paramList.add(documentStorageReq.getUserId());
+            paramList.add(documentStorageReq.getBranch());
+//            paramList.add(documentStorageReq.getFolderName());
+
+            totalInserted += EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }
+
+        return totalInserted;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return -1;
+    }
+}
 //    dept must received DAOs
 public int DeptMustReceivedInsertDAOs (DeptMustReceivedReq deptMustReceivedReq) throws ParseException {
     String path="http://khounkham.com/images/car/";
@@ -409,12 +456,15 @@ public int InsertResultOfSurveyDAOs (DataHoleReq dataHoleReq) throws ParseExcept
     log.info("path:"+path+fileName);
     List<ResultOfSurveyModel> data = new ArrayList<>();
     try{
-        String SQL = "insert into RESULT_SURVEY (files,type,branch_of_bor) value(?,?,'"+dataHoleReq.getBranch()+"')";
+        String SQL = "insert into RESULT_SURVEY (files,type,branch_of_bor,name,dateInsert,nameDetail) value(?,?,'"+dataHoleReq.getBranch()+"',?,?,?)";
         log.info("SQL:"+SQL);
         List<Object> paramList = new ArrayList<Object>();
         paramList.add(path + fileName);
         paramList.add(dataHoleReq.getType());
 //        paramList.add(dataHoleReq.getBranch_Of_Bor());
+        paramList.add(dataHoleReq.getName());
+        paramList.add(dataHoleReq.getDateInsert());
+        paramList.add(dataHoleReq.getNameDetail());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
         e.printStackTrace();
@@ -847,6 +897,33 @@ public List<ResultOfSurveyModel> AllResultOfSurveyDAOs (DataHoleReq dataHoleReq)
                 tr.setKey_id(rs.getString("KEY_ID"));
                 tr.setFile(rs.getString("files"));
                 tr.setType(rs.getString("type"));
+                tr.setName(rs.getString("name"));
+                tr.setDateInsert(rs.getString("dateInsert"));
+                tr.setNameDetail(rs.getString("nameDetail"));
+                return tr ;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
+//show pic of bor
+public List<PicOfBorModel> PicOfSurveyDAOs (DataHoleReq dataHoleReq) {
+    String sql;
+    try{
+
+        sql = "select * from TB_PICTURE where branch='"+dataHoleReq.getBranch()+"'";
+        return EBankJdbcTemplate.query(sql, new RowMapper<PicOfBorModel>() {
+            @Override
+            public PicOfBorModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                PicOfBorModel tr = new PicOfBorModel();
+//                tr.setKey_id(rs.getString("KEY_ID"));
+                tr.setPic(rs.getString("pic"));
+//                tr.setUserId(rs.getString("userId"));
+//                tr.setBranch(rs.getString("branch"));
+//                tr.setFolderName(rs.getString("folderName"));
+
                 return tr ;
             }
         });
@@ -867,6 +944,8 @@ public List<ResultOfSurveyModel> AllResultOfSurveyByIdDAOs (DataHoleReq dataHole
                 tr.setKey_id(rs.getString("KEY_ID"));
                 tr.setFile(rs.getString("files"));
                 tr.setType(rs.getString("type"));
+                tr.setName(rs.getString("name"));
+                tr.setDateInsert(rs.getString("dateInsert"));
                 return tr ;
             }
         });

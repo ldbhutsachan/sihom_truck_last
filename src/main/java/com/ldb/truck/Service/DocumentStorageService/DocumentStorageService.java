@@ -70,6 +70,39 @@ public class DocumentStorageService{
         }
         return message;
     }
+//    insert pic of bor service
+public Messages InsertPicOfBor(DocumentStorageReq[] documentStorageReq) {
+    Messages message = new Messages();
+    try {
+        // Assume documentStorageReq[0] contains the correct data
+        String toKen = documentStorageReq[0].getToKen();
+        log.info("toKen=======================:" + toKen);
+
+        // Get User info based on the token
+        List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
+        log.info("UserNo:" + userIn.get(0).getUserId());
+        log.info("BranchNo:" + userIn.get(0).getBranchNo());
+
+        // Set user data
+        documentStorageReq[0].setUserId(userIn.get(0).getUserId());
+        documentStorageReq[0].setBranch(userIn.get(0).getBranchNo());
+
+        int i = documentStorageDaos.InsertMultiPic(documentStorageReq); // Insert into database
+        if (i == 0) {
+            message.setStatus("01");
+            message.setMessage("Can not Store pic");
+        } else {
+            message.setStatus("00");
+            message.setMessage("Store Pic Successful");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        message.setStatus("01");
+        message.setMessage("Can not Store");
+    }
+    return message;
+}
+
 //    dept must received service
     public Messages DeptMustReceivedInsertServiece (DeptMustReceivedReq deptMustReceivedReq){
         log.info("toKen=======================:"+deptMustReceivedReq.getToKen());
@@ -758,6 +791,38 @@ public ResultOfSurveyRes AllResultOfSurveyService (@RequestBody DataHoleReq data
     ResultOfSurveyRes result = new ResultOfSurveyRes();
     try {
         Data = documentStorageDaos.AllResultOfSurveyDAOs(dataHoleReq);
+        result.setMessage("Success");
+        result.setStatus("00");
+        result.setData(Data);
+        return result;
+//            }
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setMessage("data not found");
+        result.setStatus("01");
+        return result;
+    }
+}
+// show pic of br
+public PicOfBorhinRes ShowPicOfBorService (@RequestBody DataHoleReq dataHoleReq){
+    log.info("toKen=======================:"+dataHoleReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(dataHoleReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    dataHoleReq.setUserId(userId);
+    dataHoleReq.setBranch(userBranchNo);
+    //====================================================================
+    List<PicOfBorModel> Data = new ArrayList<>();
+    PicOfBorhinRes result = new PicOfBorhinRes();
+    try {
+        Data = documentStorageDaos.PicOfSurveyDAOs(dataHoleReq);
         result.setMessage("Success");
         result.setStatus("00");
         result.setData(Data);

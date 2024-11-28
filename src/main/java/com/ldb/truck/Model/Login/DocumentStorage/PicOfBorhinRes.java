@@ -5,15 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResultOfSurveyModel {
-    private String key_id;
-    private String file;
-    private String type;
-    private String name;
-    private String dateInsert;
-    private String nameDetail;
-}
+public class PicOfBorhinRes {
+    private String status;
+    private String message;
+    private List<PicOfBorModel> data;}

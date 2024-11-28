@@ -115,6 +115,37 @@ public class DocumentStorageController {
         }
         return  result;
     }
+//    insert pic of borhin
+@CrossOrigin(origins = "*")
+@PostMapping(value = "/StorePicOfBorHin.service", consumes = {"multipart/form-data"})
+public Messages InsertDocument(@RequestParam("files") MultipartFile files, @RequestParam("toKen") String toKen) {
+    log.info("===================================save header==================================================");
+    Messages result = new Messages();
+    try {
+        DocumentStorageReq[] data = new DocumentStorageReq[1]; // Size should be 1
+        data[0] = new DocumentStorageReq(); // Initialize first element
+        data[0].setToKen(toKen); // Set token
+
+        if (files == null) {
+            log.warn("************* file name is null ****************");
+            data[0].setPdf("http://khounkham.com/images/car/image.jpg");
+        } else {
+            String fileName = mediaUploadService.uploadPDF(files); // Single file handling
+            log.info("Uploaded the file successfully: " + fileName);
+            data[0].setPdf(fileName);
+        }
+
+        result = documentStorageService.InsertPicOfBor(data);
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+        return result;
+    }
+    return result;
+}
+
+
 //หนี้ต้องส่ง Dept must received insert
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/DeptMustReceivedInsert.service" , consumes = {"multipart/form-data"})
@@ -523,6 +554,22 @@ public ResultOfSurveyRes ShowAllResultOfServey(@RequestBody DataHoleReq dataHole
     }
     return result;
 }
+//show pic of br
+@CrossOrigin(origins = "*")
+@PostMapping("/ShowPicOfBor.service")
+public PicOfBorhinRes ShowPicOfBor(@RequestBody DataHoleReq dataHoleReq){
+    PicOfBorhinRes result = new PicOfBorhinRes();
+    try {
+        result = documentStorageService.ShowPicOfBorService(dataHoleReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+
 //show result of survey by id
 @CrossOrigin(origins = "*")
 @PostMapping("/ShowResultOfServeyById.service")
@@ -544,7 +591,10 @@ public ResultOfSurveyRes ShowAllResultOfServeyById(@RequestBody DataHoleReq data
 public Messages InsertResultOfSurvey(
         @RequestParam("files") MultipartFile files,
         @RequestParam("type") String  type,
-        @RequestParam("toKen") String  toKen
+        @RequestParam("toKen") String  toKen,
+        @RequestParam("name") String  name,
+        @RequestParam("dateInsert") String  dateInsert,
+        @RequestParam("nameDetail") String  nameDetail
 ){
 
     log.info("===================================save header==================================================");
@@ -556,6 +606,9 @@ public Messages InsertResultOfSurvey(
         DataHoleReq data = new DataHoleReq();
         data.setType(type);
         data.setToKen(toKen);
+        data.setName(name);
+        data.setDateInsert(dateInsert);
+        data.setNameDetail(nameDetail);
 
         log.error("******file lenght"+files);
         log.error(data);

@@ -15,6 +15,7 @@ import java.util.List;
 public class ShowOfferPaper {
     private String status;
     private String message;
+//    private List<OfferPaperModelFaso> dataSum;
     private List<OfferPaperModelFaso> data;
     private sumFooterGroupOfferPaper sumFooter;
     private sumFooterGroupOfferPaper_Paid_Credit sumFooter_Credit;

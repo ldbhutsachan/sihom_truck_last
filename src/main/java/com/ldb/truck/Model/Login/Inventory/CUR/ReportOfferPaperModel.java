@@ -14,5 +14,5 @@ public class ReportOfferPaperModel {
 //    private Float moneyRate;
 //    private Double sumMoneyCurrencyTHB;
     private Double sumMoneycurrencyUSD;
-//    private Double sumMoneycurrencyLAK;
+    private Double totalPriceCur;
 }

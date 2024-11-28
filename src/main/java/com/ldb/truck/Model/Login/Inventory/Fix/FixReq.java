@@ -30,4 +30,7 @@ public class FixReq {
     private String location_fix;
     private String fix_Detail;
     private String item_name;
+    private String key_id;
+    private String status;
+    private String New_status;
 }
