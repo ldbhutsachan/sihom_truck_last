@@ -1,25 +1,18 @@
 package com.ldb.truck.Service.DocumentStorageService;
 
-import com.ldb.truck.Dao.AssetOfficeDAOs.AssetsOfficeDAOs;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.documentStorageDAOs.DocumentStorageDaos;
-import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeModel;
-import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeReq;
-import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeRes;
-import com.ldb.truck.Model.Login.AssetsOffice.sumFooterGroupAsset;
 import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
-import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
-import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeRes;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
+import com.ldb.truck.Model.Login.Task.TaskModel;
+import com.ldb.truck.Model.Login.Task.TaskReq;
+import com.ldb.truck.Model.Login.Task.TaskRes;
 import com.ldb.truck.Service.VicicleHeaderService.VicicleHeaderService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -102,7 +95,58 @@ public Messages InsertPicOfBor(DocumentStorageReq[] documentStorageReq) {
     }
     return message;
 }
+//service task
+public TaskRes InsertTaskService(TaskReq[] taskReq) {
+    TaskRes result = new TaskRes();
+    try {
+        // Assume documentStorageReq[0] contains the correct data
+        String toKen = taskReq[0].getToKen();
+        log.info("toKen=======================:" + toKen);
 
+        // Get User info based on the token
+        List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
+        log.info("UserNo:" + userIn.get(0).getUserId());
+        log.info("BranchNo:" + userIn.get(0).getBranchNo());
+
+        // Set user data
+        taskReq[0].setUserId(userIn.get(0).getUserId());
+        taskReq[0].setBranch(userIn.get(0).getBranchNo());
+
+        int i = documentStorageDaos.InsertTaskDaos(taskReq); // Insert into database
+        if (i == 0) {
+            result.setStatus("01");
+            result.setMessage("Can not Store Task");
+        } else {
+            result.setStatus("00");
+            result.setMessage("Store Task Successful");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Can not Store Task");
+    }
+    return result;
+}
+//update task
+public TaskRes UpdateTaskService (TaskReq[] taskReq) {
+    TaskRes result = new TaskRes();
+    try {
+
+        int i = documentStorageDaos.UpdateTaskDaos(taskReq); // Insert into database
+        if (i == 0) {
+            result.setStatus("01");
+            result.setMessage("Can not Update Task");
+        } else {
+            result.setStatus("00");
+            result.setMessage("Store Update Successful");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Can not Update Task");
+    }
+    return result;
+}
 //    dept must received service
     public Messages DeptMustReceivedInsertServiece (DeptMustReceivedReq deptMustReceivedReq){
         log.info("toKen=======================:"+deptMustReceivedReq.getToKen());
@@ -121,7 +165,11 @@ public Messages InsertPicOfBor(DocumentStorageReq[] documentStorageReq) {
         Messages message = new Messages();
 //        int i = 0;
         try {
-             documentStorageDaos.DeptMustReceivedInsertDAOs(deptMustReceivedReq);
+            if (deptMustReceivedReq.getDocument_1() != null && !deptMustReceivedReq.getDocument_1().isEmpty()) {
+                documentStorageDaos.DeptMustReceivedInsertDAOs(deptMustReceivedReq);
+            }else {
+                documentStorageDaos.DeptMustReceivedInsertDAOsNoDoc(deptMustReceivedReq);
+            }
 //             documentStorageDaos.DeptMustRecievedInsertArray(deptMustReceivedRe);
 //            if(i == 0) {
 //                message.setStatus("01");
@@ -171,7 +219,12 @@ public Messages InvoiceDeptInsertServiece (InvoiceDeptReq invoiceDeptReq ){
     Messages message = new Messages();
 //    int i = 0;
     try {
-         documentStorageDaos.InvoiceDeptInsertDAOs(invoiceDeptReq);
+        if (invoiceDeptReq.getPdfandpic() != null && !invoiceDeptReq.getPdfandpic().isEmpty()) {
+            documentStorageDaos.InvoiceDeptInsertDAOs(invoiceDeptReq);
+        }else
+        {
+            documentStorageDaos.InvoiceDeptInsertDAOsNoPic(invoiceDeptReq);
+        }
 //        if(i == 0) {
 //            message.setStatus("01");
 //            message.setMessage("Can not Store");
@@ -803,6 +856,45 @@ public ResultOfSurveyRes AllResultOfSurveyService (@RequestBody DataHoleReq data
         return result;
     }
 }
+    //show task service
+    public TaskRes getShowTaskService (TaskReq taskReq){
+        log.info("toKen=======================:"+taskReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(taskReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
+        taskReq.setUserId(userId);
+        taskReq.setBranch(userBranchNo);
+
+        //====================================================================
+        Messages messages = new Messages();
+        TaskRes result = new TaskRes();
+        try{
+
+            List<TaskModel> data = new ArrayList<>();
+            data = documentStorageDaos.AllTaskDAOs(taskReq);
+            if(data.size() > 0){
+                result.setStatus("00");
+                result.setMessage("Done");
+                result.setData(data);
+            }else {
+                result.setStatus("01");
+                result.setMessage("No Data");
+                result.setData(data);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            //result.setData(listData);
+        }
+        return result;
+    }
 // show pic of br
 public PicOfBorhinRes ShowPicOfBorService (@RequestBody DataHoleReq dataHoleReq){
     log.info("toKen=======================:"+dataHoleReq.getToKen());

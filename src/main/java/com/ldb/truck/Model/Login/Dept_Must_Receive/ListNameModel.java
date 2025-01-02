@@ -15,6 +15,7 @@ public class ListNameModel {
     private String quotation_code;
     private String amount;
     private String price;
+    private String unit;
     private Double totalPrice;
     private Double totalPrice1;
 

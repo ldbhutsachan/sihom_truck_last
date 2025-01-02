@@ -230,6 +230,21 @@ public OfferpaperRes SaveOfferPaper(OfferPaperReq offerPaperReq ){
         return result;
     }
 }
+//delete of
+public OfferpaperRes DeleteOfferPaper (OfferPaperReq offerPaperReq ){
+    OfferpaperRes result = new OfferpaperRes();
+    try {
+        inventoryDao.DeleteOfferpaperDaos(offerPaperReq);
+        result.setMessage("Delete Successful");
+        result.setStatus("00");
+        return result;
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setMessage("exeption");
+        result.setStatus("01");
+        return result;
+    }
+}
 //fix service
 public FixRes FixService(FixReq fixReq){
 

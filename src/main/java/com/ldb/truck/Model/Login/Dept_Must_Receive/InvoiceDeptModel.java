@@ -19,4 +19,5 @@ public class InvoiceDeptModel {
     private String quotation_code;
     private String invoice_code;
     private String dept_total;
+    private String unit;
 }

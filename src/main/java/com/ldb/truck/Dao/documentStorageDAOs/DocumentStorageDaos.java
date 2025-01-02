@@ -7,6 +7,8 @@ import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
 import com.ldb.truck.Model.Login.Payment.InvoiceDetailReq;
+import com.ldb.truck.Model.Login.Task.TaskModel;
+import com.ldb.truck.Model.Login.Task.TaskReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +92,7 @@ public int InsertMultiPic(DocumentStorageReq[] documentStorageReqs) throws Parse
     String path = "http://khounkham.com/images/car/";
 
     try {
-        String SQL = "insert into TB_PICTURE (pic,userId,branch) values(?, ?, ?)";
+        String SQL = "insert into TB_PICTURE (pic,userId,branch,folderName,dateCreate,branch_id) values(?, ?, ?, ?, ?, ?)";
 
         for (DocumentStorageReq documentStorageReq : documentStorageReqs) {
             String fileName = documentStorageReq.getPdf();
@@ -100,13 +102,60 @@ public int InsertMultiPic(DocumentStorageReq[] documentStorageReqs) throws Parse
             paramList.add(path + fileName);
             paramList.add(documentStorageReq.getUserId());
             paramList.add(documentStorageReq.getBranch());
-//            paramList.add(documentStorageReq.getFolderName());
+            paramList.add(documentStorageReq.getFolderName());
+            paramList.add(documentStorageReq.getDateCreate());
+            paramList.add(documentStorageReq.getBranch_id());
 
             totalInserted += EBankJdbcTemplate.update(SQL, paramList.toArray());
         }
 
         return totalInserted;
 
+    } catch (Exception e) {
+        e.printStackTrace();
+        return -1;
+    }
+}
+//task dao
+public int InsertTaskDaos(TaskReq[] taskReq1) throws ParseException {
+    int totalInserted = 0; // Track total inserted records
+    try {
+        String SQL = "insert into TB_TASKS (TOPIC_TASK,SUB_TASK,START_DATE,END_DATE,toKen,BRANCH_ID) values(?, ?, ?, ?, ?, ?)";
+        log.info("Script" + SQL);
+
+        for (TaskReq taskReq:taskReq1) {
+            List<Object> paramList = new ArrayList<>();
+            paramList.add(taskReq.getTopic_task());
+            paramList.add(taskReq.getSub_task());
+            paramList.add(taskReq.getStartDate());
+            paramList.add(taskReq.getEndDate());
+            paramList.add(taskReq.getToKen());
+            paramList.add(taskReq.getBranch());
+            totalInserted += EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }
+        return totalInserted;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return -1;
+    }
+}
+//update task DAOs
+public int UpdateTaskDaos (TaskReq[] taskReq1) throws ParseException {
+    int totalInserted = 0; // Track total inserted records
+    try {
+        String SQL = "update TB_TASKS set TOPIC_TASK=?,SUB_TASK=?,START_DATE=?,END_DATE=? where KEY_ID =? ";
+        log.info("Script" + SQL);
+
+        for (TaskReq taskReq:taskReq1) {
+            List<Object> paramList = new ArrayList<>();
+            paramList.add(taskReq.getTopic_task());
+            paramList.add(taskReq.getSub_task());
+            paramList.add(taskReq.getStartDate());
+            paramList.add(taskReq.getEndDate());
+            paramList.add(taskReq.getKey_id());
+            totalInserted += EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }
+        return totalInserted;
     } catch (Exception e) {
         e.printStackTrace();
         return -1;
@@ -158,6 +207,42 @@ public int DeptMustReceivedInsertDAOs (DeptMustReceivedReq deptMustReceivedReq) 
         return -1;
     }
 }
+//insert no pic
+public int DeptMustReceivedInsertDAOsNoDoc (DeptMustReceivedReq deptMustReceivedReq) throws ParseException {
+    String sql ="";
+    List<DocumentStorageModel> data = new ArrayList<>();
+    try{
+        sql = "insert into DEBT_MUST_RECEIVED (CUSTOMER_ID,TOPIC,TYPE_ID,CURRENCY,DATE,DUE_DATE,DATE_CREATE,STATUS_WAIT_APPROVE,REFERENCE_NUMBER,LEK_BAI_SUNG,AMOUNT_MONEY,QUOTATION,DESCRIPTION,NOTE,NUM,UNIT,TOTALMONEY,QUOTATION_CODE,userId,INVOICE_STATUS,ACCOUNT_NUMBER,ACCOUNT_NAME) value(?,?,?,?,?,?,now(),'N','"+deptMustReceivedReq.getReference_number()+"','"+deptMustReceivedReq.getLek_bai_sung()+"','"+deptMustReceivedReq.getAmount_money()+"','"+deptMustReceivedReq.getQuotation()+"','"+deptMustReceivedReq.getDescription()+"','"+deptMustReceivedReq.getNote()+"','"+deptMustReceivedReq.getNum()+"','"+deptMustReceivedReq.getUnit()+"','"+deptMustReceivedReq.getTotalMooney()+"','"+deptMustReceivedReq.getQuotation_code()+"','"+deptMustReceivedReq.getUserId()+"','N','ACCOUNT_NUMBER','ACCOUNT_NAME') ";
+        log.info("SQL:"+sql);
+        List<Object> paramList = new ArrayList<Object>();
+        paramList.add(deptMustReceivedReq.getCustomer_id());
+        paramList.add(deptMustReceivedReq.getTopic());
+        paramList.add(deptMustReceivedReq.getType_id());
+        paramList.add(deptMustReceivedReq.getCurrency());
+        paramList.add(deptMustReceivedReq.getDate());
+        paramList.add(deptMustReceivedReq.getDue_date());
+        paramList.add(deptMustReceivedReq.getDate_create());
+        paramList.add(deptMustReceivedReq.getStatus_wait_approve());
+        paramList.add(deptMustReceivedReq.getReference_number());
+        paramList.add(deptMustReceivedReq.getLek_bai_sung());
+        paramList.add(deptMustReceivedReq.getAmount_money());
+        paramList.add(deptMustReceivedReq.getQuotation());
+        paramList.add(deptMustReceivedReq.getDescription());
+        paramList.add(deptMustReceivedReq.getNote());
+        paramList.add(deptMustReceivedReq.getNum());
+        paramList.add(deptMustReceivedReq.getUnit());
+        paramList.add(deptMustReceivedReq.getTotalMooney());
+        paramList.add(deptMustReceivedReq.getQuotation_code());
+        paramList.add(deptMustReceivedReq.getUserId());
+        paramList.add(deptMustReceivedReq.getInvoice_status());
+        paramList.add(deptMustReceivedReq.getAccount_number());
+        paramList.add(deptMustReceivedReq.getAccount_name());
+        return EBankJdbcTemplate.update(sql, paramList.toArray());
+    }catch (Exception e){
+        e.printStackTrace();
+        return -1;
+    }
+}
 //service array insert
 @Override
 public int DeptMustRecievedInsertArray(List<DeptMustReceivedReq> deptMustReceivedRe) {
@@ -182,6 +267,46 @@ public int DeptMustRecievedInsertArray(List<DeptMustReceivedReq> deptMustReceive
     }
     return -1;
 }
+    public int InvoiceDeptInsertDAOsNoPic (InvoiceDeptReq invoiceDeptReq) throws ParseException {
+//        String path="http://khounkham.com/images/car/";
+//        String fileName = invoiceDeptReq.getPdfandpic();
+//        String d =path + fileName;
+//        log.info("path:"+path+fileName);
+        List<DocumentStorageModel> data = new ArrayList<>();
+        try{
+            String SQL = "insert into INVOICE_DEPT_OUT (date_invoice,detail,GETMONEY_STATUS,AMOUNT_OF_MONEY,userId,quotation_code,INVOICE_CODE) value('"+invoiceDeptReq.getDate_invoice()+"','"+invoiceDeptReq.getDetail()+"','N','"+invoiceDeptReq.getAmount_of_money()+"','"+invoiceDeptReq.getUserId()+"','"+invoiceDeptReq.getQuotation_code()+"','"+invoiceDeptReq.getInvoice_code()+"')";
+            log.info("SQL:"+SQL);
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(invoiceDeptReq.getDate_invoice());
+            paramList.add(invoiceDeptReq.getDetail());
+            paramList.add(invoiceDeptReq.getAmount_of_money());
+            paramList.add(invoiceDeptReq.getUserId());
+            paramList.add(invoiceDeptReq.getQuotation_code());
+            paramList.add(invoiceDeptReq.getInvoice_code());
+            EBankJdbcTemplate.update(SQL, paramList.toArray());
+
+//        inserrt his payment
+            String invoiceHis = "insert into INVOICE_DEPT_HIS (date_invoice,AMOUNT_OF_MONEY,userId,quotation_code,INVOICE_CODE) value('"+invoiceDeptReq.getDate_invoice()+"','"+invoiceDeptReq.getAmount_of_money()+"','"+invoiceDeptReq.getUserId()+"','"+invoiceDeptReq.getQuotation_code()+"','"+invoiceDeptReq.getInvoice_code()+"')";
+            log.info("SQL:"+invoiceHis);
+            paramList.add(invoiceDeptReq.getDate_invoice());
+            paramList.add(invoiceDeptReq.getAmount_of_money());
+            paramList.add(invoiceDeptReq.getUserId());
+            paramList.add(invoiceDeptReq.getQuotation_code());
+            paramList.add(invoiceDeptReq.getInvoice_code());
+            EBankJdbcTemplate.update(invoiceHis, paramList.toArray());
+
+//         update amount - amout
+            String UpdateAmout = "update DEBT_MUST_RECEIVED set TOTALMONEY=TOTALMONEY-'"+invoiceDeptReq.getAmount_of_money()+"' where QUOTATION_CODE ='"+invoiceDeptReq.getQuotation_code()+"'";
+            log.info("SQL_update_DEBT_MUST_RECEIVED:"+UpdateAmout);
+//        paramList.add(invoiceDeptReq.getAmount_of_money());
+            paramList.add(invoiceDeptReq.getQuotation_code());
+            EBankJdbcTemplate.update(UpdateAmout, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+        return 0;
+    }
 //insert invoice dept DAOs
 public int InvoiceDeptInsertDAOs (InvoiceDeptReq invoiceDeptReq) throws ParseException {
     String path="http://khounkham.com/images/car/";
@@ -214,7 +339,7 @@ public int InvoiceDeptInsertDAOs (InvoiceDeptReq invoiceDeptReq) throws ParseExc
 
 //         update amount - amout
         String UpdateAmout = "update DEBT_MUST_RECEIVED set TOTALMONEY=TOTALMONEY-'"+invoiceDeptReq.getAmount_of_money()+"' where QUOTATION_CODE ='"+invoiceDeptReq.getQuotation_code()+"'";
-        log.info("SQL:"+UpdateAmout);
+        log.info("SQL_update_DEBT_MUST_RECEIVED:"+UpdateAmout);
 //        paramList.add(invoiceDeptReq.getAmount_of_money());
         paramList.add(invoiceDeptReq.getQuotation_code());
         EBankJdbcTemplate.update(UpdateAmout, paramList.toArray());
@@ -349,13 +474,14 @@ public int InsertDataHoleDAOs (DataHoleReq dataHoleReq) throws ParseException {
     log.info("path:"+path+fileName);
     List<DataHoleModel> data = new ArrayList<>();
     try{
-        String SQL = "insert into DATA_HOLE (pic,hole_number,data_Coller,userId,full_Name_Hole_number) value(?,?,?,'"+dataHoleReq.getUserId()+"','"+dataHoleReq.getFull_Name_Hole_number()+"')";
+        String SQL = "insert into DATA_HOLE (pic,hole_number,data_Coller,userId,full_Name_Hole_number,branch_id) value(?,?,?,'"+dataHoleReq.getUserId()+"','"+dataHoleReq.getFull_Name_Hole_number()+"','"+dataHoleReq.getBranch_id()+"')";
         log.info("SQL:"+SQL);
         List<Object> paramList = new ArrayList<Object>();
         paramList.add(path + fileName);
         paramList.add(dataHoleReq.getHoleNumber());
         paramList.add(dataHoleReq.getDataColler());
         paramList.add(dataHoleReq.getFull_Name_Hole_number());
+        paramList.add(dataHoleReq.getBranch_id());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
         e.printStackTrace();
@@ -456,7 +582,7 @@ public int InsertResultOfSurveyDAOs (DataHoleReq dataHoleReq) throws ParseExcept
     log.info("path:"+path+fileName);
     List<ResultOfSurveyModel> data = new ArrayList<>();
     try{
-        String SQL = "insert into RESULT_SURVEY (files,type,branch_of_bor,name,dateInsert,nameDetail) value(?,?,'"+dataHoleReq.getBranch()+"',?,?,?)";
+        String SQL = "insert into RESULT_SURVEY (files,type,branch_of_bor,name,dateInsert,nameDetail,branch_id) value(?,?,'"+dataHoleReq.getBranch()+"',?,?,?,?)";
         log.info("SQL:"+SQL);
         List<Object> paramList = new ArrayList<Object>();
         paramList.add(path + fileName);
@@ -465,6 +591,7 @@ public int InsertResultOfSurveyDAOs (DataHoleReq dataHoleReq) throws ParseExcept
         paramList.add(dataHoleReq.getName());
         paramList.add(dataHoleReq.getDateInsert());
         paramList.add(dataHoleReq.getNameDetail());
+        paramList.add(dataHoleReq.getBranch_id());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
         e.printStackTrace();
@@ -626,6 +753,16 @@ public List<InvoiceDeptModel> InvoiceDeptDAOs (DeptMustReceivedReq deptMustRecei
                 log.info("SQL:" + sql);
             }
         }
+
+//        original
+//        if (deptMustReceivedReq.getQuotation_code()!=null){
+//            sql = "select * from V_INVOICE_DEPT_MUST_RECIEVED WHERE QUOTATION_CODE_tba='"+deptMustReceivedReq.getQuotation_code()+"'";
+//            log.info("SQL:" + sql);
+//        }else {
+//            sql = "select * from V_INVOICE_DEPT_MUST_RECIEVED WHERE userId='" + deptMustReceivedReq.getUserId() + "'";
+//            log.info("SQL:" + sql);
+//        }
+//    }
         return EBankJdbcTemplate.query(sql, new RowMapper<InvoiceDeptModel>() {
             @Override
             public InvoiceDeptModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -634,12 +771,13 @@ public List<InvoiceDeptModel> InvoiceDeptDAOs (DeptMustReceivedReq deptMustRecei
                 tr.setDate_invoice(rs.getString("date_invoice"));
                 tr.setPdfandpic(rs.getString("file"));
                 tr.setGetmoney_status(rs.getString("new_GETMONEY_STATUS"));
-                tr.setAmount_of_money(rs.getString("AMOUNT_MONEY"));
+                tr.setAmount_of_money(rs.getString("AMOUNT_OF_MONEY"));
 //                tr.setUserId(rs.getString("userId"));
                 tr.setDetail(rs.getString("detail"));
                 tr.setQuotation_code(rs.getString("quotation_code_tbb"));
                 tr.setInvoice_code(rs.getString("INVOICE_CODE"));
                 tr.setDept_total(rs.getString("AMOUNT_MONEY"));
+                tr.setUnit(rs.getString("UNIT"));
                 return tr ;
             }
         });
@@ -651,7 +789,7 @@ public List<InvoiceDeptModel> InvoiceDeptDAOs (DeptMustReceivedReq deptMustRecei
 //list name daos
 public List<ListNameModel> ListNameDeptDAOs (DeptMustReceivedReq deptMustReceivedReq) {
     try{
-        String sql="SELECT l.KEY_ID,l.listName,l.quotation_code,l.amount,price,l.totalPrice,d.TOTALMONEY FROM TB_LIST_DMRC l join DEBT_MUST_RECEIVED d on l.quotation_code =d.QUOTATION_CODE where l.quotation_code = '"+deptMustReceivedReq.getQuotation_code()+"'";
+        String sql="SELECT d.UNIT,l.KEY_ID,l.listName,l.quotation_code,l.amount,price,l.totalPrice,d.TOTALMONEY FROM TB_LIST_DMRC l join DEBT_MUST_RECEIVED d on l.quotation_code =d.QUOTATION_CODE where l.quotation_code = '"+deptMustReceivedReq.getQuotation_code()+"'";
         return EBankJdbcTemplate.query(sql, new RowMapper<ListNameModel>() {
             @Override
             public ListNameModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -663,6 +801,7 @@ public List<ListNameModel> ListNameDeptDAOs (DeptMustReceivedReq deptMustReceive
                 tr.setPrice(rs.getString("price"));
                 tr.setTotalPrice(rs.getDouble("totalPrice"));
                 tr.setTotalPrice1(rs.getDouble("TOTALMONEY"));
+                tr.setUnit(rs.getString("UNIT"));
                 return tr ;
             }
         });
@@ -867,7 +1006,7 @@ public List<DocumentStorageModel> SearchlistDocDAOs (DocumentStorageReq document
 public List<DataHoleModel> AlllistOfHoleDAOs (DataHoleReq dataHoleReq) {
     String sql;
     try{
-        sql = "select * from DATA_HOLE where userId= '"+dataHoleReq.getUserId()+"'";
+        sql = "select * from DATA_HOLE where branch_id= '"+dataHoleReq.getBranch_id()+"'";
         return EBankJdbcTemplate.query(sql, new RowMapper<DataHoleModel>() {
             @Override
             public DataHoleModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -889,7 +1028,7 @@ public List<DataHoleModel> AlllistOfHoleDAOs (DataHoleReq dataHoleReq) {
 public List<ResultOfSurveyModel> AllResultOfSurveyDAOs (DataHoleReq dataHoleReq) {
     String sql;
     try{
-        sql = "select * from RESULT_SURVEY where branch_of_bor= '"+dataHoleReq.getBranch()+"'";
+        sql = "select * from RESULT_SURVEY where branch_id= '"+dataHoleReq.getBranch_id()+"'";
         return EBankJdbcTemplate.query(sql, new RowMapper<ResultOfSurveyModel>() {
             @Override
             public ResultOfSurveyModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -908,12 +1047,48 @@ public List<ResultOfSurveyModel> AllResultOfSurveyDAOs (DataHoleReq dataHoleReq)
     }
     return null;
 }
+//show task DAOs
+public List<TaskModel> AllTaskDAOs (TaskReq taskReq ) {
+    String sql;
+    try{
+        sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"'";
+        return EBankJdbcTemplate.query(sql, new RowMapper<TaskModel>() {
+            @Override
+            public TaskModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                TaskModel tr = new TaskModel();
+                tr.setKey_id(rs.getString("KEY_ID"));
+                tr.setTopic_task(rs.getString("TOPIC_TASK"));
+                tr.setSub_task(rs.getString("SUB_TASK"));
+                tr.setStartDate(rs.getString("START_DATE"));
+                tr.setEndDate(rs.getString("END_DATE"));
+                tr.setDuration(rs.getString("DURATION"));
+                tr.setBranch_name(rs.getString("B_NAME"));
+                return tr ;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
 //show pic of bor
 public List<PicOfBorModel> PicOfSurveyDAOs (DataHoleReq dataHoleReq) {
     String sql;
     try{
-
-        sql = "select * from TB_PICTURE where branch='"+dataHoleReq.getBranch()+"'";
+        //serch by folder name
+        if (dataHoleReq.getFolderName()==null && dataHoleReq.getStartDate()==null && dataHoleReq.getEndDate()==null )
+        {
+            sql = "select * from TB_PICTURE where branch_id='"+dataHoleReq.getBranch_id()+"'";
+        }
+        else if (dataHoleReq.getFolderName()==null && dataHoleReq.getStartDate()!=null && dataHoleReq.getEndDate()!=null )
+        {
+            sql = "select * from TB_PICTURE where branch_id='"+dataHoleReq.getBranch_id()+"' AND dateCreate between '"+dataHoleReq.getStartDate()+"' AND '"+dataHoleReq.getEndDate()+"' ";
+        }
+        else {
+            sql = "select * from TB_PICTURE where branch_id='"+dataHoleReq.getBranch_id()+"' AND folderName = '"+dataHoleReq.getFolderName()+"' AND dateCreate between '"+dataHoleReq.getStartDate()+"' AND '"+dataHoleReq.getEndDate()+"' ";
+        }
+        log.info("SQL select : "+sql);
+//        sql = "select * from TB_PICTURE where branch='"+dataHoleReq.getBranch()+"'";
         return EBankJdbcTemplate.query(sql, new RowMapper<PicOfBorModel>() {
             @Override
             public PicOfBorModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -922,7 +1097,8 @@ public List<PicOfBorModel> PicOfSurveyDAOs (DataHoleReq dataHoleReq) {
                 tr.setPic(rs.getString("pic"));
 //                tr.setUserId(rs.getString("userId"));
 //                tr.setBranch(rs.getString("branch"));
-//                tr.setFolderName(rs.getString("folderName"));
+                tr.setFolderName(rs.getString("folderName"));
+                tr.setDateCreate(rs.getString("dateCreate"));
 
                 return tr ;
             }

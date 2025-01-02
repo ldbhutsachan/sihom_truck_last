@@ -362,25 +362,28 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setLekmai_next_status(rs.getString("LEKMAI_NEXT_STATUS"));
                     tr.setDateChangeLeean(rs.getString("date_change_lean"));
                     tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
+                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
+                    tr.setLeanGiaNextday(rs.getString("leanGiaNextday"));
 
-                    String phoneNumber = "8562092607628"; // Replace with actual phone number
+                    String phoneNumber = "8562092661111"; // Replace with actual phone number
                     String carInfo = "Car Brand: " + tr.getCar_brand() + ", License Plate: " + tr.getLicense_plate();
 
                     // Send SMS reminders based on status conditions
                     if ("E".equals(rs.getString("technic_check_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "Your car's technical check is expiring soon.");
+                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ໃບກວດກາເຕັກນິກໃກ້ຈະໝົດອາຍຸແລ້ວ.ໃນວັນທີ");
                     } else if ("E".equals(rs.getString("LICENSE_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "Your car's license is expiring soon.");
+                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ໃບທະບຽນລົດໃກ້ຈະໝົດອາຍຸແລ້ວ.");
                     } else if ("E".equals(rs.getString("insurance_Lao_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "Your car's Lao insurance is expiring soon.");
+                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພລາວໃກ້ຈະໝົດອາຍຸແລ້ວ.");
                     } else if ("E".equals(rs.getString("insurance_thai_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "Your car's Thai insurance is expiring soon.");
+                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພໄທໃກ້ຈະໝົດອາຍຸແລ້ວ.");
                     } else if ("E".equals(rs.getString("insurance_viet_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "Your car's Vietnamese insurance is expiring soon.");
+                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພຫວຽດໃກ້ຈະໝົດອາຍຸແລ້ວ.");
                     } else if ("E".equals(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "Your car's engine oil change is due soon.");
-                    } else if ("E".equals(rs.getString("TUNGSIT_STATUS()"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "Your car's alignment and balancing is due soon.");
+                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+" ໃກ້ຈະຄົບກຳນົດວັນທີປ່ຽນນ້ຳມັນເຄື່ອງແລ້ວ.");
+                    } else if ("E".equals(rs.getString("TUNGSIT_STATUS()")))
+                    {
+                        sendSmsReminder(phoneNumber, carInfo, "ເລກຕັງຊິດ"+"ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+" ໃກ້ຈະໝົດອາຍຸແລ້ວ");
                     }
                     return tr;
                 }
@@ -401,27 +404,30 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
 //    }
 private void sendSmsReminder(String phoneNumber, String carInfo, String messageBody) {
     String transactionID = transactionIDGenerator.generateTransactionID(); // Ensure proper resource management in generateTransactionID()
-    String baseJsonBody = "{\n" +
-            "  \"transaction_id\": \"" + transactionID + "\",\n" +
-            "  \"header\": \"Khounkham\",\n" +
-            "  \"phoneNumber\": \"" + phoneNumber + "\",\n" +
-            "  \"message\": \"" + messageBody + "\"\n" +
-            "}";
 
-    try {
-        HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
-                .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
-                .header("Content-Type", "application/json")
-                .body(baseJsonBody)
-                .asJson();
+    for (int i = 0; i < 1; i++) {
+        String baseJsonBody = "{\n" +
+                "  \"transaction_id\": \"" + transactionID + "\",\n" +
+                "  \"header\": \"Khounkham\",\n" +
+                "  \"phoneNumber\": \"" + phoneNumber + "\",\n" +
+                "  \"message\": \"" + messageBody + "\"\n" +
+                "}";
 
-        if (response.getStatus() == 200) {
-            log.info("SMS sent to " + phoneNumber + " successfully!");
-        } else {
-            log.error("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+        try {
+            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
+                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
+                    .header("Content-Type", "application/json")
+                    .body(baseJsonBody)
+                    .asJson();
+
+            if (response.getStatus() == 200) {
+                log.info("SMS sent to " + phoneNumber + " successfully (Attempt " + (i + 1) + ")");
+            } else {
+                log.error("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
+            }
+        } catch (Exception e) {
+            log.error("Error sending SMS reminder:", e);
         }
-    } catch (Exception e) {
-        log.error("Error sending SMS reminder:", e);
     }
 }
 
@@ -521,6 +527,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     tr.setTUNGSIT_STATUS(rs.getString("TUNGSIT_STATUS"));
                     tr.setLekmai_next(rs.getString("lekmai_next"));
                     tr.setSerial_tire_second(rs.getString("serial_tire_second"));
+                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));     //fix 12-12-2024 time 10:32
 
                     return tr ;
                 }
@@ -614,6 +621,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     tr.setLekmai_next_status(rs.getString("LEKMAI_NEXT_STATUS"));
                     tr.setDateChangeLeean(rs.getString("date_change_lean"));
                     tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
+                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));     //fix 12-12-2024 time 10:32
+                    tr.setLeanGiaNextday(rs.getString("leanGiaNextday"));     //fix 12-12-2024 time 10:32
                     return tr ;
                 }
             });
@@ -962,7 +971,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             String SQL = "insert into CARS_OFFICE (img,license_plate,battery_code_name,license_plate_end,license_plate_start," +
                     "car_year,car_type,car_brand,lekJuk,lekThung,carColor,font_light,back_light,millor_back,millor_side,car_mileage_now,cc,leanGia," +
                     "insurance_Lao,insurance_viet,insurance_thai,insurance_Lao_expireDate,insurance_viet_expireDate,insurance_thai_expireDate," +
-                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next,leanFuengThaiy,leanGiaNextday) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(path + fileName);
@@ -1021,6 +1030,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getSerial_tire_second());
             paramList.add(carOfficeReq.getDate_change_lean());
             paramList.add(carOfficeReq.getDate_change_lean_next());
+            paramList.add(carOfficeReq.getLeanFuengThaiy());
+            paramList.add(carOfficeReq.getLeanGiaNextday());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -1060,7 +1071,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
 //        log.info("sqlEndDate:"+sqlEndDate);
         List<VicicleHeader> data = new ArrayList<>();
         try{
-            String SQL = "update CARS_OFFICE set license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,tungsitnumber=?,tungsitDateExpire=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
+            String SQL = "update CARS_OFFICE set license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,tungsitnumber=?,tungsitDateExpire=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=?,leanFuengThaiy=?,leanGiaNextday=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
 //            paramList.add(path + fileName);
@@ -1111,6 +1122,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getSerial_tire_second());
             paramList.add(carOfficeReq.getDate_change_lean());
             paramList.add(carOfficeReq.getDate_change_lean_next());
+            paramList.add(carOfficeReq.getLeanFuengThaiy());
+            paramList.add(carOfficeReq.getLeanGiaNextday());
             paramList.add(carOfficeReq.getKEY_ID());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
@@ -1144,7 +1157,7 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
 //        log.info("sqlEndDate:"+sqlEndDate);
         List<VicicleHeader> data = new ArrayList<>();
         try{
-            String SQL = "update CARS_OFFICE set img=? ,license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
+            String SQL = "update CARS_OFFICE set img=? ,license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=?,leanFuengThaiy=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(path + fileName);
@@ -1194,6 +1207,7 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
             paramList.add(carOfficeReq.getSerial_tire_second());
             paramList.add(carOfficeReq.getDate_change_lean());
             paramList.add(carOfficeReq.getDate_change_lean_next());
+            paramList.add(carOfficeReq.getLeanFuengThaiy());
             paramList.add(carOfficeReq.getKEY_ID());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){

@@ -3,6 +3,7 @@ package com.ldb.truck.Dao.Inventory;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilModel;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilReq;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilRes;
+import com.ldb.truck.Model.Login.DocumentStorage.DataHoleReq;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModel;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModelLAK;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModelTHB;
@@ -172,6 +173,7 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
                     tr.setTimeToPay(rs.getString("timeToPay"));
                     tr.setStatusNy(rs.getString("StatusNy"));
                     tr.setMoneyRate(rs.getFloat("moneyRate"));
+                    tr.setOfferDate(rs.getString("offerDate"));
                     return tr;
                 }
             });
@@ -359,6 +361,20 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
         return -1;
     }
 }
+public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
+        String of = offerPaperReq.getOffer_CODE();
+        String dl = offerPaperReq.getRealKey_id();
+        int i =0;
+        try {
+            String SQL = "delete from OFFER_PAPER where OFFER_CODE = '" + of +"' and KEY_ID = '"+dl+"'";
+            log.info("SQL:"+SQL);
+            i= EBankJdbcTemplate.update(SQL);
+        }catch (Exception e){
+            e.printStackTrace();
+            return i;
+        }
+        return i;
+    }
     // save offer paper DAOs
     public int saveOfferPaperDao(OfferPaperReq offerPaperReq) {
         String totalMoney = offerPaperReq.getTotalMoney().replace(",","");
@@ -1326,6 +1342,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
                 @Override
                 public OfferPaperModelFaso mapRow(ResultSet rs, int rowNum) throws SQLException {
                     OfferPaperModelFaso tr = new OfferPaperModelFaso();
+                    tr.setKey_id(rs.getString("KEY_ID"));
                     tr.setUnit_price(rs.getString("unit_price"));
                     tr.setUnit_price1(rs.getString("unit_price1"));
                     tr.setUnit_price2(rs.getString("unit_price2"));
@@ -1467,6 +1484,7 @@ public List<OfferPaperModelFaso> ToShowofferpaperDAOs (OfferPaperReq offerPaperR
             @Override
             public OfferPaperModelFaso mapRow(ResultSet rs, int rowNum) throws SQLException {
                 OfferPaperModelFaso tr = new OfferPaperModelFaso();
+                tr.setKey_id(rs.getString("KEY_ID"));
                 tr.setUnit_price(rs.getString("unit_price"));
                 tr.setUnit_price1(rs.getString("unit_price1"));
                 tr.setUnit_price2(rs.getString("unit_price2"));

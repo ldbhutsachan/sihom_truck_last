@@ -37,5 +37,6 @@ public interface DocumentInterface {
     public int delBouangDAOs (BouangReq bouangReq);
     public int UpdateDocumentDAOs (DocumentStorageReq documentStorageReq) throws ParseException;
     public List<BouangModel> ListBouangAllDAOSpecial (BouangReq bouangReq);
+    public int DeptMustReceivedInsertDAOsNoDoc (DeptMustReceivedReq deptMustReceivedReq) throws ParseException;
 }
 

@@ -70,5 +70,7 @@ public class CarOfficeModel {
     private String lekmai_next_status;
     private String dateChangeLeean;
     private String dateChangeLeeanNext;
+    private String leanFuengThaiy;
+    private String leanGiaNextday;
 
 }

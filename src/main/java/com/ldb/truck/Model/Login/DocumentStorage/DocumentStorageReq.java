@@ -16,6 +16,7 @@ public class DocumentStorageReq {
     private String docType;
     private String dateCreate;
     private String branch;
+    private String branch_id;
     private String userId;
     private String toKen;
     private String folderName;

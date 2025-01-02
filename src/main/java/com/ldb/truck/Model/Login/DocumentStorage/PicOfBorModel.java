@@ -14,5 +14,6 @@ public class PicOfBorModel {
     private String pic;
 //    private String userId;
 //    private String branch;
-//    private String folderName;
+    private String folderName;
+    private String dateCreate;
 }

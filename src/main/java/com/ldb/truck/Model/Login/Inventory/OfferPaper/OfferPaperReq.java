@@ -11,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class OfferPaperReq {
     private String kEY_ID;
+    private String realKey_id;
     private String item_id;
     private String header_id;
     private String footer_id;

@@ -13,6 +13,8 @@ public class DataHoleReq {
     private String pic;
     private String holeNumber;
     private String folderName;
+    private String endDate;
+    private String startDate;
     private String dataColler;
     private String toKen;
     private String name;
@@ -20,6 +22,7 @@ public class DataHoleReq {
     private String nameDetail;
     private String full_Name_Hole_number;
     private String userId;
+    private String branch_id;
     private String branch;
     private String key_id;
     private String branch_Of_Bor;

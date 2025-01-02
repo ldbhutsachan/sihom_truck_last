@@ -133,6 +133,21 @@ public OfferpaperRes offerpaper (@RequestBody OfferPaperReq offerPaperReq ){
     }
     return result;
 }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/deletefferpaper.service")
+    public OfferpaperRes deletefferpaper (@RequestBody OfferPaperReq offerPaperReq ){
+        OfferpaperRes result = new OfferpaperRes();
+        try {
+            result = inventoryService.DeleteOfferPaper(offerPaperReq);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
 // fix
     @CrossOrigin(origins = "*")
     @PostMapping("/fix.service")
