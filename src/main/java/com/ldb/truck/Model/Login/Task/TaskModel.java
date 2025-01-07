@@ -12,7 +12,7 @@ import lombok.Setter;
 public class TaskModel {
     private String key_id;
     private String topic_task;
-    private String sub_task;
+    private String parent;
     private String startDate;
     private String endDate;
 //    private String branch_id;

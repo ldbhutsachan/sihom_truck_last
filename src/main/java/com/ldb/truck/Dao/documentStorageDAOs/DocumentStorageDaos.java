@@ -120,17 +120,18 @@ public int InsertMultiPic(DocumentStorageReq[] documentStorageReqs) throws Parse
 public int InsertTaskDaos(TaskReq[] taskReq1) throws ParseException {
     int totalInserted = 0; // Track total inserted records
     try {
-        String SQL = "insert into TB_TASKS (TOPIC_TASK,SUB_TASK,START_DATE,END_DATE,toKen,BRANCH_ID) values(?, ?, ?, ?, ?, ?)";
+        String SQL = "insert into TB_TASKS (TOPIC_TASK,SUB_TASK,START_DATE,END_DATE,toKen,BRANCH_ID,PROGRESS) values(?, ?, ?, ?, ?, ?, ?)";
         log.info("Script" + SQL);
 
         for (TaskReq taskReq:taskReq1) {
             List<Object> paramList = new ArrayList<>();
             paramList.add(taskReq.getTopic_task());
-            paramList.add(taskReq.getSub_task());
+            paramList.add(taskReq.getParent());
             paramList.add(taskReq.getStartDate());
             paramList.add(taskReq.getEndDate());
             paramList.add(taskReq.getToKen());
             paramList.add(taskReq.getBranch());
+            paramList.add(taskReq.getProgress());
             totalInserted += EBankJdbcTemplate.update(SQL, paramList.toArray());
         }
         return totalInserted;
@@ -143,15 +144,15 @@ public int InsertTaskDaos(TaskReq[] taskReq1) throws ParseException {
 public int UpdateTaskDaos (TaskReq[] taskReq1) throws ParseException {
     int totalInserted = 0; // Track total inserted records
     try {
-        String SQL = "update TB_TASKS set TOPIC_TASK=?,SUB_TASK=?,START_DATE=?,END_DATE=? where KEY_ID =? ";
+        String SQL = "update TB_TASKS set TOPIC_TASK=?,SUB_TASK=?, PROGRESS=? where KEY_ID =? ";
         log.info("Script" + SQL);
 
         for (TaskReq taskReq:taskReq1) {
             List<Object> paramList = new ArrayList<>();
             paramList.add(taskReq.getTopic_task());
-            paramList.add(taskReq.getSub_task());
-            paramList.add(taskReq.getStartDate());
-            paramList.add(taskReq.getEndDate());
+            paramList.add(taskReq.getParent());
+//            paramList.add(taskReq.getStartDate());
+            paramList.add(taskReq.getProgress());
             paramList.add(taskReq.getKey_id());
             totalInserted += EBankJdbcTemplate.update(SQL, paramList.toArray());
         }
@@ -1058,7 +1059,7 @@ public List<TaskModel> AllTaskDAOs (TaskReq taskReq ) {
                 TaskModel tr = new TaskModel();
                 tr.setKey_id(rs.getString("KEY_ID"));
                 tr.setTopic_task(rs.getString("TOPIC_TASK"));
-                tr.setSub_task(rs.getString("SUB_TASK"));
+                tr.setParent(rs.getString("SUB_TASK"));
                 tr.setStartDate(rs.getString("START_DATE"));
                 tr.setEndDate(rs.getString("END_DATE"));
                 tr.setDuration(rs.getString("DURATION"));

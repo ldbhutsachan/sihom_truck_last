@@ -381,7 +381,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                         sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພຫວຽດໃກ້ຈະໝົດອາຍຸແລ້ວ.");
                     } else if ("E".equals(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"))) {
                         sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+" ໃກ້ຈະຄົບກຳນົດວັນທີປ່ຽນນ້ຳມັນເຄື່ອງແລ້ວ.");
-                    } else if ("E".equals(rs.getString("TUNGSIT_STATUS()")))
+                    } else if ("E".equals(rs.getString("TUNGSIT_STATUS")))
                     {
                         sendSmsReminder(phoneNumber, carInfo, "ເລກຕັງຊິດ"+"ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+" ໃກ້ຈະໝົດອາຍຸແລ້ວ");
                     }
