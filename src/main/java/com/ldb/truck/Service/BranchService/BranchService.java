@@ -7,6 +7,8 @@ import com.ldb.truck.Model.Login.Branch.Branch;
 import com.ldb.truck.Model.Login.Branch.BranchRes;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
+import com.ldb.truck.Model.Login.Task.LinkReq;
+import com.ldb.truck.Model.Login.Task.LinkRes;
 import com.ldb.truck.Model.Login.Task.TaskReq;
 import com.ldb.truck.Model.Login.Task.TaskRes;
 import org.apache.logging.log4j.LogManager;
@@ -204,6 +206,27 @@ public BranchRes DeleteBranch(BrachReq brachReq){
         int i =0;
         try{
             i = implBranchDao.delDataTasks(taskReq);
+            if(i  == 0){
+                result.setStatus("01");
+                result.setMessage("have No Task to delete");
+                return result;
+            }else {
+                result.setStatus("00");
+                result.setMessage("Delete Successful");
+                return result;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+    public LinkRes DeleteLink(LinkReq linkReq){
+        Messages messages = new Messages();
+        LinkRes result = new LinkRes();
+        List<Branch> listData = new ArrayList<>();
+        int i =0;
+        try{
+            i = implBranchDao.delDatalink(linkReq);
             if(i  == 0){
                 result.setStatus("01");
                 result.setMessage("have No Task to delete");

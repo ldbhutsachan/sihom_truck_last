@@ -340,6 +340,7 @@ public Messages saveVicicleHeader(
         @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
         @RequestParam("pha_But") String  pha_But,
         @RequestParam("lektungsit") String  lektungsit,
+        @RequestParam("dateExTungsit") String  dateExTungsit,
         @RequestParam("date_change_lean") String  date_change_lean,
         @RequestParam("toKen") String  toKen
 
@@ -459,6 +460,7 @@ public Messages saveVicicleHeader(
         data.setLeanFuengThaiy(leanFuengThaiy);
         data.setPha_But(pha_But);
         data.setLektungsit(lektungsit);
+        data.setDateExTungsit(dateExTungsit);
         data.setDate_change_lean(date_change_lean);
         data.setToKen(toKen);
         log.error("******file lenght"+files);
@@ -599,6 +601,7 @@ public Messages saveVicicleHeader(
             @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
             @RequestParam("pha_But") String  pha_But,
             @RequestParam("lektungsit") String  lektungsit,
+            @RequestParam("dateExTungsit") String  dateExTungsit,
             @RequestParam("date_change_lean") String  date_change_lean,
             @RequestParam("toKen") String  toKen
 
@@ -720,6 +723,7 @@ public Messages saveVicicleHeader(
             data.setLeanFuengThaiy(leanFuengThaiy);
             data.setPha_But(pha_But);
             data.setLektungsit(lektungsit);
+            data.setDateExTungsit(dateExTungsit);
             data.setDate_change_lean(date_change_lean);
             data.setToKen(toKen);
             data.setImageTruck(imageTruck);

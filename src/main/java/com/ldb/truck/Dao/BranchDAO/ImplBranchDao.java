@@ -2,6 +2,7 @@ package com.ldb.truck.Dao.BranchDAO;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Branch.BrachReq;
 import com.ldb.truck.Model.Login.Branch.Branch;
+import com.ldb.truck.Model.Login.Task.LinkReq;
 import com.ldb.truck.Model.Login.Task.TaskReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -136,6 +137,16 @@ public List<Branch> getBranchNew(BrachReq brachReq) {
             query="delete  FROM  TB_TASKS  WHERE KEY_ID=?";
             List<String> paraList = new ArrayList<>();
             paraList.add(taskReq.getKey_id());
+            return EBankJdbcTemplate.update(query,paraList.toArray());
+        }catch (Exception e){e.printStackTrace();}
+        return -1;
+    }
+    @Override
+    public int delDatalink (LinkReq linkReq) {
+        try{
+            query="delete  FROM  TASK_LINK  WHERE id=?";
+            List<String> paraList = new ArrayList<>();
+            paraList.add(linkReq.getId());
             return EBankJdbcTemplate.update(query,paraList.toArray());
         }catch (Exception e){e.printStackTrace();}
         return -1;

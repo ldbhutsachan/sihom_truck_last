@@ -4,6 +4,8 @@ import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
 import com.ldb.truck.Model.Login.Messages;
+import com.ldb.truck.Model.Login.Task.LinkReq;
+import com.ldb.truck.Model.Login.Task.LinkRes;
 import com.ldb.truck.Model.Login.Task.TaskReq;
 import com.ldb.truck.Model.Login.Task.TaskRes;
 import com.ldb.truck.Service.DocumentStorageService.DocumentStorageService;
@@ -554,6 +556,18 @@ public TaskRes taskStore (@RequestBody TaskReq[] taskReq){
     }
     return result;
 }
+//store link
+@CrossOrigin(origins = "*")
+@PostMapping("/storeLinks.service")
+public LinkRes taskLink (@RequestBody LinkReq[] linkReq){
+    LinkRes result = new LinkRes();
+    try{
+        result = documentStorageService.InsertLinksService(linkReq);
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
 //update task
 @CrossOrigin(origins = "*")
 @PostMapping("/UpdateTask.service")
@@ -595,6 +609,20 @@ public ResultOfSurveyRes ShowAllResultOfServey(@RequestBody DataHoleReq dataHole
         }
         return result;
     }
+//    link
+@CrossOrigin(origins = "*")
+@PostMapping("/getShowLink.service")
+public LinkRes getShowLink(@RequestBody LinkReq linkReq) {
+    LinkRes result = new LinkRes();
+    try {
+        result = documentStorageService.getShowLinksService(linkReq);
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exception");
+    }
+    return result;
+}
 //show pic of br
 @CrossOrigin(origins = "*")
 @PostMapping("/ShowPicOfBor.service")

@@ -112,6 +112,8 @@ public class VicicleFooterReq {
     private String f_KM_LL14;
     private String f_KM_LL15;
     private String f_KM_LL16;
+    private String lektungsit;
+    private String dateExTungsit;
 
     private String imgFootTruck;
 }

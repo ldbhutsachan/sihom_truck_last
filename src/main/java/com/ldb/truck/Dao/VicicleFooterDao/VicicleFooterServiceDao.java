@@ -134,6 +134,9 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     tr.setF_KM_LL15 (rs.getString("F_KM_LL15"));
                     tr.setF_KM_LL16(rs.getString("F_KM_LL16"));
                     tr.setImgFootTruck(rs.getString("IMG_FOOT_TRUCK"));
+                    tr.setLektungsit(rs.getString("lektungsit"));
+                    tr.setDateExTungsit(rs.getString("dateExTungsit"));
+                    tr.setDateExTungsit_status(rs.getString("dateExTungsit_status"));
                     return tr;
                 }
             });
@@ -249,6 +252,9 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     tr.setF_KM_LL15 (rs.getString("F_KM_LL15"));
                     tr.setF_KM_LL16(rs.getString("F_KM_LL16"));
                     tr.setImgFootTruck(rs.getString("IMG_FOOT_TRUCK"));
+                    tr.setLektungsit(rs.getString("lektungsit"));
+                    tr.setDateExTungsit(rs.getString("dateExTungsit"));
+                    tr.setDateExTungsit_status(rs.getString("dateExTungsit_status"));
                     return tr;
                 }
             });
@@ -300,7 +306,7 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     "                    F_KM_LL13=?, \n" +
                     "                    F_KM_LL14=?, \n" +
                     "                    F_KM_LL15=?, \n" +
-                    "                    F_KM_LL16=?,IMG_FOOT_TRUCK=? , userId=? where KEY_ID='"+vicicleFooterReq.getKey_id()+"' ";
+                    "                    F_KM_LL16=?,IMG_FOOT_TRUCK=? , userId=?, lektungsit=?, dateExTungsit=? where KEY_ID='"+vicicleFooterReq.getKey_id()+"' ";
 
             log.info("sql:"+sql);
             List<Object> paramList = new ArrayList<Object>();
@@ -404,6 +410,8 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
             paramList.add(vicicleFooterReq.getF_KM_LL16());
             paramList.add(path+fileName);
             paramList.add(vicicleFooterReq.getUserId());
+            paramList.add(vicicleFooterReq.getLektungsit());
+            paramList.add(vicicleFooterReq.getDateExTungsit());
 //            paramList.add(vicicleFooterReq.getImgFootTruck());
 
             return EBankJdbcTemplate.update(sql, paramList.toArray());
@@ -455,8 +463,8 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     "                    F_KM_LL13 , \n" +
                     "                    F_KM_LL14 , \n" +
                     "                    F_KM_LL15 , \n" +
-                    "                    F_KM_LL16,IMG_FOOT_TRUCK,userId)  \n" +
-                    "                    values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+                    "                    F_KM_LL16,IMG_FOOT_TRUCK,userId,lektungsit,dateExTungsit)  \n" +
+                    "                    values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleFooterReq.getF_BRANCH());
             paramList.add(vicicleFooterReq.getF_YEAR ());
@@ -556,6 +564,8 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
             paramList.add(vicicleFooterReq.getF_KM_LL16());
             paramList.add(path+fileName);
             paramList.add(vicicleFooterReq.getUserId());
+            paramList.add(vicicleFooterReq.getLektungsit());
+            paramList.add(vicicleFooterReq.getDateExTungsit());
 //            paramList.add(vicicleFooterReq.getImgFootTruck());
             return EBankJdbcTemplate.update(sql, paramList.toArray());
         }catch (Exception e){
@@ -1119,6 +1129,9 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
                     tr.setF_KM_LL15 (rs.getString("F_KM_LL15"));
                     tr.setF_KM_LL16(rs.getString("F_KM_LL16"));
                     tr.setImgFootTruck(rs.getString("IMG_FOOT_TRUCK"));
+                    tr.setLektungsit(rs.getString("lektungsit"));
+                    tr.setDateExTungsit(rs.getString("dateExTungsit"));
+                    tr.setDateExTungsit_status(rs.getString("dateExTungsit_status"));
                     return tr;
                 }
             });

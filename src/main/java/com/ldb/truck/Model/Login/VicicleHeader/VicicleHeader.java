@@ -155,5 +155,7 @@ public class VicicleHeader {
     private String leanGia_Status;
     private String leanFuengThaiy_Status;
     private String date_change_lean;
+    private String dateExTungsit;
+    private String dateExTungsit_status;
 
 }

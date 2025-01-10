@@ -170,6 +170,7 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setPha_But(rs.getString("pha_But"));
                     tr.setLektungsit(rs.getString("lektungsit"));
                     tr.setDate_change_lean(rs.getString("date_change_lean"));
+                    tr.setDateExTungsit(rs.getString("dateExTungsit"));
 
                     return tr ;
                 }
@@ -769,6 +770,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     tr.setLeanFuengThaiy_Status(rs.getString("leanFuengThaiy_Status"));
                     tr.setLektungsit(rs.getString("lektungsit"));
                     tr.setDate_change_lean(rs.getString("date_change_lean"));
+                    tr.setDateExTungsit(rs.getString("dateExTungsit"));
                     return tr;
                 }
             });
@@ -821,8 +823,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     "H_KML_9 ,  \n" +
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
-                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But,lektungsit,userId,date_change_lean)\n" +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?)";
+                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But,lektungsit,userId,date_change_lean,dateExTungsit)\n" +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -932,6 +934,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(vicicleHeaderReq.getLektungsit());
             paramList.add(vicicleHeaderReq.getUserId());
             paramList.add(vicicleHeaderReq.getDate_change_lean());
+            paramList.add(vicicleHeaderReq.getDateExTungsit());
 //            paramList.add(vicicleHeaderReq.getBatNo2());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
@@ -1279,7 +1282,7 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=?,dateExTungsit=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -1393,6 +1396,7 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
             paramList.add(vicicleHeaderReq.getLektungsit());
             paramList.add(vicicleHeaderReq.getUserId());
             paramList.add(vicicleHeaderReq.getDate_change_lean());
+            paramList.add(vicicleHeaderReq.getDateExTungsit());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
 
@@ -1466,7 +1470,7 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=?,dateExTungsit=? where  key_id=?";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -1579,6 +1583,7 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
             paramList.add(vicicleHeaderReq.getLektungsit());
             paramList.add(vicicleHeaderReq.getUserId());
             paramList.add(vicicleHeaderReq.getDate_change_lean());
+            paramList.add(vicicleHeaderReq.getDateExTungsit());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
 

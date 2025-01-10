@@ -126,6 +126,7 @@ public class VicicleHeaderReq {
     private String leanFuengThaiy;
     private String pha_But;
     private String lektungsit;
+    private String dateExTungsit;
     private String date_change_lean;
 
 //    private String  h_KM13;

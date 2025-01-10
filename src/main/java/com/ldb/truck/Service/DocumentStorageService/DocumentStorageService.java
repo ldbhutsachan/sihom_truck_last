@@ -6,9 +6,7 @@ import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
-import com.ldb.truck.Model.Login.Task.TaskModel;
-import com.ldb.truck.Model.Login.Task.TaskReq;
-import com.ldb.truck.Model.Login.Task.TaskRes;
+import com.ldb.truck.Model.Login.Task.*;
 import com.ldb.truck.Service.VicicleHeaderService.VicicleHeaderService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -124,6 +122,38 @@ public TaskRes InsertTaskService(TaskReq[] taskReq) {
         e.printStackTrace();
         result.setStatus("01");
         result.setMessage("Can not Store Task");
+    }
+    return result;
+}
+//link store
+public LinkRes InsertLinksService(LinkReq[] linkReq) {
+    LinkRes result = new LinkRes();
+    try {
+        // Assume documentStorageReq[0] contains the correct data
+        String toKen = linkReq[0].getToKen();
+        log.info("toKen=======================:" + toKen);
+
+        // Get User info based on the token
+        List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
+        log.info("UserNo:" + userIn.get(0).getUserId());
+        log.info("BranchNo:" + userIn.get(0).getBranchNo());
+
+        // Set user data
+        linkReq[0].setUserId(userIn.get(0).getUserId());
+        linkReq[0].setBranch(userIn.get(0).getBranchNo());
+
+        int i = documentStorageDaos.InsertLinksDaos(linkReq); // Insert into database
+        if (i == 0) {
+            result.setStatus("01");
+            result.setMessage("Can not Store Link");
+        } else {
+            result.setStatus("00");
+            result.setMessage("Store Link Successful");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Can not Store Link");
     }
     return result;
 }
@@ -895,6 +925,45 @@ public ResultOfSurveyRes AllResultOfSurveyService (@RequestBody DataHoleReq data
         }
         return result;
     }
+//    link
+public LinkRes getShowLinksService (LinkReq linkReq){
+    log.info("toKen=======================:"+linkReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(linkReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
+    linkReq.setUserId(userId);
+    linkReq.setBranch(userBranchNo);
+
+    //====================================================================
+    Messages messages = new Messages();
+    LinkRes result = new LinkRes();
+    try{
+
+        List<LinkModel> data = new ArrayList<>();
+        data = documentStorageDaos.AllLinksDAOs(linkReq);
+        if(data.size() > 0){
+            result.setStatus("00");
+            result.setMessage("Done");
+            result.setData(data);
+        }else {
+            result.setStatus("01");
+            result.setMessage("No Data");
+            result.setData(data);
+        }
+    }catch (Exception e){
+        e.printStackTrace();
+        //result.setData(listData);
+    }
+    return result;
+}
 // show pic of br
 public PicOfBorhinRes ShowPicOfBorService (@RequestBody DataHoleReq dataHoleReq){
     log.info("toKen=======================:"+dataHoleReq.getToKen());

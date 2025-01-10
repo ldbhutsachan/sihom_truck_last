@@ -3,6 +3,8 @@ package com.ldb.truck.Controller;
 import com.ldb.truck.Model.Login.Branch.BrachReq;
 import com.ldb.truck.Model.Login.Branch.Branch;
 import com.ldb.truck.Model.Login.Branch.BranchRes;
+import com.ldb.truck.Model.Login.Task.LinkReq;
+import com.ldb.truck.Model.Login.Task.LinkRes;
 import com.ldb.truck.Model.Login.Task.TaskReq;
 import com.ldb.truck.Model.Login.Task.TaskRes;
 import com.ldb.truck.Model.Login.User.UserReq;
@@ -75,6 +77,18 @@ public TaskRes DelTasks (@RequestBody TaskReq taskReq){
     TaskRes result = new TaskRes();
     try{
         result = branchService.DeleteTasks(taskReq);
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
+//delete link
+@CrossOrigin(origins = "*")
+@PostMapping("/Dellink.service")
+public LinkRes Dellink (@RequestBody LinkReq linkReq){
+    LinkRes result = new LinkRes();
+    try{
+        result = branchService.DeleteLink(linkReq);
     }catch (Exception e){
         e.printStackTrace();
     }

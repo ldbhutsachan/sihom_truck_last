@@ -7,6 +7,8 @@ import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
 import com.ldb.truck.Model.Login.Payment.InvoiceDetailReq;
+import com.ldb.truck.Model.Login.Task.LinkModel;
+import com.ldb.truck.Model.Login.Task.LinkReq;
 import com.ldb.truck.Model.Login.Task.TaskModel;
 import com.ldb.truck.Model.Login.Task.TaskReq;
 import org.apache.logging.log4j.LogManager;
@@ -132,6 +134,27 @@ public int InsertTaskDaos(TaskReq[] taskReq1) throws ParseException {
             paramList.add(taskReq.getToKen());
             paramList.add(taskReq.getBranch());
             paramList.add(taskReq.getProgress());
+            totalInserted += EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }
+        return totalInserted;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return -1;
+    }
+}
+//insert Link
+public int InsertLinksDaos(LinkReq[] linkReq1) throws ParseException {
+    int totalInserted = 0; // Track total inserted records
+    try {
+        String SQL = "insert into TASK_LINK (source,target,`type`,userId) values(?, ?, ?, ?)";
+        log.info("Script" + SQL);
+
+        for (LinkReq LinkReq:linkReq1) {
+            List<Object> paramList = new ArrayList<>();
+            paramList.add(LinkReq.getSource());
+            paramList.add(LinkReq.getTarget());
+            paramList.add(LinkReq.getType());
+            paramList.add(LinkReq.getUserId());
             totalInserted += EBankJdbcTemplate.update(SQL, paramList.toArray());
         }
         return totalInserted;
@@ -1052,7 +1075,15 @@ public List<ResultOfSurveyModel> AllResultOfSurveyDAOs (DataHoleReq dataHoleReq)
 public List<TaskModel> AllTaskDAOs (TaskReq taskReq ) {
     String sql;
     try{
-        sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"'";
+        if (taskReq.getStartDate()== null && taskReq.getEndDate()== null)
+        {
+            sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"'";
+        }
+        else
+        {
+            sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"' AND START_DATE BETWEEN '"+taskReq.getStartDate()+"' AND '"+taskReq.getEndDate()+"'";
+        }
+
         return EBankJdbcTemplate.query(sql, new RowMapper<TaskModel>() {
             @Override
             public TaskModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1063,7 +1094,29 @@ public List<TaskModel> AllTaskDAOs (TaskReq taskReq ) {
                 tr.setStartDate(rs.getString("START_DATE"));
                 tr.setEndDate(rs.getString("END_DATE"));
                 tr.setDuration(rs.getString("DURATION"));
+                tr.setProgress(rs.getString("PROGRESS"));
                 tr.setBranch_name(rs.getString("B_NAME"));
+                return tr ;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
+//link show
+public List<LinkModel> AllLinksDAOs (LinkReq linkReq) {
+    String sql;
+    try{
+            sql = "select * from V_LINK_TASK where userId= '"+linkReq.getUserId()+"'";
+        return EBankJdbcTemplate.query(sql, new RowMapper<LinkModel>() {
+            @Override
+            public LinkModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                LinkModel tr = new LinkModel();
+                tr.setId(rs.getString("id"));
+                tr.setSource(rs.getString("source"));
+                tr.setTarget(rs.getString("target"));
+                tr.setType(rs.getString("type"));
                 return tr ;
             }
         });
