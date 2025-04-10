@@ -111,6 +111,8 @@ public class VicicleFooter {
     private String lektungsit;
     private String dateExTungsit;
     private String dateExTungsit_status;
+    private String dateExpireLicensePlate;
+    private String dateExpireLicensePlate_status;
 
     private String imgFootTruck;
 }

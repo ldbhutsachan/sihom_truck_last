@@ -1,19 +1,16 @@
 package com.ldb.truck.Dao.Details;
 
 import com.ldb.truck.Model.Login.Details.Details;
-import com.ldb.truck.Model.Login.Performance.v_performance;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceDeptCode;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceNo;
+import com.ldb.truck.Model.Login.Inventory.OfferPaper.PoCodeModel;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.*;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getQuotationCode;
-import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
-import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterReq;
+
 import java.util.List;
 
 public interface DetailsDao  {
     List<Details> ListDetailsPopup();
     public List<getInvoiceDeptCode> showINVcode ();
+    public List<GetOfferCode> GenOfferCodeBorhin (TogenTheCodeReq togenTheCodeReq);
     public List<getQuotationCode> showKKTcode ();
     List<getInvoiceNo> showMaxLahudPoyLod(TogenTheCodeReq togenTheCodeReq);
     List<Details> ListDetails();
@@ -25,7 +22,7 @@ public interface DetailsDao  {
     public int UpdateFooter(DetailsReq detailsReq);
     public int updateStaff01(DetailsReq detailsReq);
     public int updateStaff02(DetailsReq detailsReq);
-
-
+    public List<GetOfferCode> showMaxOfferCode (TogenTheCodeReq togenTheCodeReq);
+    public List<PoCodeModel> showMaxPOCodeNew (TogenTheCodeReq togenTheCodeReq);
 
 }

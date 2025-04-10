@@ -50,6 +50,7 @@ public class v_performance {
     private String pERFORMANCEFEEOUTCONTAINER;
     private String pERFORMANCEFE_PAYANG;
     private Double proSize;
+//    private Double proSize;
     private String prizeProcuctPerT;
 
     private String price;

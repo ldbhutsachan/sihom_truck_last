@@ -6,6 +6,7 @@ import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilModel;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilReq;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilRes;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.sumFooterGroupHisOil;
+import com.ldb.truck.Model.Login.DocumentStorage.DataHoleReq;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModel;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModelLAK;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModelTHB;
@@ -14,6 +15,9 @@ import com.ldb.truck.Model.Login.Inventory.Fix.FixReqListProve.ReqListOfFixModel
 import com.ldb.truck.Model.Login.Inventory.Fix.FixReqListProve.ShowFixRequest;
 import com.ldb.truck.Model.Login.Inventory.Items.*;
 import com.ldb.truck.Model.Login.Inventory.OfferPaper.*;
+import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryModel;
+import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryReq;
+import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryRes;
 import com.ldb.truck.Model.Login.Inventory.Report_Stock.*;
 import com.ldb.truck.Model.Login.Inventory.Shops.*;
 import com.ldb.truck.Model.Login.Messages;
@@ -245,6 +249,95 @@ public OfferpaperRes DeleteOfferPaper (OfferPaperReq offerPaperReq ){
         return result;
     }
 }
+//old inventory service
+    public Messages InsertOldInventoryService (OldInventoryReq oldInventoryReq){
+        log.info("toKen=======================:"+oldInventoryReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(oldInventoryReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        oldInventoryReq.setUserId(userId);
+        oldInventoryReq.setBranch(userBranchNo);
+        Messages message = new Messages();
+        int i = 0;
+        try {
+            i = inventoryDao.InsertOldinventoryDAOs(oldInventoryReq);
+            if(i == 0) {
+                message.setStatus("01");
+                message.setMessage("Can not Store");
+                return message;
+            }
+            message.setStatus("00");
+            message.setMessage("Store Successful");
+        }catch (Exception e){
+            e.printStackTrace();
+            message.setStatus("01");
+            message.setMessage("Can not Store");
+            return message;
+        }
+        return message;
+    }
+//    del old invent
+public OldInventoryRes DeleteOldInventoryService (OldInventoryReq oldInventoryReq){
+    OldInventoryRes message = new OldInventoryRes();
+    int i = 0;
+    try {
+        i = inventoryDao.DeleteinventoryDAOs(oldInventoryReq);
+        if(i < 0) {
+            message.setStatus("01");
+            message.setMessage("Can not Delete");
+            return message;
+        }
+        message.setStatus("00");
+        message.setMessage("Delete Successful");
+    }catch (Exception e){
+        e.printStackTrace();
+        message.setStatus("01");
+        message.setMessage("Can not Delete");
+        return message;
+    }
+    return message;
+}
+//    update old inventory
+public Messages UpdateoldInventoryService (OldInventoryReq oldInventoryReq){
+    log.info("toKen=======================:"+oldInventoryReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(oldInventoryReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    oldInventoryReq.setUserId(userId);
+    oldInventoryReq.setBranch(userBranchNo);
+    Messages message = new Messages();
+    int i = 0;
+    try {
+        i = inventoryDao.UpdateOldinventoryDAOs(oldInventoryReq);
+        if(i == 0) {
+            message.setStatus("01");
+            message.setMessage("Can not Edit");
+            return message;
+        }
+        message.setStatus("00");
+        message.setMessage("Edit Successful");
+    }catch (Exception e){
+        e.printStackTrace();
+        message.setStatus("01");
+        message.setMessage("Can not Edit");
+        return message;
+    }
+    return message;
+}
 //fix service
 public FixRes FixService(FixReq fixReq){
 
@@ -264,22 +357,37 @@ public FixRes FixService(FixReq fixReq){
     //====================================================================
     FixRes result = new FixRes();
     try {
-            if (fixReq.getHeader_id().isEmpty() && fixReq.getFooter_id().isEmpty() && fixReq.getUserId().equals("78")) {
-                inventoryDao.FixDaoIftruckNull(fixReq);
-                result.setMessage("Successful");
-                result.setStatus("00");
-                return result;
-            } else if (fixReq.getHeader_id().isEmpty() && fixReq.getFooter_id().isEmpty() && fixReq.getUserId().equals("142")) {
-                inventoryDao.FixDaoIftruckNullXiengKhouang(fixReq);
-                result.setMessage("Successful");
-                result.setStatus("00");
-                return result;
-            } else {
+////  old          if (fixReq.getHeader_id().isEmpty() && fixReq.getFooter_id().isEmpty() && fixReq.getUserId().equals("78")) {
+////        inven Thakhaek
+//            if (fixReq.getHeader_id().isEmpty() && fixReq.getFooter_id().isEmpty() && fixReq.getUserId().equals("152")) {
+//                inventoryDao.FixDaoIftruckNull(fixReq);
+//                result.setMessage("Successful");
+//                result.setStatus("00");
+//                return result;
+////        inven Savan oil
+//            } else if (fixReq.getHeader_id().isEmpty() && fixReq.getFooter_id().isEmpty() && fixReq.getUserId().equals("129")) {
+//                inventoryDao.FixDaoIftruckNullSavannakhetOil(fixReq);
+//                result.setMessage("Successful");
+//                result.setStatus("00");
+//                return result;
+////        inven Savan tools
+//            } else if (fixReq.getHeader_id().isEmpty() && fixReq.getFooter_id().isEmpty() && fixReq.getUserId().equals("130")) {
+//                inventoryDao.FixDaoIftruckNullSavannakhetTools(fixReq);
+//                result.setMessage("Successful");
+//                result.setStatus("00");
+//                return result;
+////        inven Xiengkhouang
+//            } else if (fixReq.getHeader_id().isEmpty() && fixReq.getFooter_id().isEmpty() && fixReq.getUserId().equals("142")) {
+//                inventoryDao.FixDaoIftruckNullXiengKhouang(fixReq);
+//                result.setMessage("Successful");
+//                result.setStatus("00");
+//                return result;
+//            } else {
                 inventoryDao.FixDao(fixReq);
                 result.setMessage("Successful");
                 result.setStatus("00");
                 return result;
-            }
+//            }
     }catch (Exception e){
         e.printStackTrace();
         result.setMessage("exeption");
@@ -1131,6 +1239,37 @@ public ShowFix  ShowFixList (@RequestBody FixReq fixReq){
         return result;
     }
 }
+//show old inventory
+    public OldInventoryRes showoldInventoryService (@RequestBody OldInventoryReq oldInventoryReq){
+        log.info("toKen=======================:"+oldInventoryReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(oldInventoryReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        oldInventoryReq.setUserId(userId);
+        oldInventoryReq.setBranch(userBranchNo);
+        //====================================================================
+        List<OldInventoryModel> Data = new ArrayList<>();
+        OldInventoryRes result = new OldInventoryRes();
+        try {
+            Data = inventoryDao.ShowOldInventoryDAOs(oldInventoryReq);
+            result.setMessage("Success");
+            result.setStatus("00");
+            result.setData(Data);
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
 //=================================================================================original
 //show fix req list
 public ShowFixRequest  showListofFixReqService (@RequestBody FixReq fixReq){

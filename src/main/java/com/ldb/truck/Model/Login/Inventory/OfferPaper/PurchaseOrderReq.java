@@ -11,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PurchaseOrderReq {
     private String kEY_ID;
+    private String branch_id;
     private String pocode;
     private String offer_CODE;
     private String total;

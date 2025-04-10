@@ -23,11 +23,26 @@ public class CustomerPaymentDao implements CustomerPaymentInfDao{
         {
             if(customerPaymentReq.getStartDate() == null && customerPaymentReq.getEndDate() == null)
             {
-                SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' order by a.PERFORMANCEBILLNO asc";
+                if(customerPaymentReq.getCusId() == null)
+                {
+                    SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' order by a.PERFORMANCEBILLNO asc";
+
+                }else
+                {
+                    SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' AND a.CUSTOMER_ID='"+customerPaymentReq.getCusId()+"' order by a.PERFORMANCEBILLNO asc";
+                }
                 System.out.println("sql:"+SQL);
             }else
             {
-                SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' AND a.OUT_DATE between '"+customerPaymentReq.getStartDate()+"' AND '"+customerPaymentReq.getEndDate()+"' order by a.PERFORMANCEBILLNO asc";
+                if(customerPaymentReq.getCusId() == null)
+                {
+                    SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' AND a.OUT_DATE between '"+customerPaymentReq.getStartDate()+"' AND '"+customerPaymentReq.getEndDate()+"' order by a.PERFORMANCEBILLNO asc";
+
+                }else
+                {
+                    SQL = "select * from V_CHOOSE_PAYMENT a INNER JOIN LOGIN b ON a.userId=b.KEY_ID  where b.BRANCH='"+customerPaymentReq.getBranch()+"' AND a.status='N' AND a.OUT_DATE between '"+customerPaymentReq.getStartDate()+"' AND '"+customerPaymentReq.getEndDate()+"' AND a.CUSTOMER_ID='"+customerPaymentReq.getCusId()+"' order by a.PERFORMANCEBILLNO asc";
+
+                }
                 System.out.println("sql:"+SQL);
             }
 //             SQL = "select * from V_CHOOSE_PAYMENT where status='N' order by PERFORMANCEBILLNO asc";

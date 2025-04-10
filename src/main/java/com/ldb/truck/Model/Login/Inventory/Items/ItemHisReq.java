@@ -15,5 +15,6 @@ public class ItemHisReq {
     private String endDate;
     private String toKen;
     private String branch;
+    private String branch_id;
     private String userId;
 }

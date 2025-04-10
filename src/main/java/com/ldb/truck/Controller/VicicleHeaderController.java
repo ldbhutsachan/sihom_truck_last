@@ -342,6 +342,12 @@ public Messages saveVicicleHeader(
         @RequestParam("lektungsit") String  lektungsit,
         @RequestParam("dateExTungsit") String  dateExTungsit,
         @RequestParam("date_change_lean") String  date_change_lean,
+        @RequestParam("brand_wheel_car") String  brand_wheel_car,
+        @RequestParam("status_use_unuse_car") String  status_use_unuse_car,
+        @RequestParam("comment") String  comment,
+        @RequestParam("technique_date") String  technique_date,
+        @RequestParam("technique_date_per_month") String  technique_date_per_month,
+//        @RequestParam("files") MultipartFile files,
         @RequestParam("toKen") String  toKen
 
 ){
@@ -462,6 +468,11 @@ public Messages saveVicicleHeader(
         data.setLektungsit(lektungsit);
         data.setDateExTungsit(dateExTungsit);
         data.setDate_change_lean(date_change_lean);
+        data.setBrand_wheel_car(brand_wheel_car);
+        data.setStatus_use_unuse_car(status_use_unuse_car);
+        data.setComment(comment);
+        data.setTechnique_date(technique_date);
+        data.setTechnique_date_per_month(technique_date_per_month);
         data.setToKen(toKen);
         log.error("******file lenght"+files);
         log.error(data);
@@ -603,6 +614,11 @@ public Messages saveVicicleHeader(
             @RequestParam("lektungsit") String  lektungsit,
             @RequestParam("dateExTungsit") String  dateExTungsit,
             @RequestParam("date_change_lean") String  date_change_lean,
+            @RequestParam("brand_wheel_car") String  brand_wheel_car,
+            @RequestParam("status_use_unuse_car") String  status_use_unuse_car,
+            @RequestParam("comment") String  comment,
+            @RequestParam("technique_date") String  technique_date,
+            @RequestParam("technique_date_per_month") String  technique_date_per_month,
             @RequestParam("toKen") String  toKen
 
 
@@ -725,6 +741,11 @@ public Messages saveVicicleHeader(
             data.setLektungsit(lektungsit);
             data.setDateExTungsit(dateExTungsit);
             data.setDate_change_lean(date_change_lean);
+            data.setBrand_wheel_car(brand_wheel_car);
+            data.setStatus_use_unuse_car(status_use_unuse_car);
+            data.setComment(comment);
+            data.setTechnique_date(technique_date);
+            data.setTechnique_date_per_month(technique_date_per_month);
             data.setToKen(toKen);
             data.setImageTruck(imageTruck);
             log.error("******file lenght"+files);

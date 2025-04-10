@@ -3,6 +3,7 @@ package com.ldb.truck.Controller;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Details.DetailsRes;
 import com.ldb.truck.Model.Login.Details.Details;
+import com.ldb.truck.Model.Login.Inventory.OfferPaper.GenCodePO;
 import com.ldb.truck.Model.Login.ShowIdinvoiceNo.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +23,36 @@ public class DetailController {
         getInvoiceNoRes result = new getInvoiceNoRes();
         try {
             result = detailsService.ListInvoicedetails(togenTheCodeReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+//    gen code offer paper
+@CrossOrigin(origins = "*")
+@PostMapping("/GenOfferPaperNew.service")
+public GenOffCodeRes GenOfferPaper(@RequestBody TogenTheCodeReq togenTheCodeReq){
+    GenOffCodeRes result = new GenOffCodeRes();
+    try {
+        result = detailsService.GenOffCodeService(togenTheCodeReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+    //    gen code purchase order
+    @CrossOrigin(origins = "*")
+    @PostMapping("/GenPurchaseOrderNew.service")
+    public GenCodePO GenPurchaseOrderNew(@RequestBody TogenTheCodeReq togenTheCodeReq){
+        GenCodePO result = new GenCodePO();
+        try {
+            result = detailsService.GenPOCodeService(togenTheCodeReq);
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus("01");

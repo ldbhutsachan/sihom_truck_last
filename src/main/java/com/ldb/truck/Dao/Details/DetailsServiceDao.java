@@ -1,14 +1,9 @@
 package com.ldb.truck.Dao.Details;
 
-import com.ldb.truck.Dao.Truck.ImpTruckDao;
 import com.ldb.truck.Model.Login.Details.Details;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.TogenTheCodeReq;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceDeptCode;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getInvoiceNo;
-import com.ldb.truck.Model.Login.ShowIdinvoiceNo.getQuotationCode;
-import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterReq;
-import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
+import com.ldb.truck.Model.Login.Inventory.OfferPaper.PoCodeModel;
+import com.ldb.truck.Model.Login.ShowIdinvoiceNo.*;
 import com.ldb.truck.RowMapper.DetailsMapper.DetailsMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -119,6 +114,160 @@ public class DetailsServiceDao implements  DetailsDao {
             throw new RuntimeException("Error fetching invoice number", e);
         }
     }
+    //show Offer paper code No
+    @Override
+    public List<GetOfferCode> showMaxOfferCode (TogenTheCodeReq togenTheCodeReq) {
+        String sql;
+        try {
+            int branch = Integer.parseInt(togenTheCodeReq.getBranch());
+            switch (branch) {
+                case 5:
+                    sql = getSqlForOffBranch5();
+                    break;
+                case 2:
+                    sql = getSqlForOffBranch2();
+                    break;
+                case 3:
+                    sql = getSqlForOffBranch3();
+                    break;
+                case 4:
+                    sql = getSqlForOffBranch4();
+                    break;
+                case 9:
+                    sql = getSqlForOffBranch9();
+                    break;
+                default:
+                    // Handle invalid branch case (e.g., throw exception)
+                    throw new IllegalArgumentException("Invalid branch code: " + branch);
+            }
+
+            log.info("SQL:" + sql);
+            return EBankJdbcTemplate.query(sql, new RowMapper<GetOfferCode>() {
+                @Override
+                public GetOfferCode mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    GetOfferCode tr = new GetOfferCode();
+                    tr.setOFFER_CODE(rs.getString("OFFER_CODE" + branch)); // Assuming suffix based on branch
+                    return tr;
+                }
+            });
+        } catch (Exception e) {
+            // Handle exception appropriately (e.g., log error and throw a specific exception)
+            throw new RuntimeException("Error fetching invoice number", e);
+        }
+    }
+
+//    new gen bor id
+@Override
+public List<GetOfferCode> GenOfferCodeBorhin (TogenTheCodeReq togenTheCodeReq) {
+
+    try {
+        String sql = "SELECT OFFER_CODE_bor FROM GEN_OFFER_NO";
+        log.info("SQL:" + sql);
+        return EBankJdbcTemplate.query(sql, new RowMapper<GetOfferCode>() {
+            @Override
+            public GetOfferCode mapRow(ResultSet rs, int rowNum) throws SQLException {
+                GetOfferCode tr = new GetOfferCode();
+                tr.setOFFER_CODE(rs.getString("OFFER_CODE_bor")); // Assuming suffix based on branch
+                return tr;
+            }
+        });
+    } catch (Exception e) {
+        // Handle exception appropriately (e.g., log error and throw a specific exception)
+        throw new RuntimeException("Error fetching invoice number", e);
+    }
+}
+    private String getSqlForOffBranch5() {
+        return "select OFFER_CODE5 from GEN_OFFER_NO";
+    }
+
+    private String getSqlForOffBranch2() {
+        return "select OFFER_CODE2 from GEN_OFFER_NO";
+    }
+
+    private String getSqlForOffBranch3() {
+        return "select OFFER_CODE3 from GEN_OFFER_NO";
+    }
+    private String getSqlForOffBranch4() {return "select OFFER_CODE4 from GEN_OFFER_NO"; }
+    private String getSqlForOffBranch9() {return "select OFFER_CODE9 from GEN_OFFER_NO"; }
+
+//    get PO code new
+    @Override
+    public List<PoCodeModel> showMaxPOCodeNew (TogenTheCodeReq togenTheCodeReq) {
+        String sql;
+        try {
+            int branch = Integer.parseInt(togenTheCodeReq.getBranch());
+            switch (branch) {
+                case 5:
+                    sql = getSqlForPOBranch5();
+                    break;
+                case 2:
+                    sql = getSqlForPOBranch2();
+                    break;
+                case 3:
+                    sql = getSqlForPOBranch3();
+                    break;
+                case 4:
+                    sql = getSqlForPOBranch4();
+                    break;
+                case 9:
+                    sql = getSqlForPOBranch9();
+                    break;
+                default:
+                    // Handle invalid branch case (e.g., throw exception)
+                    throw new IllegalArgumentException("Invalid branch code: " + branch);
+            }
+
+            log.info("SQL:" + sql);
+            return EBankJdbcTemplate.query(sql, new RowMapper<PoCodeModel>() {
+                @Override
+                public PoCodeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    PoCodeModel tr = new PoCodeModel();
+                    tr.setPO_CODE(rs.getString("PO_CODE" + branch)); // Assuming suffix based on branch
+                    return tr;
+                }
+            });
+        } catch (Exception e) {
+            // Handle exception appropriately (e.g., log error and throw a specific exception)
+            throw new RuntimeException("Error fetching invoice number", e);
+        }
+    }
+    // gen po bor hin
+    public List<PoCodeModel> showMaxPOCodeNewBorHin (TogenTheCodeReq togenTheCodeReq) {
+        try {
+            String sql = "select PO_CODE_bor from GEN_PO";
+            log.info("SQL:" + sql);
+            return EBankJdbcTemplate.query(sql, new RowMapper<PoCodeModel>() {
+                @Override
+                public PoCodeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    PoCodeModel tr = new PoCodeModel();
+                    tr.setPO_CODE(rs.getString("PO_CODE_bor")); // Assuming suffix based on branch
+                    return tr;
+                }
+            });
+        } catch (Exception e) {
+            // Handle exception appropriately (e.g., log error and throw a specific exception)
+            throw new RuntimeException("Error fetching invoice number", e);
+        }
+    }
+    private String getSqlForPOBranch5() {
+        return "select PO_CODE5 from GEN_PO";
+    }
+
+    private String getSqlForPOBranch2() {
+        return "select PO_CODE2 from GEN_PO";
+    }
+
+    private String getSqlForPOBranch3() {
+        return "select PO_CODE3 from GEN_PO";
+    }
+
+    private String getSqlForPOBranch4() {
+        return "select PO_CODE4 from GEN_PO";
+    }
+    private String getSqlForPOBranch9() {
+        return "select PO_CODE9 from GEN_PO";
+    }
+
 //    get KKT- code quotation
 public List<getQuotationCode> showKKTcode () {
     String sql;

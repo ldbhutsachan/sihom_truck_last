@@ -5,6 +5,8 @@ import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeModel;
 import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeReq;
 import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleModel;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleReq;
 import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
 import com.ldb.truck.Model.Login.Payment.InvoiceDetailReq;
 import com.ldb.truck.Model.Login.Task.LinkModel;
@@ -512,6 +514,47 @@ public int InsertDataHoleDAOs (DataHoleReq dataHoleReq) throws ParseException {
         return -1;
     }
 }
+//DAOs insert header truck file
+public int InsertHeaderTruckFileDAOs (OnlyFileHeaderTuckReq onlyFileHeaderTuckReq) throws ParseException {
+    String path="http://khounkham.com/images/car/";
+    String fileName = onlyFileHeaderTuckReq.getPicOrFile();
+    log.info("path:"+path+fileName);
+    List<DataHoleModel> data = new ArrayList<>();
+    try{
+        String SQL = "insert into FILE_HEADERTRUCK (HEADERTRUCK_ID,userId,FILES,date) value(?,?,?,?)";
+        log.info("SQL:"+SQL);
+        List<Object> paramList = new ArrayList<Object>();
+        paramList.add(onlyFileHeaderTuckReq.getHeadtruck_id());
+        paramList.add(onlyFileHeaderTuckReq.getUserId());
+        paramList.add(path + fileName);
+        paramList.add(onlyFileHeaderTuckReq.getDate2());
+        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+    }catch (Exception e){
+        e.printStackTrace();
+        return -1;
+    }
+}
+//header file update
+    public int InsertHeaderTruckFileUpdateDAOs (OnlyFileHeaderTuckReq onlyFileHeaderTuckReq) throws ParseException {
+        String path="http://khounkham.com/images/car/";
+        String fileName = onlyFileHeaderTuckReq.getPicOrFile();
+        log.info("path:"+path+fileName);
+        List<DataHoleModel> data = new ArrayList<>();
+        try{
+            String SQL = "update FILE_HEADERTRUCK set HEADERTRUCK_ID=?,FILES=?,date=? where KEY_ID='"+onlyFileHeaderTuckReq.getKey_id_of_file()+"'";
+            log.info("SQL:"+SQL);
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(onlyFileHeaderTuckReq.getHeadtruck_id());
+//            paramList.add(onlyFileHeaderTuckReq.getUserId());
+            paramList.add(path + fileName);
+            paramList.add(onlyFileHeaderTuckReq.getDate2());
+            paramList.add(onlyFileHeaderTuckReq.getKey_id_of_file());
+            return EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
 //bouang insert
     @Override
     public int InsertBouangDAOs(BouangReq bouangReq) {
@@ -526,6 +569,52 @@ public int InsertDataHoleDAOs (DataHoleReq dataHoleReq) throws ParseException {
         }
         return 0;
     }
+//    store rock ship sample DAOs
+@Override
+public int StorerockShipSampleDAOs (RockShipSampleReq[] rockShipSampleReqs) {
+    int totalArray = 0;
+    try{
+        for (RockShipSampleReq rockShipSampleReq : rockShipSampleReqs) {
+            System.out.println("RowData before insertion: " + rockShipSampleReq.getRowData()); //Debugging
+            System.out.println("BorId before insertion: " + rockShipSampleReq.getBorId()); //Debugging
+            System.out.println("UserId before insertion: " + rockShipSampleReq.getUserId()); //Debugging
+
+        String SQL="insert into ROCKSHIPSAMPLE (ROW_DATA,BOR_ID,userId) values(?,?,?)";
+        List<Object> paraList = new ArrayList<>();
+        paraList.add(rockShipSampleReq.getRowData());
+        paraList.add(rockShipSampleReq.getBorId());
+        paraList.add(rockShipSampleReq.getUserId());
+        totalArray += EBankJdbcTemplate.update(SQL,paraList.toArray());
+    }
+    return totalArray;
+}catch (Exception e){
+        e.printStackTrace();
+    }
+    return 0;
+}
+//show rock ship data
+@Override
+public List<RockShipSampleModel> ListRockShipDAOS (RockShipSampleReq rockShipSampleReq) {
+    List<RockShipSampleModel> result = new ArrayList<>();
+    try{
+        String SQL = "select * from V_ROCKSHIPSAMPLE where BOR_ID='"+rockShipSampleReq.getBorId()+"'";
+        log.info("sql:" + SQL);
+        return EBankJdbcTemplate.query(SQL, new RowMapper<RockShipSampleModel>() {
+            @Override
+            public RockShipSampleModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                RockShipSampleModel tr = new RockShipSampleModel();
+                tr.setKey_id(rs.getString("KEY_ID"));
+                tr.setRowData(rs.getString("ROW_DATA"));
+                tr.setNameOfBor(rs.getString("nameOfBor"));
+                tr.setBorId(rs.getString("BOR_ID"));
+                return tr ;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
     @Override
     public List<BouangModel> ListBouangAllDAOSpecial (BouangReq bouangReq) {
         List<BouangModel> result = new ArrayList<>();
@@ -626,23 +715,23 @@ public int InsertResultOfSurveyDAOs (DataHoleReq dataHoleReq) throws ParseExcept
     public List<DocumentStorageModel> listDocDAOs (DocumentStorageReq documentStorageReq) {
         String sql;
         try{
-            if (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF")){
-                if (documentStorageReq.getBound().equals("in"))
+            if (documentStorageReq.getToKen() != null && (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF") || documentStorageReq.getToKen().equals("KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue") )){
+                if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("in"))
                 {
                     sql = "select * from V_DOC WHERE BOUND='in'";
                     log.info("SQL in bound:" + sql);
                 }
-                else if (documentStorageReq.getBound().equals("out"))
+                else if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("out"))
                 {
                     sql = "select * from V_DOC WHERE BOUND='"+documentStorageReq.getBound()+"'";
                     log.info("SQL out bound:" + sql);
                 }
-                else if (documentStorageReq.getBound().equals("inside"))
+                else if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("inside"))
                 {
                     sql = "select * from V_DOC WHERE inside='inside'";
                     log.info("SQL out bound:" + sql);
                 }
-                else if(documentStorageReq.getUserIdoffinanceial().isEmpty())
+                else if(documentStorageReq.getUserIdoffinanceial() == null || documentStorageReq.getUserIdoffinanceial().isEmpty())
                 {
                     sql = "select * from V_DOC";
 
@@ -945,7 +1034,7 @@ public List<CustomerHisPayModel> SearchDeptMustReceivedHistoryCustormerDAOs (Dep
 public List<DocumentStorageModel> SearchlistDocDAOs (DocumentStorageReq documentStorageReq) {
     String sql;
     try{
-        if (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF")){
+        if (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF") || documentStorageReq.getToKen().equals("KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue")){
             if (documentStorageReq.getBouang()!=null && documentStorageReq.getCompany()==null && documentStorageReq.getType()==null)
             {
                 sql = "select * from V_DOC WHERE bouang='"+documentStorageReq.getBouang()+"'";
@@ -1071,19 +1160,36 @@ public List<ResultOfSurveyModel> AllResultOfSurveyDAOs (DataHoleReq dataHoleReq)
     }
     return null;
 }
-//show task DAOs
-public List<TaskModel> AllTaskDAOs (TaskReq taskReq ) {
-    String sql;
-    try{
-        if (taskReq.getStartDate()== null && taskReq.getEndDate()== null)
-        {
-            sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"'";
-        }
-        else
-        {
-            sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"' AND START_DATE BETWEEN '"+taskReq.getStartDate()+"' AND '"+taskReq.getEndDate()+"'";
-        }
+//show task DAOs Bard new
+public List<TaskModel> AllTaskDAOs(TaskReq taskReq) {
+    String sql = "select * from V_TASKS ";
+    StringBuilder whereClause = new StringBuilder();
 
+    if (taskReq.getStatus() != null && !taskReq.getStatus().equals("all")) {
+        whereClause.append(" WHERE toKen = '").append(taskReq.getToKen()).append("'");
+    }
+
+    if (taskReq.getStartDate() != null && taskReq.getEndDate() != null) {
+        if (whereClause.length() > 0) {
+            whereClause.append(" AND ");
+        } else {
+            whereClause.append(" WHERE ");
+        }
+        whereClause.append(" START_DATE BETWEEN '").append(taskReq.getStartDate()).append("' AND '").append(taskReq.getEndDate()).append("'");
+    }
+
+    if (taskReq.getProgress() != null) {
+        if (whereClause.length() > 0) {
+            whereClause.append(" AND ");
+        } else {
+            whereClause.append(" WHERE ");
+        }
+        whereClause.append(" PROGRESS = '").append(taskReq.getProgress()).append("'");
+    }
+
+    sql += whereClause.toString();
+
+    try {
         return EBankJdbcTemplate.query(sql, new RowMapper<TaskModel>() {
             @Override
             public TaskModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1096,14 +1202,83 @@ public List<TaskModel> AllTaskDAOs (TaskReq taskReq ) {
                 tr.setDuration(rs.getString("DURATION"));
                 tr.setProgress(rs.getString("PROGRESS"));
                 tr.setBranch_name(rs.getString("B_NAME"));
-                return tr ;
+                return tr;
             }
         });
-    }catch (Exception e){
+    } catch (Exception e) {
         e.printStackTrace();
     }
     return null;
 }
+//show task DAOs
+//public List<TaskModel> AllTaskDAOs (TaskReq taskReq ) {
+//    String sql;
+//    try{
+//        if (taskReq.getStartDate()== null && taskReq.getEndDate()== null && taskReq.getStatus() =="all")
+//        {
+//            sql = "select * from V_TASKS ";
+//        }
+//        else if (taskReq.getStartDate()== null && taskReq.getEndDate()== null && taskReq.getStatus() =="not_all")
+//        {
+//            sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"'";
+//        }
+//        else if (taskReq.getStartDate()!= null && taskReq.getEndDate()!= null && taskReq.getStatus() =="not_all")
+//        {
+//            sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"' AND START_DATE BETWEEN '"+taskReq.getStartDate()+"' AND '"+taskReq.getEndDate()+"'";
+//        }
+//        else if (taskReq.getStartDate()!= null && taskReq.getEndDate()!= null && taskReq.getStatus() =="all")
+//        {
+//            sql = "select * from V_TASKS where START_DATE BETWEEN '"+taskReq.getStartDate()+"' AND '"+taskReq.getEndDate()+"'";
+//        }
+//        else if (taskReq.getProgress() == null && taskReq.getStartDate()== null && taskReq.getEndDate()== null && taskReq.getStatus() =="not_all")
+//        {
+//            sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"'";
+//        }
+//        else if (taskReq.getProgress() == null && taskReq.getStartDate()== null && taskReq.getEndDate()== null && taskReq.getStatus() =="all")
+//        {
+//            sql = "select * from V_TASKS ";
+//        }
+//        else if (taskReq.getProgress() != null && taskReq.getStartDate()!= null && taskReq.getEndDate()!= null && taskReq.getStatus() =="all")
+//        {
+//            sql = "select * from V_TASKS where PROGRESS= '"+taskReq.getProgress()+"' AND START_DATE BETWEEN '"+taskReq.getStartDate()+"' AND '"+taskReq.getEndDate()+"'";
+//        }
+//        else if (taskReq.getProgress() != null && taskReq.getStartDate()!= null && taskReq.getEndDate()!= null && taskReq.getStatus() =="not_all")
+//        {
+//            sql = "select * from V_TASKS where PROGRESS= '"+taskReq.getProgress()+"' AND START_DATE BETWEEN '"+taskReq.getStartDate()+"' AND '"+taskReq.getEndDate()+"' AND toKen= '"+taskReq.getToKen()+"'";
+//        }
+//        else if (taskReq.getProgress() != null && taskReq.getStartDate()== null && taskReq.getEndDate()== null && taskReq.getStatus()=="all")
+//        {
+//            sql = "select * from V_TASKS where PROGRESS= '"+taskReq.getProgress()+"'";
+//        }
+//        else if (taskReq.getProgress() != null && taskReq.getStartDate()== null && taskReq.getEndDate()== null&& taskReq.getStatus()=="not_all" )
+//        {
+//            sql = "select * from V_TASKS where PROGRESS= '"+taskReq.getProgress()+"' AND toKen= '"+taskReq.getToKen()+"'";
+//        }
+//        else
+//        {
+//            sql = "select * from V_TASKS where toKen= '"+taskReq.getToKen()+"' AND START_DATE BETWEEN '"+taskReq.getStartDate()+"' AND '"+taskReq.getEndDate()+"' and PROGRESS= '"+taskReq.getProgress()+"'";
+//        }
+//
+//        return EBankJdbcTemplate.query(sql, new RowMapper<TaskModel>() {
+//            @Override
+//            public TaskModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                TaskModel tr = new TaskModel();
+//                tr.setKey_id(rs.getString("KEY_ID"));
+//                tr.setTopic_task(rs.getString("TOPIC_TASK"));
+//                tr.setParent(rs.getString("SUB_TASK"));
+//                tr.setStartDate(rs.getString("START_DATE"));
+//                tr.setEndDate(rs.getString("END_DATE"));
+//                tr.setDuration(rs.getString("DURATION"));
+//                tr.setProgress(rs.getString("PROGRESS"));
+//                tr.setBranch_name(rs.getString("B_NAME"));
+//                return tr ;
+//            }
+//        });
+//    }catch (Exception e){
+//        e.printStackTrace();
+//    }
+//    return null;
+//}
 //link show
 public List<LinkModel> AllLinksDAOs (LinkReq linkReq) {
     String sql;
@@ -1199,6 +1374,28 @@ public List<DataHoleModel> AlllistOfHoleByKeyIdDAOs (DataHoleReq dataHoleReq) {
                 tr.setDataColler(rs.getString("data_Coller"));
                 tr.setFull_Name_Hole_number(rs.getString("full_Name_Hole_number"));
 
+                return tr ;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
+//show file header truck by id
+public List<FileOfHeaderTruckModel> ShowFilesOfHeadertruckKeyIdDAOs (OnlyFileHeaderTuckReq onlyFileHeaderTuckReq) {
+    String sql;
+    try{
+            sql = "select * from V_FILES_HEADERTRUCK where key_id_Lod = '" + onlyFileHeaderTuckReq.getKey_id_of_lod() + "'";
+        return EBankJdbcTemplate.query(sql, new RowMapper<FileOfHeaderTruckModel>() {
+            @Override
+            public FileOfHeaderTruckModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                FileOfHeaderTruckModel tr = new FileOfHeaderTruckModel();
+                tr.setFiles(rs.getString("FILES"));
+                tr.setKey_id_of_lod(rs.getString("key_id_Lod"));
+                tr.setKey_id_of_file(rs.getString("KEY_ID_OF_FILE"));
+                tr.setLicense_plate(rs.getString("H_VICIVLE_NUMBER"));
+                tr.setDate2(rs.getString("date"));
                 return tr ;
             }
         });

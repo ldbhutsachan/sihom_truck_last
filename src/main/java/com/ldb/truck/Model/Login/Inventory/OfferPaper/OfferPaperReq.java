@@ -91,6 +91,7 @@ public class OfferPaperReq {
     private String item_name9;
     private String startDate;
     private String endDate;
+    private String branch_id;
 
 
 }

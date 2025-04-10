@@ -20,6 +20,7 @@ public class FixReq {
     private String branch;
     private String branch_inventory;
     private String userId;
+    private String sangkao_status;
     private String dateFix;
 
     private String startDate;

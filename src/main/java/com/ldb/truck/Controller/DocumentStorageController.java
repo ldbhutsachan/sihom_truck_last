@@ -3,6 +3,8 @@ package com.ldb.truck.Controller;
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleReq;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleRes;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Task.LinkReq;
 import com.ldb.truck.Model.Login.Task.LinkRes;
@@ -544,6 +546,96 @@ public Messages InsertDataHole(
     }
     return  result;
 }
+//file header truck
+@CrossOrigin(origins = "*")
+@PostMapping(value = "/headerTruckFiles.service" , consumes = {"multipart/form-data"})
+public Messages headerTruckFiles(
+        @RequestParam("files") MultipartFile files,
+        @RequestParam("headtruck_id") String  headtruck_id,
+        @RequestParam("toKen") String  toKen,
+        @RequestParam("date2") String  date2
+
+){
+    log.info("===================================save header==================================================");
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+    String namefile = formatter.format(date);
+    Messages result = new Messages();
+    try {
+        OnlyFileHeaderTuckReq data = new OnlyFileHeaderTuckReq();
+        data.setHeadtruck_id(headtruck_id);
+        data.setToKen(toKen);
+        data.setDate2(date2);
+        log.error("******file lenght"+files);
+        log.error(data);
+        String fileName = "";
+        List<String> fileNames = new ArrayList<>();
+        if(files == null){
+            log.warn("************* file name is null ****************");
+            data.setPicOrFile("http://khounkham.com/images/car/image.jpg");
+        }else {
+            Arrays.asList(files).stream().forEach(file -> {
+//                    fileNames.add(mediaUploadService.uploadMediacar(file));
+                fileNames.add(mediaUploadService.uploadPDF(file));
+            });
+            log.info("Uploaded the files successfully: " + fileNames );
+            fileName = StringUtils.join(fileNames, ',');
+            data.setPicOrFile(fileName);
+        }
+        result = documentStorageService.HeaderTruckFileService(data);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+        return  result;
+    }
+    return  result;
+}
+    //file header truck update
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/headerTruckFilesUpdate.service" , consumes = {"multipart/form-data"})
+    public Messages headerTruckFilesUpdate(
+            @RequestParam("files") MultipartFile files,
+            @RequestParam("headtruck_id") String  headtruck_id,
+            @RequestParam("key_id_of_file") String  key_id_of_file,
+            @RequestParam("date2") String  date2
+    ){
+        log.info("===================================save header==================================================");
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+        String namefile = formatter.format(date);
+        Messages result = new Messages();
+        try {
+            OnlyFileHeaderTuckReq data = new OnlyFileHeaderTuckReq();
+            data.setHeadtruck_id(headtruck_id);
+//            data.setToKen(toKen);
+            data.setKey_id_of_file(key_id_of_file);
+            data.setDate2(date2);
+            log.error("******file lenght"+files);
+            log.error(data);
+            String fileName = "";
+            List<String> fileNames = new ArrayList<>();
+            if(files == null){
+                log.warn("************* file name is null ****************");
+                data.setPicOrFile("http://khounkham.com/images/car/image.jpg");
+            }else {
+                Arrays.asList(files).stream().forEach(file -> {
+//                    fileNames.add(mediaUploadService.uploadMediacar(file));
+                    fileNames.add(mediaUploadService.uploadPDF(file));
+                });
+                log.info("Uploaded the files successfully: " + fileNames );
+                fileName = StringUtils.join(fileNames, ',');
+                data.setPicOrFile(fileName);
+            }
+            result = documentStorageService.HeaderTruckFileUpdateService(data);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+            return  result;
+        }
+        return  result;
+    }
 //store task controller
 @CrossOrigin(origins = "*")
 @PostMapping("/storeTask.service")
@@ -729,6 +821,21 @@ public DataHoleRes ShowAllListOfHoleByKeyId(@RequestBody DataHoleReq dataHoleReq
     DataHoleRes result = new DataHoleRes();
     try {
         result = documentStorageService.AlllistOffHoleByKeyIdService(dataHoleReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+//show file header truck
+@CrossOrigin(origins = "*")
+@PostMapping("/ShowFilesOfHeadertruckKeyId.service")
+public FileOfHeaderRes ShowFilesOfHeadertruckKeyId(@RequestBody OnlyFileHeaderTuckReq onlyFileHeaderTuckReq){
+    FileOfHeaderRes result = new FileOfHeaderRes();
+    try {
+        result = documentStorageService.ShowFilesOfHeadertruckKeyIdService(onlyFileHeaderTuckReq);
     }catch (Exception e){
         e.printStackTrace();
         result.setStatus("01");
@@ -1052,6 +1159,35 @@ public CustomerHisPayRes DeptMustReceivedHistoryCustomer(@RequestBody DeptMustRe
         }
         return result;
     }
+//    rock ship smple insert
+@CrossOrigin(origins = "*")
+@PostMapping("/storeRockShipSample.service")
+public RockShipSampleRes storeRockShipSample(@RequestBody RockShipSampleReq[] rockShipSampleReq){
+    RockShipSampleRes result =new RockShipSampleRes();
+    try
+    {
+        result = documentStorageService.StoreRockShipSampleService(rockShipSampleReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+    }
+    return result;
+}
+//show rock ship
+@PostMapping("/ShowRockShipSample.service")
+public RockShipSampleRes ShowRockShipSample(@RequestBody RockShipSampleReq rockShipSampleReq){
+    RockShipSampleRes result =new RockShipSampleRes();
+    try
+    {
+        result = documentStorageService.ShowRockShipSampleService(rockShipSampleReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+    }
+    return result;
+}
 //    update bouang
 @CrossOrigin(origins = "*")
 @PostMapping("/BouangUpdate.service")

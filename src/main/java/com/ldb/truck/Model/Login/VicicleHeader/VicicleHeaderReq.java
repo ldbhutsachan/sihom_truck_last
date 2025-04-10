@@ -128,6 +128,12 @@ public class VicicleHeaderReq {
     private String lektungsit;
     private String dateExTungsit;
     private String date_change_lean;
+    private String brand_wheel_car;
+    private String status_use_unuse_car;
+    private String comment;
+    private String technique_date;
+    private String technique_date_per_month;
+    private String add_doc;
 
 //    private String  h_KM13;
 //    private String  h_KML_13;

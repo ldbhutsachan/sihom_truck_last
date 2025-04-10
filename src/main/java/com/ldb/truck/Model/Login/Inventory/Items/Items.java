@@ -19,4 +19,6 @@ public class Items {
     private String ber;
     private String size;
     private String brand;
+    private String branch_name;
+    private String branch_id;
 }

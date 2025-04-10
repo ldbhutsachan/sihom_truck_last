@@ -210,35 +210,35 @@ public class VicicleFooterService {
         }
     }
 //update footer new
-    public Messages updateVicicleFooter(VicicleFooterReq vicicleFooterReq){
-        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
-        //============================get User info=======================
-        List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
-        String userId = userIn.get(0).getUserId();
-        String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
-        vicicleFooterReq.setUserId(userId);
-        vicicleFooterReq.setBranch(userBranchNo);
-        //====================================================================
-        log.info("data req:"+vicicleFooterReq);
-        Messages result = new Messages();
-        try {
-            vicicleFooterServiceDao.updateFooterNew(vicicleFooterReq);
-            result.setMessage("Success");
-            result.setStatus("00");
-            return result;
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setMessage("data not found");
-            result.setStatus("01");
-            return result;
-        }
+public Messages updateVicicleFooter(VicicleFooterReq vicicleFooterReq){
+    log.info("toKen=======================:"+vicicleFooterReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    vicicleFooterReq.setUserId(userId);
+    vicicleFooterReq.setBranch(userBranchNo);
+    //====================================================================
+    log.info("data req:"+vicicleFooterReq);
+    Messages result = new Messages();
+    try {
+        vicicleFooterServiceDao.updateFooterNew(vicicleFooterReq);
+        result.setMessage("Success");
+        result.setStatus("00");
+        return result;
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setMessage("data not found");
+        result.setStatus("01");
+        return result;
     }
+}
     //update data
     public VicicleFooterRes updateVicicleHeader(VicicleFooterReq vicicleFooterReq){
         log.info("toKen=======================:"+vicicleFooterReq.getToKen());

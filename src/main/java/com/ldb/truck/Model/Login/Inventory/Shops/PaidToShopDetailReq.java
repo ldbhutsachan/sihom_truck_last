@@ -12,6 +12,7 @@ import lombok.Setter;
 public class PaidToShopDetailReq {
     private String toKen;
     private String branch;
+    private String branch_id;
     private String userId;
     private String offer_code;
     private String po_code;

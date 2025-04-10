@@ -33,6 +33,9 @@ public class v_performanceMapper implements RowMapper {
                     data.setStaff_Curr(rs.getString("STAFF_BIALIENG_CUR"));
                     data.setKEY_ID2(rs.getString("KEY_ID2"));
                     data.setProSize(rs.getDouble("PRODUCT_SIZE"));
+//                    String replaceProSize = rs.getString("PRODUCT_SIZE").replaceAll(",","");
+//                    Double conProSizeDouble = Double.valueOf(replaceProSize);
+//                    data.setProSize(conProSizeDouble);
                     data.setPrizeProcuctPerT(rs.getString("PRODUCT_AMOUNT"));
 
             // CURRENCY

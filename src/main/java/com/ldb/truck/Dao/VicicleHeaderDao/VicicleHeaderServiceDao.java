@@ -171,6 +171,13 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setLektungsit(rs.getString("lektungsit"));
                     tr.setDate_change_lean(rs.getString("date_change_lean"));
                     tr.setDateExTungsit(rs.getString("dateExTungsit"));
+                    tr.setDateExTungsit_status(rs.getString("dateExTungsit_status"));
+                    tr.setBrand_wheel_car(rs.getString("brand_wheel_car"));
+                    tr.setStatus_use_unuse_car(rs.getString("status_use_unuse_car"));
+                    tr.setComment(rs.getString("comment"));
+                    tr.setTechnique_date(rs.getString("technique_date"));
+                    tr.setTechnique_date_per_month(rs.getString("technique_date_per_month"));
+                    tr.setTechnique_date_status(rs.getString("technique_date_status"));
 
                     return tr ;
                 }
@@ -771,6 +778,13 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     tr.setLektungsit(rs.getString("lektungsit"));
                     tr.setDate_change_lean(rs.getString("date_change_lean"));
                     tr.setDateExTungsit(rs.getString("dateExTungsit"));
+                    tr.setDateExTungsit_status(rs.getString("dateExTungsit_status"));
+                    tr.setBrand_wheel_car(rs.getString("brand_wheel_car"));
+                    tr.setStatus_use_unuse_car(rs.getString("status_use_unuse_car"));
+                    tr.setComment(rs.getString("comment"));
+                    tr.setTechnique_date(rs.getString("technique_date"));
+                    tr.setTechnique_date_per_month(rs.getString("technique_date_per_month"));
+                    tr.setTechnique_date_status(rs.getString("technique_date_status"));
                     return tr;
                 }
             });
@@ -823,8 +837,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     "H_KML_9 ,  \n" +
                     "H_KML_10,  \n" +
                     "H_KML_11,  \n" +
-                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But,lektungsit,userId,date_change_lean,dateExTungsit)\n" +
-                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?)";
+                    "H_KML_12,H_KML_13,Bat_StartDate,Bat_EndDate,IMAGE_TRUK,END_DATE_REGISCAR,COLOR_CAR,HORSEPOWER,batNo,H_STATUS,saiystay,galick,leanGia,leanFuengThaiy,pha_But,lektungsit,userId,date_change_lean,dateExTungsit,brand_wheel_car,status_use_unuse_car,comment,technique_date,technique_date_per_month)\n" +
+                    "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Y',?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -935,6 +949,12 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(vicicleHeaderReq.getUserId());
             paramList.add(vicicleHeaderReq.getDate_change_lean());
             paramList.add(vicicleHeaderReq.getDateExTungsit());
+            paramList.add(vicicleHeaderReq.getBrand_wheel_car());
+            paramList.add(vicicleHeaderReq.getStatus_use_unuse_car());
+            paramList.add(vicicleHeaderReq.getComment());
+            paramList.add(vicicleHeaderReq.getTechnique_date());
+            paramList.add(vicicleHeaderReq.getTechnique_date_per_month());
+//            paramList.add(vicicleHeaderReq.getAdd_doc());
 //            paramList.add(vicicleHeaderReq.getBatNo2());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
@@ -1282,7 +1302,12 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=?,dateExTungsit=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,IMAGE_TRUK=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,batNo=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=?,dateExTungsit=?, brand_wheel_car=?, status_use_unuse_car=?, comment=?,technique_date=?,technique_date_per_month=? where  key_id=?";
+            log.info("key_id truck is: "+vicicleHeaderReq.getKey_id());
+            log.info("key_id BatNo is::"+vicicleHeaderReq.getBatNo());
+            log.info("key_id VICIVLE_Morfai is::"+vicicleHeaderReq.getH_VICIVLE_MORFAI());
+            log.info("font-send sql:"+SQL);
+
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -1399,7 +1424,11 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
             paramList.add(vicicleHeaderReq.getDateExTungsit());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
-
+            paramList.add(vicicleHeaderReq.getBrand_wheel_car());
+            paramList.add(vicicleHeaderReq.getStatus_use_unuse_car());
+            paramList.add(vicicleHeaderReq.getComment());
+            paramList.add(vicicleHeaderReq.getTechnique_date());
+            paramList.add(vicicleHeaderReq.getTechnique_date_per_month());
             paramList.add(vicicleHeaderReq.getKey_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
@@ -1470,7 +1499,11 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
                     "H_KML_9 =?,  \n" +
                     "H_KML_10=?,  \n" +
                     "H_KML_11=?,  \n" +
-                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=?,dateExTungsit=? where  key_id=?";
+                    "H_KML_12=?,H_KML_13=?,Bat_StartDate=?,Bat_EndDate=?,END_DATE_REGISCAR=?,COLOR_CAR=?,HORSEPOWER=?,saiystay=?,galick=?,leanGia=?,leanFuengThaiy=?,pha_But=?,lektungsit=?,userId=?,date_change_lean=?,dateExTungsit=? ,brand_wheel_car=?,status_use_unuse_car=?,comment=?,technique_date=?,technique_date_per_month=? where  key_id=?";
+            log.info("key_id truck is: "+vicicleHeaderReq.getKey_id());
+            log.info("key_id BatNo is::"+vicicleHeaderReq.getBatNo());
+            log.info("key_id VICIVLE_Morfai is::"+vicicleHeaderReq.getH_VICIVLE_MORFAI());
+            log.info("font-send sql:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(vicicleHeaderReq.getH_VICIVLE_NUMBER());
             paramList.add(vicicleHeaderReq.getH_VICIVLE_GALATY());
@@ -1584,6 +1617,11 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
             paramList.add(vicicleHeaderReq.getUserId());
             paramList.add(vicicleHeaderReq.getDate_change_lean());
             paramList.add(vicicleHeaderReq.getDateExTungsit());
+            paramList.add(vicicleHeaderReq.getBrand_wheel_car());
+            paramList.add(vicicleHeaderReq.getStatus_use_unuse_car());
+            paramList.add(vicicleHeaderReq.getComment());
+            paramList.add(vicicleHeaderReq.getTechnique_date());
+            paramList.add(vicicleHeaderReq.getTechnique_date_per_month());
 //            paramList.add(vicicleHeaderReq.getBat_StartDate2());
 //            paramList.add(vicicleHeaderReq.getBat_EndDate2());
 
@@ -2004,6 +2042,13 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
                     tr.setPha_But(rs.getString("Pha_But"));
                     tr.setLektungsit(rs.getString("lektungsit"));
                     tr.setDate_change_lean(rs.getString("date_change_lean"));
+                    tr.setDateExTungsit_status(rs.getString("dateExTungsit_status"));
+                    tr.setBrand_wheel_car(rs.getString("brand_wheel_car"));
+                    tr.setStatus_use_unuse_car(rs.getString("status_use_unuse_car"));
+                    tr.setComment(rs.getString("comment"));
+                    tr.setTechnique_date(rs.getString("technique_date"));
+                    tr.setTechnique_date_per_month(rs.getString("technique_date_per_month"));
+                    tr.setTechnique_date_status(rs.getString("technique_date_status"));
                     return tr;
                 }
             });

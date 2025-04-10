@@ -2,6 +2,8 @@ package com.ldb.truck.Dao.documentStorageDAOs;
 
 import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleModel;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleReq;
 
 import java.text.ParseException;
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.List;
 public interface DocumentInterface {
     public List<ListNameModel> ListNameDeptDAOs (DeptMustReceivedReq deptMustReceivedReq);
     public int DeptMustRecievedInsertArray(List<DeptMustReceivedReq> deptMustReceivedReq);
+    public int StorerockShipSampleDAOs (RockShipSampleReq[] rockShipSampleReqs);
+    public List<RockShipSampleModel> ListRockShipDAOS (RockShipSampleReq rockShipSampleReq);
     public List<CustomerHisPayModel> SearchDeptMustReceivedHistoryCustormerDAOs (DeptMustReceivedReq deptMustReceivedReq);
     public int InvoiceDeptInsertDAOs (InvoiceDeptReq invoiceDeptReq) throws ParseException;
     public int AcceptupdateStatusDAOs(DeptMustReceivedReq deptMustReceivedReq);

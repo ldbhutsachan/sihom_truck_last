@@ -20,4 +20,5 @@ public class TaskReq {
     private String branch;
     private String progress;
     private String key_id;
+    private String status;
 }
