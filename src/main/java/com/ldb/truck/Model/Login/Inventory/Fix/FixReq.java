@@ -19,6 +19,7 @@ public class FixReq {
     private String toKen;
     private String branch;
     private String branch_inventory;
+    private String branch_id;
     private String userId;
     private String sangkao_status;
     private String dateFix;

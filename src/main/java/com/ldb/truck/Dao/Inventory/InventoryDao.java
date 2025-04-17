@@ -165,16 +165,33 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
 }
     //report list shop must pay
     public List<ReportShops> ListShopsMustPayDao(ShopReq shopReq  ) {
+        String SQL ="";
         try{
-            String SQL ="";
-            if(shopReq.getStartDate()==null && shopReq.getEndDate()==null){
-                 SQL ="select * from REPORT_SHOPS_MUST_PAY  where BRANCH='"+shopReq.getBranch()+"' ";
+            if (shopReq.getBranch_id() != null)
+            {
+                if(shopReq.getStartDate()==null && shopReq.getEndDate()==null){
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where branch_ic='"+shopReq.getBranch_id()+"' ";
+                    log.info("SQL:"+SQL);
+                }
+                else {
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where branch_id='"+shopReq.getBranch_id()+"' AND DateCreatePO BETWEEN '"+shopReq.getStartDate()+"' and '"+shopReq.getEndDate()+"'";
+                    log.info("SQL:"+SQL);
+                }
             }
-            else {
-                 SQL ="select * from REPORT_SHOPS_MUST_PAY  where BRANCH='"+shopReq.getBranch()+"' AND DateCreatePO BETWEEN '"+shopReq.getStartDate()+"' and '"+shopReq.getEndDate()+"'";
+            else
+            {
+                if(shopReq.getStartDate()==null && shopReq.getEndDate()==null){
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where BRANCH='"+shopReq.getBranch()+"' ";
+                    log.info("SQL:"+SQL);
+                }
+                else {
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where BRANCH='"+shopReq.getBranch()+"' AND DateCreatePO BETWEEN '"+shopReq.getStartDate()+"' and '"+shopReq.getEndDate()+"'";
+                    log.info("SQL:"+SQL);
+                }
             }
 
-            log.info("SQL:"+SQL);
+
+
             return EBankJdbcTemplate.query(SQL, new RowMapper<ReportShops>() {
                 @Override
                 public ReportShops mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -289,14 +306,27 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
     }
     //list show report stock Detail
     public List<ReportStockModel> ListStockDetail(ReportStockDetailReq reportStockDetailReq) {
+        String SQL=null;
         try{
-            String SQL=null;
-            if (reportStockDetailReq.getStartDate()== null && reportStockDetailReq.getEndDate() == null){
-                 SQL ="select * from V_OFFER_PAPER where BRANCH='"+reportStockDetailReq.getBranch()+"'  and item_id or item_id1 or item_id2 or item_id3 or item_id4 or item_id5 or item_id6 or item_id7 or item_id8 or item_id9 = '"+reportStockDetailReq.getItem_id()+"'";
-                log.info("SQL1:"+SQL);
-            } else{
-                SQL ="select * from V_OFFER_PAPER where BRANCH='"+reportStockDetailReq.getBranch()+"'  and dateCreate between '"+reportStockDetailReq.getStartDate()+"' and '"+reportStockDetailReq.getEndDate()+"'";
-                log.info("SQL2:"+SQL);
+            if (reportStockDetailReq.getBranch_id() != null)
+            {
+                if (reportStockDetailReq.getStartDate()== null && reportStockDetailReq.getEndDate() == null){
+                    SQL ="select * from V_OFFER_PAPER where branch_id='"+reportStockDetailReq.getBranch_id()+"'  and item_id or item_id1 or item_id2 or item_id3 or item_id4 or item_id5 or item_id6 or item_id7 or item_id8 or item_id9 = '"+reportStockDetailReq.getItem_id()+"'";
+                    log.info("SQL1:"+SQL);
+                } else{
+                    SQL ="select * from V_OFFER_PAPER where branch_id='"+reportStockDetailReq.getBranch_id()+"'  and dateCreate between '"+reportStockDetailReq.getStartDate()+"' and '"+reportStockDetailReq.getEndDate()+"'";
+                    log.info("SQL2:"+SQL);
+                }
+            }
+            else
+            {
+                if (reportStockDetailReq.getStartDate()== null && reportStockDetailReq.getEndDate() == null){
+                    SQL ="select * from V_OFFER_PAPER where BRANCH='"+reportStockDetailReq.getBranch()+"'  and item_id or item_id1 or item_id2 or item_id3 or item_id4 or item_id5 or item_id6 or item_id7 or item_id8 or item_id9 = '"+reportStockDetailReq.getItem_id()+"'";
+                    log.info("SQL1:"+SQL);
+                } else{
+                    SQL ="select * from V_OFFER_PAPER where BRANCH='"+reportStockDetailReq.getBranch()+"'  and dateCreate between '"+reportStockDetailReq.getStartDate()+"' and '"+reportStockDetailReq.getEndDate()+"'";
+                    log.info("SQL2:"+SQL);
+                }
             }
             return EBankJdbcTemplate.query(SQL, new RowMapper<ReportStockModel>() {
                 @Override
@@ -702,7 +732,7 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
         try {
             if (fixReq.getBranch_inventory() == null){
                 List<Object> paramList = new ArrayList<Object>();
-                String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values (?,?,?,?,?,?,?,'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"',0)";
+                String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory,branch_id) values (?,?,?,?,?,?,?,'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"',0,'"+fixReq.getBranch_id()+"')";
                 log.info("SQL:"+sql1);
                 paramList.add(fixReq.getHeader_id());
                 paramList.add(fixReq.getFooter_id());
@@ -717,6 +747,7 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
                 paramList.add(fixReq.getFix_Detail());
 //                paramList.add(fixReq.getFix_Detail());
                 paramList.add(fixReq.getBranch_inventory());
+                paramList.add(fixReq.getBranch_id());
                 EBankJdbcTemplate.update(sql1, paramList.toArray());
 
 //                String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
@@ -727,7 +758,7 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
             else if (fixReq.getBranch_inventory() != null)
             {
                     List<Object> paramList = new ArrayList<Object>();
-                    String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values (?,?,?,?,?,?,now(),'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"','"+fixReq.getBranch_inventory()+"')";
+                    String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory,branch_id) values (?,?,?,?,?,?,now(),'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"','"+fixReq.getBranch_inventory()+"','"+fixReq.getBranch_id()+"')";
                     log.info("SQL1:"+sql1);
                     paramList.add(fixReq.getHeader_id());
                     paramList.add(fixReq.getFooter_id());
@@ -741,6 +772,7 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
                     paramList.add(fixReq.getLocation_fix());
                     paramList.add(fixReq.getFix_Detail());
                     paramList.add(fixReq.getBranch_inventory());
+                    paramList.add(fixReq.getBranch_id());
                     EBankJdbcTemplate.update(sql1, paramList.toArray());
 //ตัดสะต๋อกออก
 //                    String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
@@ -764,7 +796,7 @@ public int ApproveFixDao (FixReq fixReq) {
     String totalPrice1 = fixReq.getTotal_Price().replace(",","");
     try {
             List<Object> paramList = new ArrayList<Object>();
-            String sql1 ="insert into APPROVE_FIX (header_id,item_name,branch_inventory,item_id,footer_id,qty_Fix,total_Price,description,location_fix,fix_Detail,dateFix,approve_status,userId) values (?,?,?,?,?,?,?,?,?,?,?,'YES',?)";
+            String sql1 ="insert into APPROVE_FIX (header_id,item_name,branch_inventory,item_id,footer_id,qty_Fix,total_Price,description,location_fix,fix_Detail,dateFix,approve_status,userId,branch_id) values (?,?,?,?,?,?,?,?,?,?,?,'YES',?,?)";
             log.info("SQL1:"+sql1);
             paramList.add(fixReq.getHeader_id());
             paramList.add(fixReq.getItem_name());
@@ -778,6 +810,7 @@ public int ApproveFixDao (FixReq fixReq) {
             paramList.add(fixReq.getFix_Detail());
             paramList.add(fixReq.getDateFix());
             paramList.add(fixReq.getUserId());
+            paramList.add(fixReq.getBranch_id());
             EBankJdbcTemplate.update(sql1, paramList.toArray());
     }catch (Exception e){
         e.printStackTrace();
@@ -1485,7 +1518,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
                 "(moneyRate * unit_price7 * qty_offer7 )+\n" +
                 "(moneyRate * unit_price8 * qty_offer8 )+\n" +
                 "(moneyRate * unit_price9 * qty_offer9) , datePay =? ,STATUS_CREDITS='NO' WHERE offer_CODE = ?";
-        String sql3 = "INSERT INTO currency_in_kip (OFFER_CODE,TOTAL_MONEY,DATE,CUR,userId) SELECT OFFER_CODE,Real_totalMoney,datePay,currency,userId from OFFER_PAPER WHERE offer_CODE = ?";
+        String sql3 = "INSERT INTO currency_in_kip (OFFER_CODE,TOTAL_MONEY,DATE,CUR,userId,branch_id) SELECT OFFER_CODE,Real_totalMoney,datePay,currency,userId,branch_id from OFFER_PAPER WHERE offer_CODE = ?";
 
         log.info(sql);
         log.info(sql2);
@@ -2459,9 +2492,18 @@ public List<OfferPaperModelFaso> ShowofferpaperDAOspayCredit (OfferPaperReq offe
     // show fix list DAOs
     public List<ShowFixModel> ShowFixListDAOs(FixReq fixReq) {
         try {
-            String sql ="SELECT * FROM V_FIX_4SHOW  where BRANCH='"+fixReq.getBranch()+"'";
+            String sql;
+            if (fixReq.getBranch_id() != null)
+            {
+                 sql ="SELECT * FROM V_FIX_4SHOW  where branch_id='"+fixReq.getBranch_id()+"'";
 //            String sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"'";
-            log.info("SQL:"+sql);
+                log.info("SQL:"+sql);
+            }else
+            {
+                 sql ="SELECT * FROM V_FIX_4SHOW  where BRANCH='"+fixReq.getBranch()+"'";
+//            String sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"'";
+                log.info("SQL:"+sql);
+            }
             return EBankJdbcTemplate.query(sql, new RowMapper<ShowFixModel>() {
                 @Override
                 public ShowFixModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -2479,7 +2521,6 @@ public List<OfferPaperModelFaso> ShowofferpaperDAOspayCredit (OfferPaperReq offe
                     tr.setBranch_inventory(rs.getString("branch_inventory"));
                     tr.setImg(rs.getString("img"));
                     tr.setFinalTotalPrice(rs.getDouble("finalTotalPrice"));
-
                     return tr;
                 }
             });
@@ -2492,15 +2533,31 @@ public List<OfferPaperModelFaso> ShowofferpaperDAOspayCredit (OfferPaperReq offe
 public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
         String sql="";
     try {
-        if (fixReq.getToKen().equals("2514f6e2995b6e796d197c673d48375a271157a5e01f164d44ea7df278f7a377"))
+        if (fixReq.getBranch_id() != null)
         {
-            sql ="SELECT * FROM V_APPROVE_FIX";
-            log.info("SQL admin:"+sql);
+            if (fixReq.getToKen().equals("2514f6e2995b6e796d197c673d48375a271157a5e01f164d44ea7df278f7a377"))
+            {
+                sql ="SELECT * FROM V_APPROVE_FIX";
+                log.info("SQL admin:"+sql);
+            }
+            else
+            {
+                sql ="SELECT * FROM V_APPROVE_FIX WHERE branch_id ='"+fixReq.getBranch_id()+"'";
+                log.info("SQL branch:"+sql);
+            }
         }
         else
         {
-            sql ="SELECT * FROM V_APPROVE_FIX WHERE BRANCH_Inventory ='"+fixReq.getBranch()+"'";
-            log.info("SQL branch:"+sql);
+            if (fixReq.getToKen().equals("2514f6e2995b6e796d197c673d48375a271157a5e01f164d44ea7df278f7a377"))
+            {
+                sql ="SELECT * FROM V_APPROVE_FIX";
+                log.info("SQL admin:"+sql);
+            }
+            else
+            {
+                sql ="SELECT * FROM V_APPROVE_FIX WHERE BRANCH_Inventory ='"+fixReq.getBranch()+"'";
+                log.info("SQL branch:"+sql);
+            }
         }
         return EBankJdbcTemplate.query(sql, new RowMapper<ReqListOfFixModel>() {
             @Override
@@ -2642,9 +2699,18 @@ public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventor
     // show fix Detail DAOs
     public List<ShowFixModel> ShowFixListDAOsDetail(FixReq fixReq) {
         try {
-            String sql ="SELECT * FROM V_FIX_4SHOW  where BRANCH='"+fixReq.getBranch()+"' and fixId = '"+fixReq.getFixId()+"'";
+            String sql;
+            if (fixReq.getBranch_id() != null)
+            {
+                 sql ="SELECT * FROM V_FIX_4SHOW  where branch_id='"+fixReq.getBranch_id()+"' and fixId = '"+fixReq.getFixId()+"'";
 //            String sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"' and fixId = '"+fixReq.getFixId()+"'";
-            log.info("SQL:"+sql);
+                log.info("SQL:"+sql);
+            }
+            else
+            {
+                 sql ="SELECT * FROM V_FIX_4SHOW  where BRANCH='"+fixReq.getBranch()+"' and fixId = '"+fixReq.getFixId()+"'";
+                log.info("SQL:"+sql);
+            }
             return EBankJdbcTemplate.query(sql, new RowMapper<ShowFixModel>() {
                 @Override
                 public ShowFixModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -2693,16 +2759,33 @@ public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventor
     public List<FixModelFaso> FixReportDAOs (FixReq fixReq) {
         String sql;
         try {
-            if (fixReq.getStartDate() == null){
-                 sql ="SELECT * FROM V_FIX  where BRANCH='"+fixReq.getBranch()+"'  ";
+            if (fixReq.getBranch_id() != null)
+            {
+                if (fixReq.getStartDate() == null){
+                    sql ="SELECT * FROM V_FIX  where branch_id='"+fixReq.getBranch_id()+"'  ";
 // new                sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"'  ";
-                log.info("SQL:"+sql);
-            }
-            else{
-                 sql ="SELECT * FROM V_FIX  where BRANCH='"+fixReq.getBranch()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
+                    log.info("SQL:"+sql);
+                }
+                else{
+                    sql ="SELECT * FROM V_FIX  where branch_id='"+fixReq.getBranch_id()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
 // new                sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
-                log.info("SQL:"+sql);
+                    log.info("SQL:"+sql);
+                }
             }
+            else
+            {
+                if (fixReq.getStartDate() == null){
+                    sql ="SELECT * FROM V_FIX  where BRANCH='"+fixReq.getBranch()+"'  ";
+// new                sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"'  ";
+                    log.info("SQL:"+sql);
+                }
+                else{
+                    sql ="SELECT * FROM V_FIX  where BRANCH='"+fixReq.getBranch()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
+// new                sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
+                    log.info("SQL:"+sql);
+                }
+            }
+
             return EBankJdbcTemplate.query(sql, new RowMapper<FixModelFaso>() {
                 @Override
                 public FixModelFaso mapRow(ResultSet rs, int rowNum) throws SQLException {
