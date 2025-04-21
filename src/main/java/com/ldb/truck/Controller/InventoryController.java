@@ -183,7 +183,8 @@ public OfferpaperRes offerpaper (@RequestBody OfferPaperReq offerPaperReq ){
             @RequestParam("vehicle_Oldwarehouse") String  vehicle_Oldwarehouse,
             @RequestParam("qty_Oldwarehouse") String  qty_Oldwarehouse,
             @RequestParam("selectedType_Oldwarehouse") String  selectedType_Oldwarehouse,
-            @RequestParam("toKen") String  toKen
+            @RequestParam("toKen") String  toKen,
+            @RequestParam("branch_id") String  branch_id
     ){
 
         log.info("===================================save header==================================================");
@@ -202,6 +203,7 @@ public OfferpaperRes offerpaper (@RequestBody OfferPaperReq offerPaperReq ){
             data.setQty_Oldwarehouse(qty_Oldwarehouse);
             data.setSelectedType_Oldwarehouse(selectedType_Oldwarehouse);
             data.setToKen(toKen);
+            data.setBranch_id(branch_id);
 
             log.error("******file lenght"+image_Oldwarehouse);
             log.error(data);
@@ -255,6 +257,7 @@ public Messages UpdateOldInventory(
         @RequestParam("vehicle_Oldwarehouse") String  vehicle_Oldwarehouse,
         @RequestParam("qty_Oldwarehouse") String  qty_Oldwarehouse,
         @RequestParam("selectedType_Oldwarehouse") String  selectedType_Oldwarehouse,
+        @RequestParam("branch_id") String  branch_id,
         @RequestParam("toKen") String  toKen
 
 ){
@@ -275,6 +278,7 @@ public Messages UpdateOldInventory(
         data.setVehicle_Oldwarehouse(vehicle_Oldwarehouse);
         data.setQty_Oldwarehouse(qty_Oldwarehouse);
         data.setSelectedType_Oldwarehouse(selectedType_Oldwarehouse);
+        data.setBranch_id(branch_id);
         data.setToKen(toKen);
 
 

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 
 @Setter
 @Getter
@@ -16,4 +17,5 @@ public class ReportStockRes {
     private String message;
     private List<ReportStockModel> data;
     private sumFooterGroupTotalValue sumFooter;
+    private Map<String, String> currencyTotals;
 }

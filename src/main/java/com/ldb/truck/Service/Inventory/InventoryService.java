@@ -30,7 +30,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -511,11 +513,15 @@ public FixRes proofFixReqService(FixReq fixReq){
         try {
             data = inventoryDao.ListStock(moveToStockReq);
 
-            sumFooterGroupTotalValue restFooter = new sumFooterGroupTotalValue();
-            double TotalValue =  data.stream().map(ReportStockModel::getTotalValue).collect(Collectors.summingDouble(Double::doubleValue));
-            restFooter.setTotalValue(numfm.format(TotalValue));
+            Map<String, Double> totalsByCurrency = data.stream()
+                    .collect(Collectors.groupingBy(ReportStockModel::getCurrency,
+                            Collectors.summingDouble(ReportStockModel::getTotalValue)));
 
-            result.setSumFooter(restFooter);
+            Map<String, String> formattedCurrencyTotals = new HashMap<>();
+            for (Map.Entry<String, Double> entry : totalsByCurrency.entrySet()) {
+                formattedCurrencyTotals.put("total_" + entry.getKey().toUpperCase(), numfm.format(entry.getValue()));
+            }
+            result.setCurrencyTotals(formattedCurrencyTotals);
             result.setMessage("Successful");
             result.setStatus("00");
             result.setData(data);

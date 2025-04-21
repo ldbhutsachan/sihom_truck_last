@@ -36,6 +36,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -170,7 +171,7 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
             if (shopReq.getBranch_id() != null)
             {
                 if(shopReq.getStartDate()==null && shopReq.getEndDate()==null){
-                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where branch_ic='"+shopReq.getBranch_id()+"' ";
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where branch_id='"+shopReq.getBranch_id()+"' ";
                     log.info("SQL:"+SQL);
                 }
                 else {
@@ -225,11 +226,11 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
         try{
             if (moveToStockReq.getBranch_id() != null)
             {
-                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price from TB_items where branch_id='"+moveToStockReq.getBranch_id()+"' ";
+                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur from TB_items where branch_id='"+moveToStockReq.getBranch_id()+"' ";
                 log.info("SQL:"+SQL);
             }else
             {
-                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+moveToStockReq.getBranch()+"' ";
+                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+moveToStockReq.getBranch()+"' ";
                 log.info("SQL:"+SQL);
             }
 
@@ -249,6 +250,7 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
                     tr.setTotalValue(rs.getDouble("total_price"));
                     tr.setUnitPirce(rs.getString("unit_price"));
                     tr.setSumUnitWithPrice(rs.getString("total_price"));
+                    tr.setCurrency(rs.getString("cur"));
 
                     return tr;
                 }
@@ -480,7 +482,16 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
         String totalMoney9 = offerPaperReq.getTotalMoney9().replace(",","");
         String unit_price9 = offerPaperReq.getUnit_price9().replace(",","");
         String sql=null;
-
+//  =============================================================================================================new create
+        String currency = offerPaperReq.getCurrency();
+        List<String> itemIds = Arrays.asList(offerPaperReq.getItem_id(), offerPaperReq.getItem_id1(), offerPaperReq.getItem_id2(),
+                offerPaperReq.getItem_id3(), offerPaperReq.getItem_id4(), offerPaperReq.getItem_id5(),
+                offerPaperReq.getItem_id6(), offerPaperReq.getItem_id7(), offerPaperReq.getItem_id8(),
+                offerPaperReq.getItem_id9());
+        List<String> unitPriceList = Arrays.asList(unit_price, unit_price1, unit_price2,unit_price3, unit_price4, unit_price5,unit_price6,
+                unit_price7, unit_price8,
+                unit_price9);
+//  =============================================================================================================new create
         Double a = Double.parseDouble(totalMoney);
         Double b = Double.parseDouble(totalMoney1);
         Double c = Double.parseDouble(totalMoney2);
@@ -587,10 +598,29 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
 
                 EBankJdbcTemplate.update(sql, paramList.toArray());
 
-                String sqlUD = "update TB_items set unit_price = '"+unit_price+"' where item_id = '"+offerPaperReq.getItem_id()+"'";
-                log.info("SQL_update_price1:"+sqlUD);
-                paramList.add(unit_price);
-                EBankJdbcTemplate.update(sqlUD, paramList.toArray());
+//                for (String itemId : itemIds) {
+//                    String udUnitPrice = "update TB_items set unit_price = ? where item_id = ?";
+//                    log.info("SQL_update_unit_price for item {}: {}", itemId, udUnitPrice);
+//                    EBankJdbcTemplate.update(udUnitPrice, new Object[]{unitPriceList, itemId});
+//                }
+                if (itemIds.size() == unitPriceList.size()) {
+                    for (int o = 0; o < itemIds.size(); o++) {
+                        String itemId = itemIds.get(o);
+                        String unitPrice = unitPriceList.get(o);
+                        String udUnitPrice = "update TB_items set unit_price = ? where item_id = ?";
+                        log.info("SQL_update_unit_price for item {}: {}", itemId, udUnitPrice);
+                        EBankJdbcTemplate.update(udUnitPrice, new Object[]{unitPrice, itemId});
+                    }
+                } else {
+                    log.error("Error: The number of item IDs does not match the number of unit prices.");
+                    // Handle this error appropriately, maybe throw an exception
+                }
+
+                for (String itemId : itemIds) {
+                    String updateCUR = "update TB_items set cur = ? where item_id = ?";
+                    log.info("SQL_update_currency for item {}: {}", itemId, updateCUR);
+                    EBankJdbcTemplate.update(updateCUR, new Object[]{currency, itemId});
+                }
             }
             else if(offerPaperReq.getShop_id()!=8 && offerPaperReq.getShop_id()!=26 && offerPaperReq.getShop_id()!=27 && offerPaperReq.getShop_id()!=57){
                 sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id)" +
@@ -683,10 +713,30 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
 
                 EBankJdbcTemplate.update(sql, paramList.toArray());
 
-                String sqlUD = "update TB_items set unit_price = '"+unit_price+"' where item_id = '"+offerPaperReq.getItem_id()+"'";
-                log.info("SQL_update_price2:"+sqlUD);
-                paramList.add(unit_price);
-                EBankJdbcTemplate.update(sqlUD, paramList.toArray());
+//                for (String itemId : itemIds) {
+//                    String udUnitPrice = "update TB_items set unit_price = ? where item_id = ?";
+//                    log.info("SQL_update_unit_price for item {}: {}", itemId, udUnitPrice);
+//                    EBankJdbcTemplate.update(udUnitPrice, new Object[]{unitPriceList, itemId});
+//                }
+                if (itemIds.size() == unitPriceList.size()) {
+                    for (int o = 0; o < itemIds.size(); o++) {
+                        String itemId = itemIds.get(o);
+                        String unitPrice = unitPriceList.get(o);
+                        String udUnitPrice = "update TB_items set unit_price = ? where item_id = ?";
+                        log.info("SQL_update_unit_price for item {}: {}", itemId, udUnitPrice);
+                        EBankJdbcTemplate.update(udUnitPrice, new Object[]{unitPrice, itemId});
+                    }
+                } else {
+                    log.error("Error: The number of item IDs does not match the number of unit prices.");
+                    // Handle this error appropriately, maybe throw an exception
+                }
+
+                for (String itemId : itemIds) {
+                    String updateCUR = "update TB_items set cur = ? where item_id = ?";
+                    log.info("SQL_update_currency for item {}: {}", itemId, updateCUR);
+                    EBankJdbcTemplate.update(updateCUR, new Object[]{currency, itemId});
+                }
+
             }
 //            return EBankJdbcTemplate.update(sql, paramList.toArray());
         }catch (Exception e ){
@@ -868,7 +918,7 @@ public int InsertOldinventoryDAOs (OldInventoryReq oldInventoryReq) throws Parse
         paramList.add(oldInventoryReq.getImportExpirationDate_Oldwarehouse());
         paramList.add(oldInventoryReq.getSelectedType_Oldwarehouse());
         paramList.add(oldInventoryReq.getPrice_Oldwarehouse());
-        paramList.add(oldInventoryReq.getBranch());
+        paramList.add(oldInventoryReq.getBranch_id());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
         e.printStackTrace();
@@ -908,7 +958,7 @@ public int UpdateOldinventoryDAOs (OldInventoryReq oldInventoryReq) throws Parse
         paramList.add(oldInventoryReq.getImportExpirationDate_Oldwarehouse());
         paramList.add(oldInventoryReq.getSelectedType_Oldwarehouse());
         paramList.add(oldInventoryReq.getPrice_Oldwarehouse());
-        paramList.add(oldInventoryReq.getBranch());
+        paramList.add(oldInventoryReq.getBranch_id());
         paramList.add(oldInventoryReq.getKey_id());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
@@ -1747,6 +1797,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
 
                     tr.setReal_totalMoney(rs.getDouble("Real_totalMoney"));
                     tr.setMoneyRate(rs.getFloat("moneyRate"));
+                    tr.setCurrency(rs.getString("currency"));
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ new +++++++++++++++++++++++++++++++++++++++++
                     return tr;
                 }
@@ -2589,9 +2640,17 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
 }
 //old inventory dao
 public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventoryReq) {
+    String sql;
     try {
-        String sql ="SELECT * FROM OLD_INVENTORY WHERE branch_id = ?";
+        if (oldInventoryReq.getBranch_id() != null)
+        {
+             sql ="SELECT * FROM OLD_INVENTORY WHERE branch_id = '"+oldInventoryReq.getBranch_id()+"'";
             log.info("SQL :"+sql);
+        }
+        else {
+             sql ="SELECT * FROM OLD_INVENTORY WHERE branch_id = '"+oldInventoryReq.getBranch()+"'";
+            log.info("SQL :"+sql);
+        }
         return EBankJdbcTemplate.query(sql, new RowMapper<OldInventoryModel>() {
             @Override
             public OldInventoryModel mapRow(ResultSet rs, int rowNum) throws SQLException {
