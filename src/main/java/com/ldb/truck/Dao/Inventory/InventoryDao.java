@@ -3,6 +3,8 @@ package com.ldb.truck.Dao.Inventory;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilModel;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilReq;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilRes;
+import com.ldb.truck.Model.Login.DocumentStorage.DataHoleModel;
+import com.ldb.truck.Model.Login.DocumentStorage.DataHoleReq;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModel;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModelLAK;
 import com.ldb.truck.Model.Login.Inventory.CUR.ReportOfferPaperModelTHB;
@@ -15,6 +17,8 @@ import com.ldb.truck.Model.Login.Inventory.Items.ItemHisReq;
 import com.ldb.truck.Model.Login.Inventory.Items.ItemReq;
 import com.ldb.truck.Model.Login.Inventory.Items.Items;
 import com.ldb.truck.Model.Login.Inventory.OfferPaper.*;
+import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryModel;
+import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryReq;
 import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockModel;
 import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockModel2;
 import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockReq;
@@ -32,6 +36,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -42,10 +47,15 @@ public class InventoryDao {
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
     public List<Items> ListItems(ItemReq itemReq ) {
+        String SQL;
         try{
-            String SQL ="select * from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+itemReq.getBranch()+"' ";
-
-            log.info("SQL:"+SQL);
+            if (itemReq.getBranch_id()!=null) {
+                SQL = "select * from TB_items a join LOGIN b on a.userId =b.KEY_ID join TB_BRANCH tb on a.branch_id=tb.KEY_ID  where a.branch_id='"+itemReq.getBranch_id()+"'";
+                 log.info("SQL_notNull:"+SQL);
+            }else {
+                SQL = "select * from TB_items a join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='" + itemReq.getBranch() + "' ";
+                log.info("SQL_Null:"+SQL);
+            }
             return EBankJdbcTemplate.query(SQL, new RowMapper<Items>() {
                 @Override
                 public Items mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -59,6 +69,9 @@ public class InventoryDao {
                     tr.setSize(rs.getString("size"));
                     tr.setBrand(rs.getString("brand"));
                     tr.setBer(rs.getString("ber"));
+                    tr.setLimitQty(rs.getString("limitQty"));
+//                    tr.setBranch_name(rs.getString("B_NAME"));
+//                    tr.setBranch_id(rs.getString("KEY_ID"));
                     return tr;
                 }
             });
@@ -70,7 +83,8 @@ public class InventoryDao {
 //    Detail item DAOs
 public List<Items> ItemsDtailItemDAOs(ItemReq itemReq ) {
     try{
-        String SQL ="select * from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where a.item_id='"+itemReq.getItem_id()+"' ";
+//        String SQL ="select * from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where a.item_id='"+itemReq.getItem_id()+"' ";
+        String SQL ="select * from TB_items where item_id='"+itemReq.getItem_id()+"' ";
 
         log.info("SQL:"+SQL);
         return EBankJdbcTemplate.query(SQL, new RowMapper<Items>() {
@@ -97,9 +111,17 @@ public List<Items> ItemsDtailItemDAOs(ItemReq itemReq ) {
     // List Shop
     public List<Shops> ListShops(ShopReq shopReq  ) {
         try{
-            String SQL ="select * from TB_shop a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+shopReq.getBranch()+"' ";
+            String SQL;
+            if (shopReq.getBranch_id()!=null)
+            {
+                SQL = "select * from TB_shop a join TB_BRANCH b on a.branch_id = b.KEY_ID where b.KEY_ID ='" + shopReq.getBranch_id() + "'";
+                log.info("SQL:" + SQL);
+            }
+            else {
+                SQL = "select * from TB_shop a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='" + shopReq.getBranch() + "'and a.shop_id not in (8,26,27,57,142)";
+                log.info("SQL:" + SQL);
+            }
 
-            log.info("SQL:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<Shops>() {
                 @Override
                 public Shops mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -145,16 +167,33 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
 }
     //report list shop must pay
     public List<ReportShops> ListShopsMustPayDao(ShopReq shopReq  ) {
+        String SQL ="";
         try{
-            String SQL ="";
-            if(shopReq.getStartDate()==null && shopReq.getEndDate()==null){
-                 SQL ="select * from REPORT_SHOPS_MUST_PAY  where BRANCH='"+shopReq.getBranch()+"' ";
+            if (shopReq.getBranch_id() != null)
+            {
+                if(shopReq.getStartDate()==null && shopReq.getEndDate()==null){
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where branch_id='"+shopReq.getBranch_id()+"' ";
+                    log.info("SQL:"+SQL);
+                }
+                else {
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where branch_id='"+shopReq.getBranch_id()+"' AND DateCreatePO BETWEEN '"+shopReq.getStartDate()+"' and '"+shopReq.getEndDate()+"'";
+                    log.info("SQL:"+SQL);
+                }
             }
-            else {
-                 SQL ="select * from REPORT_SHOPS_MUST_PAY  where BRANCH='"+shopReq.getBranch()+"' AND DateCreatePO BETWEEN '"+shopReq.getStartDate()+"' and '"+shopReq.getEndDate()+"'";
+            else
+            {
+                if(shopReq.getStartDate()==null && shopReq.getEndDate()==null){
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where BRANCH='"+shopReq.getBranch()+"' ";
+                    log.info("SQL:"+SQL);
+                }
+                else {
+                    SQL ="select * from REPORT_SHOPS_MUST_PAY  where BRANCH='"+shopReq.getBranch()+"' AND DateCreatePO BETWEEN '"+shopReq.getStartDate()+"' and '"+shopReq.getEndDate()+"'";
+                    log.info("SQL:"+SQL);
+                }
             }
 
-            log.info("SQL:"+SQL);
+
+
             return EBankJdbcTemplate.query(SQL, new RowMapper<ReportShops>() {
                 @Override
                 public ReportShops mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -172,6 +211,7 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
                     tr.setTimeToPay(rs.getString("timeToPay"));
                     tr.setStatusNy(rs.getString("StatusNy"));
                     tr.setMoneyRate(rs.getFloat("moneyRate"));
+                    tr.setOfferDate(rs.getString("offerDate"));
                     return tr;
                 }
             });
@@ -185,9 +225,17 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
         String SQL;
         String SQL1;
         try{
-             SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+moveToStockReq.getBranch()+"' ";
+            if (moveToStockReq.getBranch_id() != null)
+            {
+                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur,limitQty from TB_items where branch_id='"+moveToStockReq.getBranch_id()+"' ";
+                log.info("SQL:"+SQL);
+            }else
+            {
+                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur,limitQty from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+moveToStockReq.getBranch()+"' ";
+                log.info("SQL:"+SQL);
+            }
 
-            log.info("SQL:"+SQL);
+
             return EBankJdbcTemplate.query(SQL, new RowMapper<ReportStockModel>() {
                 @Override
                 public ReportStockModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -203,6 +251,8 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
                     tr.setTotalValue(rs.getDouble("total_price"));
                     tr.setUnitPirce(rs.getString("unit_price"));
                     tr.setSumUnitWithPrice(rs.getString("total_price"));
+                    tr.setCurrency(rs.getString("cur"));
+                    tr.setLimitQty(rs.getString("limitQty"));
 
                     return tr;
                 }
@@ -216,15 +266,30 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
     public List<ItemHis> ItemHisDao(ItemHisReq itemHisReq) {
         String SQL;
         try{
-            if (itemHisReq.getStartDate() == null && itemHisReq.getEndDate()==null)
+            if (itemHisReq.getBranch_id() != null)
             {
-                 SQL ="select * from V_ITEM_HIS  where ITEM_ID ='"+itemHisReq.getItem_id()+"' and BRANCH='"+itemHisReq.getBranch()+"' ";
-                log.info("SQL:"+SQL);
-            }
-            else
+                if (itemHisReq.getStartDate() == null && itemHisReq.getEndDate()==null)
+                {
+                    SQL ="select * from V_ITEM_HIS  where ITEM_ID ='"+itemHisReq.getItem_id()+"' and branch_id='"+itemHisReq.getBranch_id()+"' ";
+                    log.info("SQL:"+SQL);
+                }
+                else
+                {
+                    SQL ="select * from V_ITEM_HIS  where ITEM_ID ='"+itemHisReq.getItem_id()+"' and branch_id='"+itemHisReq.getBranch_id()+"' and DATE_IMPORT between '"+itemHisReq.getStartDate()+"' and '"+itemHisReq.getEndDate()+"'";
+                    log.info("SQL:"+SQL);
+                }
+            }else
             {
-                 SQL ="select * from V_ITEM_HIS  where ITEM_ID ='"+itemHisReq.getItem_id()+"' and BRANCH='"+itemHisReq.getBranch()+"' and DATE_IMPORT between '"+itemHisReq.getStartDate()+"' and '"+itemHisReq.getEndDate()+"'";
-                log.info("SQL:"+SQL);
+                if (itemHisReq.getStartDate() == null && itemHisReq.getEndDate()==null)
+                {
+                    SQL ="select * from V_ITEM_HIS  where ITEM_ID ='"+itemHisReq.getItem_id()+"' and BRANCH='"+itemHisReq.getBranch()+"' ";
+                    log.info("SQL:"+SQL);
+                }
+                else
+                {
+                    SQL ="select * from V_ITEM_HIS  where ITEM_ID ='"+itemHisReq.getItem_id()+"' and BRANCH='"+itemHisReq.getBranch()+"' and DATE_IMPORT between '"+itemHisReq.getStartDate()+"' and '"+itemHisReq.getEndDate()+"'";
+                    log.info("SQL:"+SQL);
+                }
             }
             return EBankJdbcTemplate.query(SQL, new RowMapper<ItemHis>() {
                 @Override
@@ -245,14 +310,27 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
     }
     //list show report stock Detail
     public List<ReportStockModel> ListStockDetail(ReportStockDetailReq reportStockDetailReq) {
+        String SQL=null;
         try{
-            String SQL=null;
-            if (reportStockDetailReq.getStartDate()== null && reportStockDetailReq.getEndDate() == null){
-                 SQL ="select * from V_OFFER_PAPER where BRANCH='"+reportStockDetailReq.getBranch()+"'  and item_id or item_id1 or item_id2 or item_id3 or item_id4 or item_id5 or item_id6 or item_id7 or item_id8 or item_id9 = '"+reportStockDetailReq.getItem_id()+"'";
-                log.info("SQL1:"+SQL);
-            } else{
-                SQL ="select * from V_OFFER_PAPER where BRANCH='"+reportStockDetailReq.getBranch()+"'  and dateCreate between '"+reportStockDetailReq.getStartDate()+"' and '"+reportStockDetailReq.getEndDate()+"'";
-                log.info("SQL2:"+SQL);
+            if (reportStockDetailReq.getBranch_id() != null)
+            {
+                if (reportStockDetailReq.getStartDate()== null && reportStockDetailReq.getEndDate() == null){
+                    SQL ="select * from V_OFFER_PAPER where branch_id='"+reportStockDetailReq.getBranch_id()+"'  and item_id or item_id1 or item_id2 or item_id3 or item_id4 or item_id5 or item_id6 or item_id7 or item_id8 or item_id9 = '"+reportStockDetailReq.getItem_id()+"'";
+                    log.info("SQL1:"+SQL);
+                } else{
+                    SQL ="select * from V_OFFER_PAPER where branch_id='"+reportStockDetailReq.getBranch_id()+"'  and dateCreate between '"+reportStockDetailReq.getStartDate()+"' and '"+reportStockDetailReq.getEndDate()+"'";
+                    log.info("SQL2:"+SQL);
+                }
+            }
+            else
+            {
+                if (reportStockDetailReq.getStartDate()== null && reportStockDetailReq.getEndDate() == null){
+                    SQL ="select * from V_OFFER_PAPER where BRANCH='"+reportStockDetailReq.getBranch()+"'  and item_id or item_id1 or item_id2 or item_id3 or item_id4 or item_id5 or item_id6 or item_id7 or item_id8 or item_id9 = '"+reportStockDetailReq.getItem_id()+"'";
+                    log.info("SQL1:"+SQL);
+                } else{
+                    SQL ="select * from V_OFFER_PAPER where BRANCH='"+reportStockDetailReq.getBranch()+"'  and dateCreate between '"+reportStockDetailReq.getStartDate()+"' and '"+reportStockDetailReq.getEndDate()+"'";
+                    log.info("SQL2:"+SQL);
+                }
             }
             return EBankJdbcTemplate.query(SQL, new RowMapper<ReportStockModel>() {
                 @Override
@@ -325,7 +403,7 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
     public int InsertShops(ShopReq shopReq) throws ParseException {
         List<Shops> data = new ArrayList<>();
         try{
-            String SQL = "insert into TB_shop (shop_name,address,phone,country,currency,amount_money,userId)values (?,?,?,?,?,?,'"+shopReq.getUserId()+"')";
+            String SQL = "insert into TB_shop (shop_name,address,phone,country,currency,amount_money,userId,branch_id)values (?,?,?,?,?,?,'"+shopReq.getUserId()+"','"+shopReq.getBranch_id()+"')";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(shopReq.getShop_name());
@@ -335,6 +413,7 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
             paramList.add(shopReq.getCurrency());
             paramList.add(shopReq.getAmount_money());
             paramList.add(shopReq.getUserId());
+            paramList.add(shopReq.getBranch_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -359,6 +438,20 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
         return -1;
     }
 }
+public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
+        String of = offerPaperReq.getOffer_CODE();
+        String dl = offerPaperReq.getRealKey_id();
+        int i =0;
+        try {
+            String SQL = "delete from OFFER_PAPER where OFFER_CODE = '" + of +"' and KEY_ID = '"+dl+"'";
+            log.info("SQL:"+SQL);
+            i= EBankJdbcTemplate.update(SQL);
+        }catch (Exception e){
+            e.printStackTrace();
+            return i;
+        }
+        return i;
+    }
     // save offer paper DAOs
     public int saveOfferPaperDao(OfferPaperReq offerPaperReq) {
         String totalMoney = offerPaperReq.getTotalMoney().replace(",","");
@@ -391,7 +484,16 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
         String totalMoney9 = offerPaperReq.getTotalMoney9().replace(",","");
         String unit_price9 = offerPaperReq.getUnit_price9().replace(",","");
         String sql=null;
-
+//  =============================================================================================================new create
+        String currency = offerPaperReq.getCurrency();
+        List<String> itemIds = Arrays.asList(offerPaperReq.getItem_id(), offerPaperReq.getItem_id1(), offerPaperReq.getItem_id2(),
+                offerPaperReq.getItem_id3(), offerPaperReq.getItem_id4(), offerPaperReq.getItem_id5(),
+                offerPaperReq.getItem_id6(), offerPaperReq.getItem_id7(), offerPaperReq.getItem_id8(),
+                offerPaperReq.getItem_id9());
+        List<String> unitPriceList = Arrays.asList(unit_price, unit_price1, unit_price2,unit_price3, unit_price4, unit_price5,unit_price6,
+                unit_price7, unit_price8,
+                unit_price9);
+//  =============================================================================================================new create
         Double a = Double.parseDouble(totalMoney);
         Double b = Double.parseDouble(totalMoney1);
         Double c = Double.parseDouble(totalMoney2);
@@ -405,9 +507,9 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
         Double all = (a+b+c+d+e4+f+g+h+i+j);
         List<Object> paramList = new ArrayList<Object>();
         try {
-            if (offerPaperReq.getShop_id()==8 || offerPaperReq.getShop_id()==26 || offerPaperReq.getShop_id()==27 || offerPaperReq.getShop_id()==57){
-                sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS)" +
-                        "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','N','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','NO') ";
+            if (offerPaperReq.getShop_id() != null && (offerPaperReq.getShop_id()==8 || offerPaperReq.getShop_id()==26 || offerPaperReq.getShop_id()==27 || offerPaperReq.getShop_id()==57 || offerPaperReq.getShop_id()==142)){
+                sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id)" +
+                        "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','N','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','NO','"+offerPaperReq.getBranch_id()+"') ";
                 log.info("SQL1:"+sql);
                 paramList.add(offerPaperReq.getItem_id());
                 paramList.add(offerPaperReq.getHeader_id());
@@ -494,17 +596,37 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
                 paramList.add(offerPaperReq.getImg9());
                 paramList.add(offerPaperReq.getCurrency());
                 paramList.add(offerPaperReq.getMoneyRate());
+                paramList.add(offerPaperReq.getBranch_id());
 
                 EBankJdbcTemplate.update(sql, paramList.toArray());
 
-                String sqlUD = "update TB_items set unit_price = '"+unit_price+"' where item_id = '"+offerPaperReq.getItem_id()+"'";
-                log.info("SQL_update_price1:"+sqlUD);
-                paramList.add(unit_price);
-                EBankJdbcTemplate.update(sqlUD, paramList.toArray());
+//                for (String itemId : itemIds) {
+//                    String udUnitPrice = "update TB_items set unit_price = ? where item_id = ?";
+//                    log.info("SQL_update_unit_price for item {}: {}", itemId, udUnitPrice);
+//                    EBankJdbcTemplate.update(udUnitPrice, new Object[]{unitPriceList, itemId});
+//                }
+                if (itemIds.size() == unitPriceList.size()) {
+                    for (int o = 0; o < itemIds.size(); o++) {
+                        String itemId = itemIds.get(o);
+                        String unitPrice = unitPriceList.get(o);
+                        String udUnitPrice = "update TB_items set unit_price = ? where item_id = ?";
+                        log.info("SQL_update_unit_price for item {}: {}", itemId, udUnitPrice);
+                        EBankJdbcTemplate.update(udUnitPrice, new Object[]{unitPrice, itemId});
+                    }
+                } else {
+                    log.error("Error: The number of item IDs does not match the number of unit prices.");
+                    // Handle this error appropriately, maybe throw an exception
+                }
+
+                for (String itemId : itemIds) {
+                    String updateCUR = "update TB_items set cur = ? where item_id = ?";
+                    log.info("SQL_update_currency for item {}: {}", itemId, updateCUR);
+                    EBankJdbcTemplate.update(updateCUR, new Object[]{currency, itemId});
+                }
             }
-            else if(offerPaperReq.getShop_id()!=8 && offerPaperReq.getShop_id()!=26 && offerPaperReq.getShop_id()!=27 && offerPaperReq.getShop_id()!=57){
-                sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS)" +
-                        "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','Y','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','YES')";
+            else if(offerPaperReq.getShop_id() != null && (offerPaperReq.getShop_id()!=8 && offerPaperReq.getShop_id()!=26 && offerPaperReq.getShop_id()!=27 && offerPaperReq.getShop_id()!=57)){
+                sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id)" +
+                        "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','Y','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','YES','"+offerPaperReq.getBranch_id()+"')";
                 log.info("SQL2:"+sql);
                 paramList.add(offerPaperReq.getItem_id());
                 paramList.add(offerPaperReq.getHeader_id());
@@ -589,14 +711,34 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
                 paramList.add(offerPaperReq.getImg9());
                 paramList.add(offerPaperReq.getCurrency());
                 paramList.add(offerPaperReq.getMoneyRate());
-//                paramList.add(offerPaperReq.getStatusCredit());
+                paramList.add(offerPaperReq.getBranch_id());
 
                 EBankJdbcTemplate.update(sql, paramList.toArray());
 
-                String sqlUD = "update TB_items set unit_price = '"+unit_price+"' where item_id = '"+offerPaperReq.getItem_id()+"'";
-                log.info("SQL_update_price2:"+sqlUD);
-                paramList.add(unit_price);
-                EBankJdbcTemplate.update(sqlUD, paramList.toArray());
+//                for (String itemId : itemIds) {
+//                    String udUnitPrice = "update TB_items set unit_price = ? where item_id = ?";
+//                    log.info("SQL_update_unit_price for item {}: {}", itemId, udUnitPrice);
+//                    EBankJdbcTemplate.update(udUnitPrice, new Object[]{unitPriceList, itemId});
+//                }
+                if (itemIds.size() == unitPriceList.size()) {
+                    for (int o = 0; o < itemIds.size(); o++) {
+                        String itemId = itemIds.get(o);
+                        String unitPrice = unitPriceList.get(o);
+                        String udUnitPrice = "update TB_items set unit_price = ? where item_id = ?";
+                        log.info("SQL_update_unit_price for item {}: {}", itemId, udUnitPrice);
+                        EBankJdbcTemplate.update(udUnitPrice, new Object[]{unitPrice, itemId});
+                    }
+                } else {
+                    log.error("Error: The number of item IDs does not match the number of unit prices.");
+                    // Handle this error appropriately, maybe throw an exception
+                }
+
+                for (String itemId : itemIds) {
+                    String updateCUR = "update TB_items set cur = ? where item_id = ?";
+                    log.info("SQL_update_currency for item {}: {}", itemId, updateCUR);
+                    EBankJdbcTemplate.update(updateCUR, new Object[]{currency, itemId});
+                }
+
             }
 //            return EBankJdbcTemplate.update(sql, paramList.toArray());
         }catch (Exception e ){
@@ -642,7 +784,7 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
         try {
             if (fixReq.getBranch_inventory() == null){
                 List<Object> paramList = new ArrayList<Object>();
-                String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values (?,?,?,?,?,?,?,'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"',0)";
+                String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory,branch_id) values (?,?,?,?,?,?,?,'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"',0,'"+fixReq.getBranch_id()+"')";
                 log.info("SQL:"+sql1);
                 paramList.add(fixReq.getHeader_id());
                 paramList.add(fixReq.getFooter_id());
@@ -657,17 +799,18 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
                 paramList.add(fixReq.getFix_Detail());
 //                paramList.add(fixReq.getFix_Detail());
                 paramList.add(fixReq.getBranch_inventory());
+                paramList.add(fixReq.getBranch_id());
                 EBankJdbcTemplate.update(sql1, paramList.toArray());
 
-                String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
-                paramList.add(fixReq.getQty_Fix());
-                log.info("SQL:"+sql2);
-                EBankJdbcTemplate.update(sql2, paramList.toArray());
+//                String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
+//                paramList.add(fixReq.getQty_Fix());
+//                log.info("SQL:"+sql2);
+//                EBankJdbcTemplate.update(sql2, paramList.toArray());
             }
             else if (fixReq.getBranch_inventory() != null)
             {
                     List<Object> paramList = new ArrayList<Object>();
-                    String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values (?,?,?,?,?,?,now(),'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"','"+fixReq.getBranch_inventory()+"')";
+                    String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory,branch_id) values (?,?,?,?,?,?,now(),'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"','"+fixReq.getBranch_inventory()+"','"+fixReq.getBranch_id()+"')";
                     log.info("SQL1:"+sql1);
                     paramList.add(fixReq.getHeader_id());
                     paramList.add(fixReq.getFooter_id());
@@ -681,22 +824,18 @@ public int InsertFilloilDaos (FillOilReq fillOilReq) throws ParseException {
                     paramList.add(fixReq.getLocation_fix());
                     paramList.add(fixReq.getFix_Detail());
                     paramList.add(fixReq.getBranch_inventory());
+                    paramList.add(fixReq.getBranch_id());
                     EBankJdbcTemplate.update(sql1, paramList.toArray());
-
 //ตัดสะต๋อกออก
-                    String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
-                    paramList.add(fixReq.getQty_Fix());
-                    log.info("SQL2:"+sql2);
-                    EBankJdbcTemplate.update(sql2, paramList.toArray());
+//                    String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
+//                    paramList.add(fixReq.getQty_Fix());
+//                    log.info("SQL2:"+sql2);
+//                    EBankJdbcTemplate.update(sql2, paramList.toArray());
 //เพี่มสะต๋อก
                     String sql3 = "update TB_items set Qty = Qty + '"+fixReq.getQty_Fix()+"'  where item_name = '"+fixReq.getItem_name()+"' and item_id != '"+fixReq.getItem_id()+"' and '"+fixReq.getBranch_inventory()+"'";
                     paramList.add(fixReq.getQty_Fix());
                     log.info("SQL3:"+sql3);
                     EBankJdbcTemplate.update(sql3, paramList.toArray());
-
-
-
-
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -709,7 +848,7 @@ public int ApproveFixDao (FixReq fixReq) {
     String totalPrice1 = fixReq.getTotal_Price().replace(",","");
     try {
             List<Object> paramList = new ArrayList<Object>();
-            String sql1 ="insert into APPROVE_FIX (header_id,item_name,branch_inventory,item_id,footer_id,qty_Fix,total_Price,description,location_fix,fix_Detail,dateFix,approve_status,userId) values (?,?,?,?,?,?,?,?,?,?,?,'YES',?)";
+            String sql1 ="insert into APPROVE_FIX (header_id,item_name,branch_inventory,item_id,footer_id,qty_Fix,total_Price,description,location_fix,fix_Detail,dateFix,approve_status,userId,branch_id) values (?,?,?,?,?,?,?,?,?,?,?,'YES',?,?)";
             log.info("SQL1:"+sql1);
             paramList.add(fixReq.getHeader_id());
             paramList.add(fixReq.getItem_name());
@@ -723,6 +862,7 @@ public int ApproveFixDao (FixReq fixReq) {
             paramList.add(fixReq.getFix_Detail());
             paramList.add(fixReq.getDateFix());
             paramList.add(fixReq.getUserId());
+            paramList.add(fixReq.getBranch_id());
             EBankJdbcTemplate.update(sql1, paramList.toArray());
     }catch (Exception e){
         e.printStackTrace();
@@ -734,7 +874,7 @@ public int ApproveFixDao (FixReq fixReq) {
 public int proofFixReqDao (FixReq fixReq) {
     try {
         List<Object> paramList = new ArrayList<Object>();
-        String sql1,sql2;
+        String sql1,sql2,sql_update;
 
         if (fixReq.getStatus().equals("YES")){
             sql1   ="update APPROVE_FIX set approve_status='"+fixReq.getStatus()+"',new_status='GO' where KEY_ID='"+fixReq.getKey_id()+"'  ";
@@ -743,6 +883,11 @@ public int proofFixReqDao (FixReq fixReq) {
             paramList.add(fixReq.getNew_status());
             paramList.add(fixReq.getKey_id());
             EBankJdbcTemplate.update(sql1, paramList.toArray());
+
+            sql_update ="UPDATE TB_items SET Qty = Qty - (SELECT qty_Fix FROM APPROVE_FIX WHERE KEY_ID = '"+fixReq.getKey_id()+"') WHERE item_id = (SELECT item_id FROM APPROVE_FIX WHERE KEY_ID = '"+fixReq.getKey_id()+"')";
+            log.info("sql_update:"+sql_update);
+            paramList.add(fixReq.getKey_id());
+            EBankJdbcTemplate.update(sql_update, paramList.toArray());
         }else {
             sql2   ="update APPROVE_FIX set approve_status='"+fixReq.getStatus()+"' where KEY_ID='"+fixReq.getKey_id()+"'";
             log.info("SQL1:"+sql2);
@@ -756,6 +901,77 @@ public int proofFixReqDao (FixReq fixReq) {
     }
     return 0;
 }
+//insert old inventory dao
+public int InsertOldinventoryDAOs (OldInventoryReq oldInventoryReq) throws ParseException {
+    String path="http://khounkham.com/images/car/";
+    String fileName = oldInventoryReq.getImage_Oldwarehouse();
+    log.info("path:"+path+fileName);
+    List<OldInventoryModel> data = new ArrayList<>();
+    try{
+        String SQL = "insert into OLD_INVENTORY (item_name,header_truck_id,footer_truck_id,amount,picture,detail,date_in,type,price,branch_id,branchNo,cur) value( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
+        log.info("SQL:"+SQL);
+        List<Object> paramList = new ArrayList<Object>();
+        paramList.add(oldInventoryReq.getItemName_Oldwarehouse());
+        paramList.add(oldInventoryReq.getVehicle_Oldwarehouse());
+        paramList.add(oldInventoryReq.getVehiclefooter_Oldwarehouse());
+        paramList.add(oldInventoryReq.getQty_Oldwarehouse());
+        paramList.add(path + fileName);
+        paramList.add(oldInventoryReq.getDescription_Oldwarehouse());
+        paramList.add(oldInventoryReq.getImportExpirationDate_Oldwarehouse());
+        paramList.add(oldInventoryReq.getSelectedType_Oldwarehouse());
+        paramList.add(oldInventoryReq.getPrice_Oldwarehouse());
+        paramList.add(oldInventoryReq.getBranch_id());
+        paramList.add(oldInventoryReq.getBranch());
+        paramList.add(oldInventoryReq.getCur());
+        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+    }catch (Exception e){
+        e.printStackTrace();
+        return -1;
+    }
+}
+//delete old inventory
+public int DeleteinventoryDAOs (OldInventoryReq oldInventoryReq) throws ParseException {
+    List<OldInventoryModel> data = new ArrayList<>();
+    try{
+        String SQL = "delete from OLD_INVENTORY where KEY_ID=?";
+        log.info("SQL:"+SQL);
+        List<Object> paramList = new ArrayList<Object>();
+        paramList.add(oldInventoryReq.getKey_id());
+        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+    }catch (Exception e){
+        e.printStackTrace();
+        return -1;
+    }
+}
+//update old inventory
+public int UpdateOldinventoryDAOs (OldInventoryReq oldInventoryReq) throws ParseException {
+    String path="http://khounkham.com/images/car/";
+    String fileName = oldInventoryReq.getImage_Oldwarehouse();
+    log.info("path:"+path+fileName);
+    List<DataHoleModel> data = new ArrayList<>();
+    try{
+        String SQL = "update OLD_INVENTORY set item_name=?,header_truck_id=?,footer_truck_id=?,amount=?,picture=?,detail=?,date_in=?,type=?,price=?,branch_id=?,branchNo=?,cur =? where KEY_ID='"+oldInventoryReq.getKey_id()+"'";
+        log.info("SQL:"+SQL);
+        List<Object> paramList = new ArrayList<Object>();
+        paramList.add(oldInventoryReq.getItemName_Oldwarehouse());
+        paramList.add(oldInventoryReq.getVehicle_Oldwarehouse());
+        paramList.add(oldInventoryReq.getVehiclefooter_Oldwarehouse());
+        paramList.add(oldInventoryReq.getQty_Oldwarehouse());
+        paramList.add(path + fileName);
+        paramList.add(oldInventoryReq.getDescription_Oldwarehouse());
+        paramList.add(oldInventoryReq.getImportExpirationDate_Oldwarehouse());
+        paramList.add(oldInventoryReq.getSelectedType_Oldwarehouse());
+        paramList.add(oldInventoryReq.getPrice_Oldwarehouse());
+        paramList.add(oldInventoryReq.getBranch_id());
+        paramList.add(oldInventoryReq.getBranch());
+        paramList.add(oldInventoryReq.getCur());
+        paramList.add(oldInventoryReq.getKey_id());
+        return EBankJdbcTemplate.update(SQL, paramList.toArray());
+    }catch (Exception e){
+        e.printStackTrace();
+        return -1;
+    }
+}
 //    for head and tail truck is null
 public int FixDaoIftruckNull (FixReq fixReq) {
     String totalPrice1 = fixReq.getTotal_Price().replace(",","");
@@ -764,7 +980,7 @@ public int FixDaoIftruckNull (FixReq fixReq) {
             List<Object> paramList = new ArrayList<Object>();
             String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values ('299',?,?,?,?,?,?,'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"',0)";
             log.info("SQL:"+sql1);
-//            paramList.add(fixReq.getHeader_id());
+            paramList.add(fixReq.getHeader_id());
             paramList.add(fixReq.getFooter_id());
             paramList.add(fixReq.getDescription());
             paramList.add(fixReq.getItem_id());
@@ -775,21 +991,20 @@ public int FixDaoIftruckNull (FixReq fixReq) {
             paramList.add(fixReq.getAdd_on());
             paramList.add(fixReq.getLocation_fix());
             paramList.add(fixReq.getFix_Detail());
-            paramList.add(fixReq.getFix_Detail());
             paramList.add(fixReq.getBranch_inventory());
             EBankJdbcTemplate.update(sql1, paramList.toArray());
 
-            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
-            paramList.add(fixReq.getQty_Fix());
-            log.info("SQL:"+sql2);
-            EBankJdbcTemplate.update(sql2, paramList.toArray());
+//            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
+//            paramList.add(fixReq.getQty_Fix());
+//            log.info("SQL:"+sql2);
+//            EBankJdbcTemplate.update(sql2, paramList.toArray());
         }
         else if (fixReq.getBranch_inventory() != null)
         {
             List<Object> paramList = new ArrayList<Object>();
             String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values ('299',?,?,?,?,?,now(),'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"','"+fixReq.getBranch_inventory()+"')";
             log.info("SQL1:"+sql1);
-//            paramList.add(fixReq.getHeader_id());
+            paramList.add(fixReq.getHeader_id());
             paramList.add(fixReq.getFooter_id());
             paramList.add(fixReq.getDescription());
             paramList.add(fixReq.getItem_id());
@@ -804,18 +1019,15 @@ public int FixDaoIftruckNull (FixReq fixReq) {
             EBankJdbcTemplate.update(sql1, paramList.toArray());
 
 //ตัดสะต๋อกออก
-            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
-            paramList.add(fixReq.getQty_Fix());
-            log.info("SQL2:"+sql2);
-            EBankJdbcTemplate.update(sql2, paramList.toArray());
+//            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
+//            paramList.add(fixReq.getQty_Fix());
+//            log.info("SQL2:"+sql2);
+//            EBankJdbcTemplate.update(sql2, paramList.toArray());
 //เพี่มสะต๋อก
             String sql3 = "update TB_items set Qty = Qty + '"+fixReq.getQty_Fix()+"'  where item_name = '"+fixReq.getItem_name()+"' and item_id != '"+fixReq.getItem_id()+"' and '"+fixReq.getBranch_inventory()+"'";
             paramList.add(fixReq.getQty_Fix());
             log.info("SQL3:"+sql3);
             EBankJdbcTemplate.update(sql3, paramList.toArray());
-
-
-
 
         }
     }catch (Exception e){
@@ -824,6 +1036,134 @@ public int FixDaoIftruckNull (FixReq fixReq) {
     }
     return 0;
 }
+//if truck null savan oil
+    public int FixDaoIftruckNullSavannakhetOil (FixReq fixReq) {
+        String totalPrice1 = fixReq.getTotal_Price().replace(",","");
+        try {
+            if (fixReq.getBranch_inventory() == null){
+                List<Object> paramList = new ArrayList<Object>();
+                String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values ('393',?,?,?,?,?,?,'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"',0)";
+                log.info("SQL:"+sql1);
+                paramList.add(fixReq.getHeader_id());
+                paramList.add(fixReq.getFooter_id());
+                paramList.add(fixReq.getDescription());
+                paramList.add(fixReq.getItem_id());
+                paramList.add(fixReq.getQty_Fix());
+                paramList.add(totalPrice1);
+                paramList.add(fixReq.getDateFix());
+                paramList.add(fixReq.getUserId());
+                paramList.add(fixReq.getAdd_on());
+                paramList.add(fixReq.getLocation_fix());
+                paramList.add(fixReq.getFix_Detail());
+                paramList.add(fixReq.getBranch_inventory());
+                EBankJdbcTemplate.update(sql1, paramList.toArray());
+
+//            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
+//            paramList.add(fixReq.getQty_Fix());
+//            log.info("SQL:"+sql2);
+//            EBankJdbcTemplate.update(sql2, paramList.toArray());
+            }
+            else if (fixReq.getBranch_inventory() != null)
+            {
+                List<Object> paramList = new ArrayList<Object>();
+                String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values ('393',?,?,?,?,?,now(),'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"','"+fixReq.getBranch_inventory()+"')";
+                log.info("SQL1:"+sql1);
+                paramList.add(fixReq.getHeader_id());
+                paramList.add(fixReq.getFooter_id());
+                paramList.add(fixReq.getDescription());
+                paramList.add(fixReq.getItem_id());
+                paramList.add(fixReq.getQty_Fix());
+                paramList.add(totalPrice1);
+                paramList.add(fixReq.getDateFix());
+                paramList.add(fixReq.getUserId());
+                paramList.add(fixReq.getAdd_on());
+                paramList.add(fixReq.getLocation_fix());
+                paramList.add(fixReq.getFix_Detail());
+                paramList.add(fixReq.getBranch_inventory());
+                EBankJdbcTemplate.update(sql1, paramList.toArray());
+
+//ตัดสะต๋อกออก
+//            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
+//            paramList.add(fixReq.getQty_Fix());
+//            log.info("SQL2:"+sql2);
+//            EBankJdbcTemplate.update(sql2, paramList.toArray());
+//เพี่มสะต๋อก
+                String sql3 = "update TB_items set Qty = Qty + '"+fixReq.getQty_Fix()+"'  where item_name = '"+fixReq.getItem_name()+"' and item_id != '"+fixReq.getItem_id()+"' and '"+fixReq.getBranch_inventory()+"'";
+                paramList.add(fixReq.getQty_Fix());
+                log.info("SQL3:"+sql3);
+                EBankJdbcTemplate.update(sql3, paramList.toArray());
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+        return 0;
+    }
+    //if truck null savan tools
+    public int FixDaoIftruckNullSavannakhetTools (FixReq fixReq) {
+        String totalPrice1 = fixReq.getTotal_Price().replace(",","");
+        try {
+            if (fixReq.getBranch_inventory() == null){
+                List<Object> paramList = new ArrayList<Object>();
+                String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values ('394',?,?,?,?,?,?,'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"',0)";
+                log.info("SQL:"+sql1);
+                paramList.add(fixReq.getHeader_id());
+                paramList.add(fixReq.getFooter_id());
+                paramList.add(fixReq.getDescription());
+                paramList.add(fixReq.getItem_id());
+                paramList.add(fixReq.getQty_Fix());
+                paramList.add(totalPrice1);
+                paramList.add(fixReq.getDateFix());
+                paramList.add(fixReq.getUserId());
+                paramList.add(fixReq.getAdd_on());
+                paramList.add(fixReq.getLocation_fix());
+                paramList.add(fixReq.getFix_Detail());
+                paramList.add(fixReq.getBranch_inventory());
+                EBankJdbcTemplate.update(sql1, paramList.toArray());
+
+//            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
+//            paramList.add(fixReq.getQty_Fix());
+//            log.info("SQL:"+sql2);
+//            EBankJdbcTemplate.update(sql2, paramList.toArray());
+            }
+            else if (fixReq.getBranch_inventory() != null)
+            {
+                List<Object> paramList = new ArrayList<Object>();
+                String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values ('394',?,?,?,?,?,now(),'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"','"+fixReq.getBranch_inventory()+"')";
+                log.info("SQL1:"+sql1);
+                paramList.add(fixReq.getHeader_id());
+                paramList.add(fixReq.getFooter_id());
+                paramList.add(fixReq.getDescription());
+                paramList.add(fixReq.getItem_id());
+                paramList.add(fixReq.getQty_Fix());
+                paramList.add(totalPrice1);
+                paramList.add(fixReq.getDateFix());
+                paramList.add(fixReq.getUserId());
+                paramList.add(fixReq.getAdd_on());
+                paramList.add(fixReq.getLocation_fix());
+                paramList.add(fixReq.getFix_Detail());
+                paramList.add(fixReq.getBranch_inventory());
+                EBankJdbcTemplate.update(sql1, paramList.toArray());
+
+//ตัดสะต๋อกออก
+//            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
+//            paramList.add(fixReq.getQty_Fix());
+//            log.info("SQL2:"+sql2);
+//            EBankJdbcTemplate.update(sql2, paramList.toArray());
+//เพี่มสะต๋อก
+                String sql3 = "update TB_items set Qty = Qty + '"+fixReq.getQty_Fix()+"'  where item_name = '"+fixReq.getItem_name()+"' and item_id != '"+fixReq.getItem_id()+"' and '"+fixReq.getBranch_inventory()+"'";
+                paramList.add(fixReq.getQty_Fix());
+                log.info("SQL3:"+sql3);
+                EBankJdbcTemplate.update(sql3, paramList.toArray());
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+        return 0;
+    }
 //if truck head null and tail null xiengkhuang
 public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
     String totalPrice1 = fixReq.getTotal_Price().replace(",","");
@@ -832,7 +1172,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
             List<Object> paramList = new ArrayList<Object>();
             String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values ('300',?,?,?,?,?,?,'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"',0)";
             log.info("SQL:"+sql1);
-//            paramList.add(fixReq.getHeader_id());
+            paramList.add(fixReq.getHeader_id());
             paramList.add(fixReq.getFooter_id());
             paramList.add(fixReq.getDescription());
             paramList.add(fixReq.getItem_id());
@@ -843,21 +1183,20 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
             paramList.add(fixReq.getAdd_on());
             paramList.add(fixReq.getLocation_fix());
             paramList.add(fixReq.getFix_Detail());
-            paramList.add(fixReq.getFix_Detail());
             paramList.add(fixReq.getBranch_inventory());
             EBankJdbcTemplate.update(sql1, paramList.toArray());
 
-            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
-            paramList.add(fixReq.getQty_Fix());
-            log.info("SQL:"+sql2);
-            EBankJdbcTemplate.update(sql2, paramList.toArray());
+//            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"' where item_id = '"+fixReq.getItem_id()+"'";
+//            paramList.add(fixReq.getQty_Fix());
+//            log.info("SQL:"+sql2);
+//            EBankJdbcTemplate.update(sql2, paramList.toArray());
         }
         else if (fixReq.getBranch_inventory() != null)
         {
             List<Object> paramList = new ArrayList<Object>();
             String sql1 ="insert into FIX (header_id,footer_id,description,item_id,Qty_Fix,total_Price,DateFix,userId,add_on,location_fix,fix_Detail,branch_inventory) values ('300',?,?,?,?,?,now(),'"+fixReq.getUserId()+"',0,'"+fixReq.getLocation_fix()+"','"+fixReq.getFix_Detail()+"','"+fixReq.getBranch_inventory()+"')";
             log.info("SQL1:"+sql1);
-//            paramList.add(fixReq.getHeader_id());
+            paramList.add(fixReq.getHeader_id());
             paramList.add(fixReq.getFooter_id());
             paramList.add(fixReq.getDescription());
             paramList.add(fixReq.getItem_id());
@@ -872,10 +1211,10 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
             EBankJdbcTemplate.update(sql1, paramList.toArray());
 
 //ตัดสะต๋อกออก
-            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
-            paramList.add(fixReq.getQty_Fix());
-            log.info("SQL2:"+sql2);
-            EBankJdbcTemplate.update(sql2, paramList.toArray());
+//            String sql2 = "update TB_items set Qty = Qty - '"+fixReq.getQty_Fix()+"'  where item_id = '"+fixReq.getItem_id()+"'";
+//            paramList.add(fixReq.getQty_Fix());
+//            log.info("SQL2:"+sql2);
+//            EBankJdbcTemplate.update(sql2, paramList.toArray());
 //เพี่มสะต๋อก
             String sql3 = "update TB_items set Qty = Qty + '"+fixReq.getQty_Fix()+"'  where item_name = '"+fixReq.getItem_name()+"' and item_id != '"+fixReq.getItem_id()+"' and '"+fixReq.getBranch_inventory()+"'";
             paramList.add(fixReq.getQty_Fix());
@@ -1085,86 +1424,96 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
         return 0;
     }
     //save history item
-    public int  MoveItemToStockDaoAndSaveItemHistory (MoveToStockReq moveToStockReq)  {
+    public int  MoveItemToStockDaoAndSaveItemHistory (MoveToStockReq moveToStockReq){
         try {
-            String sql = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer()+"',now(),'"+moveToStockReq.getItem_id()+"','"+moveToStockReq.getUserId()+"')";
+            String sql = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer()+"',now(),'"+moveToStockReq.getItem_id()+"','"+moveToStockReq.getUserId()+"'',"+moveToStockReq.getBranch_id()+"')";
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(moveToStockReq.getQty_offer());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql);
             EBankJdbcTemplate.update(sql, paramList.toArray());
 
-            String sql1 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer1()+"',now(),'"+moveToStockReq.getItem_id1()+"','"+moveToStockReq.getUserId()+"')";
+            String sql1 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer1()+"',now(),'"+moveToStockReq.getItem_id1()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer1());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id1());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql1);
             EBankJdbcTemplate.update(sql1, paramList.toArray());
 
-            String sql2 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer2()+"',now(),'"+moveToStockReq.getItem_id2()+"','"+moveToStockReq.getUserId()+"')";
+            String sql2 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer2()+"',now(),'"+moveToStockReq.getItem_id2()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer2());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id2());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql2);
             EBankJdbcTemplate.update(sql2, paramList.toArray());
 
-            String sql3 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer3()+"',now(),'"+moveToStockReq.getItem_id3()+"','"+moveToStockReq.getUserId()+"')";
+            String sql3 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer3()+"',now(),'"+moveToStockReq.getItem_id3()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer3());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id3());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql3);
             EBankJdbcTemplate.update(sql3, paramList.toArray());
 
-            String sql4 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer4()+"',now(),'"+moveToStockReq.getItem_id4()+"','"+moveToStockReq.getUserId()+"')";
+            String sql4 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer4()+"',now(),'"+moveToStockReq.getItem_id4()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer4());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id4());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql4);
             EBankJdbcTemplate.update(sql4, paramList.toArray());
 
-            String sql5 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer5()+"',now(),'"+moveToStockReq.getItem_id5()+"','"+moveToStockReq.getUserId()+"')";
+            String sql5 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer5()+"',now(),'"+moveToStockReq.getItem_id5()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer5());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id5());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql5);
             EBankJdbcTemplate.update(sql5, paramList.toArray());
 
-            String sql6 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer6()+"',now(),'"+moveToStockReq.getItem_id6()+"','"+moveToStockReq.getUserId()+"')";
+            String sql6 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer6()+"',now(),'"+moveToStockReq.getItem_id6()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer6());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id6());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql6);
             EBankJdbcTemplate.update(sql6, paramList.toArray());
 
-            String sql7 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer7()+"',now(),'"+moveToStockReq.getItem_id7()+"','"+moveToStockReq.getUserId()+"')";
+            String sql7 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer7()+"',now(),'"+moveToStockReq.getItem_id7()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer7());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id7());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql7);
             EBankJdbcTemplate.update(sql7, paramList.toArray());
 
-            String sql8 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer8()+"',now(),'"+moveToStockReq.getItem_id8()+"','"+moveToStockReq.getUserId()+"')";
+            String sql8 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer8()+"',now(),'"+moveToStockReq.getItem_id8()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer8());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id8());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql8);
             EBankJdbcTemplate.update(sql8, paramList.toArray());
 
-            String sql9 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId) value('"+moveToStockReq.getQty_offer9()+"',now(),'"+moveToStockReq.getItem_id9()+"','"+moveToStockReq.getUserId()+"')";
+            String sql9 = "insert into ITEM_IMPORT_HIS (ITEM_QTY,DATE_IMPORT,ITEM_ID,userId,branch_id) value('"+moveToStockReq.getQty_offer9()+"',now(),'"+moveToStockReq.getItem_id9()+"','"+moveToStockReq.getUserId()+"','"+moveToStockReq.getBranch_id()+"')";
             paramList.add(moveToStockReq.getQty_offer9());
             paramList.add(moveToStockReq.getDateImport());
             paramList.add(moveToStockReq.getItem_id9());
             paramList.add(moveToStockReq.getUserId());
+            paramList.add(moveToStockReq.getBranch_id());
             log.info("SQL:"+sql8);
             EBankJdbcTemplate.update(sql9, paramList.toArray());
 
@@ -1225,7 +1574,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
                 "(moneyRate * unit_price7 * qty_offer7 )+\n" +
                 "(moneyRate * unit_price8 * qty_offer8 )+\n" +
                 "(moneyRate * unit_price9 * qty_offer9) , datePay =? ,STATUS_CREDITS='NO' WHERE offer_CODE = ?";
-        String sql3 = "INSERT INTO currency_in_kip (OFFER_CODE,TOTAL_MONEY,DATE,CUR,userId) SELECT OFFER_CODE,Real_totalMoney,datePay,currency,userId from OFFER_PAPER WHERE offer_CODE = ?";
+        String sql3 = "INSERT INTO currency_in_kip (OFFER_CODE,TOTAL_MONEY,DATE,CUR,userId,branch_id) SELECT OFFER_CODE,Real_totalMoney,datePay,currency,userId,branch_id from OFFER_PAPER WHERE offer_CODE = ?";
 
         log.info(sql);
         log.info(sql2);
@@ -1283,8 +1632,8 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
         String tid = purchaseOrderReq.getTid().replace(",","");
         String paid = purchaseOrderReq.getPaid().replace(",","");
         try {
-            String sql ="insert into PURCHASE_ORDER(pocode,OFFER_CODE,total,paid,tid,CUR,userId,DateCreatePO,statusPO,stockSatus)" +
-                    "values (?,?,?,?,?,?,?,now(),'YES','wait')";
+            String sql ="insert into PURCHASE_ORDER(pocode,OFFER_CODE,total,paid,tid,CUR,userId,DateCreatePO,statusPO,stockSatus,branch_id)" +
+                    "values (?,?,?,?,?,?,?,now(),'YES','wait','"+purchaseOrderReq.getBranch_id()+"')";
             log.info("SQL:"+sql);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(purchaseOrderReq.getPocode());
@@ -1297,6 +1646,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
             paramList.add(purchaseOrderReq.getDateCreatePO());
             paramList.add(purchaseOrderReq.getStatusPO());
             paramList.add(purchaseOrderReq.getStatusStock());
+            paramList.add(purchaseOrderReq.getBranch_id());
             EBankJdbcTemplate.update(sql, paramList.toArray());
 
             String sqlUpdate = "update OFFER_PAPER set statusPO = 'YES' where offer_CODE = '"+purchaseOrderReq.getOffer_CODE()+"'";
@@ -1313,19 +1663,31 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
     public List<OfferPaperModelFaso> ShowofferpaperDAOs(OfferPaperReq offerPaperReq) {
         String sql;
         try {
-//            removed STATUS='N' AND
-            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-                 sql = "SELECT * FROM V_OFFER_PAPER where BRANCH='" + offerPaperReq.getBranch() + "'";
-                log.info("SQL_show_normal_1:" + sql);
+            if (offerPaperReq.getBranch_id() != null) {
+
+                if (offerPaperReq.getStartDate() == null && offerPaperReq.getEndDate() == null) {
+                    sql = "SELECT * FROM V_OFFER_PAPER where branch_id='" + offerPaperReq.getBranch_id() + "'";
+                    log.info("SQL_show_normal_1:" + sql);
+                } else {
+                    sql = "SELECT * FROM V_OFFER_PAPER where branch_id='" + offerPaperReq.getBranch_id() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "' ";
+                    log.info("SQL_show_by_date:" + sql);
+                }
             } else
             {
-                 sql = "SELECT * FROM V_OFFER_PAPER where BRANCH='" + offerPaperReq.getBranch() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "' ";
+//            removed STATUS='N' AND
+            if (offerPaperReq.getStartDate() == null && offerPaperReq.getEndDate() == null) {
+                sql = "SELECT * FROM V_OFFER_PAPER where BRANCH='" + offerPaperReq.getBranch() + "'";
+                log.info("SQL_show_normal_1:" + sql);
+            } else {
+                sql = "SELECT * FROM V_OFFER_PAPER where BRANCH='" + offerPaperReq.getBranch() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "' ";
                 log.info("SQL_show_by_date:" + sql);
+            }
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<OfferPaperModelFaso>() {
                 @Override
                 public OfferPaperModelFaso mapRow(ResultSet rs, int rowNum) throws SQLException {
                     OfferPaperModelFaso tr = new OfferPaperModelFaso();
+                    tr.setKey_id(rs.getString("KEY_ID"));
                     tr.setUnit_price(rs.getString("unit_price"));
                     tr.setUnit_price1(rs.getString("unit_price1"));
                     tr.setUnit_price2(rs.getString("unit_price2"));
@@ -1441,6 +1803,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
 
                     tr.setReal_totalMoney(rs.getDouble("Real_totalMoney"));
                     tr.setMoneyRate(rs.getFloat("moneyRate"));
+                    tr.setCurrency(rs.getString("currency"));
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ new +++++++++++++++++++++++++++++++++++++++++
                     return tr;
                 }
@@ -1467,6 +1830,7 @@ public List<OfferPaperModelFaso> ToShowofferpaperDAOs (OfferPaperReq offerPaperR
             @Override
             public OfferPaperModelFaso mapRow(ResultSet rs, int rowNum) throws SQLException {
                 OfferPaperModelFaso tr = new OfferPaperModelFaso();
+                tr.setKey_id(rs.getString("KEY_ID"));
                 tr.setUnit_price(rs.getString("unit_price"));
                 tr.setUnit_price1(rs.getString("unit_price1"));
                 tr.setUnit_price2(rs.getString("unit_price2"));
@@ -1596,14 +1960,28 @@ public List<OfferPaperModelFaso> ToShowofferpaperDAOs (OfferPaperReq offerPaperR
 public List<OfferPaperModelFaso> ReportShowofferpaperDAOs(OfferPaperReq offerPaperReq) {
     String sql;
     try {
-//            removed STATUS='N' AND
-        if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-            sql = "SELECT * FROM V_OFFER_PAPER  where  STATUS='N' AND BRANCH='" + offerPaperReq.getBranch() + "'";
-            log.info("SQL_show_normal_1:" + sql);
-        } else
+        if (offerPaperReq.getBranch_id() != null)
         {
-            sql = "SELECT * FROM V_OFFER_PAPER  where STATUS='N' AND BRANCH='" + offerPaperReq.getBranch() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "' ";
-            log.info("SQL_show_normal_3:" + sql);
+            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                sql = "SELECT * FROM V_OFFER_PAPER  where  STATUS='N' AND branch_id='" + offerPaperReq.getBranch_id() + "'";
+                log.info("SQL_show_normal_1:" + sql);
+            } else
+            {
+                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS='N' AND branch_id='" + offerPaperReq.getBranch() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "' ";
+                log.info("SQL_show_normal_3:" + sql);
+            }
+        }
+        else
+        {
+//            removed STATUS='N' AND
+            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                sql = "SELECT * FROM V_OFFER_PAPER  where  STATUS='N' AND BRANCH='" + offerPaperReq.getBranch() + "'";
+                log.info("SQL_show_normal_1:" + sql);
+            } else
+            {
+                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS='N' AND BRANCH='" + offerPaperReq.getBranch() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "' ";
+                log.info("SQL_show_normal_3:" + sql);
+            }
         }
         return EBankJdbcTemplate.query(sql, new RowMapper<OfferPaperModelFaso>() {
             @Override
@@ -1739,15 +2117,31 @@ public List<OfferPaperModelFaso> ReportShowofferpaperDAOs(OfferPaperReq offerPap
 public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq offerPaperReq) {
     String sql;
     try {
-//            removed STATUS='N' AND
-        if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-            sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "'";
-            log.info("SQL_THB:" + sql);
-        }else {
+        if (offerPaperReq.getBranch_id() != null)
+        {
+            //            removed STATUS='N' AND
+            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "'";
+                log.info("SQL_THB:" + sql);
+            }else {
 //            removed STATUS='Y' AND
-            sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH= '"+offerPaperReq.getBranch()+"' AND datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
-            log.info("SQL_THB:" + sql);
+                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND branch_id= '"+offerPaperReq.getBranch_id()+"' AND datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                log.info("SQL_THB:" + sql);
+            }
         }
+        else
+        {
+            //            removed STATUS='N' AND
+            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "'";
+                log.info("SQL_THB:" + sql);
+            }else {
+//            removed STATUS='Y' AND
+                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH= '"+offerPaperReq.getBranch()+"' AND datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                log.info("SQL_THB:" + sql);
+            }
+        }
+
         return EBankJdbcTemplate.query(sql, new RowMapper<ReportOfferPaperModelTHB>() {
             @Override
             public ReportOfferPaperModelTHB mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1769,15 +2163,31 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
     public List<ReportOfferPaperModel> ShowReportSumofferpaperUSD(OfferPaperReq offerPaperReq) {
         String sql;
         try {
-//            removed STATUS='N' AND
-            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() +"'";
-                log.info("SQL_USD:" + sql);
-            }else {
+            if (offerPaperReq.getBranch_id() != null)
+            {
+                //            removed STATUS='N' AND
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() +"'";
+                    log.info("SQL_USD:" + sql);
+                }else {
 //            removed STATUS='Y' AND
-                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
-                log.info("SQL_USD:" + sql);
+                    sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_USD:" + sql);
+                }
             }
+            else
+            {
+                //            removed STATUS='N' AND
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() +"'";
+                    log.info("SQL_USD:" + sql);
+                }else {
+//            removed STATUS='Y' AND
+                    sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_USD:" + sql);
+                }
+            }
+
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportOfferPaperModel>() {
                 @Override
                 public ReportOfferPaperModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1799,15 +2209,29 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
     public List<ReportOfferPaperModel> CurrencyUSDinKip(OfferPaperReq offerPaperReq) {
         String sql;
         try {
-//            removed STATUS='N' AND
-            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-                sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() +"'";
-                log.info("SQL_USD:" + sql);
-            }else {
+            if (offerPaperReq.getBranch_id() != null)
+            {
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() +"'";
+                    log.info("SQL_USD:" + sql);
+                }else {
 //            removed STATUS='Y' AND
-                sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
-                log.info("SQL_USD:" + sql);
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_USD:" + sql);
+                }
+            }else
+            {
+                //            removed STATUS='N' AND
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() +"'";
+                    log.info("SQL_USD:" + sql);
+                }else {
+//            removed STATUS='Y' AND
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'USD' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_USD:" + sql);
+                }
             }
+
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportOfferPaperModel>() {
                 @Override
                 public ReportOfferPaperModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1828,15 +2252,29 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
     public List<ReportOfferPaperModelTHB> CurrencyTHBinKip(OfferPaperReq offerPaperReq) {
         String sql;
         try {
-//            removed STATUS='N' AND
-            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-                sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() +"'";
-                log.info("SQL_USD:" + sql);
-            }else {
+            if (offerPaperReq.getBranch_id() != null)
+            {
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() +"'";
+                    log.info("SQL_USD:" + sql);
+                }else {
 //            removed STATUS='Y' AND
-                sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
-                log.info("SQL_USD:" + sql);
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_USD:" + sql);
+                }
+            }else
+            {
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() +"'";
+                    log.info("SQL_USD:" + sql);
+                }else {
+//            removed STATUS='Y' AND
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_USD:" + sql);
+                }
             }
+
+
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportOfferPaperModelTHB>() {
                 @Override
                 public ReportOfferPaperModelTHB mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1857,15 +2295,29 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
     public List<ReportOfferPaperModelLAK> CurrencyLAKinKip(OfferPaperReq offerPaperReq) {
         String sql;
         try {
-//            removed STATUS='N' AND
-            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-                sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() +"'";
-                log.info("SQL_USD:" + sql);
-            }else {
+            if (offerPaperReq.getBranch_id() != null)
+            {
+                //            removed STATUS='N' AND
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() +"'";
+                    log.info("SQL_USD:" + sql);
+                }else {
 //            removed STATUS='Y' AND
-                sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
-                log.info("SQL_USD:" + sql);
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_USD:" + sql);
+                }
+            }else {
+                //            removed STATUS='N' AND
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() +"'";
+                    log.info("SQL_USD:" + sql);
+                }else {
+//            removed STATUS='Y' AND
+                    sql = "SELECT Real_totalMoney FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_USD:" + sql);
+                }
             }
+
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportOfferPaperModelLAK>() {
                 @Override
                 public ReportOfferPaperModelLAK mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1886,15 +2338,31 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
     public List<ReportOfferPaperModelLAK> ShowReportSumofferpaperLAK(OfferPaperReq offerPaperReq) {
         String sql;
         try {
-//            removed STATUS='N' AND
-            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "'";
-                log.info("SQL_LAK:" + sql);
-            }else {
+            if (offerPaperReq.getBranch_id() != null)
+            {
+                //            removed STATUS='N' AND
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "'";
+                    log.info("SQL_LAK:" + sql);
+                }else {
 //            removed STATUS='Y' AND
-                sql = "SELECT * FROM V_OFFER_PAPER where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' AND '" + offerPaperReq.getEndDate() + "'";
-                log.info("SQL_LAK-Date:" + sql);
+                    sql = "SELECT * FROM V_OFFER_PAPER where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "' and datePay between '" + offerPaperReq.getStartDate() + "' AND '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_LAK-Date:" + sql);
+                }
             }
+            else
+            {
+                //            removed STATUS='N' AND
+                if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+                    sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "'";
+                    log.info("SQL_LAK:" + sql);
+                }else {
+//            removed STATUS='Y' AND
+                    sql = "SELECT * FROM V_OFFER_PAPER where STATUS_CREDITS='NO' AND currency = 'LAK' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' AND '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_LAK-Date:" + sql);
+                }
+            }
+
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportOfferPaperModelLAK>() {
                 @Override
                 public ReportOfferPaperModelLAK mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -1917,18 +2385,37 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
 public List<OfferPaperModelFaso> ShowofferpaperDAOspayCredit (OfferPaperReq offerPaperReq) {
     String sql;
     try {
-//        removed STATUS='Y' AND
+        if (offerPaperReq.getBranch_id() != null)
+        {
+            //        removed STATUS='Y' AND
 //        STATUS='Y' แม่นร้านเครดิด N แม่นจ่ายสด
-        if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
 //            sql = "SELECT * FROM V_OFFER_PAPER2  where  STATUS='Y' AND StatusNy='notjaiy' AND BRANCH='" + offerPaperReq.getBranch() + "'";
-            sql = "SELECT * FROM V_OFFER_PAPER2 where STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "'";
-            log.info("report-SQL_pay_credit1:" + sql);
-        }else {
+                sql = "SELECT * FROM V_OFFER_PAPER2 where STATUS='Y' AND branch_id='" + offerPaperReq.getBranch() + "'";
+                log.info("report-SQL_pay_credit1:" + sql);
+            }else {
 //            removed STATUS='Y' AND
 //            sql = "SELECT * FROM V_OFFER_PAPER2  where  STATUS='Y' AND StatusNy='notjaiy' AND BRANCH='" + offerPaperReq.getBranch() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
-            sql = "SELECT * FROM V_OFFER_PAPER2 where STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
-            log.info("report-SQL_pay_credit2:" + sql);
+                sql = "SELECT * FROM V_OFFER_PAPER2 where STATUS='Y' AND branch_id='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                log.info("report-SQL_pay_credit2:" + sql);
+            }
         }
+        else
+        {
+            //        removed STATUS='Y' AND
+//        STATUS='Y' แม่นร้านเครดิด N แม่นจ่ายสด
+            if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
+//            sql = "SELECT * FROM V_OFFER_PAPER2  where  STATUS='Y' AND StatusNy='notjaiy' AND BRANCH='" + offerPaperReq.getBranch() + "'";
+                sql = "SELECT * FROM V_OFFER_PAPER2 where STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "'";
+                log.info("report-SQL_pay_credit1:" + sql);
+            }else {
+//            removed STATUS='Y' AND
+//            sql = "SELECT * FROM V_OFFER_PAPER2  where  STATUS='Y' AND StatusNy='notjaiy' AND BRANCH='" + offerPaperReq.getBranch() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                sql = "SELECT * FROM V_OFFER_PAPER2 where STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "' and datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                log.info("report-SQL_pay_credit2:" + sql);
+            }
+        }
+
         return EBankJdbcTemplate.query(sql, new RowMapper<OfferPaperModelFaso>() {
             @Override
             public OfferPaperModelFaso mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -2062,8 +2549,18 @@ public List<OfferPaperModelFaso> ShowofferpaperDAOspayCredit (OfferPaperReq offe
     // show fix list DAOs
     public List<ShowFixModel> ShowFixListDAOs(FixReq fixReq) {
         try {
-            String sql ="SELECT * FROM V_FIX_4SHOW  where BRANCH='"+fixReq.getBranch()+"'";
-            log.info("SQL:"+sql);
+            String sql;
+            if (fixReq.getBranch_id() != null)
+            {
+                 sql ="SELECT * FROM V_FIX_4SHOW  where branch_id='"+fixReq.getBranch_id()+"'";
+//            String sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"'";
+                log.info("SQL:"+sql);
+            }else
+            {
+                 sql ="SELECT * FROM V_FIX_4SHOW  where BRANCH='"+fixReq.getBranch()+"'";
+//            String sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"'";
+                log.info("SQL:"+sql);
+            }
             return EBankJdbcTemplate.query(sql, new RowMapper<ShowFixModel>() {
                 @Override
                 public ShowFixModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -2081,7 +2578,6 @@ public List<OfferPaperModelFaso> ShowofferpaperDAOspayCredit (OfferPaperReq offe
                     tr.setBranch_inventory(rs.getString("branch_inventory"));
                     tr.setImg(rs.getString("img"));
                     tr.setFinalTotalPrice(rs.getDouble("finalTotalPrice"));
-
                     return tr;
                 }
             });
@@ -2094,15 +2590,31 @@ public List<OfferPaperModelFaso> ShowofferpaperDAOspayCredit (OfferPaperReq offe
 public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
         String sql="";
     try {
-        if (fixReq.getToKen().equals("2514f6e2995b6e796d197c673d48375a271157a5e01f164d44ea7df278f7a377"))
+        if (fixReq.getBranch_id() != null)
         {
-            sql ="SELECT * FROM V_APPROVE_FIX";
-            log.info("SQL admin:"+sql);
+            if (fixReq.getToKen().equals("2514f6e2995b6e796d197c673d48375a271157a5e01f164d44ea7df278f7a377"))
+            {
+                sql ="SELECT * FROM V_APPROVE_FIX";
+                log.info("SQL admin:"+sql);
+            }
+            else
+            {
+                sql ="SELECT * FROM V_APPROVE_FIX WHERE branch_id ='"+fixReq.getBranch_id()+"'";
+                log.info("SQL branch:"+sql);
+            }
         }
         else
         {
-            sql ="SELECT * FROM V_APPROVE_FIX WHERE BRANCH_Inventory ='"+fixReq.getBranch()+"'";
-            log.info("SQL branch:"+sql);
+            if (fixReq.getToKen().equals("2514f6e2995b6e796d197c673d48375a271157a5e01f164d44ea7df278f7a377"))
+            {
+                sql ="SELECT * FROM V_APPROVE_FIX";
+                log.info("SQL admin:"+sql);
+            }
+            else
+            {
+                sql ="SELECT * FROM V_APPROVE_FIX WHERE BRANCH_Inventory ='"+fixReq.getBranch()+"'";
+                log.info("SQL branch:"+sql);
+            }
         }
         return EBankJdbcTemplate.query(sql, new RowMapper<ReqListOfFixModel>() {
             @Override
@@ -2124,6 +2636,43 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
                 tr.setItem_id(rs.getString("item_id"));
                 tr.setHeader_id(rs.getString("header_id"));
                 tr.setFooter_id(rs.getString("footer_id"));
+                return tr;
+            }
+        });
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return null;
+}
+//old inventory dao
+public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventoryReq) {
+    String sql;
+    String branchId = oldInventoryReq.getBranch_id();
+    try {
+        if (branchId != null && !branchId.isEmpty())
+        {
+             sql ="SELECT * FROM OLD_INVENTORY WHERE branch_id = '"+oldInventoryReq.getBranch_id()+"'";
+            log.info("SQL is bor :"+sql);
+        }
+        else {
+             sql ="SELECT * FROM OLD_INVENTORY WHERE branchNo = '"+oldInventoryReq.getBranch()+"'";
+            log.info("SQL not bor:"+sql);
+        }
+        return EBankJdbcTemplate.query(sql, new RowMapper<OldInventoryModel>() {
+            @Override
+            public OldInventoryModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                OldInventoryModel tr = new OldInventoryModel();
+                tr.setKey_id(rs.getString("KEY_ID"));
+                tr.setItemName_Oldwarehouse(rs.getString("item_name"));
+                tr.setVehicle_Oldwarehouse(rs.getString("header_truck_id"));
+                tr.setVehiclefooter_Oldwarehouse(rs.getString("footer_truck_id"));
+                tr.setQty_Oldwarehouse(rs.getString("amount"));
+                tr.setImage_Oldwarehouse(rs.getString("picture"));
+                tr.setDescription_Oldwarehouse(rs.getString("detail"));
+                tr.setImportExpirationDate_Oldwarehouse(rs.getString("date_in"));
+                tr.setSelectedType_Oldwarehouse(rs.getString("type"));
+                tr.setPrice_Oldwarehouse(rs.getString("price"));
+                tr.setCur(rs.getString("cur"));
                 return tr;
             }
         });
@@ -2184,18 +2733,18 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
     }
 
     // for inventory object
-    public List<ReportstockModel2> inventoryalaireportStockDayWeekDaos (ReportstockReq reportstockReq) {
+    public List<ReportstockModel2>inventoryalaireportStockDayWeekDaos (ReportstockReq reportstockReq) {
         String sql;
         try {
 
             if (reportstockReq.getItem_id() == null)
             {
                     sql = "SELECT item_name,Qty,img FROM TB_items WHERE branch_inventory ='"+reportstockReq.getBranch()+"'";
-                    log.info("SQL:" + sql);
+                    log.info("service_1_SQL:" + sql);
             }
             else {
                     sql = "SELECT item_name,Qty,img FROM TB_items WHERE item_id = '" + reportstockReq.getItem_id() + "' ";
-                    log.info("SQL:" + sql);
+                    log.info("service_1_SQL:" + sql);
             }
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportstockModel2>() {
                 @Override
@@ -2217,8 +2766,18 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
     // show fix Detail DAOs
     public List<ShowFixModel> ShowFixListDAOsDetail(FixReq fixReq) {
         try {
-            String sql ="SELECT * FROM V_FIX_4SHOW  where BRANCH='"+fixReq.getBranch()+"' and fixId = '"+fixReq.getFixId()+"'";
-            log.info("SQL:"+sql);
+            String sql;
+            if (fixReq.getBranch_id() != null)
+            {
+                 sql ="SELECT * FROM V_FIX_4SHOW  where branch_id='"+fixReq.getBranch_id()+"' and fixId = '"+fixReq.getFixId()+"'";
+//            String sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"' and fixId = '"+fixReq.getFixId()+"'";
+                log.info("SQL:"+sql);
+            }
+            else
+            {
+                 sql ="SELECT * FROM V_FIX_4SHOW  where BRANCH='"+fixReq.getBranch()+"' and fixId = '"+fixReq.getFixId()+"'";
+                log.info("SQL:"+sql);
+            }
             return EBankJdbcTemplate.query(sql, new RowMapper<ShowFixModel>() {
                 @Override
                 public ShowFixModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -2237,7 +2796,6 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
                     tr.setDetail_A_lai(rs.getString("item_name"));
                     tr.setImg(rs.getString("img"));
                     tr.setFinalTotalPrice(rs.getDouble("finalTotalPrice"));
-
                     return tr;
                 }
             });
@@ -2268,25 +2826,43 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
     public List<FixModelFaso> FixReportDAOs (FixReq fixReq) {
         String sql;
         try {
-            if (fixReq.getStartDate() == null){
-                 sql ="SELECT * FROM V_FIX  where BRANCH='"+fixReq.getBranch()+"'  ";
-                log.info("SQL:"+sql);
+            if (fixReq.getBranch_id() != null)
+            {
+                if (fixReq.getStartDate() == null){
+                    sql ="SELECT * FROM V_FIX  where branch_id='"+fixReq.getBranch_id()+"'  ";
+// new                sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"'  ";
+                    log.info("SQL:"+sql);
+                }
+                else{
+                    sql ="SELECT * FROM V_FIX  where branch_id='"+fixReq.getBranch_id()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
+// new                sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
+                    log.info("SQL:"+sql);
+                }
             }
-            else {
-                 sql ="SELECT * FROM V_FIX  where BRANCH='"+fixReq.getBranch()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
-                log.info("SQL:"+sql);
+            else
+            {
+                if (fixReq.getStartDate() == null){
+                    sql ="SELECT * FROM V_FIX  where BRANCH='"+fixReq.getBranch()+"'  ";
+// new                sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"'  ";
+                    log.info("SQL:"+sql);
+                }
+                else{
+                    sql ="SELECT * FROM V_FIX  where BRANCH='"+fixReq.getBranch()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
+// new                sql ="SELECT * FROM V_APPROVE_FIX  where BRANCH='"+fixReq.getBranch()+"' and DateFix between '"+fixReq.getStartDate()+"' and '"+fixReq.getEndDate()+"' ";
+                    log.info("SQL:"+sql);
+                }
             }
+
             return EBankJdbcTemplate.query(sql, new RowMapper<FixModelFaso>() {
                 @Override
                 public FixModelFaso mapRow(ResultSet rs, int rowNum) throws SQLException {
                     FixModelFaso tr = new FixModelFaso();
                     tr.setH_VICIVLE_NUMBER(rs.getString("H_VICIVLE_NUMBER"));
-                    tr.setH_BRANCH(rs.getString("F_BRANCH"));
+                    tr.setH_BRANCH(rs.getString("F_CARD_NO"));
                     tr.setTotal_Price(rs.getString("total_Price"));
                     tr.setDateFix(rs.getString("DateFix"));
                     tr.setTotalTimeFix(rs.getString("totalTimeFix"));
                     tr.setTotalFixCost(rs.getDouble("totalFixCost"));
-
                     return tr;
                 }
             });
@@ -2430,9 +3006,18 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
     }
     // paid to shop detail DAOs
     public List<PaidToShopDetailModel> PaidToShopDetailsDaos (PaidToShopDetailReq paidToShopDetailReq) {
+        String sql;
         try {
-            String sql ="SELECT * FROM REPORT_SHOPS_MUST_PAY where pocode = '"+paidToShopDetailReq.getPo_code()+"' and OFFER_CODE = '"+paidToShopDetailReq.getOffer_code()+"' and BRANCH ='"+paidToShopDetailReq.getBranch()+"'  ";
-            log.info("SQL:"+sql);
+            if (paidToShopDetailReq.getBranch_id() !=null)
+            {
+                sql ="SELECT * FROM REPORT_SHOPS_MUST_PAY where pocode = '"+paidToShopDetailReq.getPo_code()+"' and OFFER_CODE = '"+paidToShopDetailReq.getOffer_code()+"' and branch_id ='"+paidToShopDetailReq.getBranch_id()+"'  ";
+                log.info("SQL:"+sql);
+            }else
+            {
+                sql ="SELECT * FROM REPORT_SHOPS_MUST_PAY where pocode = '"+paidToShopDetailReq.getPo_code()+"' and OFFER_CODE = '"+paidToShopDetailReq.getOffer_code()+"' and BRANCH ='"+paidToShopDetailReq.getBranch()+"'  ";
+                log.info("SQL:"+sql);
+            }
+
             return EBankJdbcTemplate.query(sql, new RowMapper<PaidToShopDetailModel>() {
                 @Override
                 public PaidToShopDetailModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -2497,7 +3082,7 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
     public int UpdateShops(ShopReq shopReq) throws ParseException {
         List<Shops> data = new ArrayList<>();
         try{
-            String SQL = "update TB_shop set shop_name=?,address=?,phone=?,country=?,currency=?,amount_money=?,userId='"+shopReq.getUserId()+"' where shop_id='"+shopReq.getShop_id()+"'";
+            String SQL = "update TB_shop set shop_name=?,address=?,phone=?,country=?,currency=?,amount_money=?,userId='"+shopReq.getUserId()+"',branch_id='"+shopReq.getBranch_id()+"' where shop_id='"+shopReq.getShop_id()+"'";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(shopReq.getShop_name());
@@ -2507,7 +3092,23 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
             paramList.add(shopReq.getCurrency());
             paramList.add(shopReq.getAmount_money());
             paramList.add(shopReq.getUserId());
+            paramList.add(shopReq.getBranch_id());
             paramList.add(shopReq.getShop_id());
+            return EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
+    // LimitStock
+    public int LimitStockDao(ItemReq itemReq) throws ParseException {
+        List<Shops> data = new ArrayList<>();
+        try{
+            String SQL = "update TB_items set limitQty=? where item_id=?";
+            log.info("SQL:"+SQL);
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(itemReq.getLimitQty());
+            paramList.add(itemReq.getItem_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -2546,7 +3147,7 @@ public int delfillOill(FillOilReq fillOilReq) {
 
         List<Items> data = new ArrayList<>();
         try{
-            String SQL = "insert into TB_items (item_name,unit,unit_price,Qty,img,userId,branch_inventory)values (?,?,?,?,?,'"+itemReq.getUserId()+"','"+itemReq.getBranch()+"')";
+            String SQL = "insert into TB_items (item_name,unit,unit_price,Qty,img,userId,branch_inventory,branch_id,limitQty)values (?,?,?,?,?,'"+itemReq.getUserId()+"','"+itemReq.getBranch()+"','"+itemReq.getBranch_id()+"','"+itemReq.getLimitQty()+"')";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(itemReq.getItemName());
@@ -2556,6 +3157,8 @@ public int delfillOill(FillOilReq fillOilReq) {
             paramList.add(path+fileName);
             paramList.add(itemReq.getUserId());
             paramList.add(itemReq.getBranch());
+            paramList.add(itemReq.getBranch_id());
+            paramList.add(itemReq.getLimitQty());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -2570,13 +3173,16 @@ public int delfillOill(FillOilReq fillOilReq) {
        log.info("path:"+path+fileName);
        List<Items> data = new ArrayList<>();
        try{
-           String SQL = "Update TB_items set item_name=?,unit=?,unit_price=?,userId=?,Qty=? where item_id =?";
+           String SQL = "Update TB_items set item_name=?,unit=?,unit_price=?,userId=?,Qty=?,branch_inventory=?,branch_id=? where item_id =?";
+           log.info("SQL:"+SQL);
            List<Object> paramList = new ArrayList<Object>();
            paramList.add(itemReq.getItemName());
            paramList.add(itemReq.getUnit());
            paramList.add(itemReq.getUnit_price());
            paramList.add(itemReq.getUserId());
            paramList.add(itemReq.getQty());
+           paramList.add(itemReq.getBranch());
+           paramList.add(itemReq.getBranch_id());
            paramList.add(itemReq.getItem_id());
            return EBankJdbcTemplate.update(SQL, paramList.toArray());
        }catch (Exception e){
@@ -2589,13 +3195,16 @@ public int delfillOill(FillOilReq fillOilReq) {
         String path="http://khounkham.com/images/car/";
         String fileName = itemReq.getImg();
         try {
-            String SQL ="update TB_items set item_name=?,unit=?,unit_price=?,Qty=?,img=?,branch_inventory='"+itemReq.getBranch()+"' where  item_id=?";
+            String SQL ="update TB_items set item_name=?,unit=?,unit_price=?,Qty=?,img=?,branch_inventory='"+itemReq.getBranch()+"',branch_id=? where  item_id=?";
+            log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(itemReq.getItemName());
             paramList.add(itemReq.getUnit());
             paramList.add(itemReq.getUnit_price());
             paramList.add(itemReq.getQty());
             paramList.add(path+fileName);
+            paramList.add(itemReq.getBranch());
+            paramList.add(itemReq.getBranch_id());
             paramList.add(itemReq.getItem_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){

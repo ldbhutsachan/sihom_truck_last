@@ -14,9 +14,10 @@ public class GetUserLoginOut {
     private String staftName;
     private String role;
     private String staftId;
-
     private String status;
     private String toKen;
     private String branch;
+    private String department;
+    private String sprit_role;
 
 }

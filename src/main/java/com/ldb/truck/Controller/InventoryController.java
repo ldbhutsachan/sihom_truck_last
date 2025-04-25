@@ -3,6 +3,7 @@ import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Model.Login.CarOffice.CarOfficeReq;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilReq;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilRes;
+import com.ldb.truck.Model.Login.DocumentStorage.DataHoleReq;
 import com.ldb.truck.Model.Login.Inventory.Fix.FixReportRes;
 import com.ldb.truck.Model.Login.Inventory.Fix.FixReq;
 import com.ldb.truck.Model.Login.Inventory.Fix.FixReqListProve.ShowFixRequest;
@@ -13,10 +14,14 @@ import com.ldb.truck.Model.Login.Inventory.Items.ItemHisRes;
 import com.ldb.truck.Model.Login.Inventory.Items.ItemReq;
 import com.ldb.truck.Model.Login.Inventory.Items.ItemRes;
 import com.ldb.truck.Model.Login.Inventory.OfferPaper.*;
+import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryReq;
+import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryRes;
 import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockReq;
 import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockRes;
 import com.ldb.truck.Model.Login.Inventory.Shops.*;
 import com.ldb.truck.Model.Login.Messages;
+import com.ldb.truck.Model.Login.Task.TaskReq;
+import com.ldb.truck.Model.Login.Task.TaskRes;
 import com.ldb.truck.Service.Inventory.InventoryService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -133,6 +138,21 @@ public OfferpaperRes offerpaper (@RequestBody OfferPaperReq offerPaperReq ){
     }
     return result;
 }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/deletefferpaper.service")
+    public OfferpaperRes deletefferpaper (@RequestBody OfferPaperReq offerPaperReq ){
+        OfferpaperRes result = new OfferpaperRes();
+        try {
+            result = inventoryService.DeleteOfferPaper(offerPaperReq);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
 // fix
     @CrossOrigin(origins = "*")
     @PostMapping("/fix.service")
@@ -150,6 +170,148 @@ public OfferpaperRes offerpaper (@RequestBody OfferPaperReq offerPaperReq ){
     }
         return result;
     }
+    //    insert old inventory
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/InsertOldInventory.service" , consumes = {"multipart/form-data"})
+    public Messages InsertDataHole(
+            @RequestParam("image_Oldwarehouse") MultipartFile image_Oldwarehouse,
+            @RequestParam("itemName_Oldwarehouse") String itemName_Oldwarehouse,
+            @RequestParam("description_Oldwarehouse") String  description_Oldwarehouse,
+            @RequestParam("importExpirationDate_Oldwarehouse") String  importExpirationDate_Oldwarehouse,
+            @RequestParam("price_Oldwarehouse") String  price_Oldwarehouse,
+            @RequestParam("vehiclefooter_Oldwarehouse") String  vehiclefooter_Oldwarehouse,
+            @RequestParam("vehicle_Oldwarehouse") String  vehicle_Oldwarehouse,
+            @RequestParam("qty_Oldwarehouse") String  qty_Oldwarehouse,
+            @RequestParam("selectedType_Oldwarehouse") String  selectedType_Oldwarehouse,
+            @RequestParam("toKen") String  toKen,
+            @RequestParam("branch_id") String  branch_id,
+            @RequestParam("cur") String  cur
+    ){
+
+        log.info("===================================save header==================================================");
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+        String namefile = formatter.format(date);
+        Messages result = new Messages();
+        try {
+            OldInventoryReq data = new OldInventoryReq();
+            data.setItemName_Oldwarehouse(itemName_Oldwarehouse);
+            data.setDescription_Oldwarehouse(description_Oldwarehouse);
+            data.setImportExpirationDate_Oldwarehouse(importExpirationDate_Oldwarehouse);
+            data.setPrice_Oldwarehouse(price_Oldwarehouse);
+            data.setVehiclefooter_Oldwarehouse(vehiclefooter_Oldwarehouse);
+            data.setVehicle_Oldwarehouse(vehicle_Oldwarehouse);
+            data.setQty_Oldwarehouse(qty_Oldwarehouse);
+            data.setSelectedType_Oldwarehouse(selectedType_Oldwarehouse);
+            data.setToKen(toKen);
+            data.setBranch_id(branch_id);
+            data.setCur(cur);
+
+            log.error("******file lenght"+image_Oldwarehouse);
+            log.error(data);
+            String fileName = "";
+            List<String> fileNames = new ArrayList<>();
+            if(image_Oldwarehouse == null){
+                log.warn("************* file name is null ****************");
+                data.setImage_Oldwarehouse("http://khounkham.com/images/car/image.jpg");
+            }else {
+                Arrays.asList(image_Oldwarehouse).stream().forEach(file -> {
+//                    fileNames.add(mediaUploadService.uploadMediacar(file));
+                    fileNames.add(mediaUploadService.uploadPDF(file));
+                });
+                log.info("Uploaded the files successfully: " + fileNames );
+                fileName = StringUtils.join(fileNames, ',');
+                data.setImage_Oldwarehouse(fileName);
+            }
+            result = inventoryService.InsertOldInventoryService(data);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+            return  result;
+        }
+        return  result;
+    }
+//    delete old inventory
+@CrossOrigin(origins = "*")
+@PostMapping("/DelOldInventory.service")
+public OldInventoryRes DelOldInventory (@RequestBody OldInventoryReq oldInventoryReq){
+    OldInventoryRes result = new OldInventoryRes();
+    try{
+        result = inventoryService.DeleteOldInventoryService(oldInventoryReq);
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
+
+//    edit old inventory
+@CrossOrigin(origins = "*")
+@PostMapping(value = "/UpdateOldInventory.service" , consumes = {"multipart/form-data"})
+public Messages UpdateOldInventory(
+        @RequestParam("key_id") String  key_id,
+        @RequestParam("image_Oldwarehouse") MultipartFile image_Oldwarehouse,
+        @RequestParam("itemName_Oldwarehouse") String itemName_Oldwarehouse,
+        @RequestParam("description_Oldwarehouse") String  description_Oldwarehouse,
+        @RequestParam("importExpirationDate_Oldwarehouse") String  importExpirationDate_Oldwarehouse,
+        @RequestParam("price_Oldwarehouse") String  price_Oldwarehouse,
+        @RequestParam("vehiclefooter_Oldwarehouse") String  vehiclefooter_Oldwarehouse,
+        @RequestParam("vehicle_Oldwarehouse") String  vehicle_Oldwarehouse,
+        @RequestParam("qty_Oldwarehouse") String  qty_Oldwarehouse,
+        @RequestParam("selectedType_Oldwarehouse") String  selectedType_Oldwarehouse,
+        @RequestParam("branch_id") String  branch_id,
+        @RequestParam("toKen") String  toKen,
+        @RequestParam("cur") String  cur
+
+
+){
+
+    log.info("===================================save header==================================================");
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+    String namefile = formatter.format(date);
+    Messages result = new Messages();
+    try {
+        OldInventoryReq data = new OldInventoryReq();
+        data.setKey_id(key_id);
+        data.setItemName_Oldwarehouse(itemName_Oldwarehouse);
+        data.setDescription_Oldwarehouse(description_Oldwarehouse);
+        data.setImportExpirationDate_Oldwarehouse(importExpirationDate_Oldwarehouse);
+        data.setPrice_Oldwarehouse(price_Oldwarehouse);
+        data.setVehiclefooter_Oldwarehouse(vehiclefooter_Oldwarehouse);
+        data.setVehicle_Oldwarehouse(vehicle_Oldwarehouse);
+        data.setQty_Oldwarehouse(qty_Oldwarehouse);
+        data.setSelectedType_Oldwarehouse(selectedType_Oldwarehouse);
+        data.setBranch_id(branch_id);
+        data.setToKen(toKen);
+        data.setCur(cur);
+
+
+        log.error("******file lenght"+image_Oldwarehouse);
+        log.error(data);
+        String fileName = "";
+        List<String> fileNames = new ArrayList<>();
+        if(image_Oldwarehouse == null){
+            log.warn("************* file name is null ****************");
+            data.setImage_Oldwarehouse("http://khounkham.com/images/car/image.jpg");
+        }else {
+            Arrays.asList(image_Oldwarehouse).stream().forEach(file -> {
+//                    fileNames.add(mediaUploadService.uploadMediacar(file));
+                fileNames.add(mediaUploadService.uploadPDF(file));
+            });
+            log.info("Uploaded the files successfully: " + fileNames );
+            fileName = StringUtils.join(fileNames, ',');
+            data.setImage_Oldwarehouse(fileName);
+        }
+        result = inventoryService.UpdateoldInventoryService(data);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+        return  result;
+    }
+    return  result;
+}
 //    approve fix
 @CrossOrigin(origins = "*")
 @PostMapping("/approvefix.service")
@@ -182,6 +344,21 @@ public FixRes proofFixReq (@RequestBody FixReq fixReq){
     }
     return result;
 }
+    //show old inventory
+    @CrossOrigin(origins = "*")
+    @PostMapping("/showOldInventory.service")
+    public OldInventoryRes oldInventoryRes(@RequestBody OldInventoryReq oldInventoryReq){
+        OldInventoryRes result = new OldInventoryRes();
+        try {
+            result = inventoryService.showoldInventoryService(oldInventoryReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
 //show req fix
 @CrossOrigin(origins = "*")
 @PostMapping("/showListofFixReq.service")
@@ -561,6 +738,22 @@ public GenCodePO GenCodePO(){
         }
         return result;
     }
+    // Update Shops
+    @CrossOrigin(origins = "*")
+    @PostMapping("/limitstock.service")
+    public Messages limitstock (@RequestBody ItemReq itemReq ){
+        Messages result = new Messages();
+        try {
+            result = inventoryService.LimitStock(itemReq);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
 // delete shop
 @CrossOrigin(origins = "*")
 @PostMapping("/DelShops.service")
@@ -651,7 +844,12 @@ public Messages saveVicicleHeader(
         @RequestParam("unit") String  unit,
         @RequestParam("unit_price") String  unit_price,
         @RequestParam("qty") Integer  qty,
-        @RequestParam("toKen") String  toKen){
+        @RequestParam("toKen") String  toKen,
+        @RequestParam("branch_id") String  branch_id,
+        @RequestParam("limitQty") String  limitQty
+)
+
+{
         log.info("===================================Insert Items==================================================");
     Date date = new Date();
     SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
@@ -664,6 +862,8 @@ public Messages saveVicicleHeader(
         data.setUnit_price(unit_price);
         data.setQty(qty);
         data.setToKen(toKen);
+        data.setBranch_id(branch_id);
+        data.setLimitQty(limitQty);
         log.error("******file lenght"+files);
         log.error(data);
         String fileName = "";
@@ -698,7 +898,8 @@ public Messages saveVicicleHeader(
             @RequestParam("unit") String  unit,
             @RequestParam("unit_price") String  unit_price,
             @RequestParam("qty") Integer  qty,
-            @RequestParam("toKen") String  toKen
+            @RequestParam("toKen") String  toKen,
+            @RequestParam("branch_id") String  branch_id
 //            @RequestParam("img") String  img
 
     ){
@@ -713,6 +914,7 @@ public Messages saveVicicleHeader(
             data.setUnit_price(unit_price);
             data.setQty(qty);
             data.setToKen(toKen);
+            data.setBranch_id(branch_id);
 //            data.setImg(img);
             log.error("******file lenght"+files);
             log.info("files:==="+files);

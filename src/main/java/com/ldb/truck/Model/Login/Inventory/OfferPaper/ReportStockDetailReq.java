@@ -16,6 +16,7 @@ public class ReportStockDetailReq {
     private String item_id;
     private String userId;
     private String branch;
+    private String branch_id;
     private String toKen;
 
 }

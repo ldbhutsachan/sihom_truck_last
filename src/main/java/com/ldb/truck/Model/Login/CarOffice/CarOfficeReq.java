@@ -22,11 +22,13 @@ public class CarOfficeReq {
     private String car_type;
     private String car_brand;
     private String lean;
+    private String leanFuengThaiy;
     private String newDate;
     private String tungsitDateExpire;
     private String serial_tire_second;
     private String lekmai_next;
     private String date_change_lean_next;
+    private String leanGiaNextday;
     private String date_change_lean;
     private String tungsitnumber;
     private String lekJuk;

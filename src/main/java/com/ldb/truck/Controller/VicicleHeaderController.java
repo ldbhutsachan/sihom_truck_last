@@ -340,7 +340,14 @@ public Messages saveVicicleHeader(
         @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
         @RequestParam("pha_But") String  pha_But,
         @RequestParam("lektungsit") String  lektungsit,
+        @RequestParam("dateExTungsit") String  dateExTungsit,
         @RequestParam("date_change_lean") String  date_change_lean,
+        @RequestParam("brand_wheel_car") String  brand_wheel_car,
+        @RequestParam("status_use_unuse_car") String  status_use_unuse_car,
+        @RequestParam("comment") String  comment,
+        @RequestParam("technique_date") String  technique_date,
+        @RequestParam("technique_date_per_month") String  technique_date_per_month,
+//        @RequestParam("files") MultipartFile files,
         @RequestParam("toKen") String  toKen
 
 ){
@@ -459,7 +466,13 @@ public Messages saveVicicleHeader(
         data.setLeanFuengThaiy(leanFuengThaiy);
         data.setPha_But(pha_But);
         data.setLektungsit(lektungsit);
+        data.setDateExTungsit(dateExTungsit);
         data.setDate_change_lean(date_change_lean);
+        data.setBrand_wheel_car(brand_wheel_car);
+        data.setStatus_use_unuse_car(status_use_unuse_car);
+        data.setComment(comment);
+        data.setTechnique_date(technique_date);
+        data.setTechnique_date_per_month(technique_date_per_month);
         data.setToKen(toKen);
         log.error("******file lenght"+files);
         log.error(data);
@@ -599,7 +612,13 @@ public Messages saveVicicleHeader(
             @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
             @RequestParam("pha_But") String  pha_But,
             @RequestParam("lektungsit") String  lektungsit,
+            @RequestParam("dateExTungsit") String  dateExTungsit,
             @RequestParam("date_change_lean") String  date_change_lean,
+            @RequestParam("brand_wheel_car") String  brand_wheel_car,
+            @RequestParam("status_use_unuse_car") String  status_use_unuse_car,
+            @RequestParam("comment") String  comment,
+            @RequestParam("technique_date") String  technique_date,
+            @RequestParam("technique_date_per_month") String  technique_date_per_month,
             @RequestParam("toKen") String  toKen
 
 
@@ -720,7 +739,13 @@ public Messages saveVicicleHeader(
             data.setLeanFuengThaiy(leanFuengThaiy);
             data.setPha_But(pha_But);
             data.setLektungsit(lektungsit);
+            data.setDateExTungsit(dateExTungsit);
             data.setDate_change_lean(date_change_lean);
+            data.setBrand_wheel_car(brand_wheel_car);
+            data.setStatus_use_unuse_car(status_use_unuse_car);
+            data.setComment(comment);
+            data.setTechnique_date(technique_date);
+            data.setTechnique_date_per_month(technique_date_per_month);
             data.setToKen(toKen);
             data.setImageTruck(imageTruck);
             log.error("******file lenght"+files);
@@ -794,12 +819,14 @@ public Messages saveVicicleHeader(
             @RequestParam("dao") String  dao,
             @RequestParam("toKen") String  toKen,
             @RequestParam("lean") String  lean,
+            @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
             @RequestParam("tungsitnumber") String  tungsitnumber,
             @RequestParam("tungsitDateExpire") String  tungsitDateExpire,
             @RequestParam("serial_tire_second") String  serial_tire_second ,
             @RequestParam("lekmai_next") String  lekmai_next  ,
             @RequestParam("date_change_lean") String  date_change_lean ,
-            @RequestParam("date_change_lean_next") String  date_change_lean_next
+            @RequestParam("date_change_lean_next") String  date_change_lean_next,
+            @RequestParam("leanGiaNextday") String  leanGiaNextday
     ){
         log.info("===================================save header==================================================");
         Date date = new Date();
@@ -849,12 +876,14 @@ public Messages saveVicicleHeader(
             data.setDao(dao);
             data.setToKen(toKen);
             data.setLean(lean);
+            data.setLeanFuengThaiy(leanFuengThaiy);
             data.setTungsitnumber(tungsitnumber);
             data.setTungsitDateExpire(tungsitDateExpire);
             data.setSerial_tire_second(serial_tire_second);
             data.setLekmai_next(lekmai_next);
             data.setDate_change_lean(date_change_lean);
             data.setDate_change_lean_next(date_change_lean_next);
+            data.setLeanGiaNextday(leanGiaNextday);
             log.error("******file lenght"+files);
             log.error(data);
             String fileName = "";
@@ -1022,12 +1051,14 @@ public Messages saveVicicleHeader(
             @RequestParam("dao") String  dao,
             @RequestParam("toKen") String  toKen,
 //            @RequestParam("lean") String  lean,
+            @RequestParam("leanFuengThaiy") String  leanFuengThaiy,
             @RequestParam("tungsitnumber") String  tungsitnumber,
             @RequestParam("tungsitDateExpire") String  tungsitDateExpire,
             @RequestParam("serial_tire_second") String  serial_tire_second,
             @RequestParam("lekmai_next") String  lekmai_next,
             @RequestParam("date_change_lean") String  date_change_lean ,
-            @RequestParam("date_change_lean_next") String  date_change_lean_next
+            @RequestParam("date_change_lean_next") String  date_change_lean_next,
+            @RequestParam("leanGiaNextday") String  leanGiaNextday
 
     ){
         log.info("===================================save header==================================================");
@@ -1079,12 +1110,14 @@ public Messages saveVicicleHeader(
             data.setDao(dao);
             data.setToKen(toKen);
 //            data.setLean(lean);
+            data.setLeanFuengThaiy(leanFuengThaiy);
             data.setTungsitnumber(tungsitnumber);
             data.setTungsitDateExpire(tungsitDateExpire);
             data.setSerial_tire_second(serial_tire_second);
             data.setLekmai_next(lekmai_next);
             data.setDate_change_lean(date_change_lean);
             data.setDate_change_lean_next(date_change_lean_next);
+            data.setLeanGiaNextday(leanGiaNextday);
 //            log.error("******file lenght"+files);
 //            log.error(data);
 //            String fileName = "";

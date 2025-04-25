@@ -1,25 +1,19 @@
 package com.ldb.truck.Service.DocumentStorageService;
 
-import com.ldb.truck.Dao.AssetOfficeDAOs.AssetsOfficeDAOs;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.documentStorageDAOs.DocumentStorageDaos;
-import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeModel;
-import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeReq;
-import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeRes;
-import com.ldb.truck.Model.Login.AssetsOffice.sumFooterGroupAsset;
 import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
-import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
-import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeRes;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleModel;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleReq;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleRes;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
+import com.ldb.truck.Model.Login.Task.*;
 import com.ldb.truck.Service.VicicleHeaderService.VicicleHeaderService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -102,7 +96,90 @@ public Messages InsertPicOfBor(DocumentStorageReq[] documentStorageReq) {
     }
     return message;
 }
+//service task
+public TaskRes InsertTaskService(TaskReq[] taskReq) {
+    TaskRes result = new TaskRes();
+    try {
+        // Assume documentStorageReq[0] contains the correct data
+        String toKen = taskReq[0].getToKen();
+        log.info("toKen=======================:" + toKen);
 
+        // Get User info based on the token
+        List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
+        log.info("UserNo:" + userIn.get(0).getUserId());
+        log.info("BranchNo:" + userIn.get(0).getBranchNo());
+
+        // Set user data
+        taskReq[0].setUserId(userIn.get(0).getUserId());
+        taskReq[0].setBranch(userIn.get(0).getBranchNo());
+
+        int i = documentStorageDaos.InsertTaskDaos(taskReq); // Insert into database
+        if (i == 0) {
+            result.setStatus("01");
+            result.setMessage("Can not Store Task");
+        } else {
+            result.setStatus("00");
+            result.setMessage("Store Task Successful");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Can not Store Task");
+    }
+    return result;
+}
+//link store
+public LinkRes InsertLinksService(LinkReq[] linkReq) {
+    LinkRes result = new LinkRes();
+    try {
+        // Assume documentStorageReq[0] contains the correct data
+        String toKen = linkReq[0].getToKen();
+        log.info("toKen=======================:" + toKen);
+
+        // Get User info based on the token
+        List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
+        log.info("UserNo:" + userIn.get(0).getUserId());
+        log.info("BranchNo:" + userIn.get(0).getBranchNo());
+
+        // Set user data
+        linkReq[0].setUserId(userIn.get(0).getUserId());
+        linkReq[0].setBranch(userIn.get(0).getBranchNo());
+
+        int i = documentStorageDaos.InsertLinksDaos(linkReq); // Insert into database
+        if (i == 0) {
+            result.setStatus("01");
+            result.setMessage("Can not Store Link");
+        } else {
+            result.setStatus("00");
+            result.setMessage("Store Link Successful");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Can not Store Link");
+    }
+    return result;
+}
+//update task
+public TaskRes UpdateTaskService (TaskReq[] taskReq) {
+    TaskRes result = new TaskRes();
+    try {
+
+        int i = documentStorageDaos.UpdateTaskDaos(taskReq); // Insert into database
+        if (i == 0) {
+            result.setStatus("01");
+            result.setMessage("Can not Update Task");
+        } else {
+            result.setStatus("00");
+            result.setMessage("Store Update Successful");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Can not Update Task");
+    }
+    return result;
+}
 //    dept must received service
     public Messages DeptMustReceivedInsertServiece (DeptMustReceivedReq deptMustReceivedReq){
         log.info("toKen=======================:"+deptMustReceivedReq.getToKen());
@@ -121,7 +198,11 @@ public Messages InsertPicOfBor(DocumentStorageReq[] documentStorageReq) {
         Messages message = new Messages();
 //        int i = 0;
         try {
-             documentStorageDaos.DeptMustReceivedInsertDAOs(deptMustReceivedReq);
+            if (deptMustReceivedReq.getDocument_1() != null && !deptMustReceivedReq.getDocument_1().isEmpty()) {
+                documentStorageDaos.DeptMustReceivedInsertDAOs(deptMustReceivedReq);
+            }else {
+                documentStorageDaos.DeptMustReceivedInsertDAOsNoDoc(deptMustReceivedReq);
+            }
 //             documentStorageDaos.DeptMustRecievedInsertArray(deptMustReceivedRe);
 //            if(i == 0) {
 //                message.setStatus("01");
@@ -171,7 +252,12 @@ public Messages InvoiceDeptInsertServiece (InvoiceDeptReq invoiceDeptReq ){
     Messages message = new Messages();
 //    int i = 0;
     try {
-         documentStorageDaos.InvoiceDeptInsertDAOs(invoiceDeptReq);
+        if (invoiceDeptReq.getPdfandpic() != null && !invoiceDeptReq.getPdfandpic().isEmpty()) {
+            documentStorageDaos.InvoiceDeptInsertDAOs(invoiceDeptReq);
+        }else
+        {
+            documentStorageDaos.InvoiceDeptInsertDAOsNoPic(invoiceDeptReq);
+        }
 //        if(i == 0) {
 //            message.setStatus("01");
 //            message.setMessage("Can not Store");
@@ -324,6 +410,74 @@ public Messages InsertholedataService (DataHoleReq dataHoleReq){
     }
     return message;
 }
+//service header truck file
+public Messages HeaderTruckFileService (OnlyFileHeaderTuckReq onlyFileHeaderTuckReq){
+    log.info("toKen=======================:"+onlyFileHeaderTuckReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(onlyFileHeaderTuckReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    onlyFileHeaderTuckReq.setUserId(userId);
+    onlyFileHeaderTuckReq.setBranch(userBranchNo);
+    Messages message = new Messages();
+    int i = 0;
+    try {
+        i = documentStorageDaos.InsertHeaderTruckFileDAOs(onlyFileHeaderTuckReq);
+        if(i == 0) {
+            message.setStatus("01");
+            message.setMessage("Can not Store");
+            return message;
+        }
+        message.setStatus("00");
+        message.setMessage("Store Successful");
+    }catch (Exception e){
+        e.printStackTrace();
+        message.setStatus("01");
+        message.setMessage("Can not Store");
+        return message;
+    }
+    return message;
+}
+//file header truck update
+    public Messages HeaderTruckFileUpdateService (OnlyFileHeaderTuckReq onlyFileHeaderTuckReq){
+//        log.info("toKen=======================:"+onlyFileHeaderTuckReq.getToKen());
+//        //============================get User info=======================
+//        List<Profile> userIn = profileDao.getProfileInfoByToken(onlyFileHeaderTuckReq.getToKen());
+//        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+//        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+//        log.info("show=================Role:"+userIn.get(0).getRole());
+//        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+//        //================================================================
+//        String userId = userIn.get(0).getUserId();
+//        String userBranchNo = userIn.get(0).getBranchNo();
+//        //===================set data to userId===============================
+//        onlyFileHeaderTuckReq.setUserId(userId);
+//        onlyFileHeaderTuckReq.setBranch(userBranchNo);
+        Messages message = new Messages();
+        int i = 0;
+        try {
+            i = documentStorageDaos.InsertHeaderTruckFileUpdateDAOs(onlyFileHeaderTuckReq);
+            if(i == 0) {
+                message.setStatus("01");
+                message.setMessage("Can not Update");
+                return message;
+            }
+            message.setStatus("00");
+            message.setMessage("Update Successful");
+        }catch (Exception e){
+            e.printStackTrace();
+            message.setStatus("01");
+            message.setMessage("Can not update");
+            return message;
+        }
+        return message;
+    }
 //result of survey
 public Messages ResultOfSurveyService (DataHoleReq dataHoleReq){
     log.info("toKen=======================:"+dataHoleReq.getToKen());
@@ -803,6 +957,84 @@ public ResultOfSurveyRes AllResultOfSurveyService (@RequestBody DataHoleReq data
         return result;
     }
 }
+    //show task service
+    public TaskRes getShowTaskService (TaskReq taskReq){
+        log.info("toKen=======================:"+taskReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(taskReq.getToKen());
+        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+        log.info("show=================Role:"+userIn.get(0).getRole());
+        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        //================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //===================set data to userId===============================
+        // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
+        taskReq.setUserId(userId);
+        taskReq.setBranch(userBranchNo);
+
+        //====================================================================
+        Messages messages = new Messages();
+        TaskRes result = new TaskRes();
+        try{
+
+            List<TaskModel> data = new ArrayList<>();
+            data = documentStorageDaos.AllTaskDAOs(taskReq);
+            if(data.size() > 0){
+                result.setStatus("00");
+                result.setMessage("Done");
+                result.setData(data);
+            }else {
+                result.setStatus("01");
+                result.setMessage("No Data");
+                result.setData(data);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            //result.setData(listData);
+        }
+        return result;
+    }
+//    link
+public LinkRes getShowLinksService (LinkReq linkReq){
+    log.info("toKen=======================:"+linkReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(linkReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
+    linkReq.setUserId(userId);
+    linkReq.setBranch(userBranchNo);
+
+    //====================================================================
+    Messages messages = new Messages();
+    LinkRes result = new LinkRes();
+    try{
+
+        List<LinkModel> data = new ArrayList<>();
+        data = documentStorageDaos.AllLinksDAOs(linkReq);
+        if(data.size() > 0){
+            result.setStatus("00");
+            result.setMessage("Done");
+            result.setData(data);
+        }else {
+            result.setStatus("01");
+            result.setMessage("No Data");
+            result.setData(data);
+        }
+    }catch (Exception e){
+        e.printStackTrace();
+        //result.setData(listData);
+    }
+    return result;
+}
 // show pic of br
 public PicOfBorhinRes ShowPicOfBorService (@RequestBody DataHoleReq dataHoleReq){
     log.info("toKen=======================:"+dataHoleReq.getToKen());
@@ -871,6 +1103,37 @@ public DataHoleRes AlllistOffHoleByKeyIdService (@RequestBody DataHoleReq dataHo
         return result;
     }
 }
+//show file of header TRUCK
+public FileOfHeaderRes ShowFilesOfHeadertruckKeyIdService (@RequestBody OnlyFileHeaderTuckReq onlyFileHeaderTuckReq){
+//    log.info("toKen=======================:"+onlyFileHeaderTuckReq.getToKen());
+//    //============================get User info=======================
+//    List<Profile> userIn = profileDao.getProfileInfoByToken(onlyFileHeaderTuckReq.getToKen());
+//    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+//    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+//    log.info("show=================Role:"+userIn.get(0).getRole());
+//    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+//    //================================================================
+//    String userId = userIn.get(0).getUserId();
+//    String userBranchNo = userIn.get(0).getBranchNo();
+//    //===================set data to userId===============================
+//    onlyFileHeaderTuckReq.setUserId(userId);
+//    onlyFileHeaderTuckReq.setBranch(userBranchNo);
+    List<FileOfHeaderTruckModel> Data = new ArrayList<>();
+    FileOfHeaderRes result = new FileOfHeaderRes();
+    try {
+        Data = documentStorageDaos.ShowFilesOfHeadertruckKeyIdDAOs(onlyFileHeaderTuckReq);
+        result.setMessage("Success");
+        result.setStatus("00");
+        result.setData(Data);
+        return result;
+//            }
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setMessage("data not found");
+        result.setStatus("01");
+        return result;
+    }
+}
 //    show list all
     // Document detail by id
     public DocumentStorageRes DocDetailById (@RequestBody DocumentStorageReq documentStorageReq) {
@@ -924,6 +1187,58 @@ public DataHoleRes AlllistOffHoleByKeyIdService (@RequestBody DataHoleReq dataHo
         }
         return result;
     }
+//    rock ship sample insert service
+public RockShipSampleRes StoreRockShipSampleService(RockShipSampleReq[] rockShipSampleReq){
+    log.info("toKen=======================:"+rockShipSampleReq[0].getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(rockShipSampleReq[0].getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+//    rockShipSampleReq[0].setUserId(userId);
+    rockShipSampleReq[0].setUserId(userIn.get(0).getUserId());
+//    bouangReq.setBranch(userBranchNo);
+    //====================================================================
+    RockShipSampleRes result = new RockShipSampleRes();
+    int i = 0;
+    try{
+        i = documentStorageDaos.StorerockShipSampleDAOs(rockShipSampleReq);
+        if(i==0){
+            result.setMessage("can't store data");
+            result.setStatus("01");
+            return result;
+        }
+        result.setMessage("success");
+        result.setStatus("00");
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setMessage("data not found");
+        result.setStatus("01");
+    }
+    return result;
+}
+//show rock ship service
+public RockShipSampleRes ShowRockShipSampleService(RockShipSampleReq rockShipSampleReq){
+    RockShipSampleRes result = new RockShipSampleRes();
+    List<RockShipSampleModel> resdata = new ArrayList<>();
+    try{
+        resdata = documentStorageDaos.ListRockShipDAOS(rockShipSampleReq);
+        result.setMessage("Get data successful");
+        result.setStatus("00");
+        result.setData(resdata);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setMessage("data not found");
+        result.setStatus("01");
+        result.setData(resdata);
+    }
+    return result;
+}
 //    show get bouang all
 public BouangRes getBouangAllServieces (BouangReq bouangReq){
     log.info("toKen=======================:"+bouangReq.getToKen());

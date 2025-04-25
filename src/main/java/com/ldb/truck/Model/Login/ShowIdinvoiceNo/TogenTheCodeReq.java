@@ -13,4 +13,5 @@ public class TogenTheCodeReq {
     private String toKen;
     private String userId;
     private String branch;
+    private String branch_id;
 }

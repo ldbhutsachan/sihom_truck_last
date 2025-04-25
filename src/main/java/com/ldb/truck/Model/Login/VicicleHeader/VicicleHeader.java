@@ -155,5 +155,14 @@ public class VicicleHeader {
     private String leanGia_Status;
     private String leanFuengThaiy_Status;
     private String date_change_lean;
+    private String dateExTungsit;
+    private String dateExTungsit_status;
+    private String brand_wheel_car;
+    private String status_use_unuse_car;
+    private String comment;
+    private String technique_date;
+    private String technique_date_per_month;
+    private String technique_date_status;
+
 
 }

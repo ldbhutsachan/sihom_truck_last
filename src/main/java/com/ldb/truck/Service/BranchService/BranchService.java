@@ -7,6 +7,10 @@ import com.ldb.truck.Model.Login.Branch.Branch;
 import com.ldb.truck.Model.Login.Branch.BranchRes;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
+import com.ldb.truck.Model.Login.Task.LinkReq;
+import com.ldb.truck.Model.Login.Task.LinkRes;
+import com.ldb.truck.Model.Login.Task.TaskReq;
+import com.ldb.truck.Model.Login.Task.TaskRes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +66,45 @@ public class BranchService {
         }
         return result;
     }
+//    show branch service new
+public BranchRes getShowBranchnewService(BrachReq branchReq){
+    log.info("toKen=======================:"+branchReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfo(branchReq);
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
+    branchReq.setUserId(userId);
+    branchReq.setBranchNo(userBranchNo);
+
+    //====================================================================
+    Messages messages = new Messages();
+    BranchRes result = new BranchRes();
+    try{
+
+        List<Branch> listData = new ArrayList<>();
+        listData = implBranchDao.getBranchNew(branchReq);
+        if(listData.size() > 1){
+            result.setStatus("00");
+            result.setMessage("Done");
+            result.setData(listData);
+        }else {
+            result.setStatus("01");
+            result.setMessage("No Data");
+            result.setData(listData);
+        }
+    }catch (Exception e){
+        e.printStackTrace();
+        //result.setData(listData);
+    }
+    return result;
+}
     //==========================================insert  ======================================
     public BranchRes saveBranch(BrachReq brachReq){
         //============================get User info=======================
@@ -91,6 +134,106 @@ public class BranchService {
             }else {
                 result.setStatus("00");
                 result.setMessage("Save Data Done");
+                return result;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+//    update branch
+public BranchRes UpdateBranch(BrachReq brachReq){
+    //============================get User info=======================
+    log.info("toKen=======================:"+brachReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfo(brachReq);
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    brachReq.setUserId(userId);
+    //====================================================================
+    Messages messages = new Messages();
+    BranchRes result = new BranchRes();
+    List<Branch> listData = new ArrayList<>();
+    int i =0;
+    try{
+        i = implBranchDao.updateDataBranch(brachReq);
+        if(i  == 0){
+            result.setStatus("01");
+            result.setMessage("No Save Data");
+            return result;
+        }else {
+            result.setStatus("00");
+            result.setMessage("Update Sucessful");
+            return result;
+        }
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
+//del brancg
+public BranchRes DeleteBranch(BrachReq brachReq){
+    Messages messages = new Messages();
+    BranchRes result = new BranchRes();
+    List<Branch> listData = new ArrayList<>();
+    int i =0;
+    try{
+        i = implBranchDao.delDataBranch(brachReq);
+        if(i  == 0){
+            result.setStatus("01");
+            result.setMessage("have No Data to delete");
+            return result;
+        }else {
+            result.setStatus("00");
+            result.setMessage("Deleted");
+            return result;
+        }
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
+    public TaskRes DeleteTasks(TaskReq taskReq){
+        Messages messages = new Messages();
+        TaskRes result = new TaskRes();
+        List<Branch> listData = new ArrayList<>();
+        int i =0;
+        try{
+            i = implBranchDao.delDataTasks(taskReq);
+            if(i  == 0){
+                result.setStatus("01");
+                result.setMessage("have No Task to delete");
+                return result;
+            }else {
+                result.setStatus("00");
+                result.setMessage("Delete Successful");
+                return result;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+    public LinkRes DeleteLink(LinkReq linkReq){
+        Messages messages = new Messages();
+        LinkRes result = new LinkRes();
+        List<Branch> listData = new ArrayList<>();
+        int i =0;
+        try{
+            i = implBranchDao.delDatalink(linkReq);
+            if(i  == 0){
+                result.setStatus("01");
+                result.setMessage("have No Task to delete");
+                return result;
+            }else {
+                result.setStatus("00");
+                result.setMessage("Delete Successful");
                 return result;
             }
         }catch (Exception e){

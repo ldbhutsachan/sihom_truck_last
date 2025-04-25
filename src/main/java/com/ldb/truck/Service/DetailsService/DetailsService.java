@@ -5,6 +5,8 @@ import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Details.DetailsReq;
 import com.ldb.truck.Model.Login.Details.DetailsRes;
 import com.ldb.truck.Model.Login.Details.Details;
+import com.ldb.truck.Model.Login.Inventory.OfferPaper.GenCodePO;
+import com.ldb.truck.Model.Login.Inventory.OfferPaper.PoCodeModel;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.ShowIdinvoiceNo.*;
 import org.apache.logging.log4j.LogManager;
@@ -149,6 +151,89 @@ public class DetailsService {
         }
         return  result;
     }
+//    gen offer paper code service
+public GenOffCodeRes GenOffCodeService (TogenTheCodeReq togenTheCodeReq){
+    log.info("toKen=======================:"+togenTheCodeReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(togenTheCodeReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    togenTheCodeReq.setUserId(userId);
+    togenTheCodeReq.setBranch(userBranchNo);
+    //====================================================================
+    List<GetOfferCode> listdata = new ArrayList<>();
+    GenOffCodeRes result = new GenOffCodeRes();
+    try {
+        if (togenTheCodeReq.getBranch_id() != null )
+        {
+            listdata = detailsServiceDao.GenOfferCodeBorhin(togenTheCodeReq);
+            result.setStatus("00");
+            result.setMessage("success");
+            result.setData(listdata);
+        }
+        else {
+            listdata = detailsServiceDao.showMaxOfferCode(togenTheCodeReq);
+            result.setStatus("00");
+            result.setMessage("success");
+            result.setData(listdata);
+        }
+
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("data not found");
+        result.setData(listdata);
+    }
+    return  result;
+}
+//gen po code new service
+public GenCodePO GenPOCodeService (TogenTheCodeReq togenTheCodeReq){
+    log.info("toKen=======================:"+togenTheCodeReq.getToKen());
+    //============================get User info=======================
+    List<Profile> userIn = profileDao.getProfileInfoByToken(togenTheCodeReq.getToKen());
+    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+    log.info("show=================Role:"+userIn.get(0).getRole());
+    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+    //================================================================
+    String userId = userIn.get(0).getUserId();
+    String userBranchNo = userIn.get(0).getBranchNo();
+    //===================set data to userId===============================
+    togenTheCodeReq.setUserId(userId);
+    togenTheCodeReq.setBranch(userBranchNo);
+    //====================================================================
+    List<PoCodeModel> listdata = new ArrayList<>();
+    GenCodePO result = new GenCodePO();
+    try {
+        if (togenTheCodeReq.getBranch_id() != null)
+        {
+            listdata = detailsServiceDao.showMaxPOCodeNewBorHin(togenTheCodeReq);
+            result.setStatus("00");
+            result.setMessage("success");
+            result.setData(listdata);
+        }
+        else
+        {
+            listdata = detailsServiceDao.showMaxPOCodeNew(togenTheCodeReq);
+            result.setStatus("00");
+            result.setMessage("success");
+            result.setData(listdata);
+        }
+
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("data not found");
+        result.setData(listdata);
+    }
+    return  result;
+}
 //    KKT-service
 public QuotationRes genQuotationCodeService (){
 //    log.info("toKen=======================:"+togenTheCodeReq.getToKen());

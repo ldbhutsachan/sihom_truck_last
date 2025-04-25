@@ -1,15 +1,16 @@
 package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.upload.MediaUploadService;
-import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeReq;
-import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeRes;
 import com.ldb.truck.Model.Login.Dept_Must_Receive.*;
 import com.ldb.truck.Model.Login.DocumentStorage.*;
-import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeReq;
-import com.ldb.truck.Model.Login.ExpensesBook.ExpenTypeRes;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleReq;
+import com.ldb.truck.Model.Login.DocumentStorage.RockShipSample.RockShipSampleRes;
 import com.ldb.truck.Model.Login.Messages;
+import com.ldb.truck.Model.Login.Task.LinkReq;
+import com.ldb.truck.Model.Login.Task.LinkRes;
+import com.ldb.truck.Model.Login.Task.TaskReq;
+import com.ldb.truck.Model.Login.Task.TaskRes;
 import com.ldb.truck.Service.DocumentStorageService.DocumentStorageService;
-import com.ldb.truck.Service.VicicleHeaderService.VicicleHeaderService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.buf.StringUtils;
@@ -118,21 +119,25 @@ public class DocumentStorageController {
 //    insert pic of borhin
 @CrossOrigin(origins = "*")
 @PostMapping(value = "/StorePicOfBorHin.service", consumes = {"multipart/form-data"})
-public Messages InsertDocument(@RequestParam("files") MultipartFile files, @RequestParam("toKen") String toKen) {
+public Messages InsertDocument(@RequestParam("files") MultipartFile[] files, @RequestParam("toKen") String toKen
+        , @RequestParam("folderName") String folderName,@RequestParam("dateCreate") String dateCreate,@RequestParam("branch_id") String branch_id) {
     log.info("===================================save header==================================================");
     Messages result = new Messages();
     try {
         DocumentStorageReq[] data = new DocumentStorageReq[1]; // Size should be 1
         data[0] = new DocumentStorageReq(); // Initialize first element
         data[0].setToKen(toKen); // Set token
+        data[0].setFolderName(folderName); // Set foderName
+        data[0].setDateCreate(dateCreate); // Set date
+        data[0].setBranch_id(branch_id); // Set date
 
         if (files == null) {
             log.warn("************* file name is null ****************");
             data[0].setPdf("http://khounkham.com/images/car/image.jpg");
         } else {
-            String fileName = mediaUploadService.uploadPDF(files); // Single file handling
+            String []fileName = mediaUploadService.uploadPDF2(files); // Single file handling
             log.info("Uploaded the file successfully: " + fileName);
-            data[0].setPdf(fileName);
+            data[0].setPdf(Arrays.toString(fileName));
         }
 
         result = documentStorageService.InsertPicOfBor(data);
@@ -499,7 +504,8 @@ public Messages InsertDataHole(
         @RequestParam("holeNumber") String  holeNumber,
         @RequestParam("dataColler") String  dataColler,
         @RequestParam("toKen") String  toKen,
-        @RequestParam("full_Name_Hole_number") String  full_Name_Hole_number
+        @RequestParam("full_Name_Hole_number") String  full_Name_Hole_number,
+        @RequestParam("branch_id") String  branch_id
 ){
 
     log.info("===================================save header==================================================");
@@ -513,6 +519,7 @@ public Messages InsertDataHole(
         data.setDataColler(dataColler);
         data.setToKen(toKen);
         data.setFull_Name_Hole_number(full_Name_Hole_number);
+        data.setBranch_id(branch_id);
 
         log.error("******file lenght"+files);
         log.error(data);
@@ -539,6 +546,132 @@ public Messages InsertDataHole(
     }
     return  result;
 }
+//file header truck
+@CrossOrigin(origins = "*")
+@PostMapping(value = "/headerTruckFiles.service" , consumes = {"multipart/form-data"})
+public Messages headerTruckFiles(
+        @RequestParam("files") MultipartFile files,
+        @RequestParam("headtruck_id") String  headtruck_id,
+        @RequestParam("toKen") String  toKen,
+        @RequestParam("date2") String  date2
+
+){
+    log.info("===================================save header==================================================");
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+    String namefile = formatter.format(date);
+    Messages result = new Messages();
+    try {
+        OnlyFileHeaderTuckReq data = new OnlyFileHeaderTuckReq();
+        data.setHeadtruck_id(headtruck_id);
+        data.setToKen(toKen);
+        data.setDate2(date2);
+        log.error("******file lenght"+files);
+        log.error(data);
+        String fileName = "";
+        List<String> fileNames = new ArrayList<>();
+        if(files == null){
+            log.warn("************* file name is null ****************");
+            data.setPicOrFile("http://khounkham.com/images/car/image.jpg");
+        }else {
+            Arrays.asList(files).stream().forEach(file -> {
+//                    fileNames.add(mediaUploadService.uploadMediacar(file));
+                fileNames.add(mediaUploadService.uploadPDF(file));
+            });
+            log.info("Uploaded the files successfully: " + fileNames );
+            fileName = StringUtils.join(fileNames, ',');
+            data.setPicOrFile(fileName);
+        }
+        result = documentStorageService.HeaderTruckFileService(data);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+        return  result;
+    }
+    return  result;
+}
+    //file header truck update
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/headerTruckFilesUpdate.service" , consumes = {"multipart/form-data"})
+    public Messages headerTruckFilesUpdate(
+            @RequestParam("files") MultipartFile files,
+            @RequestParam("headtruck_id") String  headtruck_id,
+            @RequestParam("key_id_of_file") String  key_id_of_file,
+            @RequestParam("date2") String  date2
+    ){
+        log.info("===================================save header==================================================");
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
+        String namefile = formatter.format(date);
+        Messages result = new Messages();
+        try {
+            OnlyFileHeaderTuckReq data = new OnlyFileHeaderTuckReq();
+            data.setHeadtruck_id(headtruck_id);
+//            data.setToKen(toKen);
+            data.setKey_id_of_file(key_id_of_file);
+            data.setDate2(date2);
+            log.error("******file lenght"+files);
+            log.error(data);
+            String fileName = "";
+            List<String> fileNames = new ArrayList<>();
+            if(files == null){
+                log.warn("************* file name is null ****************");
+                data.setPicOrFile("http://khounkham.com/images/car/image.jpg");
+            }else {
+                Arrays.asList(files).stream().forEach(file -> {
+//                    fileNames.add(mediaUploadService.uploadMediacar(file));
+                    fileNames.add(mediaUploadService.uploadPDF(file));
+                });
+                log.info("Uploaded the files successfully: " + fileNames );
+                fileName = StringUtils.join(fileNames, ',');
+                data.setPicOrFile(fileName);
+            }
+            result = documentStorageService.HeaderTruckFileUpdateService(data);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
+            return  result;
+        }
+        return  result;
+    }
+//store task controller
+@CrossOrigin(origins = "*")
+@PostMapping("/storeTask.service")
+public TaskRes taskStore (@RequestBody TaskReq[] taskReq){
+    TaskRes result = new TaskRes();
+    try{
+        result = documentStorageService.InsertTaskService(taskReq);
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
+//store link
+@CrossOrigin(origins = "*")
+@PostMapping("/storeLinks.service")
+public LinkRes taskLink (@RequestBody LinkReq[] linkReq){
+    LinkRes result = new LinkRes();
+    try{
+        result = documentStorageService.InsertLinksService(linkReq);
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
+//update task
+@CrossOrigin(origins = "*")
+@PostMapping("/UpdateTask.service")
+public TaskRes UpdateTask (@RequestBody TaskReq[] taskReq){
+    TaskRes result = new TaskRes();
+    try{
+        result = documentStorageService.UpdateTaskService(taskReq);
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    return result;
+}
 //show result of survey
 @CrossOrigin(origins = "*")
 @PostMapping("/ShowAllResultOfServey.service")
@@ -551,6 +684,34 @@ public ResultOfSurveyRes ShowAllResultOfServey(@RequestBody DataHoleReq dataHole
         result.setStatus("01");
         result.setMessage("exeption");
         return result;
+    }
+    return result;
+}
+    //show task
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getShowTask.service")
+    public TaskRes getShowTask(@RequestBody TaskReq taskReq ) {
+        TaskRes result = new TaskRes();
+        try {
+            result = documentStorageService.getShowTaskService(taskReq);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exception");
+        }
+        return result;
+    }
+//    link
+@CrossOrigin(origins = "*")
+@PostMapping("/getShowLink.service")
+public LinkRes getShowLink(@RequestBody LinkReq linkReq) {
+    LinkRes result = new LinkRes();
+    try {
+        result = documentStorageService.getShowLinksService(linkReq);
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exception");
     }
     return result;
 }
@@ -594,7 +755,8 @@ public Messages InsertResultOfSurvey(
         @RequestParam("toKen") String  toKen,
         @RequestParam("name") String  name,
         @RequestParam("dateInsert") String  dateInsert,
-        @RequestParam("nameDetail") String  nameDetail
+        @RequestParam("nameDetail") String  nameDetail,
+        @RequestParam("branch_id") String  branch_id
 ){
 
     log.info("===================================save header==================================================");
@@ -609,6 +771,7 @@ public Messages InsertResultOfSurvey(
         data.setName(name);
         data.setDateInsert(dateInsert);
         data.setNameDetail(nameDetail);
+        data.setBranch_id(branch_id);
 
         log.error("******file lenght"+files);
         log.error(data);
@@ -658,6 +821,21 @@ public DataHoleRes ShowAllListOfHoleByKeyId(@RequestBody DataHoleReq dataHoleReq
     DataHoleRes result = new DataHoleRes();
     try {
         result = documentStorageService.AlllistOffHoleByKeyIdService(dataHoleReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+        return result;
+    }
+    return result;
+}
+//show file header truck
+@CrossOrigin(origins = "*")
+@PostMapping("/ShowFilesOfHeadertruckKeyId.service")
+public FileOfHeaderRes ShowFilesOfHeadertruckKeyId(@RequestBody OnlyFileHeaderTuckReq onlyFileHeaderTuckReq){
+    FileOfHeaderRes result = new FileOfHeaderRes();
+    try {
+        result = documentStorageService.ShowFilesOfHeadertruckKeyIdService(onlyFileHeaderTuckReq);
     }catch (Exception e){
         e.printStackTrace();
         result.setStatus("01");
@@ -981,6 +1159,35 @@ public CustomerHisPayRes DeptMustReceivedHistoryCustomer(@RequestBody DeptMustRe
         }
         return result;
     }
+//    rock ship smple insert
+@CrossOrigin(origins = "*")
+@PostMapping("/storeRockShipSample.service")
+public RockShipSampleRes storeRockShipSample(@RequestBody RockShipSampleReq[] rockShipSampleReq){
+    RockShipSampleRes result =new RockShipSampleRes();
+    try
+    {
+        result = documentStorageService.StoreRockShipSampleService(rockShipSampleReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+    }
+    return result;
+}
+//show rock ship
+@PostMapping("/ShowRockShipSample.service")
+public RockShipSampleRes ShowRockShipSample(@RequestBody RockShipSampleReq rockShipSampleReq){
+    RockShipSampleRes result =new RockShipSampleRes();
+    try
+    {
+        result = documentStorageService.ShowRockShipSampleService(rockShipSampleReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exeption");
+    }
+    return result;
+}
 //    update bouang
 @CrossOrigin(origins = "*")
 @PostMapping("/BouangUpdate.service")

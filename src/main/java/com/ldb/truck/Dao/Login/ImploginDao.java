@@ -33,8 +33,8 @@ public class ImploginDao implements loginDao {
 
         List<GetUserLoginOut> data = new ArrayList<>();
         try {
-            String SQL = "select USER_LOGIN,ROLE,USERID ,STATUS ,TOKEN,BRANCH  from LOGIN   WHERE STATUS = 'A' AND USER_LOGIN = '"+loginReq.getUser()+"' AND PASSOWORD =  '"+loginReq.getPassword()+"'  ";
-            //System.out.println(SQL);
+            String SQL = "select USER_LOGIN,ROLE,USERID ,STATUS ,TOKEN,BRANCH,DEPARTMENT,SPRIT_ROLE  from LOGIN   WHERE STATUS = 'A' AND USER_LOGIN = '"+loginReq.getUser()+"' AND PASSOWORD =  '"+loginReq.getPassword()+"'  ";
+            System.out.println(SQL);
             data = EBankJdbcTemplate.query(SQL , new GetUserLoginOutMapper());
         }catch (Exception e){
             e.printStackTrace();
@@ -58,7 +58,7 @@ public class ImploginDao implements loginDao {
     @Override
     public List<GetUserLoginOut> getInfoUserLogin(LoginReq loginReq) {
         try {
-            String SQL = " SELECT  T2.STAFT_NAME , T1.ROLE , T2.STAFT_ID FROM LOGIN T1 INNER JOIN STAFF T2 \n" +
+            String SQL = " SELECT  T2.STAFT_NAME , T1.ROLE , T2.STAFT_ID,T1.DEPARTMENT FROM LOGIN T1 INNER JOIN STAFF T2 \n" +
                     "ON T1.STAFT_ID = T2.KEY_ID  WHERE T2.STATUS = 'A' AND T1.STATUS = 'A' AND T1.USER_LOGIN = '"+loginReq.getUser()+"' ";
                     return  EBankJdbcTemplate.query(SQL, new RowMapper<GetUserLoginOut>() {
                         @Override
@@ -67,6 +67,7 @@ public class ImploginDao implements loginDao {
                             tr.setRole(rs.getString("ROLE"));
                             tr.setStaftId(rs.getString("STAFT_ID"));
                             tr.setStaftName(rs.getString("STAFT_NAME"));
+                            tr.setDepartment(rs.getString("DEPARTMENT"));
                             return tr;
                         }
                     });

@@ -247,8 +247,8 @@ public List<PrintInvoiceByNo> viewPintBillBackByNo(PrintInvoiceByNoReq printInvo
     public List<Invoice> List_v_popupPerInVoice(InvoiceDetailReq invoiceDetailReq) {
         List<Invoice> result = new ArrayList<>();
         try {
-//            SQL = "select * from V_PRINTINVOICEBLACK where INVOICE_STATUS in ('N')  order by INVOICE_ID asc";
-            SQL = "select * from V_PRINTINVOICEBLACK a join LOGIN b on a.userId =b.KEY_ID  where a.INVOICE_STATUS in ('N') and b.BRANCH ='"+invoiceDetailReq.getBranch()+"' order by a.INVOICE_ID asc";
+//            SQL = "select * from V_PRINTINVOICEBຫຳສLACK where INVOICE_STATUS in ('N')  order by INVOICE_ID asc";
+            SQL = "select * from V_PRINTINVOICEBLACK a join LOGIN b on a.userId =b.KEY_ID  where a.INVOICE_STATUS ='N' and b.BRANCH ='"+invoiceDetailReq.getBranch()+"' ";
             System.out.println("sql:"+SQL);
             result = EBankJdbcTemplate.query(SQL , new InvoiceMapper());
         }catch (Exception e){

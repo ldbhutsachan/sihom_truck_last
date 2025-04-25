@@ -23,7 +23,7 @@ public class ReportShops {
    private String timeToPay;
    private String StatusNy;
    private Float moneyRate;
-//   private String toKen;
+   private String offerDate;
 //   private String userId;
 
 }

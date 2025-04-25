@@ -12,6 +12,7 @@ import lombok.Setter;
 public class FixModelFaso {
     private String h_VICIVLE_NUMBER;
     private String h_BRANCH;
+//    private String f_CARD_NO;
     private String total_Price;
     private String dateFix;
     private String totalTimeFix;

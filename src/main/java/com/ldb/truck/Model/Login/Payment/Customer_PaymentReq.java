@@ -26,4 +26,5 @@ public class Customer_PaymentReq {
     private String  userId;
     private String  startDate;
     private String  endDate;
+    private String  cusId;
 }

@@ -18,6 +18,7 @@ public class MoveToStockReq {
     private String stockStatus;
     private String userId;
     private String branch;
+    private String branch_id;
     private String toKen;
     private String dateImport;
     private String ItemName,ItemName2,ItemName3,ItemName4,ItemName5,ItemName6,ItemName7,ItemName8,ItemName9;

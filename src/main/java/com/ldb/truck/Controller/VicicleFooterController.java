@@ -173,6 +173,9 @@ public class VicicleFooterController {
                                       @RequestParam("f_KM_LL14") String f_KM_LL14,
                                       @RequestParam("f_KM_LL15") String f_KM_LL15,
                                       @RequestParam("f_KM_LL16") String f_KM_LL16,
+                                      @RequestParam("lektungsit") String lektungsit,
+                                      @RequestParam("dateExTungsit") String dateExTungsit,
+                                      @RequestParam("dateExpireLicensePlate") String dateExpireLicensePlate,
                                       @RequestParam("files") MultipartFile files
                                       ) {
         Messages result = new Messages();
@@ -277,6 +280,9 @@ public class VicicleFooterController {
             data.setF_KM_LL14  ( f_KM_LL14);
             data.setF_KM_LL15  ( f_KM_LL15);
             data.setF_KM_LL16  ( f_KM_LL16);
+            data.setLektungsit  ( lektungsit);
+            data.setDateExTungsit  ( dateExTungsit);
+            data.setDateExpireLicensePlate  ( dateExpireLicensePlate);
 
         log.error("******file lenght"+files);
         log.error(data);
@@ -404,6 +410,9 @@ public class VicicleFooterController {
                                         @RequestParam("f_KM_LL14") String f_KM_LL14,
                                         @RequestParam("f_KM_LL15") String f_KM_LL15,
                                         @RequestParam("f_KM_LL16") String f_KM_LL16,
+                                         @RequestParam("lektungsit") String lektungsit,
+                                         @RequestParam("dateExTungsit") String dateExTungsit,
+                                         @RequestParam("dateExpireLicensePlate") String dateExpireLicensePlate,
                                         @RequestParam("imgFootTruck") String imgFootTruck,
                                          @RequestParam(name="files" , required=false) MultipartFile[] files,
                                         @RequestParam("key_id") String key_id
@@ -510,6 +519,9 @@ public class VicicleFooterController {
             data.setF_KM_LL14  ( f_KM_LL14);
             data.setF_KM_LL15  ( f_KM_LL15);
             data.setF_KM_LL16  ( f_KM_LL16);
+            data.setLektungsit  ( lektungsit);
+            data.setDateExTungsit  ( dateExTungsit);
+            data.setDateExpireLicensePlate  ( dateExpireLicensePlate);
             data.setImgFootTruck(imgFootTruck);
             data.setKey_id(key_id);
             String fileName = "";

@@ -22,4 +22,5 @@ public class ShopReq {
    private String branch;
    private String toKen;
    private String userId;
+   private String branch_id;
 }

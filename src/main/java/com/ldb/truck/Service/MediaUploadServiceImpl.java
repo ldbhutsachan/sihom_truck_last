@@ -208,6 +208,46 @@ public String uploadPDF(MultipartFile file) {
         return "";
     }
 }
+//
+@Override
+public String[] uploadPDF2 (MultipartFile[] files) {
+    try {
+        List<String> uploadedFileNames = new ArrayList<>();
+        for (MultipartFile file : files) {
+            log.info("Begin Convert MultiPart File To Base64String for: " + file.getOriginalFilename());
+            byte[] fileBytes = file.getBytes();  // Read file bytes
+//            String base64String = Base64.getEncoder().encodeToString(fileBytes); // Encode bytes to base64 string
+            String base64String = Base64.encodeBase64String(fileBytes); // Encode bytes to base64 string
+
+            log.info("Convert To Base64 String Completed");
+
+            log.info("Get Original Filename");
+            String originalFilename = file.getOriginalFilename();
+
+            //==============upload images (using original filename)========================================================
+            File targetDirectory = new File(uploadDirectoryCar);
+            if (!targetDirectory.exists()) {
+                targetDirectory.mkdirs();
+            }
+            Path filePath = Path.of(uploadDirectoryCar, originalFilename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            //==============upload images========================================================
+
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            params.add(new BasicNameValuePair("BASE64", base64String));
+            params.add(new BasicNameValuePair("filename", originalFilename));
+            log.info("Start To Post Upload Image ...");
+            log.info("Finish Image Upload");
+
+            uploadedFileNames.add(originalFilename);
+        }
+        return uploadedFileNames.toArray(new String[uploadedFileNames.size()]); // Convert list to string array
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        return new String[0];  // Return empty array on error
+    }
+}
+
 //    new
 //@Override
 //public String uploadPDF(MultipartFile file) {

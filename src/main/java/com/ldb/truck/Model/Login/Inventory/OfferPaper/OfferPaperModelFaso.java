@@ -16,6 +16,7 @@ public class OfferPaperModelFaso {
     private String description;
     private String offerManName;
     private String job;
+    private String key_id;
     private String OFFER_CODE;
     private String f_CARD_NO;
     private String h_VICIVLE_NUMBER;

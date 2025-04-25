@@ -282,8 +282,7 @@ public List<AmountThatPaidStaffModel>AmountThatPaidStaffDAOs (StaffPaymentReq st
                         "  AND (a.staff_01_status='not-pay') \n" +
                         "  GROUP BY a.STAFT_ID\n" +
                         "  ORDER BY allTiew DESC\n" +
-                        ") AS ranked_data\n" +
-                        "LIMIT 5";
+                        ") AS ranked_data\n" ;
 
             } else{
                 sql = "SELECT *\n" +
@@ -295,8 +294,7 @@ public List<AmountThatPaidStaffModel>AmountThatPaidStaffDAOs (StaffPaymentReq st
                         "  AND (a.staff_01_status='not-pay') AND a.OUT_DATE BETWEEN '"+staffPaymentReq.getStartDate()+"' and '"+staffPaymentReq.getEndDate()+"'\n" +
                         "  GROUP BY a.STAFT_ID\n" +
                         "  ORDER BY allTiew DESC\n" +
-                        ") AS ranked_data\n" +
-                        "LIMIT 5";
+                        ") AS ranked_data\n";
             }
 
             return  EBankJdbcTemplate.query(sql, new RowMapper<ReportStaffRanking>() {
