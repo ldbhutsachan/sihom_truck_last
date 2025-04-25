@@ -21,4 +21,5 @@ public class OldInventoryModel {
     private String ImportExpirationDate_Oldwarehouse;
     private String description_Oldwarehouse;
     private String image_Oldwarehouse;
+    private String cur;
 }

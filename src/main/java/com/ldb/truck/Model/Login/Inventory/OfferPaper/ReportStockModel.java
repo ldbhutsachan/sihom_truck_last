@@ -22,6 +22,7 @@ public class ReportStockModel {
     private String unitPirce;
     private String sumUnitWithPrice;
     private String currency;
+    private String limitQty;
 
 
     private String dateBuy;

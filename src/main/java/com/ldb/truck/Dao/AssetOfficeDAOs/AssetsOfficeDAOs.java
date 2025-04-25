@@ -29,14 +29,28 @@ public class AssetsOfficeDAOs implements AssetsInterface{
     public List<AssetsOfficeModel > listAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) {
         String SQL;
         try{
-            if (assetsOfficeReq.getCurrency() == null){
-                 SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"'";
-                log.info("SQL: "+SQL);
+            if (assetsOfficeReq.getBranch_id()!= null)
+            {
+                if (assetsOfficeReq.getCurrency() == null){
+                    SQL ="select * from TB_ASSETS WHERE branch_id='"+assetsOfficeReq.getBranch_id()+"'";
+                    log.info("SQL: "+SQL);
+                }
+                else {
+                    SQL ="select * from TB_ASSETS WHERE branch_id='"+assetsOfficeReq.getBranch_id()+"' and CURRENCY='"+assetsOfficeReq.getCurrency()+"' ";
+                    log.info("SQL: "+SQL);
+                }
+            }else
+            {
+                if (assetsOfficeReq.getCurrency() == null){
+                    SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"'";
+                    log.info("SQL: "+SQL);
+                }
+                else {
+                    SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"' and CURRENCY='"+assetsOfficeReq.getCurrency()+"' ";
+                    log.info("SQL: "+SQL);
+                }
             }
-            else {
-                 SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"' and CURRENCY='"+assetsOfficeReq.getCurrency()+"' ";
-                log.info("SQL: "+SQL);
-            }
+
 
             return EBankJdbcTemplate.query(SQL, new RowMapper<AssetsOfficeModel>() {
                 @Override
@@ -58,7 +72,12 @@ public class AssetsOfficeDAOs implements AssetsInterface{
                     tr.setDate_getin(rs.getString("DATE_GETIN"));
                     tr.setUnit(rs.getString("UNIT"));
                     tr.setColors(rs.getString("colors"));
-                    tr.setPrice(rs.getDouble("price"));
+//=====================================================================================================================
+                    String priceB4 = rs.getString("price").replaceAll(",","");
+                    double priceAfter  = Double.parseDouble(priceB4);
+                    tr.setPrice(priceAfter);
+//                    tr.setPrice(rs.getDouble("price"));
+//=====================================================================================================================
                     tr.setLife_service(rs.getString("LIFE_SERVIECE"));
                     tr.setDateExpire(rs.getString("dateExpire"));
 //                    String convert = tr.setPrice(rs.getString("price").replaceAll(",","");
@@ -131,7 +150,7 @@ public int InsertAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) throws Parse
     List<AssetsOfficeModel> data = new ArrayList<>();
     try{
 //        String SQL = "insert into TB_ASSETS (CODE,NAME,GROUP_TYPE,OWNER,QTY,BRANCH_OFFICE,LIFE_SERVICE,IMG,DEPARTMENT,BRAND,MODEL,LOCATION_ROOM,DATE_GETIN,UNIT) value(?,?,?,?,?,'"+assetsOfficeReq.getBranch()+"','"+assetsOfficeReq.getLife_service()+"',?,'"+assetsOfficeReq.getDepartment()+"','"+assetsOfficeReq.getBranch()+"','"+assetsOfficeReq.getModel()+"','"+assetsOfficeReq.getLocation_room()+"','"+assetsOfficeReq.getDate_getin()+"','"+assetsOfficeReq.getUnit()+"')";
-        String SQL = "insert into TB_ASSETS (CODE,NAME,GROUP_TYPE,OWNER,QTY,BRANCH_OFFICE,CURRENCY,IMG,DEPARTMENT,BRAND,MODEL,LOCATION_ROOM,DATE_GETIN,UNIT,colors,price,LIFE_SERVIECE,dateExpire) value(?,?,?,?,?,'"+assetsOfficeReq.getBranch()+"',?,?,?,?,?,?,?,?,?,?,?,?)";
+        String SQL = "insert into TB_ASSETS (CODE,NAME,GROUP_TYPE,OWNER,QTY,BRANCH_OFFICE,CURRENCY,IMG,DEPARTMENT,BRAND,MODEL,LOCATION_ROOM,DATE_GETIN,UNIT,colors,price,LIFE_SERVIECE,dateExpire,branch_id) value(?,?,?,?,?,'"+assetsOfficeReq.getBranch()+"',?,?,?,?,?,?,?,?,?,?,?,?,?)";
         log.info("SQL:"+SQL);
         List<Object> paramList = new ArrayList<Object>();
         paramList.add(assetsOfficeReq.getCode());
@@ -151,6 +170,7 @@ public int InsertAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) throws Parse
         paramList.add(assetsOfficeReq.getPrice());
         paramList.add(assetsOfficeReq.getLife_service());
         paramList.add(assetsOfficeReq.getDateExpire());
+        paramList.add(assetsOfficeReq.getBranch_id());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
         e.printStackTrace();
@@ -164,7 +184,7 @@ public int InsertAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) throws Parse
         log.info("path:"+path+fileName);
         List<AssetsOfficeModel> data = new ArrayList<>();
         try{
-            String SQL = "update TB_ASSETS set CODE=?,NAME=?,GROUP_TYPE=?,OWNER=?,QTY=?,BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"',CURRENCY=?,IMG=?,DEPARTMENT=?,BRAND=?,MODEL=?,LOCATION_ROOM=?,DATE_GETIN=?,UNIT=?,colors=?,price=?,LIFE_SERVIECE=?,dateExpire=? where KEY_ID ='"+assetsOfficeReq.getKey_id()+"'";
+            String SQL = "update TB_ASSETS set CODE=?,NAME=?,GROUP_TYPE=?,OWNER=?,QTY=?,BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"',CURRENCY=?,IMG=?,DEPARTMENT=?,BRAND=?,MODEL=?,LOCATION_ROOM=?,DATE_GETIN=?,UNIT=?,colors=?,price=?,LIFE_SERVIECE=?,dateExpire=?,branch_id=? where KEY_ID ='"+assetsOfficeReq.getKey_id()+"'";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(assetsOfficeReq.getCode());
@@ -184,6 +204,7 @@ public int InsertAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) throws Parse
             paramList.add(assetsOfficeReq.getPrice());
             paramList.add(assetsOfficeReq.getLife_service());
             paramList.add(assetsOfficeReq.getDateExpire());
+            paramList.add(assetsOfficeReq.getBranch_id());
             paramList.add(assetsOfficeReq.getKey_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
@@ -201,7 +222,7 @@ public int InsertAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) throws Parse
 //        log.info("sqlEndDate:"+sqlEndDate);
         List<AssetsOfficeModel> data = new ArrayList<>();
         try{
-            String SQL = "update TB_ASSETS set CODE=?,NAME=?,GROUP_TYPE=?,OWNER=?,QTY=?,BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"',CURRENCY=?,DEPARTMENT=?,BRAND=?,MODEL=?,LOCATION_ROOM=?,DATE_GETIN=?,UNIT=?,colors=?,price=?,LIFE_SERVIECE=?,dateExpire=? where KEY_ID ='"+assetsOfficeReq.getKey_id()+"'";
+            String SQL = "update TB_ASSETS set CODE=?,NAME=?,GROUP_TYPE=?,OWNER=?,QTY=?,BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"',CURRENCY=?,DEPARTMENT=?,BRAND=?,MODEL=?,LOCATION_ROOM=?,DATE_GETIN=?,UNIT=?,colors=?,price=?,LIFE_SERVIECE=?,dateExpire=?,branch_id=? where KEY_ID ='"+assetsOfficeReq.getKey_id()+"'";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(assetsOfficeReq.getCode());
@@ -220,6 +241,7 @@ public int InsertAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) throws Parse
             paramList.add(assetsOfficeReq.getPrice());
             paramList.add(assetsOfficeReq.getLife_service());
             paramList.add(assetsOfficeReq.getDateExpire());
+            paramList.add(assetsOfficeReq.getBranch_id());
             paramList.add(assetsOfficeReq.getKey_id());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){

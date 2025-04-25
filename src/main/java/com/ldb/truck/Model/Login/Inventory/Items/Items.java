@@ -17,6 +17,7 @@ public class Items {
     private Integer qty;
     private String img;
     private String ber;
+    private String limitQty;
     private String size;
     private String brand;
     private String branch_name;

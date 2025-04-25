@@ -55,7 +55,8 @@ public class AssetOfficeController {
             @RequestParam("price") String price,
             @RequestParam("toKen") String toKen,
             @RequestParam("life_service") String life_service,
-            @RequestParam("dateExpire") String dateExpire
+            @RequestParam("dateExpire") String dateExpire,
+            @RequestParam("branch_id") String branch_id
 
     ){
         log.info("===================================save header==================================================");
@@ -82,6 +83,7 @@ public class AssetOfficeController {
             data.setToKen(toKen);
             data.setLife_service(life_service);
             data.setDateExpire(dateExpire);
+            data.setBranch_id(branch_id);
             log.error("******file lenght"+files);
             log.error(data);
             String fileName = "";
@@ -128,8 +130,8 @@ public class AssetOfficeController {
             @RequestParam("price") String price,
             @RequestParam("toKen") String toKen,
             @RequestParam("life_service") String life_service,
-            @RequestParam("dateExpire") String dateExpire
-
+            @RequestParam("dateExpire") String dateExpire,
+            @RequestParam("branch_id") String branch_id
 
     ){
         log.info("===================================save header==================================================");
@@ -157,6 +159,7 @@ public class AssetOfficeController {
             data.setToKen(toKen);
             data.setLife_service(life_service);
             data.setDateExpire(dateExpire);
+            data.setBranch_id(branch_id);
 
             log.error("******file lenght"+files);
             log.error(data);

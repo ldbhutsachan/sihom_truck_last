@@ -513,7 +513,7 @@ public FixRes proofFixReqService(FixReq fixReq){
         try {
             data = inventoryDao.ListStock(moveToStockReq);
 
-            Map<String, Double> totalsByCurrency = data.stream()
+            Map<String, Double> totalsByCurrency = data.stream().filter(item -> item.getCurrency() != null)
                     .collect(Collectors.groupingBy(ReportStockModel::getCurrency,
                             Collectors.summingDouble(ReportStockModel::getTotalValue)));
 
@@ -1550,7 +1550,27 @@ public FillOilRes DelFillOilHis (FillOilReq fillOilReq){
         }
     }
     //=====================================Shops======================================
-
+// LimitStock
+    public Messages LimitStock(ItemReq itemReq ){
+        Messages result = new Messages();
+        int i = 0 ;
+        try {
+            i = inventoryDao.LimitStockDao(itemReq);
+            if(i == 0 ){
+                result.setMessage("can't Insert Shops'");
+                result.setStatus("01");
+                return result;
+            }
+            result.setMessage("Success");
+            result.setStatus("00");
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("exeption");
+            result.setStatus("01");
+            return result;
+        }
+    }
     //---Show
     public ItemRes ListItems (@RequestBody ItemReq itemReq){
         log.info("toKen=======================:"+itemReq.getToKen());

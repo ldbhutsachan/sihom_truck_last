@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.awt.geom.QuadCurve2D;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -32,4 +34,5 @@ public class AssetsOfficeReq {
     private String price;
     private String life_service;
     private String dateExpire;
+    private String branch_id;
 }

@@ -11,6 +11,7 @@ import lombok.Setter;
 public class ItemReq {
    private Integer item_id;
    private String itemName;
+   private String limitQty;
    private String unit;
    private String unit_price;
    private Integer qty;
@@ -19,5 +20,6 @@ public class ItemReq {
    private String toKen;
    private String userId;
    private String branch_id;
+
 
 }

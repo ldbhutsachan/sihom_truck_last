@@ -184,7 +184,8 @@ public OfferpaperRes offerpaper (@RequestBody OfferPaperReq offerPaperReq ){
             @RequestParam("qty_Oldwarehouse") String  qty_Oldwarehouse,
             @RequestParam("selectedType_Oldwarehouse") String  selectedType_Oldwarehouse,
             @RequestParam("toKen") String  toKen,
-            @RequestParam("branch_id") String  branch_id
+            @RequestParam("branch_id") String  branch_id,
+            @RequestParam("cur") String  cur
     ){
 
         log.info("===================================save header==================================================");
@@ -204,6 +205,7 @@ public OfferpaperRes offerpaper (@RequestBody OfferPaperReq offerPaperReq ){
             data.setSelectedType_Oldwarehouse(selectedType_Oldwarehouse);
             data.setToKen(toKen);
             data.setBranch_id(branch_id);
+            data.setCur(cur);
 
             log.error("******file lenght"+image_Oldwarehouse);
             log.error(data);
@@ -258,7 +260,9 @@ public Messages UpdateOldInventory(
         @RequestParam("qty_Oldwarehouse") String  qty_Oldwarehouse,
         @RequestParam("selectedType_Oldwarehouse") String  selectedType_Oldwarehouse,
         @RequestParam("branch_id") String  branch_id,
-        @RequestParam("toKen") String  toKen
+        @RequestParam("toKen") String  toKen,
+        @RequestParam("cur") String  cur
+
 
 ){
 
@@ -280,6 +284,7 @@ public Messages UpdateOldInventory(
         data.setSelectedType_Oldwarehouse(selectedType_Oldwarehouse);
         data.setBranch_id(branch_id);
         data.setToKen(toKen);
+        data.setCur(cur);
 
 
         log.error("******file lenght"+image_Oldwarehouse);
@@ -733,6 +738,22 @@ public GenCodePO GenCodePO(){
         }
         return result;
     }
+    // Update Shops
+    @CrossOrigin(origins = "*")
+    @PostMapping("/limitstock.service")
+    public Messages limitstock (@RequestBody ItemReq itemReq ){
+        Messages result = new Messages();
+        try {
+            result = inventoryService.LimitStock(itemReq);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
 // delete shop
 @CrossOrigin(origins = "*")
 @PostMapping("/DelShops.service")
@@ -824,7 +845,8 @@ public Messages saveVicicleHeader(
         @RequestParam("unit_price") String  unit_price,
         @RequestParam("qty") Integer  qty,
         @RequestParam("toKen") String  toKen,
-        @RequestParam("branch_id") String  branch_id
+        @RequestParam("branch_id") String  branch_id,
+        @RequestParam("limitQty") String  limitQty
 )
 
 {
@@ -841,6 +863,7 @@ public Messages saveVicicleHeader(
         data.setQty(qty);
         data.setToKen(toKen);
         data.setBranch_id(branch_id);
+        data.setLimitQty(limitQty);
         log.error("******file lenght"+files);
         log.error(data);
         String fileName = "";

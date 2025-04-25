@@ -69,6 +69,7 @@ public class InventoryDao {
                     tr.setSize(rs.getString("size"));
                     tr.setBrand(rs.getString("brand"));
                     tr.setBer(rs.getString("ber"));
+                    tr.setLimitQty(rs.getString("limitQty"));
 //                    tr.setBranch_name(rs.getString("B_NAME"));
 //                    tr.setBranch_id(rs.getString("KEY_ID"));
                     return tr;
@@ -226,11 +227,11 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
         try{
             if (moveToStockReq.getBranch_id() != null)
             {
-                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur from TB_items where branch_id='"+moveToStockReq.getBranch_id()+"' ";
+                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur,limitQty from TB_items where branch_id='"+moveToStockReq.getBranch_id()+"' ";
                 log.info("SQL:"+SQL);
             }else
             {
-                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+moveToStockReq.getBranch()+"' ";
+                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur,limitQty from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+moveToStockReq.getBranch()+"' ";
                 log.info("SQL:"+SQL);
             }
 
@@ -251,6 +252,7 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
                     tr.setUnitPirce(rs.getString("unit_price"));
                     tr.setSumUnitWithPrice(rs.getString("total_price"));
                     tr.setCurrency(rs.getString("cur"));
+                    tr.setLimitQty(rs.getString("limitQty"));
 
                     return tr;
                 }
@@ -505,7 +507,7 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
         Double all = (a+b+c+d+e4+f+g+h+i+j);
         List<Object> paramList = new ArrayList<Object>();
         try {
-            if (offerPaperReq.getShop_id()==8 || offerPaperReq.getShop_id()==26 || offerPaperReq.getShop_id()==27 || offerPaperReq.getShop_id()==57 || offerPaperReq.getShop_id()==142){
+            if (offerPaperReq.getShop_id() != null && (offerPaperReq.getShop_id()==8 || offerPaperReq.getShop_id()==26 || offerPaperReq.getShop_id()==27 || offerPaperReq.getShop_id()==57 || offerPaperReq.getShop_id()==142)){
                 sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id)" +
                         "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','N','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','NO','"+offerPaperReq.getBranch_id()+"') ";
                 log.info("SQL1:"+sql);
@@ -622,7 +624,7 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
                     EBankJdbcTemplate.update(updateCUR, new Object[]{currency, itemId});
                 }
             }
-            else if(offerPaperReq.getShop_id()!=8 && offerPaperReq.getShop_id()!=26 && offerPaperReq.getShop_id()!=27 && offerPaperReq.getShop_id()!=57){
+            else if(offerPaperReq.getShop_id() != null && (offerPaperReq.getShop_id()!=8 && offerPaperReq.getShop_id()!=26 && offerPaperReq.getShop_id()!=27 && offerPaperReq.getShop_id()!=57)){
                 sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id)" +
                         "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','Y','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','YES','"+offerPaperReq.getBranch_id()+"')";
                 log.info("SQL2:"+sql);
@@ -906,7 +908,7 @@ public int InsertOldinventoryDAOs (OldInventoryReq oldInventoryReq) throws Parse
     log.info("path:"+path+fileName);
     List<OldInventoryModel> data = new ArrayList<>();
     try{
-        String SQL = "insert into OLD_INVENTORY (item_name,header_truck_id,footer_truck_id,amount,picture,detail,date_in,type,price,branch_id) value( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String SQL = "insert into OLD_INVENTORY (item_name,header_truck_id,footer_truck_id,amount,picture,detail,date_in,type,price,branch_id,branchNo,cur) value( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
         log.info("SQL:"+SQL);
         List<Object> paramList = new ArrayList<Object>();
         paramList.add(oldInventoryReq.getItemName_Oldwarehouse());
@@ -919,6 +921,8 @@ public int InsertOldinventoryDAOs (OldInventoryReq oldInventoryReq) throws Parse
         paramList.add(oldInventoryReq.getSelectedType_Oldwarehouse());
         paramList.add(oldInventoryReq.getPrice_Oldwarehouse());
         paramList.add(oldInventoryReq.getBranch_id());
+        paramList.add(oldInventoryReq.getBranch());
+        paramList.add(oldInventoryReq.getCur());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
         e.printStackTrace();
@@ -946,7 +950,7 @@ public int UpdateOldinventoryDAOs (OldInventoryReq oldInventoryReq) throws Parse
     log.info("path:"+path+fileName);
     List<DataHoleModel> data = new ArrayList<>();
     try{
-        String SQL = "update OLD_INVENTORY set item_name=?,header_truck_id=?,footer_truck_id=?,amount=?,picture=?,detail=?,date_in=?,type=?,price=?,branch_id=? where KEY_ID='"+oldInventoryReq.getKey_id()+"'";
+        String SQL = "update OLD_INVENTORY set item_name=?,header_truck_id=?,footer_truck_id=?,amount=?,picture=?,detail=?,date_in=?,type=?,price=?,branch_id=?,branchNo=?,cur =? where KEY_ID='"+oldInventoryReq.getKey_id()+"'";
         log.info("SQL:"+SQL);
         List<Object> paramList = new ArrayList<Object>();
         paramList.add(oldInventoryReq.getItemName_Oldwarehouse());
@@ -959,6 +963,8 @@ public int UpdateOldinventoryDAOs (OldInventoryReq oldInventoryReq) throws Parse
         paramList.add(oldInventoryReq.getSelectedType_Oldwarehouse());
         paramList.add(oldInventoryReq.getPrice_Oldwarehouse());
         paramList.add(oldInventoryReq.getBranch_id());
+        paramList.add(oldInventoryReq.getBranch());
+        paramList.add(oldInventoryReq.getCur());
         paramList.add(oldInventoryReq.getKey_id());
         return EBankJdbcTemplate.update(SQL, paramList.toArray());
     }catch (Exception e){
@@ -2641,15 +2647,16 @@ public List<ReqListOfFixModel> ShowProveFixListDAOs (FixReq fixReq) {
 //old inventory dao
 public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventoryReq) {
     String sql;
+    String branchId = oldInventoryReq.getBranch_id();
     try {
-        if (oldInventoryReq.getBranch_id() != null)
+        if (branchId != null && !branchId.isEmpty())
         {
              sql ="SELECT * FROM OLD_INVENTORY WHERE branch_id = '"+oldInventoryReq.getBranch_id()+"'";
-            log.info("SQL :"+sql);
+            log.info("SQL is bor :"+sql);
         }
         else {
-             sql ="SELECT * FROM OLD_INVENTORY WHERE branch_id = '"+oldInventoryReq.getBranch()+"'";
-            log.info("SQL :"+sql);
+             sql ="SELECT * FROM OLD_INVENTORY WHERE branchNo = '"+oldInventoryReq.getBranch()+"'";
+            log.info("SQL not bor:"+sql);
         }
         return EBankJdbcTemplate.query(sql, new RowMapper<OldInventoryModel>() {
             @Override
@@ -2665,6 +2672,7 @@ public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventor
                 tr.setImportExpirationDate_Oldwarehouse(rs.getString("date_in"));
                 tr.setSelectedType_Oldwarehouse(rs.getString("type"));
                 tr.setPrice_Oldwarehouse(rs.getString("price"));
+                tr.setCur(rs.getString("cur"));
                 return tr;
             }
         });
@@ -3092,6 +3100,21 @@ public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventor
             return -1;
         }
     }
+    // LimitStock
+    public int LimitStockDao(ItemReq itemReq) throws ParseException {
+        List<Shops> data = new ArrayList<>();
+        try{
+            String SQL = "update TB_items set limitQty=? where item_id=?";
+            log.info("SQL:"+SQL);
+            List<Object> paramList = new ArrayList<Object>();
+            paramList.add(itemReq.getLimitQty());
+            paramList.add(itemReq.getItem_id());
+            return EBankJdbcTemplate.update(SQL, paramList.toArray());
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
     // delete shops
     public int delShops(ShopReq shopReq) {
         int i =0;
@@ -3124,7 +3147,7 @@ public int delfillOill(FillOilReq fillOilReq) {
 
         List<Items> data = new ArrayList<>();
         try{
-            String SQL = "insert into TB_items (item_name,unit,unit_price,Qty,img,userId,branch_inventory,branch_id)values (?,?,?,?,?,'"+itemReq.getUserId()+"','"+itemReq.getBranch()+"','"+itemReq.getBranch_id()+"')";
+            String SQL = "insert into TB_items (item_name,unit,unit_price,Qty,img,userId,branch_inventory,branch_id,limitQty)values (?,?,?,?,?,'"+itemReq.getUserId()+"','"+itemReq.getBranch()+"','"+itemReq.getBranch_id()+"','"+itemReq.getLimitQty()+"')";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(itemReq.getItemName());
@@ -3135,6 +3158,7 @@ public int delfillOill(FillOilReq fillOilReq) {
             paramList.add(itemReq.getUserId());
             paramList.add(itemReq.getBranch());
             paramList.add(itemReq.getBranch_id());
+            paramList.add(itemReq.getLimitQty());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();

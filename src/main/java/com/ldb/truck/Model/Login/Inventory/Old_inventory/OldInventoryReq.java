@@ -27,4 +27,5 @@ public class OldInventoryReq {
     private String branch;
     private String branch_id;
     private String key_id;
+    private String cur;
 }
