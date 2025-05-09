@@ -6,6 +6,8 @@ import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeModel;
 import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeReq;
 import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeRes;
 import com.ldb.truck.Model.Login.AssetsOffice.sumFooterGroupAsset;
+import com.ldb.truck.Model.Login.Inventory.OfferPaper.ReportStockModel;
+import com.ldb.truck.Model.Login.Inventory.OfferPaper.ReportStockRes;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Service.VicicleHeaderService.VicicleHeaderService;
@@ -17,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -97,14 +101,14 @@ public Messages UpdateAssetOfficeService (AssetsOfficeReq assetsOfficeReq ){
     return message;
 }
     //list Asset service
-    public AssetsOfficeRes listAssetOfficeService (@RequestBody AssetsOfficeReq assetsOfficeReq){
-        log.info("toKen=======================:"+assetsOfficeReq.getToKen());
+    public AssetsOfficeRes listAssetOfficeService (@RequestBody AssetsOfficeReq assetsOfficeReq) {
+        log.info("toKen=======================:" + assetsOfficeReq.getToKen());
         //============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(assetsOfficeReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
         //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
@@ -120,28 +124,38 @@ public Messages UpdateAssetOfficeService (AssetsOfficeReq assetsOfficeReq ){
             sumFooterGroupAsset resFooter = new sumFooterGroupAsset();
             Data = assetsOfficeDAOs.listAssetsOfficeDAOs(assetsOfficeReq);
 
-            double total_price = Data.stream().map(AssetsOfficeModel::getPrice).collect(Collectors.summingDouble(Double::doubleValue));
-              resFooter.setTotal_price(numfm.format(total_price));
+            Map<String, Double> totalsByCurrency = Data.stream().filter(item -> item.getCurrency() != null)
+                    .collect(Collectors.groupingBy(AssetsOfficeModel::getCurrency,
+                            Collectors.summingDouble(AssetsOfficeModel::getPrice)));
 
-              if (assetsOfficeReq.getCurrency()== null){
-                  result.setMessage("Success");
-                  result.setStatus("00");
-                  result.setData(Data);
-                  return result;
-              }else {
-                  result.setResFooter(resFooter);
-                  result.setMessage("Success");
-                  result.setStatus("00");
-                  result.setData(Data);
-                  return result;
-              }
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setMessage("data not found");
-            result.setStatus("01");
-            return result;
+            Map<String, String> formattedCurrencyTotals = new HashMap<>();
+            for (Map.Entry<String, Double> entry : totalsByCurrency.entrySet()) {
+                formattedCurrencyTotals.put("total_" + entry.getKey().toUpperCase(), numfm.format(entry.getValue()));
+            }
+                double total_price = Data.stream().map(AssetsOfficeModel::getPrice).collect(Collectors.summingDouble(Double::doubleValue));
+                resFooter.setTotal_price(numfm.format(total_price));
+
+                if (assetsOfficeReq.getCurrency() == null) {
+                    result.setCurrencyTotals(formattedCurrencyTotals);
+                    result.setMessage("Success");
+                    result.setStatus("00");
+                    result.setData(Data);
+                    return result;
+                } else {
+                    result.setCurrencyTotals(formattedCurrencyTotals);
+                    result.setResFooter(resFooter);
+                    result.setMessage("Success");
+                    result.setStatus("00");
+                    result.setData(Data);
+                    return result;
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+                result.setMessage("data not found");
+                result.setStatus("01");
+                return result;
+            }
         }
-    }
     // asset detail by id
     public AssetsOfficeRes listAssetOfficeServiceDetailById (@RequestBody AssetsOfficeReq assetsOfficeReq){
         List<AssetsOfficeModel> AssetsOfficeModel = new ArrayList<>();

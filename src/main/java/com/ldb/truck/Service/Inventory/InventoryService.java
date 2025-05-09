@@ -2,6 +2,7 @@ package com.ldb.truck.Service.Inventory;
 
 import com.ldb.truck.Dao.Inventory.InventoryDao;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Model.Login.AssetsOffice.AssetsOfficeModel;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilModel;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilReq;
 import com.ldb.truck.Model.Login.CarOffice.FillOil.FillOilRes;
@@ -29,10 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -636,6 +634,7 @@ public FixRes proofFixReqService(FixReq fixReq){
 // show offer paper after saved
 public ShowOfferPaper ShowOfferPaperSaved(@RequestBody OfferPaperReq offerPaperReq) {
     log.info("toKen=======================:" + offerPaperReq.getToKen());
+    DecimalFormat numfm = new DecimalFormat("###,###.###");
 
     // Get User info
     List<Profile> userIn = profileDao.getProfileInfoByToken(offerPaperReq.getToKen());
@@ -647,18 +646,31 @@ public ShowOfferPaper ShowOfferPaperSaved(@RequestBody OfferPaperReq offerPaperR
 
     // Get offer paper data
     List<OfferPaperModelFaso> listData = inventoryDao.ShowofferpaperDAOs(offerPaperReq);
+//======================================================================================================
+    Map<String, Double> totalsByCurrency = listData.stream()
+            .filter(item -> item.getCurrency() != null && item.getReal_totalMoney() != null) // Check for null currency and totalValue
+            .collect(Collectors.groupingBy(OfferPaperModelFaso::getCurrency,
+                    Collectors.summingDouble(OfferPaperModelFaso::getReal_totalMoney)));
+
+    Map<String, String> formattedCurrencyTotals = new HashMap<>();
+    for (Map.Entry<String, Double> entry : totalsByCurrency.entrySet()) {
+        formattedCurrencyTotals.put("total_" + entry.getKey().toUpperCase(), numfm.format(entry.getValue()));
+    }
+    //======================================================================================================
 
     // Calculate sum based on status
     double realTotalMoneySum = listData.stream()
-            .filter(data -> "Y".equals(data.getStatus())).mapToDouble(OfferPaperModelFaso::getReal_totalMoney).sum();
+            .filter(data -> "Y".equals(data.getStatus()) && data.getReal_totalMoney() != null) // Check for null real_totalMoney
+            .mapToDouble(OfferPaperModelFaso::getReal_totalMoney)
+            .sum();
 
     ShowOfferPaper result = new ShowOfferPaper();
-    DecimalFormat numfm = new DecimalFormat("###,###.###");
 
     sumFooterGroupOfferPaper restFooter = new sumFooterGroupOfferPaper();
     restFooter.setTotalMoney(numfm.format(realTotalMoneySum));
 
-    result.setSumFooter(restFooter);
+//    result.setSumFooter(restFooter);
+    result.setCurrencyTotals(formattedCurrencyTotals);
     result.setMessage("Success");
     result.setStatus("00");
     result.setData(listData);
@@ -1154,66 +1166,63 @@ public ReportstockRes reportStockDayWeekService (@RequestBody ReportstockReq rep
     //================================================================
     String userId = userIn.get(0).getUserId();
     String userBranchNo = userIn.get(0).getBranchNo();
-    //===================set data to userId===============================
     reportstockReq.setUserId(userId);
     reportstockReq.setBranch(userBranchNo);
     //====================================================================
-    List<ReportstockModel> listData = new ArrayList<>();
-    List<ReportstockModel2> listData2 = new ArrayList<>();
+
+    List<ReportstockModelNew> listData = new ArrayList<>();
     ReportstockRes result = new ReportstockRes();
     DecimalFormat numfm = new DecimalFormat("###,###.###");
+
     try {
+        listData = inventoryDao.inventoryalaireportStockDayWeekDaos(reportstockReq);
 
-            listData2 = inventoryDao.inventoryalaireportStockDayWeekDaos(reportstockReq);
-            sumFooterGroup2 restFooter2 = new sumFooterGroup2();
-            double total_qty_stock2 =  listData2.stream().map(ReportstockModel2::getQty_stock2).collect(Collectors.summingDouble(Double::doubleValue));
-            double total_yodyokma2 =  listData2.stream().map(ReportstockModel2::getYodyokma2).collect(Collectors.summingDouble(Double::doubleValue));
-            restFooter2.setTotal_qty_stock2(numfm.format(total_qty_stock2));
-            restFooter2.setTotal_yodyokma2(numfm.format(total_yodyokma2));
+        //=================== Sum by Unit for Qty fields ========================
+        Map<String, Map<String, String>> totalsByUnit = new HashMap<>();
 
-//==========================================================================================
-            listData = inventoryDao.reportStockDayWeekDaos(reportstockReq);
-            sumFooterGroup restFooter = new sumFooterGroup();
-            double total_qty_stock = listData.stream().map(ReportstockModel::getQty_stock).collect(Collectors.summingDouble(Double::doubleValue));
-            double total_qty_in = listData.stream().map(ReportstockModel::getQty_in).collect(Collectors.summingDouble(Double::doubleValue));
-            double total_qty_out = listData.stream().map(ReportstockModel::getQty_out).collect(Collectors.summingDouble(Double::doubleValue));
-            double total_yodyokma = listData.stream().map(ReportstockModel::getYordyokma).collect(Collectors.summingDouble(Double::doubleValue));
-            restFooter.setTotal_qty_stock(numfm.format(total_qty_stock));
-            restFooter.setTotal_qty_in(numfm.format(total_qty_in));
-            restFooter.setTotal_qty_out(numfm.format(total_qty_out));
-            restFooter.setTotal_yodyokma(numfm.format(total_yodyokma));
-//            =========================================================== for sang a lai
-            restFooter2.setTotal_yodyokma2(numfm.format(total_yodyokma2));
-            restFooter2.setTotal_qty_stock2(numfm.format(total_qty_stock2));
-            restFooter2.setTotal_qty_in(numfm.format(total_qty_in));
-            restFooter2.setTotal_qty_out(numfm.format(total_qty_out));
+        listData.stream()
+                .filter(item -> item.getUnit() != null)
+                .collect(Collectors.groupingBy(ReportstockModelNew::getUnit))
+                .forEach((unit, items) -> {
+                    double totalQtyIn = items.stream().mapToDouble(it -> Optional.ofNullable(it.getQtyIn()).orElse(0.0)).sum();
+                    double totalQtyOut = items.stream().mapToDouble(it -> Optional.ofNullable(it.getQtyOut()).orElse(0.0)).sum();
+                    double totalQtyStock = items.stream().mapToDouble(it -> Optional.ofNullable(it.getQtyStock()).orElse(0.0)).sum();
+                    double totalCurrentQty = items.stream().mapToDouble(it -> Optional.ofNullable(it.getCurrentQty()).orElse(0.0)).sum();
 
-            if (total_qty_stock==0 && total_yodyokma ==0){
-                result.setSumFooter2(restFooter2);
-                result.setMessage("Success");
-                result.setStatus("00");
-                result.setData(listData);
-                return result;
-            }else {
-                result.setSumFooter(restFooter);
-                result.setMessage("Success");
-                result.setStatus("00");
-                result.setData(listData);
-                return result;
-            }
-//            result.setSumFooter(restFooter);
-//            result.setMessage("Success");
-//            result.setStatus("00");
-//            result.setData(listData);
-//            return result;
+                    Map<String, String> qtySums = new HashMap<>();
+                    qtySums.put("totalQtyIn", numfm.format(totalQtyIn));
+                    qtySums.put("totalQtyOut", numfm.format(totalQtyOut));
+                    qtySums.put("totalQtyStock", numfm.format(totalQtyStock));
+                    qtySums.put("totalCurrentQty", numfm.format(totalCurrentQty));
 
-    }catch (Exception e){
-        e.printStackTrace();
+                    totalsByUnit.put(unit.toUpperCase(), qtySums);
+                });
+
+        //=================== Sum by Currency for Real_totalMoney ========================
+        Map<String, String> totalsByCurrency = listData.stream()
+                .filter(item -> item.getCurrency() != null)
+                .collect(Collectors.groupingBy(ReportstockModelNew::getCurrency,
+                        Collectors.collectingAndThen(
+                                Collectors.summingDouble(it -> Optional.ofNullable(it.getReal_totalmonney()).orElse(0.0)),
+                                sum -> numfm.format(sum)
+                        )));
+
+        //=================== Prepare result ========================
+        result.setQtyTotalsByUnit(totalsByUnit);
+        result.setAmountTotalsByCurrency(totalsByCurrency);
+        result.setMessage("Success");
+        result.setStatus("00");
+        result.setData(listData);
+        return result;
+
+    } catch (Exception e){
+        log.error("Error fetching stock report service: {}", e.getMessage(), e);
         result.setMessage("data not found");
         result.setStatus("01");
         return result;
     }
 }
+
 // show all fix list
 public ShowFix  ShowFixList (@RequestBody FixReq fixReq){
     log.info("toKen=======================:"+fixReq.getToKen());
@@ -1261,10 +1270,23 @@ public ShowFix  ShowFixList (@RequestBody FixReq fixReq){
         oldInventoryReq.setUserId(userId);
         oldInventoryReq.setBranch(userBranchNo);
         //====================================================================
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
         List<OldInventoryModel> Data = new ArrayList<>();
+        Data = inventoryDao.ShowOldInventoryDAOs(oldInventoryReq);
+        Map<String, Double> totalsByCurrency = Data.stream()
+                .filter(item -> item.getCur() != null)
+                .filter(item -> item.getPrice_Oldwarehouse() != null) // Add this filter
+                .collect(Collectors.groupingBy(OldInventoryModel::getCur,
+                        Collectors.summingDouble(OldInventoryModel::getPrice_Oldwarehouse)));
+
+        Map<String, String> formattedCurrencyTotals = new HashMap<>();
+        for (Map.Entry<String, Double> entry : totalsByCurrency.entrySet()) {
+            formattedCurrencyTotals.put("total_" + entry.getKey().toUpperCase(), numfm.format(entry.getValue()));
+        }
+
         OldInventoryRes result = new OldInventoryRes();
         try {
-            Data = inventoryDao.ShowOldInventoryDAOs(oldInventoryReq);
+            result.setCurrencyTotals(formattedCurrencyTotals);
             result.setMessage("Success");
             result.setStatus("00");
             result.setData(Data);

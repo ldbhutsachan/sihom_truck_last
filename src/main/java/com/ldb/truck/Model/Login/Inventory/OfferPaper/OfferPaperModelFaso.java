@@ -17,6 +17,7 @@ public class OfferPaperModelFaso {
     private String offerManName;
     private String job;
     private String key_id;
+//    private Double totalValue;
     private String OFFER_CODE;
     private String f_CARD_NO;
     private String h_VICIVLE_NUMBER;
@@ -28,6 +29,7 @@ public class OfferPaperModelFaso {
     private String statusPO;
     private String shopName;
     private String currency;
+    private String datePay;
 
     private Float moneyRate;
     private String img1,img2,img3,img4,img5,img6,img7,img8,img9;
@@ -37,7 +39,7 @@ public class OfferPaperModelFaso {
     private Double real_totalMoneyCredit;
     private String item_id,item_id1,item_id2,item_id3,item_id4,item_id5,item_id6,item_id7,item_id8,item_id9;
     private String size,brand,ber,size1,brand1,ber1,size2,brand2,ber2,size3,brand3,ber3,size4,brand4,ber4,size5,brand5,ber5,size6,brand6,ber6,size7,brand7,ber7,size8,brand8,ber8,size9,brand9,ber9;
-    private Double sumMoneyCurrencyTHB;
-    private Double sumMoneycurrencyUSD;
-    private Double sumMoneycurrencyLAK;
+//    private Double sumMoneyCurrencyTHB;
+//    private Double sumMoneycurrencyUSD;
+//    private Double sumMoneycurrencyLAK;
 }

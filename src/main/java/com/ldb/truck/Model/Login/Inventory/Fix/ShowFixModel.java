@@ -23,5 +23,6 @@ public class ShowFixModel {
     private  String branch_inventory;
     private  String detail_A_lai;
     private  String img;
+    private  String cur;
     private  Double finalTotalPrice;
 }

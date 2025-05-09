@@ -20,7 +20,7 @@ import com.ldb.truck.Model.Login.Inventory.OfferPaper.*;
 import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryModel;
 import com.ldb.truck.Model.Login.Inventory.Old_inventory.OldInventoryReq;
 import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockModel;
-import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockModel2;
+import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockModelNew;
 import com.ldb.truck.Model.Login.Inventory.Report_Stock.ReportstockReq;
 import com.ldb.truck.Model.Login.Inventory.Shops.*;
 import org.apache.logging.log4j.LogManager;
@@ -508,8 +508,8 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
         List<Object> paramList = new ArrayList<Object>();
         try {
             if (offerPaperReq.getShop_id() != null && (offerPaperReq.getShop_id()==8 || offerPaperReq.getShop_id()==26 || offerPaperReq.getShop_id()==27 || offerPaperReq.getShop_id()==57 || offerPaperReq.getShop_id()==142)){
-                sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id)" +
-                        "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','N','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','NO','"+offerPaperReq.getBranch_id()+"') ";
+                sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id,datePay)" +
+                        "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','N','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','NO','"+offerPaperReq.getBranch_id()+"','"+offerPaperReq.getDatePay()+"') ";
                 log.info("SQL1:"+sql);
                 paramList.add(offerPaperReq.getItem_id());
                 paramList.add(offerPaperReq.getHeader_id());
@@ -597,6 +597,7 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
                 paramList.add(offerPaperReq.getCurrency());
                 paramList.add(offerPaperReq.getMoneyRate());
                 paramList.add(offerPaperReq.getBranch_id());
+                paramList.add(offerPaperReq.getDatePay());
 
                 EBankJdbcTemplate.update(sql, paramList.toArray());
 
@@ -625,8 +626,8 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
                 }
             }
             else if(offerPaperReq.getShop_id() != null && (offerPaperReq.getShop_id()!=8 && offerPaperReq.getShop_id()!=26 && offerPaperReq.getShop_id()!=27 && offerPaperReq.getShop_id()!=57)){
-                sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id)" +
-                        "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','Y','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','YES','"+offerPaperReq.getBranch_id()+"')";
+                sql ="insert into OFFER_PAPER (item_id,header_id,footer_id,shop_id,unit_price,qty_offer,totalMoney,description,offerManName,job,userId,OFFER_CODE,dateCreate,status,stock_status,statusPO,item_id1,unit_price1,qty_offer1,totalMoney1,item_id2,unit_price2,qty_offer2,totalMoney2,item_id3,unit_price3,qty_offer3,totalMoney3,item_id4,unit_price4,qty_offer4,totalMoney4,item_id5,unit_price5,qty_offer5,totalMoney5,item_id6,unit_price6,qty_offer6,totalMoney6,item_id7,unit_price7,qty_offer7,totalMoney7,item_id8,unit_price8,qty_offer8,totalMoney8,item_id9,unit_price9,qty_offer9,totalMoney9,Real_totalMoney,item_name1,item_name2,item_name3,item_name4,item_name5,item_name6,item_name7,item_name8,item_name9,img1,img2,img3,img4,img5,img6,img7,img8,img9,currency,moneyRate,STATUS_CREDITS,branch_id,datePay)" +
+                        "values (?,?,?,?,?,?,?,?,?,?,?,?,'"+offerPaperReq.getDateCreate()+"','Y','wait','NO','"+offerPaperReq.getItem_id1()+"', '"+unit_price1+"','"+offerPaperReq.getQty_offer1()+"','"+totalMoney1+"','"+offerPaperReq.getItem_id2()+"', '"+unit_price2+"','"+offerPaperReq.getQty_offer2()+"','"+totalMoney2+"', '"+offerPaperReq.getItem_id3()+"', '"+unit_price3+"','"+offerPaperReq.getQty_offer3()+"','"+totalMoney3+"', '"+offerPaperReq.getItem_id4()+"', '"+unit_price4+"','"+offerPaperReq.getQty_offer4()+"','"+totalMoney4+"', '"+offerPaperReq.getItem_id5()+"', '"+unit_price5+"','"+offerPaperReq.getQty_offer5()+"','"+totalMoney5+"', '"+offerPaperReq.getItem_id6()+"', '"+unit_price6+"','"+offerPaperReq.getQty_offer6()+"','"+totalMoney6+"', '"+offerPaperReq.getItem_id7()+"', '"+unit_price7+"','"+offerPaperReq.getQty_offer7()+"','"+totalMoney7+"', '"+offerPaperReq.getItem_id8()+"', '"+unit_price8+"','"+offerPaperReq.getQty_offer8()+"','"+totalMoney8+"', '"+offerPaperReq.getItem_id9()+"', '"+unit_price9+"','"+offerPaperReq.getQty_offer9()+"','"+totalMoney9+"','"+all+"','"+offerPaperReq.getItem_name1()+"','"+offerPaperReq.getItem_name2()+"','"+offerPaperReq.getItem_name3()+"','"+offerPaperReq.getItem_name4()+"','"+offerPaperReq.getItem_name5()+"','"+offerPaperReq.getItem_name6()+"','"+offerPaperReq.getItem_name7()+"','"+offerPaperReq.getItem_name8()+"','"+offerPaperReq.getItem_name9()+"','"+offerPaperReq.getImg1()+"','"+offerPaperReq.getImg2()+"','"+offerPaperReq.getImg3()+"','"+offerPaperReq.getImg4()+"','"+offerPaperReq.getImg5()+"','"+offerPaperReq.getImg6()+"','"+offerPaperReq.getImg7()+"','"+offerPaperReq.getImg8()+"','"+offerPaperReq.getImg9()+"','"+offerPaperReq.getCurrency()+"','"+offerPaperReq.getMoneyRate()+"','YES','"+offerPaperReq.getBranch_id()+"','"+offerPaperReq.getDatePay()+"')";
                 log.info("SQL2:"+sql);
                 paramList.add(offerPaperReq.getItem_id());
                 paramList.add(offerPaperReq.getHeader_id());
@@ -712,6 +713,7 @@ public int DeleteOfferpaperDaos (OfferPaperReq offerPaperReq) {
                 paramList.add(offerPaperReq.getCurrency());
                 paramList.add(offerPaperReq.getMoneyRate());
                 paramList.add(offerPaperReq.getBranch_id());
+                paramList.add(offerPaperReq.getDatePay());
 
                 EBankJdbcTemplate.update(sql, paramList.toArray());
 
@@ -1804,6 +1806,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
                     tr.setReal_totalMoney(rs.getDouble("Real_totalMoney"));
                     tr.setMoneyRate(rs.getFloat("moneyRate"));
                     tr.setCurrency(rs.getString("currency"));
+                    tr.setDatePay(rs.getString("datePay"));
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ new +++++++++++++++++++++++++++++++++++++++++
                     return tr;
                 }
@@ -2578,6 +2581,7 @@ public List<OfferPaperModelFaso> ShowofferpaperDAOspayCredit (OfferPaperReq offe
                     tr.setBranch_inventory(rs.getString("branch_inventory"));
                     tr.setImg(rs.getString("img"));
                     tr.setFinalTotalPrice(rs.getDouble("finalTotalPrice"));
+                    tr.setCur(rs.getString("cur"));
                     return tr;
                 }
             });
@@ -2671,7 +2675,13 @@ public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventor
                 tr.setDescription_Oldwarehouse(rs.getString("detail"));
                 tr.setImportExpirationDate_Oldwarehouse(rs.getString("date_in"));
                 tr.setSelectedType_Oldwarehouse(rs.getString("type"));
-                tr.setPrice_Oldwarehouse(rs.getString("price"));
+//                tr.setPrice_Oldwarehouse(rs.getDouble("price"));
+                //=====================================================================================================================
+                String priceB4 = rs.getString("price").replaceAll(",","");
+                double priceAfter  = Double.parseDouble(priceB4);
+                tr.setPrice_Oldwarehouse(priceAfter);
+//                    tr.setPrice(rs.getDouble("price"));
+//=====================================================================================================================
                 tr.setCur(rs.getString("cur"));
                 return tr;
             }
@@ -2682,87 +2692,129 @@ public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventor
     return null;
 }
     //report stock day week DAOs
-    public List<ReportstockModel> reportStockDayWeekDaos(ReportstockReq reportstockReq) {
-        String sql;
+//    public List<ReportstockModel> reportStockDayWeekDaos(ReportstockReq reportstockReq) {
+//        String sql;
+//        try {
+//            if (reportstockReq.getItem_id() == null)
+//            {
+//                if (reportstockReq.getStartDate() == null){
+//                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE branch_inventory ='"+reportstockReq.getBranch()+"'";
+//                    log.info("SQL1:" + sql);
+//                }else
+//                {
+//                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE branch_inventory ='"+reportstockReq.getBranch()+"' and dateOut between '" + reportstockReq.getStartDate() + "' and '" + reportstockReq.getEndDate() + "'\n" +
+//                            "or dateIn BETWEEN '" + reportstockReq.getStartDate() + "' and '"+ reportstockReq.getEndDate() +"'";
+//                    log.info("SQL2:" + sql);
+//                }
+//            }
+//            else {
+//                if (reportstockReq.getStartDate() == null){
+//                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE item_id = '" + reportstockReq.getItem_id() +"'";
+//                    log.info("SQL3:" + sql);
+//                }
+//                else
+//                {
+//                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE item_id = '" + reportstockReq.getItem_id() + "' and dateOut between '" + reportstockReq.getStartDate() + "' and '" + reportstockReq.getEndDate() + "'\n" +
+//                            "or dateIn BETWEEN '" + reportstockReq.getStartDate() + "' and '"+ reportstockReq.getEndDate() +"'";
+//                    log.info("SQL4:" + sql);
+//                }
+//            }
+//            return EBankJdbcTemplate.query(sql, new RowMapper<ReportstockModel>() {
+//                @Override
+//                public ReportstockModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                    ReportstockModel tr = new ReportstockModel();
+//                    tr.setItem_id(rs.getString("item_id"));
+//                    tr.setItem_name(rs.getString("item_name"));
+//                    tr.setUnit(rs.getString("unit"));
+//                    tr.setImg(rs.getString("img"));
+//                    tr.setDateOut(rs.getString("dateOut"));
+//                    tr.setDateIn(rs.getString("dateIn"));
+//                    tr.setQty_stock(rs.getDouble("QTY_stock"));
+//                    tr.setQty_out(rs.getDouble("QTY_out"));
+//                    tr.setQty_in(rs.getDouble("QTY_in"));
+//                    tr.setYordyokma(rs.getDouble("yordyokma"));
+//                    return tr;
+//                }
+//            });
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
+    // for inventory object
+    public List<ReportstockModelNew> inventoryalaireportStockDayWeekDaos(ReportstockReq reportstockReq) {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM vw_inventory_summary3 WHERE 1=1 ");
+        List<Object> paramList = new ArrayList<>();
+
+        // Branch condition — dynamic switch
+        if (reportstockReq.getBranch_id() != null && !reportstockReq.getBranch_id().isEmpty()) {
+            sqlBuilder.append(" AND offer_branch_id = ?");
+            paramList.add(reportstockReq.getBranch_id());
+        } else {
+            sqlBuilder.append(" AND branch_inventory = ?");
+            paramList.add(reportstockReq.getBranch());
+        }
+
+        // Item ID condition
+        if (reportstockReq.getItem_id() != null && !reportstockReq.getItem_id().isEmpty()) {
+            sqlBuilder.append(" AND item_id = ?");
+            paramList.add(reportstockReq.getItem_id());
+        }
+
+        // Start Date condition
+        if (reportstockReq.getStartDateItemIn_out() != null && !reportstockReq.getStartDateItemIn_out().isEmpty()) {
+            sqlBuilder.append(" AND ( (last_date_in >= ? OR last_date_in IS NULL) OR (last_date_out >= ? OR last_date_out IS NULL) )");
+            paramList.add(reportstockReq.getStartDateItemIn_out());
+            paramList.add(reportstockReq.getStartDateItemIn_out());
+        }
+
+        // End Date condition
+        if (reportstockReq.getEndDateItemIn_out() != null && !reportstockReq.getEndDateItemIn_out().isEmpty()) {
+            sqlBuilder.append(" AND ( (last_date_in <= ? OR last_date_in IS NULL) OR (last_date_out <= ? OR last_date_out IS NULL) )");
+            paramList.add(reportstockReq.getEndDateItemIn_out());
+            paramList.add(reportstockReq.getEndDateItemIn_out());
+        }
+
+        String sql = sqlBuilder.toString();
+        log.info("Final SQL: {}", sql);
+
         try {
-            if (reportstockReq.getItem_id() == null)
-            {
-                if (reportstockReq.getStartDate() == null){
-                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE branch_inventory ='"+reportstockReq.getBranch()+"'";
-                    log.info("SQL1:" + sql);
-                }else
-                {
-                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE branch_inventory ='"+reportstockReq.getBranch()+"' and dateOut between '" + reportstockReq.getStartDate() + "' and '" + reportstockReq.getEndDate() + "'\n" +
-                            "or dateIn BETWEEN '" + reportstockReq.getStartDate() + "' and '"+ reportstockReq.getEndDate() +"'";
-                    log.info("SQL2:" + sql);
-                }
-            }
-            else {
-                if (reportstockReq.getStartDate() == null){
-                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE item_id = '" + reportstockReq.getItem_id() +"'";
-                    log.info("SQL3:" + sql);
-                }
-                else
-                {
-                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE item_id = '" + reportstockReq.getItem_id() + "' and dateOut between '" + reportstockReq.getStartDate() + "' and '" + reportstockReq.getEndDate() + "'\n" +
-                            "or dateIn BETWEEN '" + reportstockReq.getStartDate() + "' and '"+ reportstockReq.getEndDate() +"'";
-                    log.info("SQL4:" + sql);
-                }
-            }
-            return EBankJdbcTemplate.query(sql, new RowMapper<ReportstockModel>() {
+            return EBankJdbcTemplate.query(sql, paramList.toArray(), new RowMapper<ReportstockModelNew>() {
                 @Override
-                public ReportstockModel mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    ReportstockModel tr = new ReportstockModel();
+                public ReportstockModelNew mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ReportstockModelNew tr = new ReportstockModelNew();
                     tr.setItem_id(rs.getString("item_id"));
                     tr.setItem_name(rs.getString("item_name"));
-                    tr.setUnit(rs.getString("unit"));
                     tr.setImg(rs.getString("img"));
-                    tr.setDateOut(rs.getString("dateOut"));
-                    tr.setDateIn(rs.getString("dateIn"));
-                    tr.setQty_stock(rs.getDouble("QTY_stock"));
-                    tr.setQty_out(rs.getDouble("QTY_out"));
-                    tr.setQty_in(rs.getDouble("QTY_in"));
-                    tr.setYordyokma(rs.getDouble("yordyokma"));
+                    tr.setUnit(rs.getString("unit"));
+                    tr.setDate_offer(rs.getString("last_date_in"));
+                    tr.setNameOfferMan(rs.getString("offerManName"));
+                    tr.setQtyIn(rs.getDouble("total_qty_in"));
+                    tr.setQtyOut(rs.getDouble("total_qty_out"));
+                    tr.setQtyStock(rs.getDouble("stock_left_qty"));
+                    tr.setCurrentQty(rs.getDouble("current_qty_in_inventory"));
+                    tr.setReal_totalmonney(rs.getDouble("Real_totalMoney"));
+                    tr.setDateFix(rs.getString("last_date_out"));
+                    tr.setCurrency(rs.getString("cur"));
+                    tr.setDescriptionFix(rs.getString("descriptionFix"));
+                    tr.setDescriptionOffer(rs.getString("descriptionOFF"));
+                    tr.setFixDetail(rs.getString("fix_Detail"));
+                    tr.setApproveStatus(rs.getString("approve_status"));
+                    tr.setNewStatus(rs.getString("new_status"));
+                    tr.setOfferCode(rs.getString("OFFER_CODE"));
+                    tr.setCarNumber(rs.getString("H_VICIVLE_NUMBER"));
+                    tr.setBranch(rs.getString("F_BRANCH"));
                     return tr;
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error fetching inventory stock report: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to retrieve inventory stock report", e);
         }
-        return null;
     }
 
-    // for inventory object
-    public List<ReportstockModel2>inventoryalaireportStockDayWeekDaos (ReportstockReq reportstockReq) {
-        String sql;
-        try {
 
-            if (reportstockReq.getItem_id() == null)
-            {
-                    sql = "SELECT item_name,Qty,img FROM TB_items WHERE branch_inventory ='"+reportstockReq.getBranch()+"'";
-                    log.info("service_1_SQL:" + sql);
-            }
-            else {
-                    sql = "SELECT item_name,Qty,img FROM TB_items WHERE item_id = '" + reportstockReq.getItem_id() + "' ";
-                    log.info("service_1_SQL:" + sql);
-            }
-            return EBankJdbcTemplate.query(sql, new RowMapper<ReportstockModel2>() {
-                @Override
-                public ReportstockModel2 mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    ReportstockModel2 tr = new ReportstockModel2();
-                    tr.setItem_name2(rs.getString("item_name"));
-//                    tr.setUnit(rs.getString("unit"));
-                    tr.setImg2(rs.getString("img"));
-                    tr.setQty_stock2(rs.getDouble("Qty"));
-                    tr.setYodyokma2(rs.getDouble("Qty"));
-                    return tr;
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return null;
-    }
     // show fix Detail DAOs
     public List<ShowFixModel> ShowFixListDAOsDetail(FixReq fixReq) {
         try {

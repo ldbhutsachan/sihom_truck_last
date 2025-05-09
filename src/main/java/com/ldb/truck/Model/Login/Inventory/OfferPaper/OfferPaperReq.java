@@ -92,6 +92,7 @@ public class OfferPaperReq {
     private String startDate;
     private String endDate;
     private String branch_id;
+    private String datePay;
 
 
 }

@@ -26,7 +26,7 @@ public class AssetsOfficeModel {
     private String date_getin;
     private String unit;
     private String colors;
-    private double price;
+    private Double price;
     private String dateExpire;
     private String life_service;
 //    private double total_price_THB;

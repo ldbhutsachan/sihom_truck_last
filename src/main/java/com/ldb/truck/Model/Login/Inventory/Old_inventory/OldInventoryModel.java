@@ -17,7 +17,7 @@ public class OldInventoryModel {
     private String selectedType_Oldwarehouse;
     private String vehicle_Oldwarehouse;
     private String vehiclefooter_Oldwarehouse;
-    private String price_Oldwarehouse;
+    private Double price_Oldwarehouse;
     private String ImportExpirationDate_Oldwarehouse;
     private String description_Oldwarehouse;
     private String image_Oldwarehouse;
