@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.DecimalFormat;
@@ -473,6 +474,7 @@ public FixRes proofFixReqService(FixReq fixReq){
     }
     // pay to shop service
     // Move item to stock
+    @Transactional
     public PayToShopRes PayToShopService (List<PayToShopReq> payToShopReq){
         PayToShopRes result = new PayToShopRes();
         try {

@@ -1577,6 +1577,7 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
                 "(moneyRate * unit_price8 * qty_offer8 )+\n" +
                 "(moneyRate * unit_price9 * qty_offer9) , datePay =? ,STATUS_CREDITS='NO' WHERE offer_CODE = ?";
         String sql3 = "INSERT INTO currency_in_kip (OFFER_CODE,TOTAL_MONEY,DATE,CUR,userId,branch_id) SELECT OFFER_CODE,Real_totalMoney,datePay,currency,userId,branch_id from OFFER_PAPER WHERE offer_CODE = ?";
+//        String sql3 = "INSERT INTO currency_in_kip (OFFER_CODE,TOTAL_MONEY,DATE,CUR,userId,branch_id) value (?,?,?,?,?,?)";
 
         log.info(sql);
         log.info(sql2);
@@ -1624,6 +1625,78 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
         }
         return 0; // Indicate success
     }
+//    new chat gpt
+//    public int PayToShopDao (List<PayToShopReq> payToShopReqList) {
+//        if (payToShopReqList == null || payToShopReqList.isEmpty()) {
+//            log.warn("No payment requests provided.");
+//            return -1;
+//        }
+//
+//        String updatePurchaseOrderSql = "UPDATE PURCHASE_ORDER SET paid = paid + ?, tid = total - paid, DateCreatePO = NOW() WHERE pocode = ?";
+//
+//        String updateOfferPaperSql = "UPDATE OFFER_PAPER SET " +
+//                "totalMoney = (moneyRate * unit_price * qty_offer), " +
+//                "totalMoney1 = (moneyRate * unit_price1 * qty_offer1), " +
+//                "totalMoney2 = (moneyRate * unit_price2 * qty_offer2), " +
+//                "totalMoney3 = (moneyRate * unit_price3 * qty_offer3), " +
+//                "totalMoney4 = (moneyRate * unit_price4 * qty_offer4), " +
+//                "totalMoney5 = (moneyRate * unit_price5 * qty_offer5), " +
+//                "totalMoney6 = (moneyRate * unit_price6 * qty_offer6), " +
+//                "totalMoney7 = (moneyRate * unit_price7 * qty_offer7), " +
+//                "totalMoney8 = (moneyRate * unit_price8 * qty_offer8), " +
+//                "totalMoney9 = (moneyRate * unit_price9 * qty_offer9), " +
+//                "Real_totalMoney = (moneyRate * unit_price * qty_offer) + " +
+//                "(moneyRate * unit_price1 * qty_offer1) + " +
+//                "(moneyRate * unit_price2 * qty_offer2) + " +
+//                "(moneyRate * unit_price3 * qty_offer3) + " +
+//                "(moneyRate * unit_price4 * qty_offer4) + " +
+//                "(moneyRate * unit_price5 * qty_offer5) + " +
+//                "(moneyRate * unit_price6 * qty_offer6) + " +
+//                "(moneyRate * unit_price7 * qty_offer7) + " +
+//                "(moneyRate * unit_price8 * qty_offer8) + " +
+//                "(moneyRate * unit_price9 * qty_offer9), " +
+//                "datePay = ?, STATUS_CREDITS = 'NO' WHERE offer_CODE = ?";
+//
+//        String insertCurrencySql = "INSERT INTO currency_in_kip (OFFER_CODE, TOTAL_MONEY, DATE, CUR, userId, branch_id)  VALUES (?, ?, ?, ?, ?, ?)";
+//
+//
+//        try {
+//            List<Object[]> purchaseOrderParams = new ArrayList<>();
+//            List<Object[]> offerPaperParams = new ArrayList<>();
+//            List<Object[]> currencyInsertParams = new ArrayList<>();
+//
+//            for (PayToShopReq req : payToShopReqList) {
+//                purchaseOrderParams.add(new Object[]{req.getPaid(), req.getPocode()});
+//                offerPaperParams.add(new Object[]{req.getDatePay(), req.getOffer_CODE()});
+//                currencyInsertParams.add(new Object[]{req.getOffer_CODE()});
+//            }
+//
+//            int[] purchaseOrderResults = EBankJdbcTemplate.batchUpdate(updatePurchaseOrderSql, purchaseOrderParams);
+//            int[] offerPaperResults = EBankJdbcTemplate.batchUpdate(updateOfferPaperSql, offerPaperParams);
+//            int[] currencyInsertResults = EBankJdbcTemplate.batchUpdate(insertCurrencySql, currencyInsertParams);
+//
+//            log.info("Purchase order updates: {}", purchaseOrderResults.length);
+//            log.info("Offer paper updates: {}", offerPaperResults.length);
+//            log.info("Currency insertions: {}", currencyInsertResults.length);
+//
+//            // Optionally, check if all updates were successful
+//            if (purchaseOrderResults.length != payToShopReqList.size()
+//                    || offerPaperResults.length != payToShopReqList.size()
+//                    || currencyInsertResults.length != payToShopReqList.size()) {
+//                log.error("Mismatch in expected and actual batch update counts.");
+//                return -1;
+//            }
+//
+//        } catch (Exception e) {
+//            log.error("Error during payToShop batch update", e);
+//            return -1;
+//        }
+//
+//        log.info("payToShop batch operation completed successfully.");
+//        return 0;
+//    }
+
+
 
 
 
