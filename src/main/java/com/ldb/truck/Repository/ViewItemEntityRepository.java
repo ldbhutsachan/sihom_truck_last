@@ -1,0 +1,24 @@
+package com.ldb.truck.Repository;
+
+import com.ldb.truck.Entity.Item.ItemEntity;
+import com.ldb.truck.Entity.Item.viewItemEntity;
+import com.ldb.truck.Entity.PlaceStock.PlaceStockEntity;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Repository
+public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,Long> {
+    @Transactional
+    @Query(value = "SELECT * FROM v_items WHERE item_id =:item_id ORDER BY item_id DESC", nativeQuery = true)
+    List<viewItemEntity> getItemByItemId(@Param("item_id") String item_id);
+
+    @Transactional
+    @Query(value = "SELECT * FROM v_items ORDER BY item_id DESC", nativeQuery = true)
+    List<viewItemEntity> getAllViewItems();
+}

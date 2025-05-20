@@ -2734,24 +2734,22 @@ public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventor
 
     // for inventory object
     public List<ReportstockModel2>inventoryalaireportStockDayWeekDaos (ReportstockReq reportstockReq) {
-        String sql;
+        StringBuilder sb = new StringBuilder();
+        String conItemId = "";
         try {
-
-            if (reportstockReq.getItem_id() == null)
-            {
-                    sql = "SELECT item_name,Qty,img FROM TB_items WHERE branch_inventory ='"+reportstockReq.getBranch()+"'";
-                    log.info("service_1_SQL:" + sql);
+            if(!"".equals(reportstockReq.getBranch())){
+                conItemId = " AND branch_inventory = '"+reportstockReq.getBranch()+"' ";
+            }else {
+                conItemId = " AND item_id = '"+reportstockReq.getItem_id()+"' ";
             }
-            else {
-                    sql = "SELECT item_name,Qty,img FROM TB_items WHERE item_id = '" + reportstockReq.getItem_id() + "' ";
-                    log.info("service_1_SQL:" + sql);
-            }
+            sb.append("SELECT item_name,Qty,img FROM TB_items  where 1=1 ");
+            sb.append(conItemId);
+            String sql = sb.toString();
             return EBankJdbcTemplate.query(sql, new RowMapper<ReportstockModel2>() {
                 @Override
                 public ReportstockModel2 mapRow(ResultSet rs, int rowNum) throws SQLException {
                     ReportstockModel2 tr = new ReportstockModel2();
                     tr.setItem_name2(rs.getString("item_name"));
-//                    tr.setUnit(rs.getString("unit"));
                     tr.setImg2(rs.getString("img"));
                     tr.setQty_stock2(rs.getDouble("Qty"));
                     tr.setYodyokma2(rs.getDouble("Qty"));
