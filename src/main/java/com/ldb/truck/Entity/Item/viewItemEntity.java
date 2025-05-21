@@ -84,4 +84,31 @@ public class viewItemEntity {
 
     @Column(name = "B_NAME", length = 255)
     private String bName;
+
+    @Column(name = "itemtypeid", nullable = false)
+    private Integer itemtypeid;
+
+    @Column(name = "khid", nullable = false)
+    private String khid;
+
+    @Column(name = "khno", nullable = false)
+    private String khno;
+
+    @Column(name = "khname", nullable = false)
+    private String khname;
+
+    @Column(name = "sole", nullable = false)
+    private String sole;
+
+    @Column(name = "solestep", nullable = false)
+    private String solestep;
+
+    @Column(name = "blockno", nullable = false)
+    private String blockno;
+
+    @Column(name = "itemtype_Name", nullable = false)
+    private String itemtype_Name;
+
+    @Column(name = "toKen", nullable = false)
+    private String toKen;
 }

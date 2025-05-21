@@ -14,13 +14,13 @@ public class ItemServiceImpl {
     ViewItemEntityRepository viewItemEntityRepository;
     @Autowired
     ItemEntityRepository itemEntityRepository;
-    public DataResponse getViewItemInventory(viewItemEntity viewItemEntity){
+    public DataResponse getViewItemInventory(viewItemEntity viewItemEntity,String userName){
         DataResponse response = new DataResponse();
         try {
             if(viewItemEntity.getItemId() != null){
-                response.setDataResponse(viewItemEntityRepository.getItemByItemId(viewItemEntity.getItemId()));
+                response.setDataResponse(viewItemEntityRepository.getItemByItemId(viewItemEntity.getItemId(),userName));
             }else {
-                response.setDataResponse(viewItemEntityRepository.getAllViewItems());
+                response.setDataResponse(viewItemEntityRepository.getAllViewItems(userName));
             }
             if(response.getDataResponse() != null){
                 response.setStatus("00");
@@ -76,6 +76,8 @@ public DataResponse saveItem(ItemEntity viewItemEntity){
                             viewItemEntity.getApproveDate(),
                             viewItemEntity.getBranchNo(),
                             viewItemEntity.getBarcode(),
+                            viewItemEntity.getItemtypeid(),
+                            viewItemEntity.getHouseid(),
                             viewItemEntity.getItemId()));
                 }else {
                     response.setDataResponse(itemEntityRepository.updateItem(
@@ -96,6 +98,8 @@ public DataResponse saveItem(ItemEntity viewItemEntity){
                             viewItemEntity.getApproveDate(),
                             viewItemEntity.getBranchNo(),
                             viewItemEntity.getBarcode(),
+                            viewItemEntity.getItemtypeid(),
+                            viewItemEntity.getHouseid(),
                             viewItemEntity.getItemId()));
                 }
             if(response.getDataResponse() != null){

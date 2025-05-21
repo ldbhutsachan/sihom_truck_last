@@ -33,7 +33,9 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             "i.approve_by = :approveBy," +
             " i.approve_date = :approveDate," +
             " i.branch_no = :branchNo," +
-            " i.barcode = :barcode " +
+            " i.barcode = :barcode, " +
+            " i.itemtypeid = :itemtypeid, " +
+            " i.houseid = :houseid " +
             "WHERE i.item_id = :itemId",nativeQuery = true)
     int updateItem(
             Integer brandId,
@@ -53,6 +55,8 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             Date approveDate,
             Integer branchNo,
             String barcode,
+            Integer itemtypeid,
+            Integer houseid,
             Long itemId
     );
  @Modifying
@@ -73,7 +77,9 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             "i.approve_by = :approveBy," +
             " i.approve_date = :approveDate," +
             " i.branch_no = :branchNo," +
-            " i.barcode = :barcode " +
+            " i.barcode = :barcode, " +
+            " i.itemtypeid = :itemtypeid, " +
+            " i.houseid = :houseid " +
             "WHERE i.item_id = :itemId",nativeQuery = true)
     int updateItemNoImage(
             Integer brandId,
@@ -92,7 +98,22 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             Date approveDate,
             Integer branchNo,
             String barcode,
+            Integer itemtypeid,
+            Integer houseid,
             Long itemId
     );
 
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE item_inventory i SET " +
+            "i.unit =i.unit + :unit, " +
+            "i.qty =i.qty + :qty," +
+            "i.price = :price "+
+            "WHERE i.item_id =:itemId ",nativeQuery = true)
+    int updateStockInItem(
+            Float unit,
+            Integer qty,
+            Float price,
+            Integer itemId
+    );
 }
