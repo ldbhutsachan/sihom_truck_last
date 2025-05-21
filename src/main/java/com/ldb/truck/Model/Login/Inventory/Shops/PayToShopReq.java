@@ -12,7 +12,7 @@ import lombok.Setter;
 public class PayToShopReq {
     private String pocode;
     private String total;
-    private Double paid;
+    private String paid;
     private String tid;
     private String toKen;
     private String branch;

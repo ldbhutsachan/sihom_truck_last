@@ -1,6 +1,5 @@
-package com.ldb.truck.Model.Login.Inventory.Old_inventory;
+package com.ldb.truck.Entity.Brand;
 
-import com.ldb.truck.Model.Login.Inventory.Fix.FixModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +11,8 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OldInventoryRes {
+public class BrandResponse {
     private String status;
     private String message;
-    private List<OldInventoryModel> data;
+    private List<BrandEntity> data;
 }

@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Map;
 
 @Setter
 @Getter
@@ -20,6 +19,4 @@ public class ShowOfferPaper {
     private List<OfferPaperModelFaso> data;
     private sumFooterGroupOfferPaper sumFooter;
     private sumFooterGroupOfferPaper_Paid_Credit sumFooter_Credit;
-    private Map<String, String> currencyTotals;
-
 }

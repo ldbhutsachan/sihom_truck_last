@@ -9,11 +9,8 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReportstockReq {
-    private String startDate;
-    private String endDate;
-    private String item_id;
-    private String toKen;
-    private String branch;
-    private String userId;
+public class ReportstockModel2 {
+    private Double qty_stock2,yodyokma2;
+    private String item_name2,img2;
+
 }

@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Map;
 
 @Setter
 @Getter
@@ -17,8 +16,7 @@ import java.util.Map;
 public class ReportstockRes {
     private String status;
     private String message;
-    private List<ReportstockModelNew> data;
-    private Map<String, String> AmountTotalsByCurrency;
-    private Map<String,Map<String, String>> QtyTotalsByUnit;
-
+    private List<ReportstockModel> data;
+    private sumFooterGroup sumFooter;
+    private sumFooterGroup2 sumFooter2;
 }

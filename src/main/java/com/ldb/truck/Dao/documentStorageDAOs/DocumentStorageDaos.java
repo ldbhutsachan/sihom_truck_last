@@ -715,8 +715,7 @@ public int InsertResultOfSurveyDAOs (DataHoleReq dataHoleReq) throws ParseExcept
     public List<DocumentStorageModel> listDocDAOs (DocumentStorageReq documentStorageReq) {
         String sql;
         try{
-            if (documentStorageReq.getToKen() != null && (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF"))){
-//            if (documentStorageReq.getToKen() != null && (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF") || documentStorageReq.getToKen().equals("KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue") )){
+            if (documentStorageReq.getToKen() != null && (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF") || documentStorageReq.getToKen().equals("KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue") )){
                 if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("in"))
                 {
                     sql = "select * from V_DOC WHERE BOUND='in'";
@@ -736,32 +735,6 @@ public int InsertResultOfSurveyDAOs (DataHoleReq dataHoleReq) throws ParseExcept
                 {
                     sql = "select * from V_DOC";
 
-                    log.info("SQL:" + sql);
-                }else {
-                    sql = "select * from V_DOC where saveById='"+documentStorageReq.getUserIdoffinanceial()+"'";
-                    log.info("SQL:" + sql);
-                }
-            }
-            else if (documentStorageReq.getToKen() != null && (documentStorageReq.getToKen().equals("KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue") )){
-
-                if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("in"))
-                {
-                    sql = "select * from V_DOC WHERE BOUND='in' AND TOKEN='"+documentStorageReq.getToKen()+"'";
-                    log.info("SQL in bound:" + sql);
-                }
-                else if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("out"))
-                {
-                    sql = "select * from V_DOC WHERE BOUND='"+documentStorageReq.getBound()+"'AND TOKEN='"+documentStorageReq.getToKen()+"'";
-                    log.info("SQL out bound:" + sql);
-                }
-                else if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("inside"))
-                {
-                    sql = "select * from V_DOC WHERE inside='inside' AND TOKEN='"+documentStorageReq.getToKen()+"'";
-                    log.info("SQL out bound:" + sql);
-                }
-                else if(documentStorageReq.getUserIdoffinanceial() == null || documentStorageReq.getUserIdoffinanceial().isEmpty())
-                {
-                    sql = "select * from V_DOC WHERE TOKEN='"+documentStorageReq.getToKen()+"'";
                     log.info("SQL:" + sql);
                 }else {
                     sql = "select * from V_DOC where saveById='"+documentStorageReq.getUserIdoffinanceial()+"'";

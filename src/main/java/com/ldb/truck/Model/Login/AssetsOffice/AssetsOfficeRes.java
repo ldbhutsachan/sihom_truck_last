@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -19,5 +18,4 @@ public class AssetsOfficeRes {
     private String message;
     private List<AssetsOfficeModel> data;
     private sumFooterGroupAsset resFooter;
-    private Map<String, String> currencyTotals;
 }
