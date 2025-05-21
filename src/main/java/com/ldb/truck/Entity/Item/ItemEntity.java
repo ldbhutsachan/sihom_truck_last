@@ -1,10 +1,7 @@
 package com.ldb.truck.Entity.Item;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.type.CurrencyType;
-
 import javax.persistence.*;
 import java.util.Date;
 @Getter
@@ -73,4 +70,12 @@ public class ItemEntity {
 
     @Column(name = "branch_no", nullable = false)
     private Integer branchNo;
+
+    @Column(name = "itemtypeid", nullable = false)
+    private Integer itemtypeid;
+
+    @Column(name = "houseid", nullable = false)
+    private Integer houseid;
+
+
 }
