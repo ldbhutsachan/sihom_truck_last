@@ -1,9 +1,6 @@
 package com.ldb.truck.Repository;
 
-import com.ldb.truck.Entity.Item.ItemEntity;
 import com.ldb.truck.Entity.Item.viewItemEntity;
-import com.ldb.truck.Entity.PlaceStock.PlaceStockEntity;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

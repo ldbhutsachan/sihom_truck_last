@@ -1,14 +1,20 @@
-package com.ldb.truck.Entity.Stock;
+package com.ldb.truck.Entity.OrderItem;
 
 import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
-
 @Data
 @Entity
-@Table(name = "v_stock")
-public class StockTxnEntity {
+@Table(name = "order_item_details")
+public class OrderItemEntity {
+
+
+//    @Column(name = "acceptdate", length = 200)
+//    private Date acceptdate;
+//
+//    @Column(name = "acceptby", length = 200)
+//    private String acceptby;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,17 +24,11 @@ public class StockTxnEntity {
     @Column(name = "bill_no", length = 50, nullable = true)
     private String billNo;
 
-    @Column(name = "stockno", length = 50, nullable = true)
-    private String stockno;
-
     @Column(name = "barcode", length = 50, nullable = true)
     private String barcode;
 
     @Column(name = "item_id", nullable = false)
     private Integer itemId;
-
-    @Column(name = "item_name", length = 255)
-    private String itemName;
 
     @Column(name = "unit", precision = 10, scale = 2)
     private Float unit;
@@ -43,10 +43,10 @@ public class StockTxnEntity {
     private Integer exchangeRate;
 
     @Column(name = "qty")
-    private Double qty;
+    private Integer qty;
 
     @Column(name = "price")
-    private Double price;
+    private Float price;
 
     @Column(name = "saveby", length = 200)
     private String saveBy;
@@ -69,48 +69,9 @@ public class StockTxnEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Date approveDate;
 
-    @Column(name = "stkh_id")
-    private Integer stkhId;
+    @Column(name = "status", length = 200)
+    private String status;
 
     @Column(name = "token")
     private String toKen;
-
-    @Column(name = "bname", length = 200)
-    private String branchName;
-
-    @Column(name = "tel", length = 50)
-    private String branchTel;
-
-    @Column(name = "brandid")
-    private Integer brandId;
-
-    @Column(name = "brand_name", length = 255)
-    private String brandName;
-
-    @Column(name = "itemtypeid")
-    private Integer itemtypeId;
-
-    @Column(name = "itemtype_name", length = 255)
-    private String itemTypeName;
-
-    @Column(name = "khid")
-    private Integer khId;
-
-    @Column(name = "khno", length = 50)
-    private String khNo;
-
-    @Column(name = "khname", length = 255)
-    private String khName;
-
-    @Column(name = "sole")
-    private String sole;
-
-    @Column(name = "solestep")
-    private String soleStep;
-
-    @Column(name = "blockno", length = 50)
-    private String blockNo;
-
-    @Column(name = "status", length = 200)
-    private String status;
 }
