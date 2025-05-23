@@ -1,13 +1,15 @@
-package com.ldb.truck.Entity.OrderItem;
+package com.ldb.truck.Entity.RequestItem;
 
 import lombok.Data;
+import lombok.Getter;
 
 import javax.persistence.*;
 import java.util.Date;
+
 @Data
 @Entity
-@Table(name = "order_item_details")
-public class OrderItemEntity {
+@Table(name = "request_item_details")
+public class RequestItemEbtity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,4 +69,14 @@ public class OrderItemEntity {
 
     @Column(name = "token")
     private String toKen;
+
+    @Column(name = "headerno")
+    private String headerNo;
+
+    @Column(name = "footerno")
+    private String footerNo;
+
+    @Column(name = "note")
+    private String note;
+
 }

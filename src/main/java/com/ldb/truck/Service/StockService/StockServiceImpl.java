@@ -3,6 +3,9 @@ package com.ldb.truck.Service.StockService;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.Item.ItemEntity;
 import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
+import com.ldb.truck.Entity.RequestItem.RequestItemDetailsRes;
+import com.ldb.truck.Entity.RequestItem.RequestItemEbtity;
+import com.ldb.truck.Entity.RequestItem.RequestItemHeader;
 import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Pay.PrintBillPayment;
@@ -25,6 +28,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class StockServiceImpl {
+    @Autowired
+    RequestItemRepository requestItemRepository;
+    @Autowired
+    RequestTxnRepository requestTxnRepository;
     @Autowired ItemEntityRepository itemEntityRepository;
     @Autowired OrderTxnEntityRepository orderTxnEntityRepository;
     @Autowired OrderDetailsRepository orderDetailsRepository;
@@ -574,6 +581,201 @@ public class StockServiceImpl {
                 groupStockItemHeaders.add(groupHeader);
                 List<OrderItemEntity> groupListData = new ArrayList<>();
                 for(OrderItemEntity listStockTxn :  listData){
+                    if(listStockTxn.getBillNo().equals(bill)){
+                        groupListData.add(listStockTxn);
+                    }
+                    groupHeader.setDetails(groupListData);
+                }
+            }
+            response.setDataResponse(groupStockItemHeaders);
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Data not found");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Data");
+        }
+        return response;
+    }
+
+
+    //*****request data from branch
+    public DataResponse saveRequestItem(RequestItemEbtity stockItemDetailsEntity, String userId){
+        DataResponse response = new DataResponse();
+        try {
+            RequestItemEbtity entity = getRequestItemEntity(stockItemDetailsEntity, userId);
+            response.setDataResponse(requestItemRepository.save(entity));
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Can't Save stock Details");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Stock Data");
+        }
+        return response;
+    }
+    private static RequestItemEbtity getRequestItemEntity(RequestItemEbtity stockItemDetailsEntity, String userId) {
+        RequestItemEbtity entity = new RequestItemEbtity();
+        entity.setBillNo(stockItemDetailsEntity.getBillNo());
+        entity.setBarcode(stockItemDetailsEntity.getBarcode());
+        entity.setItemId(stockItemDetailsEntity.getItemId());
+        entity.setUnit(stockItemDetailsEntity.getUnit());
+        entity.setSize(stockItemDetailsEntity.getSize());
+        entity.setCurrency(stockItemDetailsEntity.getCurrency());
+        entity.setExchangeRate(stockItemDetailsEntity.getExchangeRate());
+        entity.setQty(stockItemDetailsEntity.getQty());
+        entity.setPrice(stockItemDetailsEntity.getPrice());
+        entity.setSaveBy(userId);
+        entity.setSaveDate(new Date());
+        entity.setToKen(stockItemDetailsEntity.getToKen());
+        entity.setStatus("wait");
+        return entity;
+    }
+
+    public DataResponse updateRequestItem(RequestItemEbtity stockItemDetailsEntity,String userId){
+        DataResponse response = new DataResponse();
+        try {
+            response.setDataResponse(requestItemRepository.updateStockItemDetails(
+                    stockItemDetailsEntity.getBillNo(),
+                    stockItemDetailsEntity.getBarcode(),
+                    stockItemDetailsEntity.getItemId(),
+                    stockItemDetailsEntity.getUnit(),
+                    stockItemDetailsEntity.getSize(),
+                    stockItemDetailsEntity.getCurrency(),
+                    stockItemDetailsEntity.getExchangeRate(),
+                    stockItemDetailsEntity.getQty(),
+                    stockItemDetailsEntity.getPrice(),
+                    userId,
+                    new Date(),
+                    "wait",
+                    stockItemDetailsEntity.getHeaderNo(),
+                    stockItemDetailsEntity.getFooterNo(),
+                    stockItemDetailsEntity.getNote(),
+                    stockItemDetailsEntity.getDetailId()
+            ));
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Can't Save request item Details");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error request item Data");
+        }
+        return response;
+    }
+
+    @Transactional
+    public DataResponse approveRequestItem(StockItemDetailsReq stockItemDetailsReq) {
+        DataResponse response = new DataResponse();
+        String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+        try {
+            int updatedRows = requestItemRepository.approveRequestItem(
+                    stockItemDetailsReq.getUserId(),
+                    new Date(),
+                    stockItemDetailsReq.getStatus(),
+                    detailIdsStr
+            );
+            if (updatedRows > 0) {
+                response.setStatus("00");
+                response.setMessage("request items approve successfully.");
+            } else {
+                response.setStatus("05");
+                response.setMessage("No request items were approved.");
+            }
+        } catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error while updating request details.");
+        }
+        return response;
+    }
+
+    public RequestItemDetailsRes getRequestItem(String billNo, String role, String userName, String status){
+        RequestItemDetailsRes response = new RequestItemDetailsRes();
+        List<RequestItemHeader> groupStockItemHeaders = new ArrayList<>();
+        List<RequestTxnEntity> listData = new ArrayList<>();
+        RequestItemHeader groupHeader = new RequestItemHeader();
+        try {
+            if("ADMIN".equals(role)){
+                listData = requestTxnRepository.getStockByBillNoAdmin(status);
+            }else {
+                listData = requestTxnRepository.getStockByBillByUser(userName,status);
+            }
+            List<String> billNoList = listData.stream()
+                    .map(RequestTxnEntity::getBillNo)
+                    .distinct()
+                    .collect(Collectors.toList());
+            for (String bill : billNoList){
+                groupHeader = new RequestItemHeader();
+                groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getBillNo).findFirst().orElse(""));
+                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getSaveDate).findFirst()));
+                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getQty).collect(Collectors.summingInt(Integer::intValue)));
+                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getPrice).collect(Collectors.summingDouble(Double::doubleValue)));
+                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getStatus).findFirst().orElse(""));
+                groupStockItemHeaders.add(groupHeader);
+                List<RequestTxnEntity> groupListData = new ArrayList<>();
+                for(RequestTxnEntity listStockTxn :  listData){
+                    if(listStockTxn.getBillNo().equals(bill)){
+                        groupListData.add(listStockTxn);
+                    }
+                    groupHeader.setDetails(groupListData);
+                }
+            }
+            response.setDataResponse(groupStockItemHeaders);
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Data not found");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Data");
+        }
+        return response;
+    }
+
+    public RequestItemDetailsRes getRequestItemReport(StockRequest stockRequest, String userName,String role){
+        RequestItemDetailsRes response = new RequestItemDetailsRes();
+        List<RequestItemHeader> groupStockItemHeaders = new ArrayList<>();
+        List<RequestTxnEntity> listData = new ArrayList<>();
+        RequestItemHeader groupHeader = new RequestItemHeader();
+        try {
+            String startDate = stockRequest.getStartDate();
+            String endDate = stockRequest.getEndDate();
+            String status = stockRequest.getStatus();
+            if(!"ALL".equals(status)) {
+                listData = requestTxnRepository.getRequestReport(startDate, endDate, status);
+            }else {
+                listData = requestTxnRepository.getRequestReportNoStatus(startDate, endDate);
+            }
+            List<String> billNoList = listData.stream()
+                    .map(RequestTxnEntity::getBillNo)
+                    .distinct()
+                    .collect(Collectors.toList());
+            for (String bill : billNoList){
+                groupHeader = new RequestItemHeader();
+                groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getBillNo).findFirst().orElse(""));
+                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getSaveDate).findFirst()));
+                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getQty).collect(Collectors.summingInt(Integer::intValue)));
+                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getPrice).collect(Collectors.summingDouble(Double::doubleValue)));
+                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getStatus).findFirst().orElse(""));
+                groupStockItemHeaders.add(groupHeader);
+                List<RequestTxnEntity> groupListData = new ArrayList<>();
+                for(RequestTxnEntity listStockTxn :  listData){
                     if(listStockTxn.getBillNo().equals(bill)){
                         groupListData.add(listStockTxn);
                     }

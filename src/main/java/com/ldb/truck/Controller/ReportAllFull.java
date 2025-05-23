@@ -1,8 +1,10 @@
 package com.ldb.truck.Controller;
 
+import com.ldb.truck.Entity.Stock.StockRequest;
 import com.ldb.truck.Model.Login.Report.*;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRes;
+import com.ldb.truck.Model.ReportAllStock.ReportAllStockRes;
 import com.ldb.truck.Service.ReportAllService.ReportAllService;
 import com.ldb.truck.Service.ReportStaffService.ReportStaffService;
 import com.ldb.truck.Service.VicicleFooterService.VicicleFooterService;
@@ -169,4 +171,19 @@ public ShowOilPaidRes ShowTotalOilPaid (@RequestBody ReportAllReq reportAllReq){
     return result;
 }
 
+//***
+@CrossOrigin(origins = "*")
+@PostMapping("/reportDetailDailyStock.service")
+public ReportAllStockRes reportAllService (@RequestBody StockRequest reportAllReq){
+    ReportAllStockRes result = new ReportAllStockRes();
+    try {
+        result = reportAllService.getReportDetailDailyStock(reportAllReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Error Exception");
+        return result;
+    }
+    return result;
+}
 }

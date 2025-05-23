@@ -2,6 +2,8 @@ package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
+import com.ldb.truck.Entity.RequestItem.RequestItemDetailsRes;
+import com.ldb.truck.Entity.RequestItem.RequestItemEbtity;
 import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
@@ -274,7 +276,6 @@ public class StockProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
     @CrossOrigin(origins = "*")
     @PostMapping("/getReportOrderItem.service")
     public ResponseEntity<?> getReportOrderItem (@RequestBody StockRequest stockRequest ){
@@ -291,7 +292,107 @@ public class StockProductController {
             response.setStatus("EE");
             response.setMessage("Data Error !!");
         }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/saveRequestItem.service")
+    public ResponseEntity<?> saveRequestItem(@RequestBody RequestItemEbtity stockItemDetailsEntity){
+        DataResponse response  = new DataResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = userProfiles.get(0).getUserName();
+        try {
+            response = stockService.saveRequestItem(stockItemDetailsEntity,userId);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateRequestItem.service")
+    public ResponseEntity<?> updateRequestItem (@RequestBody RequestItemEbtity stockItemDetailsEntity){
+        DataResponse response  = new DataResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = userProfiles.get(0).getUserName();
+        try {
+            response = stockService.updateRequestItem(stockItemDetailsEntity,userId);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/approveRequestItem.service")
+    public ResponseEntity<?> approveRequestItem(@RequestBody StockItemDetailsReq stockItemDetailsReq){
+        DataResponse response  = new DataResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = userProfiles.get(0).getUserName();
+        StockItemDetailsReq data = new StockItemDetailsReq();
+        data.setUserId(userId);
+        data.setToKen(stockItemDetailsReq.getToKen());
+        data.setDetailId(stockItemDetailsReq.getDetailId());
+        try {
+
+            response = stockService.approveRequestItem(data);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getRequestItem.service")
+    public ResponseEntity<?> getRequestItem (@RequestBody RequestItemEbtity stockItemDetailsEntity){
+        RequestItemDetailsRes response  = new RequestItemDetailsRes();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = userProfiles.get(0).getUserName();
+        String role = userProfiles.get(0).getRole();
+        Integer deId = stockItemDetailsEntity.getDetailId();
+        String billNo = stockItemDetailsEntity.getBillNo();
+        String status = stockItemDetailsEntity.getStatus();
+        try {
+            response = stockService.getRequestItem(billNo,role,userId,status);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getRequestItemReport.service")
+    public ResponseEntity<?> getRequestItemReport (@RequestBody StockRequest stockRequest ){
+        RequestItemDetailsRes response  = new RequestItemDetailsRes();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockRequest.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = userProfiles.get(0).getUserName();
+        String role = userProfiles.get(0).getRole();
+        try {
+            response = stockService.getRequestItemReport(stockRequest,userId,role);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

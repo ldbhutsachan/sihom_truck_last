@@ -1,4 +1,4 @@
-package com.ldb.truck.Entity.Stock;
+package com.ldb.truck.Model.ReportAllStock;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,9 +11,9 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class StockItemDetailsReq {
-    String toKen;
-    String userId;
-    String status;
-    List<Long> detailId;
+public class ReportAllStockRes {
+    private String status;
+    private String message;
+    public List<ReportAllStock> data;
+
 }
