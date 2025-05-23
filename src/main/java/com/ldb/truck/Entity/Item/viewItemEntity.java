@@ -109,6 +109,6 @@ public class viewItemEntity {
     @Column(name = "itemtype_Name", nullable = false)
     private String itemtype_Name;
 
-    @Column(name = "toKen", nullable = false)
+    @Column(name = "token", nullable = false)
     private String toKen;
 }

@@ -27,27 +27,6 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class MediaUploadServiceImpl implements MediaUploadService {
-//    @Value("${media.upload.url}")
-//    private String uploadURL;
-////    @Value("${media.upload.path}")
-////    private String uploadPath;
-//    @Value("${media.upload.url_pdf}")
-//    private String uploadURLPDF;
-//    //====================staff
-//    @Value("${media.upload.url.staff}")
-//    private String uploadURLStaff;
-//    @Value("${media.upload.path.staff}")
-//    private String uploadPathStaff;
-//    @Value("${media.upload.url_pdf.staff}")
-//    private String uploadURLPDFStaff;
-//    //====================car
-//    @Value("${media.upload.url.car}")
-//    private String uploadURLCar;
-//    @Value("${media.upload.path.car}")
-//    private String uploadPathCar;
-//    @Value("${media.upload.url_pdf.car}")
-//    private String uploadURLPDFCar;
-
     @Value("${upload.directory.batery}")
     private String uploadDirectory;
 

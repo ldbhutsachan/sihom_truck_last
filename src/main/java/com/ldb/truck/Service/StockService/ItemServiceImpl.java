@@ -16,6 +16,7 @@ public class ItemServiceImpl {
     ItemEntityRepository itemEntityRepository;
     public DataResponse getViewItemInventory(viewItemEntity viewItemEntity,String userName){
         DataResponse response = new DataResponse();
+
         try {
             if(viewItemEntity.getItemId() != null){
                 response.setDataResponse(viewItemEntityRepository.getItemByItemId(viewItemEntity.getItemId(),userName));

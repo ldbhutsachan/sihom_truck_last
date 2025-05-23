@@ -22,13 +22,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class TruckService {
-
     @Autowired
     ProfileDao profileDao;
     private static final Logger logger = LogManager.getLogger(TruckService.class);
     @Autowired
     ImpTruckDao impTruckDao;
-
     public TruckRes getAllTruck (){
         List<TruckOut> listTruck = new ArrayList<>();
         TruckRes result = new TruckRes();
