@@ -3,8 +3,10 @@ package com.ldb.truck.Service.StockService;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.Item.ItemEntity;
 import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
+import com.ldb.truck.Entity.OrderItem.OrderItemTxnEntity;
 import com.ldb.truck.Entity.RequestItem.RequestItemDetailsRes;
 import com.ldb.truck.Entity.RequestItem.RequestItemEbtity;
+import com.ldb.truck.Entity.RequestItem.RequestItemEntity;
 import com.ldb.truck.Entity.RequestItem.RequestItemHeader;
 import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Model.DataResponse;
@@ -28,6 +30,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class StockServiceImpl {
+    @Autowired
+    RequestItemEntityRepository requestItemEntityRepository;
+    @Autowired
+    OrderItemTxnEntityRepository orderItemTxnEntityRepository;
+    @Autowired
+    RequestGenKeyRepository requestGenKeyRepository;
+    @Autowired
+    OrderGenKeyRepository orderGenKeyRepository;
     @Autowired
     RequestItemRepository requestItemRepository;
     @Autowired
@@ -377,6 +387,12 @@ public class StockServiceImpl {
             OrderItemEntity entity = getStockItemDetailsEntity(stockItemDetailsEntity, userId);
             response.setDataResponse(orderTxnEntityRepository.save(entity));
             if(response.getDataResponse() != null){
+                //=======store order txn ===========
+                OrderItemTxnEntity entityOrder = new OrderItemTxnEntity();
+                entityOrder.setOrder_item_id(entity.getBillNo());
+                entityOrder.setSaveBy(entityOrder.getSaveBy());
+                entityOrder.setSaveDate(entity.getSaveDate());
+                orderItemTxnEntityRepository.save(entityOrder);
                 response.setStatus("00");
                 response.setMessage("Success");
             }else {
@@ -610,6 +626,12 @@ public class StockServiceImpl {
             RequestItemEbtity entity = getRequestItemEntity(stockItemDetailsEntity, userId);
             response.setDataResponse(requestItemRepository.save(entity));
             if(response.getDataResponse() != null){
+                //====if data store then insert data to request item as below first
+                RequestItemEntity requestEntity = new RequestItemEntity();
+                requestEntity.setBillNo(stockItemDetailsEntity.getBillNo());
+                requestEntity.setSaveDate(stockItemDetailsEntity.getSaveDate());
+                requestEntity.setSaveBy(stockItemDetailsEntity.getSaveBy());
+                requestItemEntityRepository.save(requestEntity);
                 response.setStatus("00");
                 response.setMessage("Success");
             }else {
@@ -636,6 +658,9 @@ public class StockServiceImpl {
         entity.setSaveBy(userId);
         entity.setSaveDate(new Date());
         entity.setToKen(stockItemDetailsEntity.getToKen());
+        entity.setFooterNo(stockItemDetailsEntity.getFooterNo());
+        entity.setHeaderNo(stockItemDetailsEntity.getHeaderNo());
+        entity.setNote(stockItemDetailsEntity.getNote());
         entity.setStatus("wait");
         return entity;
     }
@@ -701,6 +726,44 @@ public class StockServiceImpl {
         }
         return response;
     }
+    public DataResponse getRequestKey(){
+        //RequestGenKeyRepository
+        DataResponse response = new DataResponse();
+        try {
+            response.setDataResponse(requestGenKeyRepository.findAll());
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Data not found");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Data");
+        }
+        return response;
+    }
+public DataResponse checkKeyOrder(){
+        //RequestGenKeyRepository
+        DataResponse response = new DataResponse();
+        try {
+            response.setDataResponse(orderGenKeyRepository.findAll());
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Data not found");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Data");
+        }
+        return response;
+    }
+
+    //save request item when have insert data
 
     public RequestItemDetailsRes getRequestItem(String billNo, String role, String userName, String status){
         RequestItemDetailsRes response = new RequestItemDetailsRes();

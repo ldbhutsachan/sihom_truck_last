@@ -185,5 +185,18 @@ public ReportAllStockRes reportAllService (@RequestBody StockRequest reportAllRe
         return result;
     }
     return result;
+}@CrossOrigin(origins = "*")
+@PostMapping("/reportTxnDailyStock.service")
+public ReportAllStockRes reportTxnDailyStock (@RequestBody StockRequest reportAllReq){
+    ReportAllStockRes result = new ReportAllStockRes();
+    try {
+        result = reportAllService.getTxnStock(reportAllReq);
+    }catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Error Exception");
+        return result;
+    }
+    return result;
 }
 }

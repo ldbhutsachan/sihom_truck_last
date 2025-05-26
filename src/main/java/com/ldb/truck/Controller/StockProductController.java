@@ -395,4 +395,32 @@ public class StockProductController {
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/getRequestKey.service")
+    public ResponseEntity<?> getRequestKey (){
+        DataResponse response  = new DataResponse();
+        try {
+            response = stockService.getRequestKey();
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/checkKeyOrder.service")
+    public ResponseEntity<?> checkKeyOrder (){
+        DataResponse response  = new DataResponse();
+        try {
+            response = stockService.checkKeyOrder();
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //
 }

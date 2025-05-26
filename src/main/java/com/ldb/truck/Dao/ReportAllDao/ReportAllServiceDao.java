@@ -816,11 +816,72 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             sb.append(endDateCon);
             sb.append(group);
             String query = sb.toString();
+            log.info("query sql:"+query);
             return EBankJdbcTemplate.query(query, new RowMapper<ReportAllStock>() {
                 @Override
                 public ReportAllStock mapRow(ResultSet rs, int rowNum) throws SQLException {
                     ReportAllStock tr = new ReportAllStock();
                     tr.setItemName(rs.getString("item_name"));
+                    tr.setAmt(rs.getInt("amt"));
+                    tr.setPrice(rs.getString("price"));
+                    tr.setTotal(rs.getString("total"));
+                    tr.setAmtIn(rs.getInt("amt_in") != 0 ? rs.getInt("amt_in") : 0);
+                    tr.setPriceIn(rs.getString("price_in") != null ? rs.getString("price_in") : "0");
+                    tr.setTotalIn(rs.getString("total_in") != null ? rs.getString("total_in") : "0");
+                    tr.setAmtOut(rs.getInt("amt_out") != 0 ? rs.getInt("amt_out") : 0);
+                    tr.setPriceOut(rs.getString("price_out") != null ? rs.getString("price_out") : "0");
+                    tr.setTotalOut(rs.getString("total_out") != null ? rs.getString("total_out") : "0");
+                    return tr;
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public List<ReportAllStock> getTxnStock(StockRequest stockRequest){
+        String startDate = stockRequest.getStartDate();
+        String endDate = stockRequest.getEndDate();
+        String group = "\ngroup by item_name,c.headerno,c.footerno,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
+        String startDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
+        String endDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
+        String tableCon = "\n  from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
+                "left join request_item_details c on a.item_id=c.item_id \n" +
+                "left join TB_HEADER_TRUCK d on c.headerno=d.H_VICIVLE_NUMBER\n" +
+                "left join TB_FOOTER_TRUCH e on c.footerno = e.F_CARD_NO\n" +
+                "where 1=1 ";
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("select  a.item_name,c.headerno,c.footerno,to_char(b.savedate,'yyyy-mm-dd') txndateIn,\n" +
+                    "to_char(c.savedate,'yyyy-mm-dd') txndateOut,\n" +
+                    "   SUM(a.unit) AS amt,\n" +
+                    "    FORMAT(SUM(a.price), '###,###,###') AS price,\n" +
+                    "    FORMAT(SUM(a.unit * a.price), '###,###,###') AS total,\n" +
+                    "    \n" +
+                    "    SUM(b.unit) AS amt_in,\n" +
+                    "    FORMAT(SUM(b.price), '###,###,###') AS price_in,\n" +
+                    "    FORMAT(SUM(b.unit * b.price), '###,###,###') AS total_in,\n" +
+                    "    \n" +
+                    "    SUM(c.unit) AS amt_out,\n" +
+                    "    FORMAT(SUM(c.price), '###,###,###') AS price_out,\n" +
+                    "    FORMAT(SUM(c.unit * c.price), '###,###,###') AS total_out ");
+            sb.append(tableCon);
+            sb.append(startDateCon);
+            sb.append(endDateCon);
+            sb.append(group);
+            String query = sb.toString();
+            log.info("query sql:"+query);
+            return EBankJdbcTemplate.query(query, new RowMapper<ReportAllStock>() {
+                @Override
+                public ReportAllStock mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ReportAllStock tr = new ReportAllStock();
+                    tr.setItemName(rs.getString("item_name"));
+
+                    tr.setHeaderNo(rs.getString("headerno"));
+                    tr.setFootNo(rs.getString("footerno"));
+                    tr.setTxnDateIn(rs.getString("txndateIn"));
+                    tr.setTotalOut(rs.getString("txndateOut"));
                     tr.setAmt(rs.getInt("amt"));
                     tr.setPrice(rs.getString("price"));
                     tr.setTotal(rs.getString("total"));

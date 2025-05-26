@@ -278,6 +278,24 @@ public ReportAllStockRes getReportDetailDailyStock(StockRequest stockRequest){
             resposne.setMessage("Error Data !!!");
         }
         return resposne;
+}public ReportAllStockRes getTxnStock(StockRequest stockRequest){
+    ReportAllStockRes resposne = new ReportAllStockRes();
+        try {
+            List<ReportAllStock> rsListData = reportStaffServiceDao.getTxnStock(stockRequest);
+            log.info("show info :"+rsListData.size());
+           if(rsListData.size() >= 1){
+                resposne.setStatus("00");
+                resposne.setMessage("Success");
+                resposne.setData(rsListData);
+            }else {
+                resposne.setStatus("05");
+                resposne.setMessage("Data Not Found !!");
+            }
+        }catch (Exception e){
+            resposne.setStatus("EE");
+            resposne.setMessage("Error Data !!!");
+        }
+        return resposne;
 }
 
 
