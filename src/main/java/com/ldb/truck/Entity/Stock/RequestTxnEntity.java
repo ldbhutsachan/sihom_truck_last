@@ -120,4 +120,7 @@ public class RequestTxnEntity {
     @Column(name = "footerno", length = 200)
     private String footerNo;
 
+    @Column(name = "total")
+    private Float total;
+
 }

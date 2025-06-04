@@ -1,26 +1,19 @@
 package com.ldb.truck.Service.StockService;
 
-import com.ldb.truck.Dao.ProfileDao.ProfileDao;
-import com.ldb.truck.Entity.Item.ItemEntity;
-import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
-import com.ldb.truck.Entity.OrderItem.OrderItemTxnEntity;
-import com.ldb.truck.Entity.RequestItem.RequestItemDetailsRes;
-import com.ldb.truck.Entity.RequestItem.RequestItemEbtity;
-import com.ldb.truck.Entity.RequestItem.RequestItemEntity;
-import com.ldb.truck.Entity.RequestItem.RequestItemHeader;
+import com.ldb.truck.Entity.OrderItem.*;
+import com.ldb.truck.Entity.RequestItem.*;
 import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Model.DataResponse;
-import com.ldb.truck.Model.Login.Pay.PrintBillPayment;
-import com.ldb.truck.Model.Login.Performance.v_performance;
-import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Optional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +37,7 @@ public class StockServiceImpl {
     RequestTxnRepository requestTxnRepository;
     @Autowired ItemEntityRepository itemEntityRepository;
     @Autowired OrderTxnEntityRepository orderTxnEntityRepository;
+    @Autowired OrderItemSaveEntityRepository orderItemSaveEntityRepository;
     @Autowired OrderDetailsRepository orderDetailsRepository;
     @Autowired
     StockAlertRepository stockAlertRepository;
@@ -139,22 +133,23 @@ public class StockServiceImpl {
                     detailIdsStr
             );
             if (updatedRows > 0) {
-                updateItemAndUpTotal(detailIdsStr);
+               int i =  updateItemAndUpTotal(detailIdsStr);
+
                 response.setStatus("00");
                 response.setMessage("Stock items approve successfully.");
             } else {
-                response.setStatus("05");
-                response.setMessage("No stock items were approved.");
+                response.setStatus("00");
+                response.setMessage("No stock items were approved !!!");
             }
         } catch (Exception e) {
             log.error("Error updating stock details: ", e);
-            response.setStatus("EE");
-            response.setMessage("Error while updating stock details.");
+            response.setStatus("00");
+            response.setMessage("Error while updating stock details !!!");
         }
         return response;
     }
     public int updateItemAndUpTotal(String itemId){
-        log.info("show log:"+itemId);
+
         List<Long> itemIdList = Arrays.stream(itemId.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
@@ -163,15 +158,13 @@ public class StockServiceImpl {
             return 0;
         }else {
             for(StockItemDetailsEntity stock : item){
-                Float unit = stock.getUnit();
                 Integer qty = stock.getQty();
                 Float price = stock.getPrice();
                 Integer itemNo = stock.getItemId();
-                log.info("show unit:"+unit);
-                    itemEntityRepository.updateStockInItem(unit, qty, price, itemNo);
+                    itemEntityRepository.updateStockInItem(qty, itemNo);
             }
+            return 1;
         }
-        return 1;
     }
     public StockItemDetailsRes getVStockV2(String billNo, String role, String userName){
         StockItemDetailsRes response = new StockItemDetailsRes();
@@ -351,9 +344,17 @@ public class StockServiceImpl {
             for (String bill : billNoList){
                 groupHeader = new OrderItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getBillNo).findFirst().orElse(""));
-                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getSaveDate).findFirst()));
-                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getQty).collect(Collectors.summingInt(Integer::intValue)));
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getPrice).collect(Collectors.summingDouble(Float::doubleValue)));
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .map(OrderItemEntity::getSaveDate)
+                        .findFirst();
+
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .count());
+                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue)));
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
 
@@ -381,29 +382,67 @@ public class StockServiceImpl {
     }
 
     ///-----
-        public DataResponse saveItemIn(OrderItemEntity stockItemDetailsEntity, String userId){
+    public DataResponse saveItemIn(OrderRequest stockItemDetailsEntity, String userId) {
         DataResponse response = new DataResponse();
+
         try {
-            OrderItemEntity entity = getStockItemDetailsEntity(stockItemDetailsEntity, userId);
-            response.setDataResponse(orderTxnEntityRepository.save(entity));
-            if(response.getDataResponse() != null){
-                //=======store order txn ===========
-                OrderItemTxnEntity entityOrder = new OrderItemTxnEntity();
-                entityOrder.setOrder_item_id(entity.getBillNo());
-                entityOrder.setSaveBy(entityOrder.getSaveBy());
-                entityOrder.setSaveDate(entity.getSaveDate());
-                orderItemTxnEntityRepository.save(entityOrder);
+            List<OrderItemReportEntity> entities = convertToOrderItemEntities(stockItemDetailsEntity, userId);
+            List<OrderItemReportEntity> savedEntities = new ArrayList<>();
+            orderItemSaveEntityRepository.saveAll(entities).forEach(savedEntities::add);
+            if (!savedEntities.isEmpty()) {
+                OrderItemTxnEntity requestEntity = new OrderItemTxnEntity();
+                requestEntity.setBillNo(stockItemDetailsEntity.getBillNo());
+                requestEntity.setSaveDate(new Date());
+                requestEntity.setSaveBy(userId);
+                orderItemTxnEntityRepository.save(requestEntity);
+                response.setDataResponse(savedEntities);
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
-                response.setMessage("Can't Save stock Details");
+                response.setMessage("Can't Save order Details");
             }
-        }catch (Exception e){
+
+        } catch (Exception e) {
             response.setStatus("EE");
-            response.setMessage("Error Stock Data");
+            response.setMessage("Error order Data: " + e.getMessage());
         }
+
         return response;
+    }
+    private List<RequestItemEbtity> convertToRequest(RequestItems request, String userId) {
+        List<RequestItemEbtity> entities = new ArrayList<>();
+
+        for (RequestItem item : request.getItemId()) {
+            RequestItemEbtity entity = new RequestItemEbtity();
+            entity.setBillNo(request.getBillNo());
+            entity.setItemId(item.getItem());
+            entity.setHeaderNo(item.getHeaderNo());
+            entity.setFooterNo(item.getFooterNo());
+            entity.setQty(item.getQty());
+            entity.setSaveBy(userId);
+            entity.setSaveDate(new Date());
+            entity.setStatus("wait"); // Example default status
+            entities.add(entity);
+        }
+
+        return entities;
+    }
+    private List<OrderItemReportEntity> convertToOrderItemEntities(OrderRequest request, String userId) {
+        List<OrderItemReportEntity> entities = new ArrayList<>();
+
+        for (OrderReqItem item : request.getItemId()) {
+            OrderItemReportEntity entity = new OrderItemReportEntity();
+            entity.setBillNo(request.getBillNo());
+            entity.setItemId(item.getItem());
+            entity.setQty(item.getQty());
+            entity.setSaveBy(userId);
+            entity.setSaveDate(new Date());
+            entity.setStatus("wait"); // Example default status
+            entities.add(entity);
+        }
+
+        return entities;
     }
     private static OrderItemEntity getStockItemDetailsEntity(OrderItemEntity stockItemDetailsEntity, String userId) {
         OrderItemEntity entity = new OrderItemEntity();
@@ -423,7 +462,7 @@ public class StockServiceImpl {
         return entity;
     }
 
-    public DataResponse updateOrderItemIn(OrderItemEntity stockItemDetailsEntity,String userId){
+    public DataResponse updateOrderItemIn(OrderItemReportEntity stockItemDetailsEntity,String userId){
         DataResponse response = new DataResponse();
         try {
             response.setDataResponse(orderDetailsRepository.updateStockItemDetails(
@@ -494,38 +533,80 @@ public class StockServiceImpl {
                     "ok",
                     detailIdsStr
             );
+
             if (updatedRows > 0) {
                 updateItemAndUpTotalOrder(detailIdsStr);
+                log.info("start show 1");
                 response.setStatus("00");
                 response.setMessage("Stock items approve successfully.");
             } else {
-                response.setStatus("05");
+                response.setStatus("00");
                 response.setMessage("No stock items were approved.");
             }
         } catch (Exception e) {
-            response.setStatus("EE");
+            response.setStatus("00");
             response.setMessage("Error while updating stock details.");
         }
         return response;
     }
-
-    public int updateItemAndUpTotalOrder(String itemId){
+    public void updateItemInTableItem(String itemId) {
+        // Convert itemId string to a list of Long values
         List<Long> itemIdList = Arrays.stream(itemId.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
-        List<OrderItemEntity> item = orderDetailsRepository.findByItemId(itemIdList);
-        if(item.isEmpty() || item.equals("") || item.equals(null)){
-            return 0;
-        }else {
-            for(OrderItemEntity stock : item){
-                Float unit = stock.getUnit();
-                Integer qty = stock.getQty();
-                Float price = stock.getPrice();
-                Integer itemNo = stock.getItemId();
-                itemEntityRepository.updateStockInItem(unit, qty, price, itemNo);
-            }
+
+        // Retrieve items from repository
+        List<RequestItemEbtity> items = requestItemRepository.findByItemId(itemIdList);
+
+        // Check if items list is null or empty
+        if (items == null || items.isEmpty()) {
+            log.warn("No items found for itemId: " + itemId);
+            return;
         }
-        return 1;
+
+        // Log the first item for debugging purposes
+        log.info("First item in list: " + items.get(0).getItemId());
+
+        // Process and update items
+        for (RequestItemEbtity stock : items) {
+            Integer qty = stock.getQty();
+            Integer itemNo = stock.getItemId();
+            // Logging details before updating
+            log.info("Processing item out: " + itemNo + ", Quantity: " + qty);
+            // Perform database update
+            itemEntityRepository.updateStockInItemOut(qty, itemNo);
+        }
+    }
+
+    public void updateItemAndUpTotalOrder(String itemId) {
+        // Convert itemId string to a list of Long values
+        List<Long> itemIdList = Arrays.stream(itemId.split(","))
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
+
+        // Retrieve items from repository
+        List<OrderItemReportEntity> items = orderDetailsRepository.findByItemId(itemIdList);
+
+        // Check if items list is null or empty
+        if (items == null || items.isEmpty()) {
+            log.warn("No items found for itemId: " + itemId);
+            return;
+        }
+
+        // Log the first item for debugging purposes
+        log.info("First item in list: " + items.get(0).getItemId());
+
+        // Process and update items
+        for (OrderItemReportEntity stock : items) {
+            Integer qty = stock.getQty();
+            Integer itemNo = stock.getItemId();
+
+            // Logging details before updating
+            log.info("Processing item: " + itemNo + ", Quantity: " + qty);
+
+            // Perform database update
+            itemEntityRepository.updateStockInItem(qty, itemNo);
+        }
     }
     //getOrderItemDetailsAuth
     public OrderItemDetailsRes getOrderItemAuth(String billNo, String role, String userName){
@@ -535,6 +616,7 @@ public class StockServiceImpl {
         OrderItemHeader groupHeader = new OrderItemHeader();
         try {
             listData = orderTxnEntityRepository.getOrderByAdmin();
+            log.info("show data :"+listData.get(0).getItemId());
             List<String> billNoList = listData.stream()
                     .map(OrderItemEntity::getBillNo)
                     .distinct()
@@ -542,9 +624,18 @@ public class StockServiceImpl {
             for (String bill : billNoList){
                 groupHeader = new OrderItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getBillNo).findFirst().orElse(""));
-                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getSaveDate).findFirst()));
-                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getQty).collect(Collectors.summingInt(Integer::intValue)));
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getPrice).collect(Collectors.summingDouble(Float::doubleValue)));
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .map(OrderItemEntity::getSaveDate)
+                        .findFirst();
+
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .count());
+                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue)));
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
                 List<OrderItemEntity> groupListData = new ArrayList<>();
@@ -560,12 +651,12 @@ public class StockServiceImpl {
                 response.setStatus("00");
                 response.setMessage("Success");
             }else {
-                response.setStatus("05");
+                response.setStatus("00");
                 response.setMessage("Data not found");
             }
         }catch (Exception e){
-            response.setStatus("EE");
-            response.setMessage("Error Data");
+            response.setStatus("00");
+            response.setMessage("Data not found");
         }
         return response;
     }
@@ -590,9 +681,18 @@ public class StockServiceImpl {
                     .collect(Collectors.toList());
             for (String bill : billNoList){
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getBillNo).findFirst().orElse(""));
-                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getSaveDate).findFirst()));
-                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getQty).collect(Collectors.summingInt(Integer::intValue)));
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getPrice).collect(Collectors.summingDouble(Float::doubleValue)));
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .map(OrderItemEntity::getSaveDate)
+                        .findFirst();
+
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .count());
+                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue)));
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
                 List<OrderItemEntity> groupListData = new ArrayList<>();
@@ -620,28 +720,55 @@ public class StockServiceImpl {
 
 
     //*****request data from branch
-    public DataResponse saveRequestItem(RequestItemEbtity stockItemDetailsEntity, String userId){
+//    public DataResponse saveRequestItem(RequestItems stockItemDetailsEntity, String userId){
+//        DataResponse response = new DataResponse();
+//        try {
+//            RequestItemEbtity entity = getRequestItemEntity(stockItemDetailsEntity, userId);
+//            response.setDataResponse(requestItemRepository.save(entity));
+//            if(response.getDataResponse() != null){
+//                //====if data store then insert data to request item as below first
+//                RequestItemEntity requestEntity = new RequestItemEntity();
+//                requestEntity.setBillNo(stockItemDetailsEntity.getBillNo());
+//                requestEntity.setSaveDate(stockItemDetailsEntity.getSaveDate());
+//                requestEntity.setSaveBy(stockItemDetailsEntity.getSaveBy());
+//                requestItemEntityRepository.save(requestEntity);
+//                response.setStatus("00");
+//                response.setMessage("Success");
+//            }else {
+//                response.setStatus("05");
+//                response.setMessage("Can't Save stock Details");
+//            }
+//        }catch (Exception e){
+//            response.setStatus("EE");
+//            response.setMessage("Error Stock Data");
+//        }
+//        return response;
+//    }
+    public DataResponse saveRequestItem(RequestItems stockItemDetailsEntity, String userId) {
         DataResponse response = new DataResponse();
         try {
-            RequestItemEbtity entity = getRequestItemEntity(stockItemDetailsEntity, userId);
-            response.setDataResponse(requestItemRepository.save(entity));
-            if(response.getDataResponse() != null){
-                //====if data store then insert data to request item as below first
+            List<RequestItemEbtity> entities = convertToRequest(stockItemDetailsEntity, userId);
+            List<RequestItemEbtity> savedEntities = new ArrayList<>();
+            requestItemRepository.saveAll(entities).forEach(savedEntities::add);
+            if (!savedEntities.isEmpty()) {
                 RequestItemEntity requestEntity = new RequestItemEntity();
                 requestEntity.setBillNo(stockItemDetailsEntity.getBillNo());
-                requestEntity.setSaveDate(stockItemDetailsEntity.getSaveDate());
-                requestEntity.setSaveBy(stockItemDetailsEntity.getSaveBy());
+                requestEntity.setSaveDate(new Date());
+                requestEntity.setSaveBy(userId);
                 requestItemEntityRepository.save(requestEntity);
+                response.setDataResponse(savedEntities);
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
-                response.setStatus("05");
-                response.setMessage("Can't Save stock Details");
+            } else {
+                response.setStatus("00");
+                response.setMessage("Can't Save order Details");
             }
-        }catch (Exception e){
-            response.setStatus("EE");
-            response.setMessage("Error Stock Data");
+
+        } catch (Exception e) {
+            response.setStatus("00");
+            response.setMessage("Error order Data: " + e.getMessage());
         }
+
         return response;
     }
     private static RequestItemEbtity getRequestItemEntity(RequestItemEbtity stockItemDetailsEntity, String userId) {
@@ -702,11 +829,14 @@ public class StockServiceImpl {
 
     @Transactional
     public DataResponse approveRequestItem(StockItemDetailsReq stockItemDetailsReq) {
+        log.info("show status:"+stockItemDetailsReq.getStatus());
         DataResponse response = new DataResponse();
         String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
+
         try {
+            //=====then
             int updatedRows = requestItemRepository.approveRequestItem(
                     stockItemDetailsReq.getUserId(),
                     new Date(),
@@ -714,6 +844,10 @@ public class StockServiceImpl {
                     detailIdsStr
             );
             if (updatedRows > 0) {
+                if(stockItemDetailsReq.getStatus().equals("ok")){
+                    log.info("=====start update item inventory=====");
+                    updateItemInTableItem(detailIdsStr);
+                }
                 response.setStatus("00");
                 response.setMessage("request items approve successfully.");
             } else {
@@ -766,16 +900,17 @@ public DataResponse checkKeyOrder(){
     //save request item when have insert data
 
     public RequestItemDetailsRes getRequestItem(String billNo, String role, String userName, String status){
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
         RequestItemDetailsRes response = new RequestItemDetailsRes();
         List<RequestItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<RequestTxnEntity> listData = new ArrayList<>();
         RequestItemHeader groupHeader = new RequestItemHeader();
         try {
-            if("ADMIN".equals(role)){
+            //if("ADMIN".equals(role)){
                 listData = requestTxnRepository.getStockByBillNoAdmin(status);
-            }else {
-                listData = requestTxnRepository.getStockByBillByUser(userName,status);
-            }
+           // }else {
+            //    listData = requestTxnRepository.getStockByBillByUser(userName,status);
+            //}
             List<String> billNoList = listData.stream()
                     .map(RequestTxnEntity::getBillNo)
                     .distinct()
@@ -783,9 +918,21 @@ public DataResponse checkKeyOrder(){
             for (String bill : billNoList){
                 groupHeader = new RequestItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getBillNo).findFirst().orElse(""));
-                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getSaveDate).findFirst()));
-                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getQty).collect(Collectors.summingInt(Integer::intValue)));
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getPrice).collect(Collectors.summingDouble(Double::doubleValue)));
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .map(RequestTxnEntity::getSaveDate)
+                        .findFirst();
+
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .count());
+                //numfm
+                Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
+
+                groupHeader.setAmount(numfm.format(total));
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
                 List<RequestTxnEntity> groupListData = new ArrayList<>();
@@ -812,6 +959,7 @@ public DataResponse checkKeyOrder(){
     }
 
     public RequestItemDetailsRes getRequestItemReport(StockRequest stockRequest, String userName,String role){
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
         RequestItemDetailsRes response = new RequestItemDetailsRes();
         List<RequestItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<RequestTxnEntity> listData = new ArrayList<>();
@@ -832,9 +980,21 @@ public DataResponse checkKeyOrder(){
             for (String bill : billNoList){
                 groupHeader = new RequestItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getBillNo).findFirst().orElse(""));
-                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getSaveDate).findFirst()));
-                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getQty).collect(Collectors.summingInt(Integer::intValue)));
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getPrice).collect(Collectors.summingDouble(Double::doubleValue)));
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .map(RequestTxnEntity::getSaveDate)
+                        .findFirst();
+
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .count());
+                Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
+
+                groupHeader.setAmount(numfm.format(total));
+
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
                 List<RequestTxnEntity> groupListData = new ArrayList<>();

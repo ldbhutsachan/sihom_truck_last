@@ -2,8 +2,12 @@ package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
+import com.ldb.truck.Entity.OrderItem.OrderItemReportEntity;
+import com.ldb.truck.Entity.OrderItem.OrderRequest;
+import com.ldb.truck.Entity.RequestItem.RequestItem;
 import com.ldb.truck.Entity.RequestItem.RequestItemDetailsRes;
 import com.ldb.truck.Entity.RequestItem.RequestItemEbtity;
+import com.ldb.truck.Entity.RequestItem.RequestItems;
 import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
@@ -178,7 +182,7 @@ public class StockProductController {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/saveOrderItemDetails.service")
-    public ResponseEntity<?> saveOrderItemDetails(@RequestBody OrderItemEntity stockItemDetailsEntity){
+    public ResponseEntity<?> saveOrderItemDetails(@RequestBody OrderRequest stockItemDetailsEntity){
         DataResponse response  = new DataResponse();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
         if (userProfiles.isEmpty()) {
@@ -195,7 +199,7 @@ public class StockProductController {
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/updateOrderItem.service")
-    public ResponseEntity<?> updateItemInOrder (@RequestBody OrderItemEntity stockItemDetailsEntity){
+    public ResponseEntity<?> updateItemInOrder (@RequestBody OrderItemReportEntity stockItemDetailsEntity){
         DataResponse response  = new DataResponse();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
         if (userProfiles.isEmpty()) {
@@ -224,11 +228,10 @@ public class StockProductController {
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());
         try {
-
              response = stockService.approveStockItemDetailsOrderProd(data);
         }catch (Exception e){
             response.setStatus("EE");
-            response.setMessage("Data Error !!");
+            response.setMessage("Data Error Controller !!");
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -257,6 +260,7 @@ public class StockProductController {
     @CrossOrigin(origins = "*")
     @PostMapping("/getOrderItemAuth.service")
     public ResponseEntity<?> getOrderItemAuth (@RequestBody StockTxnEntity stockItemDetailsEntity){
+        log.info("req body:"+stockItemDetailsEntity.toString());
         OrderItemDetailsRes response  = new OrderItemDetailsRes();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
         if (userProfiles.isEmpty()) {
@@ -269,8 +273,8 @@ public class StockProductController {
         try {
             response = stockService.getOrderItemAuth(billNo,role,userId);
         }catch (Exception e){
-            response.setStatus("EE");
-            response.setMessage("Data Error !!");
+            response.setStatus("00");
+            response.setMessage("Data Error Controller!!");
         }
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -298,7 +302,7 @@ public class StockProductController {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/saveRequestItem.service")
-    public ResponseEntity<?> saveRequestItem(@RequestBody RequestItemEbtity stockItemDetailsEntity){
+    public ResponseEntity<?> saveRequestItem(@RequestBody RequestItems stockItemDetailsEntity){
         DataResponse response  = new DataResponse();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
         if (userProfiles.isEmpty()) {
@@ -341,6 +345,7 @@ public class StockProductController {
         }
         String userId = userProfiles.get(0).getUserName();
         StockItemDetailsReq data = new StockItemDetailsReq();
+        data.setStatus(stockItemDetailsReq.getStatus());
         data.setUserId(userId);
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());

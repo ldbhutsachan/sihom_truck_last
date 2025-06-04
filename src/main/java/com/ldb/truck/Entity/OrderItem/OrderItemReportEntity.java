@@ -4,10 +4,11 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
+
 @Data
 @Entity
 @Table(name = "order_item_details")
-public class OrderItemEntity {
+public class OrderItemReportEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +24,6 @@ public class OrderItemEntity {
     @Column(name = "item_id", nullable = false)
     private Integer itemId;
 
-    @Column(name = "item_name", nullable = false)
-    private String itemName;
 
     @Column(name = "unit", precision = 10, scale = 2)
     private Float unit;
@@ -70,8 +69,4 @@ public class OrderItemEntity {
 
     @Column(name = "token")
     private String toKen;
-
-    @Column(name = "total")
-    private Float total;
-
 }

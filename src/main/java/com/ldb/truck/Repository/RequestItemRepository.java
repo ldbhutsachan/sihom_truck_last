@@ -41,8 +41,8 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
             @Param("detailId") Integer detailId);
 
     @Modifying
-    @Transactional
-    @Query(value = "UPDATE RequestItemEbtity SET approveby = :approveBy, " +
+    @Transactional//request_item_details
+    @Query(value = "UPDATE request_item_details SET approveby = :approveBy, " +
             "approvedate = :approveDate, status = :status " +
             "WHERE FIND_IN_SET(detail_id, :detailId)", nativeQuery = true)
     int approveRequestItem(
@@ -62,7 +62,7 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
             @Param("status") String status,
             @Param("detailId") String detailId); // Use String instead of List<Long>
 
-    @Query(value = "SELECT * FROM RequestItemEbtity WHERE detail_id IN (:itemId)", nativeQuery = true)
+    @Query(value = "SELECT * FROM request_item_details WHERE detail_id IN (:itemId) and status='wait-order' ", nativeQuery = true)
     List<RequestItemEbtity> findByItemId(@Param("itemId") List<Long> itemId);
 
 

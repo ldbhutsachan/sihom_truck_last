@@ -21,4 +21,7 @@ public class OrderItemTxnEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Date saveDate;
 
+    @Column(name = "bill_no")
+    private String billNo;
+
 }

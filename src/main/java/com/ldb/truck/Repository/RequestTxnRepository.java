@@ -19,7 +19,7 @@ public interface RequestTxnRepository extends CrudRepository<RequestTxnEntity,Lo
     List<RequestTxnEntity> getStockByBillByUser(@Param("status") String status,@Param("saveby") String saveby);
     @Transactional
     @Modifying
-    @Query(value = "select * from v_request_item_fix  order by status desc ", nativeQuery = true)
+    @Query(value = "select * from v_request_item_fix where status=:status order by status desc ", nativeQuery = true)
     List<RequestTxnEntity> getStockByBillNoAdmin(@Param("status") String status);
 
     @Transactional
