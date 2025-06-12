@@ -1,5 +1,8 @@
 package com.ldb.truck.Service.StockService;
 
+import com.ldb.truck.Entity.Bor.BorEntity;
+import com.ldb.truck.Entity.Bor.BorEntityReq;
+import com.ldb.truck.Entity.Bor.BorEntityReqSave;
 import com.ldb.truck.Entity.OrderItem.*;
 import com.ldb.truck.Entity.RequestItem.*;
 import com.ldb.truck.Entity.Stock.*;
@@ -7,6 +10,7 @@ import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,12 +21,31 @@ import java.util.Optional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class StockServiceImpl {
+    @Value("${info.logo}")
+    private String logo;
+
+    @Value("${info.title}")
+    private String title;
+
+    @Value("${info.address}")
+    private String address;
+
+    @Value("${info.contract}")
+    private String contract;
+
+    @Value("${info.email}")
+    private String email;
+
+    @Value("${info.location}")
+    private String location;
+
+    @Autowired
+    BorEntityRepository borEntityRepository;
     @Autowired
     RequestItemEntityRepository requestItemEntityRepository;
     @Autowired
@@ -49,7 +72,8 @@ public class StockServiceImpl {
     ItemKeyRepository itemKeyRepository;
     @Autowired
     StockTxnEntityRepository stockTxnEntityRepository;
-
+@Autowired
+    BorRepository view_borRepository;
     public DataResponse saveStockIn(StockItemDetailsEntity stockItemDetailsEntity,String userId){
         DataResponse response = new DataResponse();
         try {
@@ -167,6 +191,7 @@ public class StockServiceImpl {
         }
     }
     public StockItemDetailsRes getVStockV2(String billNo, String role, String userName){
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
         StockItemDetailsRes response = new StockItemDetailsRes();
         List<GroupStockItemHeader> groupStockItemHeaders = new ArrayList<>();
         StockTxnEntity resDataGroup = new StockTxnEntity();
@@ -185,9 +210,22 @@ public class StockServiceImpl {
             for (String bill : billNoList){
                 groupHeader = new GroupStockItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getBillNo).findFirst().orElse(""));
-                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getSaveDate).findFirst()));
-                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getQty).collect(Collectors.summingDouble(Double::doubleValue)));
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getPrice).collect(Collectors.summingDouble(Double::doubleValue)));
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .map(StockTxnEntity::getSaveDate)
+                        .findFirst();
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .count());
+
+                Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getCaltotal).collect(Collectors.summingDouble(Float::doubleValue));
+
+                groupHeader.setAmount(numfm.format(total));
+
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
 
@@ -214,7 +252,9 @@ public class StockServiceImpl {
         return response;
     }
     public StockItemDetailsRes getVStockAuth(String billNo, String role, String userName){
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
         StockItemDetailsRes response = new StockItemDetailsRes();
+        response.setLogo(logo);
         List<GroupStockItemHeader> groupStockItemHeaders = new ArrayList<>();
         StockTxnEntity resDataGroup = new StockTxnEntity();
         List<StockTxnEntity> listData = new ArrayList<>();
@@ -228,12 +268,24 @@ public class StockServiceImpl {
             for (String bill : billNoList){
                 groupHeader = new GroupStockItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getBillNo).findFirst().orElse(""));
-                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getSaveDate).findFirst()));
-                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getQty).collect(Collectors.summingDouble(Double::doubleValue)));
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getPrice).collect(Collectors.summingDouble(Double::doubleValue)));
+
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm a"); // Format with AM/PM
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .map(StockTxnEntity::getSaveDate)
+                        .findFirst();
+
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .count());
+
+                Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getCaltotal).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setAmount(numfm.format(total));
+
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
-
                 List<StockTxnEntity> groupListData = new ArrayList<>();
                 for(StockTxnEntity listStockTxn :  listData){
                     if(listStockTxn.getBillNo().equals(bill)){
@@ -257,9 +309,11 @@ public class StockServiceImpl {
         return response;
     }
 
-
     public StockItemDetailsRes getVStockReport(StockRequest stockRequest, String userName){
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
         StockItemDetailsRes response = new StockItemDetailsRes();
+
+        response.setLogo(logo);
         List<GroupStockItemHeader> groupStockItemHeaders = new ArrayList<>();
         StockTxnEntity resDataGroup = new StockTxnEntity();
         List<StockTxnEntity> listData = new ArrayList<>();
@@ -280,9 +334,20 @@ public class StockServiceImpl {
             for (String bill : billNoList){
                 groupHeader = new GroupStockItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getBillNo).findFirst().orElse(""));
-                groupHeader.setTxnDate(String.valueOf(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getSaveDate).findFirst()));
-                groupHeader.setQty(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getQty).collect(Collectors.summingDouble(Double::doubleValue)));
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getPrice).collect(Collectors.summingDouble(Double::doubleValue)));
+
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm a"); // Format with AM/PM
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .map(StockTxnEntity::getSaveDate)
+                        .findFirst();
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getBillNo().equals(bill))
+                        .count());
+                Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getCaltotal).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setAmount(numfm.format(total));
+
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(StockTxnEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
 
@@ -326,16 +391,19 @@ public class StockServiceImpl {
         return dataResponse;
     }
 
-        public OrderItemDetailsRes getOrderItem(String billNo, String userName){
+   public OrderItemDetailsRes getOrderItem(String billNo, String userId){
+        log.info("userId:"+userId);
+        log.info("billNo:"+billNo);
+            DecimalFormat numfm = new DecimalFormat("###,###.###");
         OrderItemDetailsRes response = new OrderItemDetailsRes();
         List<OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<OrderItemEntity> listData = new ArrayList<>();
         OrderItemHeader groupHeader = new OrderItemHeader();
         try {
             if(!"".equals(billNo)){
-                listData = orderTxnEntityRepository.getOrderByBillNo(userName,billNo);
+                listData = orderTxnEntityRepository.getOrderByBillNo(userId,billNo);
             }else {
-                listData = orderTxnEntityRepository.getOrderBySaveby(userName);
+                listData = orderTxnEntityRepository.getOrderBySaveby(userId);
             }
             List<String> billNoList = listData.stream()
                     .map(OrderItemEntity::getBillNo)
@@ -344,7 +412,7 @@ public class StockServiceImpl {
             for (String bill : billNoList){
                 groupHeader = new OrderItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getBillNo).findFirst().orElse(""));
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm a"); // Format with AM/PM
                 Optional<Date> optionalDate = listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
                         .map(OrderItemEntity::getSaveDate)
@@ -354,7 +422,9 @@ public class StockServiceImpl {
                 groupHeader.setQty((int) listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
                         .count());
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue)));
+                Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setAmount(numfm.format(total));
+
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
 
@@ -495,24 +565,61 @@ public class StockServiceImpl {
     }
     @Transactional
     public DataResponse approveStockItemDetailsOrderProd(StockItemDetailsReq stockItemDetailsReq) {
+        String role = stockItemDetailsReq.getRole();
+        log.info("role:"+role);
         DataResponse response = new DataResponse();
         String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
         try {
-            int updatedRows = orderDetailsRepository.approveStockItemDetails(
-                    stockItemDetailsReq.getUserId(),
-                    new Date(),
-                    "wait-order",
-                    detailIdsStr
-            );
-            if (updatedRows > 0) {
+            //======check role call to this first =======
+            if("USER".equals(role)){
                 response.setStatus("00");
-                response.setMessage("Stock items approve successfully.");
-            } else {
-                response.setStatus("05");
-                response.setMessage("No stock items were approved.");
+                response.setMessage("ທ່ານ ບໍ່ມີສິດອະນຸມັດລາຍການ !!!");
+            }else {
+                int updatedRows = 0;
+                String status = "";
+                if ("AUTH".equals(role)) {
+                    status = "auth";
+                } else if ("BUYER".equals(role)) {
+                    status = "buyer";
+                } else if ("ACCOUNTING".equals(role)) {
+                    status = "wait-item";
+                }
+                if ("AUTH".equals(role)) {
+                    updatedRows = orderDetailsRepository.approveStockItemDetailsAuth(
+                            stockItemDetailsReq.getUserId(),
+                            new Date(),
+                            status,
+                            stockItemDetailsReq.getBillNo(),
+                            detailIdsStr
+                    );
+                } else if ("BUYER".equals(role)) {
+                    updatedRows = orderDetailsRepository.approveStockItemDetailsBuyer(
+                            stockItemDetailsReq.getUserId(),
+                            new Date(),
+                            status,
+                            stockItemDetailsReq.getBillNo(),
+                            detailIdsStr
+                    );
+                } else if ("ACCOUNTING".equals(role)) {
+                    updatedRows = orderDetailsRepository.approveStockItemDetailsAccounting(
+                            stockItemDetailsReq.getUserId(),
+                            new Date(),
+                            status,
+                            stockItemDetailsReq.getBillNo(),
+                            detailIdsStr
+                    );
+                }
+                if (updatedRows > 0) {
+                    response.setStatus("00");
+                    response.setMessage("ທ່ານອະນຸມັດລາຍການສັ່ງຊື້ອາໄລ ສໍາເລັດ. ");
+                } else {
+                    response.setStatus("00");
+                    response.setMessage("No stock items were approved.");
+                }
             }
+
         } catch (Exception e) {
             response.setStatus("EE");
             response.setMessage("Error while updating stock details.");
@@ -609,25 +716,46 @@ public class StockServiceImpl {
         }
     }
     //getOrderItemDetailsAuth
-    public OrderItemDetailsRes getOrderItemAuth(String billNo, String role, String userName){
-        OrderItemDetailsRes response = new OrderItemDetailsRes();
-        List<OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
-        List<OrderItemEntity> listData = new ArrayList<>();
-        OrderItemHeader groupHeader = new OrderItemHeader();
+    @Autowired
+    OrderAuthEntityRepository orderAuthEntityRepository;
+    public OrderAuthResponse getOrderItemAuth(String billNo, String role, String userId,String branchNo,String status){
+        log.info("billNo:"+billNo);
+        log.info("userId:"+userId);
+        log.info("role:"+role);
+        log.info("branchNo:"+branchNo);
+        log.info("status:"+status);
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
+        OrderAuthResponse response = new OrderAuthResponse();
+        List<OrderAuthHeader> groupStockItemHeaders = new ArrayList<>();
+        List<OrderAuthEntity> listData = new ArrayList<>();
+        OrderAuthHeader groupHeader = new OrderAuthHeader();
         try {
-            listData = orderTxnEntityRepository.getOrderByAdmin();
-            log.info("show data :"+listData.get(0).getItemId());
+            if("PADMIN".equals(role)){
+                    listData =orderAuthEntityRepository.getOrderByAdmin();
+            }
+            else if("AUTH".equals(role)){
+                    listData =orderAuthEntityRepository.getOrderAuthByBranchNo(branchNo);
+            }
+            else if("BUYER".equals(role)){
+                listData =orderAuthEntityRepository.getOrderAuthByBuyer();
+            }
+            else if("ACCOUNTING".equals(role)){
+                listData =orderAuthEntityRepository.getOrderAuthByAccounting();
+            }else {
+                response.setStatus("00");
+                response.setMessage("ທ່ານ ບໍ່ມີສິດເຂົ້າເບີ່ງ !!!");
+            }
             List<String> billNoList = listData.stream()
-                    .map(OrderItemEntity::getBillNo)
+                    .map(OrderAuthEntity::getBillNo)
                     .distinct()
                     .collect(Collectors.toList());
             for (String bill : billNoList){
-                groupHeader = new OrderItemHeader();
-                groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getBillNo).findFirst().orElse(""));
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                groupHeader = new OrderAuthHeader();
+                groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderAuthEntity::getBillNo).findFirst().orElse(""));
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy  hh:mm a"); // Desired format
                 Optional<Date> optionalDate = listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
-                        .map(OrderItemEntity::getSaveDate)
+                        .map(OrderAuthEntity::getSaveDate)
                         .findFirst();
 
                 groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
@@ -635,11 +763,13 @@ public class StockServiceImpl {
                 groupHeader.setQty((int) listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
                         .count());
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue)));
-                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getStatus).findFirst().orElse(""));
+                Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderAuthEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setAmount(numfm.format(total));
+
+                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderAuthEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
-                List<OrderItemEntity> groupListData = new ArrayList<>();
-                for(OrderItemEntity listStockTxn :  listData){
+                List<OrderAuthEntity> groupListData = new ArrayList<>();
+                for(OrderAuthEntity listStockTxn :  listData){
                     if(listStockTxn.getBillNo().equals(bill)){
                         groupListData.add(listStockTxn);
                     }
@@ -662,6 +792,7 @@ public class StockServiceImpl {
     }
 
     public OrderItemDetailsRes getReportOrderItem(StockRequest stockRequest, String userName){
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
         OrderItemDetailsRes response = new OrderItemDetailsRes();
         List<OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<OrderItemEntity> listData = new ArrayList<>();
@@ -671,8 +802,10 @@ public class StockServiceImpl {
             String endDate = stockRequest.getEndDate();
             String status = stockRequest.getStatus();
             if(!"ALL".equals(status)) {
+                log.info("show 1");
                 listData = orderTxnEntityRepository.getOrderReport(startDate, endDate, status);
             }else {
+                log.info("show 2");
                 listData = orderTxnEntityRepository.getOrderReportNoStatus(startDate, endDate);
             }
             List<String> billNoList = listData.stream()
@@ -681,7 +814,7 @@ public class StockServiceImpl {
                     .collect(Collectors.toList());
             for (String bill : billNoList){
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getBillNo).findFirst().orElse(""));
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm a"); // Desired format
                 Optional<Date> optionalDate = listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
                         .map(OrderItemEntity::getSaveDate)
@@ -692,7 +825,8 @@ public class StockServiceImpl {
                 groupHeader.setQty((int) listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
                         .count());
-                groupHeader.setAmount(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue)));
+                Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setAmount(numfm.format(total));
                 groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderItemEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
                 List<OrderItemEntity> groupListData = new ArrayList<>();
@@ -918,7 +1052,7 @@ public DataResponse checkKeyOrder(){
             for (String bill : billNoList){
                 groupHeader = new RequestItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getBillNo).findFirst().orElse(""));
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy  hh:mm a"); // Desired format
                 Optional<Date> optionalDate = listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
                         .map(RequestTxnEntity::getSaveDate)
@@ -969,8 +1103,10 @@ public DataResponse checkKeyOrder(){
             String endDate = stockRequest.getEndDate();
             String status = stockRequest.getStatus();
             if(!"ALL".equals(status)) {
+                log.info("show 01");
                 listData = requestTxnRepository.getRequestReport(startDate, endDate, status);
             }else {
+                log.info("show 02");
                 listData = requestTxnRepository.getRequestReportNoStatus(startDate, endDate);
             }
             List<String> billNoList = listData.stream()
@@ -980,7 +1116,7 @@ public DataResponse checkKeyOrder(){
             for (String bill : billNoList){
                 groupHeader = new RequestItemHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getBillNo).findFirst().orElse(""));
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy"); // Desired format
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy  hh:mm a"); // Desired format
                 Optional<Date> optionalDate = listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
                         .map(RequestTxnEntity::getSaveDate)
@@ -1019,4 +1155,114 @@ public DataResponse checkKeyOrder(){
         }
         return response;
     }
+
+
+    //======make bor start =====
+    //view_borRepository
+
+    public DataResponse getBorAll( BorEntityReq borEntityReq){
+        String keyId = borEntityReq.getKeyId();
+        log.info("role start:"+keyId);
+        DataResponse response = new DataResponse();
+       try {
+           if(keyId.isEmpty() || keyId.equals("all") || keyId.equals("all")){
+               response.setDataResponse(view_borRepository.getBorViewEntityAll());
+           }else {
+               response.setDataResponse(view_borRepository.findBykeyId(keyId));
+           }
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Data not found");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Data");
+        }
+        return response;
+    }
+    public DataResponse saveBoEntity(BorEntityReqSave borEntity, String userId) {
+        DataResponse response = new DataResponse();
+        try {
+        BorEntity entity = getMapBor(borEntity,userId);
+        response.setDataResponse(borEntityRepository.save(entity));
+        if(response.getDataResponse() != null){
+            response.setStatus("00");
+            response.setMessage("ສໍາເລັດ");
+        }else {
+            response.setStatus("05");
+            response.setMessage("ບໍ່ສາມາດບັນທຶກບໍ່ເເຫ່ໄດ້");
+        }
+    }catch (Exception e){
+        response.setStatus("EE");
+        response.setMessage("Error Data");
+    }
+        return response;
+    }
+    public DataResponse updateBoEntity(BorEntityReqSave borEntity, String userId) {
+
+        DataResponse response = new DataResponse();
+        try {
+        response.setDataResponse(borEntityRepository.updateBorEntity(
+                borEntity.getKeyId(),
+                borEntity.getBname(),
+                borEntity.getBtel(),
+                borEntity.getBlocation(),
+                borEntity.getEmail(),
+                borEntity.getUserId(),
+                new Date(),
+                borEntity.getSortName(),
+                borEntity.getBrandNo(),
+                borEntity.getStatus()));
+        if(response.getDataResponse() != null){
+            response.setStatus("00");
+            response.setMessage("ສໍາເລັດ");
+        }else {
+            response.setStatus("05");
+            response.setMessage("ບໍ່ສາມາດບັນທຶກບໍ່ເເຫ່ໄດ້");
+        }
+    }catch (Exception e){
+        response.setStatus("EE");
+        response.setMessage("Error Data");
+    }
+        return response;
+    }
+  public DataResponse disbleBorEntity(BorEntityReqSave borEntity, String userId) {
+
+        DataResponse response = new DataResponse();
+        try {
+        response.setDataResponse(borEntityRepository.disbleBorEntity(
+                borEntity.getKeyId(),
+                borEntity.getStatus()));
+        if(response.getDataResponse() != null){
+            response.setStatus("00");
+            response.setMessage("ສໍາເລັດ");
+        }else {
+            response.setStatus("05");
+            response.setMessage("ບໍ່ສາມາດບັນທຶກບໍ່ເເຫ່ໄດ້");
+        }
+    }catch (Exception e){
+        response.setStatus("EE");
+        response.setMessage("Error Data");
+    }
+        return response;
+    }
+
+
+private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
+    BorEntity entity = new BorEntity();
+    entity.setBName(borEntity.getBname());
+    entity.setEmail(borEntity.getEmail());
+    entity.setBTel(borEntity.getBtel());
+    entity.setLocation(borEntity.getBlocation());
+    entity.setSortName(borEntity.getSortName());
+    entity.setBrandNo(borEntity.getBrandNo());
+    entity.setCreateDate(new Date());
+    entity.setUserId(userId);
+    entity.setStatus(borEntity.getStatus());
+    return entity;
+}
+//======make bor end =====
 }

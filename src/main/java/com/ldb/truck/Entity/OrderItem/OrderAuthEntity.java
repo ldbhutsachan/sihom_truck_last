@@ -7,8 +7,8 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(name = "order_item_details")
-public class OrderItemReportEntity {
+@Table(name = "v_order_item")
+public class OrderAuthEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +23,9 @@ public class OrderItemReportEntity {
 
     @Column(name = "item_id", nullable = false)
     private Integer itemId;
+
+    @Column(name = "item_name", nullable = false)
+    private String itemName;
 
     @Column(name = "unit", precision = 10, scale = 2)
     private Float unit;
@@ -69,21 +72,13 @@ public class OrderItemReportEntity {
     @Column(name = "token")
     private String toKen;
 
-    @Column(name = "buyer_id")
-    private String buyerId;
+    @Column(name = "total")
+    private Float total;
 
-    @Column(name = "buyer_date")
-    @Temporal(TemporalType.DATE)
-    private Date buyerDate;
+    @Column(name = "image")
+    private String image;
 
-    @Column(name = "account_id")
-    private String accountId;
-
-    @Column(name = "account_date")
-    @Temporal(TemporalType.DATE)
-    private Date accountDate;
-
-
-
+    @Column(name = "branchno")
+    private String branchNo;
 
 }

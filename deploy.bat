@@ -12,6 +12,7 @@ echo %VERSION%
 
 set IMAGE=khounkham/logistics-api
 
+
 echo Building image: %IMAGE%:%VERSION%
 
 cmd /c mvn clean dependency:tree compile package

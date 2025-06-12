@@ -11,11 +11,8 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class StockItemDetailsReq {
-    String toKen;
-    String userId;
-    String billNo;
-    String status;
-    String role;
-    List<Long> detailId;
+public class OrderAuthResponse {
+   private String status;
+   private String message;
+   List<OrderAuthHeader> dataResponse;
 }

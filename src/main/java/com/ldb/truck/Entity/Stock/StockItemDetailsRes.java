@@ -11,5 +11,7 @@ import java.util.List;
 public class StockItemDetailsRes {
    private String status;
    private String message;
+
+   private String logo;
    List<GroupStockItemHeader> dataResponse;
 }

@@ -16,7 +16,7 @@ public class OrderItemHeader {
     private String billNo;
     private String txnDate;
     private Integer qty;
-    private Double amount;
+    private String amount;
     private String status;
     List<OrderItemEntity> details;
 }

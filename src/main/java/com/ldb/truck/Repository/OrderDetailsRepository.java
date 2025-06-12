@@ -42,13 +42,38 @@ public interface OrderDetailsRepository extends CrudRepository<OrderItemReportEn
     @Transactional
     @Query(value = "UPDATE order_item_details SET approveby = :approveBy, " +
             "approvedate = :approveDate, status = :status " +
-            "WHERE FIND_IN_SET(detail_id, :detailId)", nativeQuery = true)
-    int approveStockItemDetails(
+            "WHERE FIND_IN_SET(detail_id, :detailId) and bill_no =:billNo ", nativeQuery = true)
+    int approveStockItemDetailsAuth(
             @Param("approveBy") String approveBy,
             @Param("approveDate") Date approveDate,
             @Param("status") String status,
+            @Param("billNo") String billNo,
             @Param("detailId") String detailId); // Use String instead of List<Long>
 
+
+
+  @Modifying
+    @Transactional
+    @Query(value = "UPDATE order_item_details SET buyer_id = :buyerId, " +
+            "buyer_date = :buyerDate, status = :status " +
+            "WHERE FIND_IN_SET(detail_id, :detailId) and bill_no =:billNo ", nativeQuery = true)
+    int approveStockItemDetailsBuyer(
+            @Param("buyerId") String buyerId,
+            @Param("buyerDate") Date buyerDate,
+            @Param("status") String status,
+            @Param("billNo") String billNo,
+            @Param("detailId") String detailId); // Use String instead of List<Long>
+ @Modifying
+    @Transactional
+    @Query(value = "UPDATE order_item_details SET account_id = :accountId, " +
+            "account_date = :accountDate, status = :status " +
+            "WHERE FIND_IN_SET(detail_id, :detailId) and bill_no =:billNo ", nativeQuery = true)
+    int approveStockItemDetailsAccounting(
+            @Param("accountId") String accountId,
+            @Param("accountDate") Date accountDate,
+            @Param("status") String status,
+            @Param("billNo") String billNo,
+            @Param("detailId") String detailId); // Use String instead of List<Long>
   @Modifying
     @Transactional
     @Query(value = "UPDATE order_item_details SET acceptby = :acceptby, " +

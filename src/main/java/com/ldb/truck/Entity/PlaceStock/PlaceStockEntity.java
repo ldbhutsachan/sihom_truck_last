@@ -2,6 +2,8 @@ package com.ldb.truck.Entity.PlaceStock;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Date;
+
 @Entity
 @Data
 @Table(name = "stock_house") // Update this name to match your actual DB table name
@@ -19,7 +21,7 @@ public class PlaceStockEntity {
     private String khName;
 
     @Column(name = "sole")
-    private Integer sole;
+    private String sole;
 
     @Column(name = "solestep", length = 500)
     private String soleStep;
@@ -29,4 +31,13 @@ public class PlaceStockEntity {
 
     @Column(name = "status", length = 100)
     private String status;
+
+    @Column(name = "key_id")
+    private String borNo;
+
+    @Column(name = "create_date")
+    private Date createDate;
+
+    @Column(name = "userid")
+    private String userId;
 }

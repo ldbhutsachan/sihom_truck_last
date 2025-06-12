@@ -74,4 +74,7 @@ public class OrderItemEntity {
     @Column(name = "total")
     private Float total;
 
+    @Column(name = "image")
+    private String image;
+
 }

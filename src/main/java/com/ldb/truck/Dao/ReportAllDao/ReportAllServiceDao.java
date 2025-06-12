@@ -792,14 +792,14 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
     public List<ReportAllStock> getReportDetailDailyStock(StockRequest stockRequest){
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
-        String group = "\ngroup by item_name";
+        String group = "\ngroup by image,item_id,item_name,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
         String startDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
         String endDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
         String tableCon = "\n from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
                 "left join request_item_details c on a.item_id=c.item_id where 1=1";
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append(" select  a.item_name,\n" +
+            sb.append(" select  to_char(b.savedate,'yyyy-mm-dd') dateIn,to_char(c.savedate,'yyyy-mm-dd') dateOut,a.image,a.item_id,a.item_name,\n" +
                     "   SUM(a.unit) AS amt,\n" +
                     "    FORMAT(SUM(a.price), '###,###,###') AS price,\n" +
                     "    FORMAT(SUM(a.unit * a.price), '###,###,###') AS total,\n" +
@@ -821,10 +821,17 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 @Override
                 public ReportAllStock mapRow(ResultSet rs, int rowNum) throws SQLException {
                     ReportAllStock tr = new ReportAllStock();
+                    tr.setImage(rs.getString("image"));
                     tr.setItemName(rs.getString("item_name"));
+                    tr.setItemId(rs.getString("item_id"));
                     tr.setAmt(rs.getInt("amt"));
                     tr.setPrice(rs.getString("price"));
                     tr.setTotal(rs.getString("total"));
+
+                    tr.setTxnDateIn(rs.getString("dateIn"));
+                    tr.setTxnDateOut(rs.getString("dateOut"));
+
+
                     tr.setAmtIn(rs.getInt("amt_in") != 0 ? rs.getInt("amt_in") : 0);
                     tr.setPriceIn(rs.getString("price_in") != null ? rs.getString("price_in") : "0");
                     tr.setTotalIn(rs.getString("total_in") != null ? rs.getString("total_in") : "0");
@@ -843,7 +850,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
     public List<ReportAllStock> getTxnStock(StockRequest stockRequest){
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
-        String group = "\ngroup by item_name,c.headerno,c.footerno,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
+        String group = "\ngroup by a.item_id,a.image,item_name,c.headerno,c.footerno,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
         String startDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
         String endDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
         String tableCon = "\n  from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
@@ -853,7 +860,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 "where 1=1 ";
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append("select  a.item_name,c.headerno,c.footerno,to_char(b.savedate,'yyyy-mm-dd') txndateIn,\n" +
+            sb.append("select  a.item_id,a.image,a.item_name,c.headerno,c.footerno,to_char(b.savedate,'yyyy-mm-dd') txndateIn,\n" +
                     "to_char(c.savedate,'yyyy-mm-dd') txndateOut,\n" +
                     "   SUM(a.unit) AS amt,\n" +
                     "    FORMAT(SUM(a.price), '###,###,###') AS price,\n" +
@@ -876,8 +883,9 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 @Override
                 public ReportAllStock mapRow(ResultSet rs, int rowNum) throws SQLException {
                     ReportAllStock tr = new ReportAllStock();
+                    tr.setImage(rs.getString("image"));
                     tr.setItemName(rs.getString("item_name"));
-
+                    tr.setItemId(rs.getString("item_id"));
                     tr.setHeaderNo(rs.getString("headerno"));
                     tr.setFootNo(rs.getString("footerno"));
                     tr.setTxnDateIn(rs.getString("txndateIn"));

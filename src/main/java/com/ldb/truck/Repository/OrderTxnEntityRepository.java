@@ -34,4 +34,8 @@ public interface OrderTxnEntityRepository extends CrudRepository<OrderItemEntity
     List<OrderItemEntity> getOrderReportNoStatus(@Param("startDate") String startDate,@Param("endDate") String endDate);
 
 
+
+
+
+
 }

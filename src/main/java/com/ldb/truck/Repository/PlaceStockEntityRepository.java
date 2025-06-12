@@ -17,21 +17,23 @@ public interface PlaceStockEntityRepository extends CrudRepository<PlaceStockEnt
     @Query(value = "SELECT * FROM stock_house WHERE khid = :khid ORDER BY khid DESC", nativeQuery = true)
     List<PlaceStockEntity> findByPlaceStockEntityKhId(@Param("khid") String khid);
 
-    @Transactional
-    @Query(value = "SELECT * FROM stock_house ORDER BY khid DESC", nativeQuery = true)
-    List<PlaceStockEntity> findAllStockHouses();
 
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE stock_house SET khno = :khNo, khname = :khName, sole = :sole, solestep = :soleStep, blockno = :blockNo, status = :status WHERE khid = :khId", nativeQuery = true)
+    @Query(value = "UPDATE stock_house SET khno = :khNo, khname = :khName, sole = :sole, " +
+            "solestep = :soleStep, blockno = :blockNo," +
+            " key_id=:borNo,update_by=:userId,update_date=now(),status = :status WHERE khid = :khId", nativeQuery = true)
     int updatePlaceStock(
             @Param("khNo") String khNo,
             @Param("khName") String khName,
-            @Param("sole") Integer sole,
+            @Param("sole") String sole,
             @Param("soleStep") String soleStep,
             @Param("blockNo") String blockNo,
             @Param("status") String status,
+            @Param("borNo") String borNo,
+            @Param("userId") String userId,
+           // @Param("brandNo") String brandNo,
             @Param("khId") Long khId);
 
     @Transactional

@@ -7,6 +7,7 @@ import com.ldb.truck.Entity.Item.ItemEntity;
 import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Entity.ItemType.ItemTypeEntity;
 import com.ldb.truck.Entity.PlaceStock.PlaceStockEntity;
+import com.ldb.truck.Entity.PlaceStock.PlaceStockEntityReq;
 import com.ldb.truck.Entity.Supplier.SupplierEntity;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
@@ -198,14 +199,65 @@ public class ItemController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
     //-----stockHouse
     @CrossOrigin(origins = "*")
     @PostMapping("/getStockHouse.service")
-    public ResponseEntity<?> getStockHouse (@RequestBody PlaceStockEntity brandReq){
+    public ResponseEntity<?> getStockHouse (@RequestBody PlaceStockEntityReq brandReq){
+        log.info("=============start getStockHouse ============");
         DataResponse response  = new DataResponse();
         try {
-            response = placeStockService.getPlaceStockHouse(brandReq);
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
+            if (userProfiles.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            String userId = userProfiles.get(0).getUserId();
+            String role = userProfiles.get(0).getRole();
+            String branchNo = userProfiles.get(0).getBranchNo();
+            PlaceStockEntityReq reqBody = new PlaceStockEntityReq();
+            reqBody.setRole(role);
+            reqBody.setUserId(userId);
+            reqBody.setKhId(reqBody.getKhId());
+            reqBody.setBrandNo(branchNo);
+            response = placeStockService.getPlaceStockHouse(reqBody);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getPlaceStockHouseByKey.service")
+    public ResponseEntity<?> getPlaceStockHouseByKey (@RequestBody PlaceStockEntityReq brandReq){
+        log.info("=============start getPlaceStockHouseByKey ============");
+        DataResponse response  = new DataResponse();
+        try {
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
+            if (userProfiles.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            String userId = userProfiles.get(0).getUserId();
+            String role = userProfiles.get(0).getRole();
+            String branchNo = userProfiles.get(0).getBranchNo();
+            PlaceStockEntityReq reqBody = new PlaceStockEntityReq();
+            reqBody.setRole(role);
+            reqBody.setUserId(userId);
+            reqBody.setKhId(reqBody.getKhId());
+            reqBody.setBrandNo(branchNo);
+            response = placeStockService.getPlaceStockHouseByKey(reqBody);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/getBranch.service")
+    public ResponseEntity<?> getBranch (){
+        log.info("=============start getBranch ============");
+        DataResponse response  = new DataResponse();
+        try {
+            response = placeStockService.getBranch();
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -214,10 +266,15 @@ public class ItemController {
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/saveStockHouse.service")
-    public ResponseEntity<?> saveStockHouse (@RequestBody PlaceStockEntity brandReq){
+    public ResponseEntity<?> saveStockHouse (@RequestBody PlaceStockEntityReq brandReq){
         DataResponse response  = new DataResponse();
         try {
-            response = placeStockService.storePlaceStockHouse(brandReq);
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
+            if (userProfiles.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            String userId = userProfiles.get(0).getUserId();
+            response = placeStockService.storePlaceStockHouse(brandReq,userId);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -225,10 +282,15 @@ public class ItemController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }@CrossOrigin(origins = "*")
     @PostMapping("/updatePlaceStock.service")
-    public ResponseEntity<?> updatePlaceStock (@RequestBody PlaceStockEntity brandReq){
+    public ResponseEntity<?> updatePlaceStock (@RequestBody PlaceStockEntityReq brandReq){
         DataResponse response  = new DataResponse();
         try {
-            response = placeStockService.updatePlaceStock(brandReq);
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
+            if (userProfiles.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            String userId = userProfiles.get(0).getUserId();
+            response = placeStockService.updatePlaceStock(brandReq,userId);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -255,8 +317,30 @@ public class ItemController {
             if (userProfiles.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
-            String userId = userProfiles.get(0).getUserName();
-            response = itemService.getViewItemInventory(brandReq,userId);
+            String userId = userProfiles.get(0).getUserId();
+            String role = userProfiles.get(0).getRole();
+            String branchno = userProfiles.get(0).getBranchNo();
+            response = itemService.getViewItemInventory(brandReq,userId,role,branchno);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getItemList.service")
+    public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
+        DataResponse response  = new DataResponse();
+        try {
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
+            if (userProfiles.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            String userId = userProfiles.get(0).getUserId();
+            String role = userProfiles.get(0).getRole();
+            String branchno = userProfiles.get(0).getBranchNo();
+            response = itemService.getItemList(brandReq,userId,role,branchno);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -283,7 +367,6 @@ public class ItemController {
             ,@RequestParam("galatyAmt") Integer  galatyAmt
             ,@RequestParam("qty") Integer  qty
             ,@RequestParam("price") Float  price
-            ,@RequestParam("branchNo") Integer  branchNo
             ,@RequestParam("toKen") String  toKen
             ,@RequestParam("itemtypeid") Integer  itemtypeid
             ,@RequestParam("houseid") Integer  houseid
@@ -310,8 +393,10 @@ public class ItemController {
         log.info("show=================UserBname:"+userIn.get(0).getBranchName());
         log.info("show=================Role:"+userIn.get(0).getRole());
         log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+
         //================================================================
-        String userId = userIn.get(0).getUserName();
+        String userId = userIn.get(0).getUserId();
+        String branchNo = userIn.get(0).getBranchNo();
         DataResponse dataResponse = new DataResponse();
         ItemEntity data = new ItemEntity();
         data.setBrandId(brandId);
@@ -375,7 +460,6 @@ public class ItemController {
             ,@RequestParam("galatyAmt") Integer  galatyAmt
             ,@RequestParam("qty") Integer  qty
             ,@RequestParam("price") Float  price
-            ,@RequestParam("branchNo") Integer  branchNo
             ,@RequestParam("toKen") String  toKen
             ,@RequestParam("itemtypeid") Integer  itemtypeid
             ,@RequestParam("houseid") Integer  houseid
@@ -401,7 +485,8 @@ public class ItemController {
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = userProfiles.get(0).getUserName();
+        String userId = userProfiles.get(0).getUserId();
+        String branchNo = userProfiles.get(0).getBranchNo();
         DataResponse dataResponse = new DataResponse();
         ItemEntity data = new ItemEntity();
         data.setItemId(item_id);

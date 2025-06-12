@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(name = "v_stock")
+@Table(name = "v_stock_details")
 public class StockTxnEntity {
 
     @Id
@@ -46,7 +46,7 @@ public class StockTxnEntity {
     private Double qty;
 
     @Column(name = "price")
-    private Double price;
+    private String price;
 
     @Column(name = "saveby", length = 200)
     private String saveBy;
@@ -113,4 +113,13 @@ public class StockTxnEntity {
 
     @Column(name = "status", length = 200)
     private String status;
+
+    @Column(name = "total")
+    private String total;
+
+    @Column(name = "caltotal")
+    private Float caltotal;
+
+    @Column(name = "image")
+    private String image;
 }

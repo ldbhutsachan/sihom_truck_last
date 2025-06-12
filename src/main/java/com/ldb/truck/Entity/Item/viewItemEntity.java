@@ -111,4 +111,13 @@ public class viewItemEntity {
 
     @Column(name = "token", nullable = false)
     private String toKen;
+
+    @Column(name = "bor_no", nullable = false)
+    private String borNo;
+
+    @Column(name = "bor_name", nullable = false)
+    private String borName;
+
+    @Column(name = "bor_location", nullable = false)
+    private String blocation;
 }

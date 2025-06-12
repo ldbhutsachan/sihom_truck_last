@@ -1,6 +1,9 @@
 package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Entity.Bor.BorEntity;
+import com.ldb.truck.Entity.Bor.BorEntityReq;
+import com.ldb.truck.Entity.Bor.BorEntityReqSave;
 import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
 import com.ldb.truck.Entity.OrderItem.OrderItemReportEntity;
 import com.ldb.truck.Entity.OrderItem.OrderRequest;
@@ -169,7 +172,7 @@ public class StockProductController {
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = userProfiles.get(0).getUserName();
+        String userId = userProfiles.get(0).getUserId();
         String billNo = stockItemDetailsEntity.getBillNo();
         try {
             response = stockService.getOrderItem(billNo,userId);
@@ -188,7 +191,7 @@ public class StockProductController {
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = userProfiles.get(0).getUserName();
+        String userId = userProfiles.get(0).getUserId();
         try {
             response = stockService.saveItemIn(stockItemDetailsEntity,userId);
         }catch (Exception e){
@@ -222,9 +225,12 @@ public class StockProductController {
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = userProfiles.get(0).getUserName();
+        String userId = userProfiles.get(0).getUserId();
+        String role = userProfiles.get(0).getRole();
         StockItemDetailsReq data = new StockItemDetailsReq();
         data.setUserId(userId);
+        data.setBillNo(stockItemDetailsReq.getBillNo());
+        data.setRole(role);
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());
         try {
@@ -261,17 +267,17 @@ public class StockProductController {
     @PostMapping("/getOrderItemAuth.service")
     public ResponseEntity<?> getOrderItemAuth (@RequestBody StockTxnEntity stockItemDetailsEntity){
         log.info("req body:"+stockItemDetailsEntity.toString());
-        OrderItemDetailsRes response  = new OrderItemDetailsRes();
+        OrderAuthResponse response  = new OrderAuthResponse();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = userProfiles.get(0).getUserName();
+        String userId = userProfiles.get(0).getUserId();
         String role = userProfiles.get(0).getRole();
-        Integer deId = stockItemDetailsEntity.getDetailId();
         String billNo = stockItemDetailsEntity.getBillNo();
+        String branchNo =userProfiles.get(0).getBranchNo();
         try {
-            response = stockService.getOrderItemAuth(billNo,role,userId);
+            response = stockService.getOrderItemAuth(billNo,role,userId,branchNo, stockItemDetailsEntity.getStatus());
         }catch (Exception e){
             response.setStatus("00");
             response.setMessage("Data Error Controller!!");
@@ -426,6 +432,69 @@ public class StockProductController {
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getBorAll.service")
+    public ResponseEntity<?> getBorAll (@RequestBody BorEntityReq borEntityReq){
+        DataResponse response  = new DataResponse();
 
-    //
+        try {
+            response = stockService.getBorAll(borEntityReq);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/saveBoEntity.service")
+    public ResponseEntity<?> saveBoEntity (@RequestBody BorEntityReqSave borEntityReq){
+        DataResponse response  = new DataResponse();
+     List<Profile> userProfiles = profileDao.getProfileInfoByToken(borEntityReq.getToKen());
+     if (userProfiles.isEmpty()) {
+         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+     }
+     String userId = userProfiles.get(0).getUserName();
+        try {
+            response = stockService.saveBoEntity(borEntityReq,userId);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateBoEntity.service")
+    public ResponseEntity<?> updateBoEntity (@RequestBody BorEntityReqSave borEntityReq){
+        DataResponse response  = new DataResponse();
+     List<Profile> userProfiles = profileDao.getProfileInfoByToken(borEntityReq.getToKen());
+     if (userProfiles.isEmpty()) {
+         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+     }
+     String userId = userProfiles.get(0).getUserName();
+        try {
+            response = stockService.updateBoEntity(borEntityReq,userId);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+ @CrossOrigin(origins = "*")
+    @PostMapping("/disbleBorEntity.service")
+    public ResponseEntity<?> disbleBorEntity (@RequestBody BorEntityReqSave borEntityReq){
+        DataResponse response  = new DataResponse();
+     List<Profile> userProfiles = profileDao.getProfileInfoByToken(borEntityReq.getToKen());
+     if (userProfiles.isEmpty()) {
+         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+     }
+     String userId = userProfiles.get(0).getUserName();
+        try {
+            response = stockService.disbleBorEntity(borEntityReq,userId);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    //*********tb bor ********
 }

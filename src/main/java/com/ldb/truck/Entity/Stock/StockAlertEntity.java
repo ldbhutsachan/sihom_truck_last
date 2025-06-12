@@ -35,4 +35,14 @@ public class StockAlertEntity {
 
     @Column(name = "unit")
     private String unit;
+
+    @Column(name = "image")
+    private String image;
+
+
+    @Column(name="qty")
+    private Integer qty;
+
+    @Column(name = "price")
+    private Double price;
 }

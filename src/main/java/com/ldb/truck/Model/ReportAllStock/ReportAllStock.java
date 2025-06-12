@@ -6,7 +6,9 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReportAllStock {
+    private String image;
     private String itemName;
+    private String itemId;
 
     private String headerNo;
     private String footNo;

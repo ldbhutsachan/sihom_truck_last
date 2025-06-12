@@ -5,24 +5,55 @@ import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Repository.ItemEntityRepository;
 import com.ldb.truck.Repository.ViewItemEntityRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class ItemServiceImpl {
     @Autowired
     ViewItemEntityRepository viewItemEntityRepository;
     @Autowired
     ItemEntityRepository itemEntityRepository;
-    public DataResponse getViewItemInventory(viewItemEntity viewItemEntity,String userName){
+    public DataResponse getViewItemInventory(viewItemEntity viewItemEntity,String userName,String role,String branchNo){
+        log.info("role:"+role);
+        log.info("userName:"+userName);
+        log.info("branchNo:"+branchNo);
         DataResponse response = new DataResponse();
-
         try {
-            if(viewItemEntity.getItemId() != null){
-                response.setDataResponse(viewItemEntityRepository.getItemByItemId(viewItemEntity.getItemId(),userName));
-            }else {
-                response.setDataResponse(viewItemEntityRepository.getAllViewItems(userName));
+            if("USER".equals(role)){
+                response.setDataResponse(viewItemEntityRepository.getAllViewItemsUserId(userName));
             }
+            else if("AUTH".equals(role)){
+                response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo));
+            }
+            else if("PADMIN".equals(role)){
+                response.setDataResponse(viewItemEntityRepository.getAllViewItemsAdmin());
+            }
+            else {
+                response.setDataResponse(null);
+            }
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Data not Found !!");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Data !!");
+        }
+        return response;
+}
+public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,String role,String branchNo){
+        log.info("role:"+role);
+        log.info("userName:"+userName);
+        log.info("branchNo:"+branchNo);
+        DataResponse response = new DataResponse();
+        try {
+                response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo));
             if(response.getDataResponse() != null){
                 response.setStatus("00");
                 response.setMessage("Success");
