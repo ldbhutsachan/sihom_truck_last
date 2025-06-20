@@ -793,8 +793,8 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
         String group = "\ngroup by image,item_id,item_name,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
-        String startDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
-        String endDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
+        String startDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
+        String endDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
         String tableCon = "\n from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
                 "left join request_item_details c on a.item_id=c.item_id where 1=1";
         try {
@@ -850,29 +850,38 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
     public List<ReportAllStock> getTxnStock(StockRequest stockRequest){
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
-        String group = "\ngroup by a.item_id,a.image,item_name,c.headerno,c.footerno,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
-        String startDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
-        String endDateCon = "\nand to_char(b.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
-        String tableCon = "\n  from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
+        String group = "\n group by a.item_id,a.image,item_name,\n" +
+                "d.req_id,d.req_name,f.key_id,f.b_name,f.location,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd') ";
+        String startDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
+        String endDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
+        String tableCon = "\n from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
                 "left join request_item_details c on a.item_id=c.item_id \n" +
-                "left join TB_HEADER_TRUCK d on c.headerno=d.H_VICIVLE_NUMBER\n" +
-                "left join TB_FOOTER_TRUCH e on c.footerno = e.F_CARD_NO\n" +
-                "where 1=1 ";
+                "left join tb_bors f on f.type=c.type\n" +
+                "left join request_item_type d on f.type= d.req_id ";
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append("select  a.item_id,a.image,a.item_name,c.headerno,c.footerno,to_char(b.savedate,'yyyy-mm-dd') txndateIn,\n" +
+            sb.append("select  \n" +
+                    "a.item_id,\n" +
+                    "a.item_name,\n" +
+                    "a.image,\n" +
+                    "d.req_id type,\n" +
+                    "d.req_name type_name,\n" +
+                    "f.key_id bor_no,\n" +
+                    "f.b_name bor_name,\n" +
+                    "f.location blocation,\n" +
+                    "to_char(b.savedate,'yyyy-mm-dd') txndateIn,\n" +
                     "to_char(c.savedate,'yyyy-mm-dd') txndateOut,\n" +
                     "   SUM(a.unit) AS amt,\n" +
                     "    FORMAT(SUM(a.price), '###,###,###') AS price,\n" +
-                    "    FORMAT(SUM(a.unit * a.price), '###,###,###') AS total,\n" +
+                    "    FORMAT(SUM(a.qty * a.price), '###,###,###') AS total,\n" +
                     "    \n" +
                     "    SUM(b.unit) AS amt_in,\n" +
                     "    FORMAT(SUM(b.price), '###,###,###') AS price_in,\n" +
-                    "    FORMAT(SUM(b.unit * b.price), '###,###,###') AS total_in,\n" +
+                    "    FORMAT(SUM(b.qty * b.price), '###,###,###') AS total_in,\n" +
                     "    \n" +
                     "    SUM(c.unit) AS amt_out,\n" +
                     "    FORMAT(SUM(c.price), '###,###,###') AS price_out,\n" +
-                    "    FORMAT(SUM(c.unit * c.price), '###,###,###') AS total_out ");
+                    "    FORMAT(SUM(c.qty * c.price), '###,###,###') AS total_out  ");
             sb.append(tableCon);
             sb.append(startDateCon);
             sb.append(endDateCon);
@@ -886,8 +895,11 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                     tr.setImage(rs.getString("image"));
                     tr.setItemName(rs.getString("item_name"));
                     tr.setItemId(rs.getString("item_id"));
-                    tr.setHeaderNo(rs.getString("headerno"));
-                    tr.setFootNo(rs.getString("footerno"));
+                    tr.setType(rs.getString("type"));
+                    tr.setTypeName(rs.getString("type_name"));
+                    tr.setBorNo(rs.getString("bor_no"));
+                    tr.setBorName(rs.getString("bor_name"));
+                    tr.setBlocation(rs.getString("blocation"));
                     tr.setTxnDateIn(rs.getString("txndateIn"));
                     tr.setTotalOut(rs.getString("txndateOut"));
                     tr.setAmt(rs.getInt("amt"));

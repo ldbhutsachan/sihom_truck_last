@@ -114,16 +114,23 @@ public class RequestTxnEntity {
     @Column(name = "status", length = 200)
     private String status;
 
-    @Column(name = "headerno", length = 200)
-    private String headerNo;
+    @Column(name = "type", length = 200)
+    private String type;
 
-    @Column(name = "footerno", length = 200)
-    private String footerNo;
+    @Column(name = "bor_no", length = 200)
+    private String borNo;
 
     @Column(name = "total")
     private Float total;
 
     @Column(name = "image")
     private String image;
+
+
+    @Column(name = "b_name", length = 200)
+    private String bName;
+
+    @Column(name = "blocation", length = 200)
+    private String blocation;
 
 }

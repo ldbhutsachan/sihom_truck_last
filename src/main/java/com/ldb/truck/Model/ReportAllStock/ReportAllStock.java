@@ -10,8 +10,14 @@ public class ReportAllStock {
     private String itemName;
     private String itemId;
 
-    private String headerNo;
-    private String footNo;
+    private String type;
+    private String typeName;
+
+    private String borNo;
+
+    private String borName;
+    private String blocation;
+
     private String txnDateIn;
     private String txnDateOut;
 

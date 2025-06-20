@@ -5,17 +5,17 @@ import lombok.Data;
 import javax.persistence.*;
 @Entity
 @Data
-@Table(name = "TB_BRANCH")
+@Table(name = "tb_bors")
 public class BranchEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "KEY_ID")
+    @Column(name = "key_id")
     private Long brachNo;
 
-    @Column(name = "B_NAME")
+    @Column(name = "b_name")
     private String brachName;
 
-    @Column(name = "B_LOCATION")
+    @Column(name = "location")
     private String location;
 }

@@ -24,6 +24,11 @@ public interface RequestTxnRepository extends CrudRepository<RequestTxnEntity,Lo
 
     @Transactional
     @Modifying
+    @Query(value = "select * from v_request_item_fix  order by status desc ", nativeQuery = true)
+    List<RequestTxnEntity> getStockByBillNoAdminAll();
+
+    @Transactional
+    @Modifying
     @Query(value = "select * from v_request_item_fix where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate   and status=:status order by detail_id desc ", nativeQuery = true)
     List<RequestTxnEntity> getRequestReport(@Param("startDate") String startDate,@Param("endDate") String endDate,@Param("status") String status);
 

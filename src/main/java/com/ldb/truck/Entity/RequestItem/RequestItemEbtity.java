@@ -1,8 +1,6 @@
 package com.ldb.truck.Entity.RequestItem;
 
 import lombok.Data;
-import lombok.Getter;
-
 import javax.persistence.*;
 import java.util.Date;
 
@@ -70,11 +68,11 @@ public class RequestItemEbtity {
     @Column(name = "token")
     private String toKen;
 
-    @Column(name = "headerno")
-    private String headerNo;
+    @Column(name = "type")
+    private String type;
 
-    @Column(name = "footerno")
-    private String footerNo;
+    @Column(name = "bor_no")
+    private String borNo;
 
     @Column(name = "note")
     private String note;

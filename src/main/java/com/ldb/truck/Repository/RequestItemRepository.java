@@ -1,6 +1,5 @@
 package com.ldb.truck.Repository;
 
-import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
 import com.ldb.truck.Entity.RequestItem.RequestItemEbtity;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,7 +18,7 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
     @Query("UPDATE RequestItemEbtity s SET s.billNo = :billNo, s.barcode = :barcode, s.itemId = :itemId, "
             + "s.unit = :unit, s.size = :size, s.currency = :currency, s.exchangeRate = :exchangeRate, s.qty = :qty, "
             + "s.price = :price,s.editBy = :editBy, s.editDate = :editDate, "
-            + "s.status = :status , s.headerNo=:headerNo,s.footerNo=:footerNo ,note=:note"
+            + "s.status = :status , s.type=:type,s.borNo=:borNo ,note=:note"
             + " WHERE s.detailId = :detailId")
     int updateStockItemDetails(
 
@@ -35,8 +34,8 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
             @Param("editBy") String editBy,
             @Param("editDate") Date editDate,
             @Param("status") String status,
-            @Param("headerNo") String headerNo,
-            @Param("footerNo") String footerNo,
+            @Param("type") String type,
+            @Param("borNo") String borNo,
             @Param("note") String note,
             @Param("detailId") Integer detailId);
 

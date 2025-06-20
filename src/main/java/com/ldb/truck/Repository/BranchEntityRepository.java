@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface BranchEntityRepository extends CrudRepository<BranchEntity,Long> {
-    @Query(value = "select * from TB_BRANCH",nativeQuery = true)
+    @Query(value = "select * from tb_bors",nativeQuery = true)
     List<BranchEntity> getBranchEntity();
 }

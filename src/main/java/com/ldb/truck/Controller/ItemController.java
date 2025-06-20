@@ -254,7 +254,7 @@ public class ItemController {
     @CrossOrigin(origins = "*")
     @GetMapping("/getBranch.service")
     public ResponseEntity<?> getBranch (){
-        log.info("=============start getBranch ============");
+        log.info("=============start getBor ============");
         DataResponse response  = new DataResponse();
         try {
             response = placeStockService.getBranch();

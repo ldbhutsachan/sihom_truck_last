@@ -56,7 +56,7 @@ public interface OrderDetailsRepository extends CrudRepository<OrderItemReportEn
     @Transactional
     @Query(value = "UPDATE order_item_details SET buyer_id = :buyerId, " +
             "buyer_date = :buyerDate, status = :status " +
-            "WHERE FIND_IN_SET(detail_id, :detailId) and bill_no =:billNo ", nativeQuery = true)
+            "WHERE FIND_IN_SET(detail_id, :detailId) and bill_no =:billNo and status='auth' ", nativeQuery = true)
     int approveStockItemDetailsBuyer(
             @Param("buyerId") String buyerId,
             @Param("buyerDate") Date buyerDate,
@@ -67,7 +67,7 @@ public interface OrderDetailsRepository extends CrudRepository<OrderItemReportEn
     @Transactional
     @Query(value = "UPDATE order_item_details SET account_id = :accountId, " +
             "account_date = :accountDate, status = :status " +
-            "WHERE FIND_IN_SET(detail_id, :detailId) and bill_no =:billNo ", nativeQuery = true)
+            "WHERE FIND_IN_SET(detail_id, :detailId) and bill_no =:billNo  ", nativeQuery = true)
     int approveStockItemDetailsAccounting(
             @Param("accountId") String accountId,
             @Param("accountDate") Date accountDate,
@@ -78,7 +78,7 @@ public interface OrderDetailsRepository extends CrudRepository<OrderItemReportEn
     @Transactional
     @Query(value = "UPDATE order_item_details SET acceptby = :acceptby, " +
             "acceptdate = :acceptdate, status = :status " +
-            "WHERE FIND_IN_SET(detail_id, :detailId)", nativeQuery = true)
+            "WHERE FIND_IN_SET(detail_id, :detailId) ", nativeQuery = true)
     int approveToStock(
             @Param("acceptby") String acceptby,
             @Param("acceptdate") Date acceptdate,

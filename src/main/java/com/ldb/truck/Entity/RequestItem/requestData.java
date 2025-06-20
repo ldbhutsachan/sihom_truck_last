@@ -9,9 +9,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestItem {
-    private int item;
-    private int qty;
-    private String type;
-    private String borNo;
+public class requestData {
+    private String toKen;
+    private String reqTypeId;
 }

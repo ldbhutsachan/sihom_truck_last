@@ -3,11 +3,20 @@ package com.ldb.truck.Service.StockService;
 import com.ldb.truck.Entity.Bor.BorEntity;
 import com.ldb.truck.Entity.Bor.BorEntityReq;
 import com.ldb.truck.Entity.Bor.BorEntityReqSave;
+import com.ldb.truck.Entity.ItemPayment.*;
 import com.ldb.truck.Entity.OrderItem.*;
 import com.ldb.truck.Entity.RequestItem.*;
 import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Repository.*;
+import com.ldb.truck.Repository.Payment.ItemDetailsEntityRepository;
+import com.ldb.truck.Repository.Payment.ItemPaymentEntityRepository;
+import com.ldb.truck.Repository.Payment.PaymentDetailsEntityRepository;
+import com.ldb.truck.Repository.Payment.VCalOrderEntityRepository;
+import com.ldb.truck.Repository.RequestItem.RequestItemTypeRepository;
+import com.ldb.truck.Entity.RequestItem.requestData;
+import com.ldb.truck.Repository.RequestItem.requestItemTypeBorNameEntityRepository;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,12 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 @Slf4j
 @Service
@@ -43,13 +48,24 @@ public class StockServiceImpl {
 
     @Value("${info.location}")
     private String location;
-
+    @Autowired
+    ItemDetailsEntityRepository itemDetailsEntityRepository;
+    @Autowired
+    PaymentDetailsEntityRepository paymentDetailsEntityRepository;
+    @Autowired
+    InvoiceKeyRepository invoiceKeyRepository;
+    @Autowired
+    ItemPaymentEntityRepository itemPaymentEntityRepository;
+    @Autowired
+    ItemPaymentViewEntityRepository itemPaymentViewEntityRepository;
     @Autowired
     BorEntityRepository borEntityRepository;
     @Autowired
     RequestItemEntityRepository requestItemEntityRepository;
     @Autowired
     OrderItemTxnEntityRepository orderItemTxnEntityRepository;
+    @Autowired
+    RequestItemTypeRepository requestItemTypeRepository;
     @Autowired
     RequestGenKeyRepository requestGenKeyRepository;
     @Autowired
@@ -158,7 +174,6 @@ public class StockServiceImpl {
             );
             if (updatedRows > 0) {
                int i =  updateItemAndUpTotal(detailIdsStr);
-
                 response.setStatus("00");
                 response.setMessage("Stock items approve successfully.");
             } else {
@@ -487,8 +502,8 @@ public class StockServiceImpl {
             RequestItemEbtity entity = new RequestItemEbtity();
             entity.setBillNo(request.getBillNo());
             entity.setItemId(item.getItem());
-            entity.setHeaderNo(item.getHeaderNo());
-            entity.setFooterNo(item.getFooterNo());
+            entity.setBorNo(item.getBorNo());
+            entity.setType(item.getType());
             entity.setQty(item.getQty());
             entity.setSaveBy(userId);
             entity.setSaveDate(new Date());
@@ -563,6 +578,9 @@ public class StockServiceImpl {
         }
         return response;
     }
+
+    @Autowired
+    VCalOrderEntityRepository vCalOrderEntityRepository;
     @Transactional
     public DataResponse approveStockItemDetailsOrderProd(StockItemDetailsReq stockItemDetailsReq) {
         String role = stockItemDetailsReq.getRole();
@@ -610,6 +628,39 @@ public class StockServiceImpl {
                             stockItemDetailsReq.getBillNo(),
                             detailIdsStr
                     );
+                    //=====if accounting approve txn then auto save payment
+                    //check total amount first
+                    List<VCalOrderEntity> getCal = vCalOrderEntityRepository.getVCalOrderEntity(stockItemDetailsReq.getBillNo());
+                    log.info("show check getCal size :"+getCal.size());
+                    Optional<String> optionalKeyNo = invoiceKeyRepository.getMaxStockId();
+                    String keyNo = optionalKeyNo.map(String::valueOf).orElse(null);
+                    log.info("keyNo:"+keyNo);
+                    ItemPaymentEntity entity = new ItemPaymentEntity();
+                        entity.setSavebBy(stockItemDetailsReq.getUserId());
+                        entity.setSaveDate(new Date());
+                        entity.setBillNo(stockItemDetailsReq.getBillNo());
+                        entity.setInvoiceNo(keyNo);
+                        entity.setCcy("LAK");
+                        entity.setStatus("wait-payment");
+                        entity.setQty(getCal.get(0).getQty());
+                        entity.setTotal(getCal.get(0).getPaymentTotal());
+                        //total
+                    itemPaymentEntityRepository.save(entity);
+
+                    //then store data to payment entity
+                    log.info("===let save payment details===");
+                    PaymentDetailsEntity itemPaymentEntity = new PaymentDetailsEntity();
+                    itemPaymentEntity.setSaveby(stockItemDetailsReq.getUserId());
+                    itemPaymentEntity.setSaveDate(new Date());
+                    itemPaymentEntity.setInvoiceNo(keyNo);
+                    itemPaymentEntity.setRexchangeRate(1.0f);
+                    itemPaymentEntity.setType("cash");
+                    itemPaymentEntity.setCcy("LAK");
+                    itemPaymentEntity.setAmount(0.0f);
+                    itemPaymentEntity.setPaymentType("LDBBANK");
+                    itemPaymentEntity.setExp(new Date());
+                    itemPaymentEntity.setStatus("suspend");
+                    paymentDetailsEntityRepository.save(itemPaymentEntity);
                 }
                 if (updatedRows > 0) {
                     response.setStatus("00");
@@ -629,6 +680,7 @@ public class StockServiceImpl {
 
     @Transactional
     public DataResponse approveItemToStock(StockItemDetailsReq stockItemDetailsReq) {
+
         DataResponse response = new DataResponse();
         String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
                 .map(String::valueOf)
@@ -643,7 +695,6 @@ public class StockServiceImpl {
 
             if (updatedRows > 0) {
                 updateItemAndUpTotalOrder(detailIdsStr);
-                log.info("start show 1");
                 response.setStatus("00");
                 response.setMessage("Stock items approve successfully.");
             } else {
@@ -690,27 +741,21 @@ public class StockServiceImpl {
         List<Long> itemIdList = Arrays.stream(itemId.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
-
         // Retrieve items from repository
         List<OrderItemReportEntity> items = orderDetailsRepository.findByItemId(itemIdList);
-
         // Check if items list is null or empty
         if (items == null || items.isEmpty()) {
             log.warn("No items found for itemId: " + itemId);
             return;
         }
-
         // Log the first item for debugging purposes
         log.info("First item in list: " + items.get(0).getItemId());
-
         // Process and update items
         for (OrderItemReportEntity stock : items) {
             Integer qty = stock.getQty();
             Integer itemNo = stock.getItemId();
-
             // Logging details before updating
             log.info("Processing item: " + itemNo + ", Quantity: " + qty);
-
             // Perform database update
             itemEntityRepository.updateStockInItem(qty, itemNo);
         }
@@ -919,8 +964,8 @@ public class StockServiceImpl {
         entity.setSaveBy(userId);
         entity.setSaveDate(new Date());
         entity.setToKen(stockItemDetailsEntity.getToKen());
-        entity.setFooterNo(stockItemDetailsEntity.getFooterNo());
-        entity.setHeaderNo(stockItemDetailsEntity.getHeaderNo());
+        entity.setBorNo(stockItemDetailsEntity.getBorNo());
+        entity.setType(stockItemDetailsEntity.getType());
         entity.setNote(stockItemDetailsEntity.getNote());
         entity.setStatus("wait");
         return entity;
@@ -942,8 +987,8 @@ public class StockServiceImpl {
                     userId,
                     new Date(),
                     "wait",
-                    stockItemDetailsEntity.getHeaderNo(),
-                    stockItemDetailsEntity.getFooterNo(),
+                    stockItemDetailsEntity.getType(),
+                    stockItemDetailsEntity.getBorNo(),
                     stockItemDetailsEntity.getNote(),
                     stockItemDetailsEntity.getDetailId()
             ));
@@ -1040,11 +1085,11 @@ public DataResponse checkKeyOrder(){
         List<RequestTxnEntity> listData = new ArrayList<>();
         RequestItemHeader groupHeader = new RequestItemHeader();
         try {
-            //if("ADMIN".equals(role)){
+            if("all".equals(status)){
+                listData = requestTxnRepository.getStockByBillNoAdminAll();
+            }else {
                 listData = requestTxnRepository.getStockByBillNoAdmin(status);
-           // }else {
-            //    listData = requestTxnRepository.getStockByBillByUser(userName,status);
-            //}
+            }
             List<String> billNoList = listData.stream()
                     .map(RequestTxnEntity::getBillNo)
                     .distinct()
@@ -1265,4 +1310,382 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
     return entity;
 }
 //======make bor end =====
+
+
+    public DataResponse paymentItem(ItemPaymentReq itemPaymentReq, String userId, String role, String branchNo){
+        DataResponse response = new DataResponse();
+        try {
+
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("ສໍາເລັດ");
+            }else {
+                response.setStatus("00");
+                response.setMessage("ລາຍການຊໍາລະຂອງທ່ານ ບໍ່ສໍາເລັດ !!!!");
+            }
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error data Please check you're data !!!");
+
+        }
+        return response;
+    }
+    public PaymentItemDetailsRes getPaymentItem(ItemPaymentReq itemPaymentReq, String userId, String role, String branchNo){
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
+        PaymentItemDetailsRes response = new PaymentItemDetailsRes();
+        response.setLogo("http://khounkham.com/images/batery/b94de922-005b-4452-8763-5246c207fa86-b94de922-005b-4452-8763-5246c207fa86.jpg");
+        List<GroupPaymentItemHeader> groupStockItemHeaders = new ArrayList<>();
+        List<ItemPaymentViewEntity> listData = new ArrayList<>();
+        GroupPaymentItemHeader groupHeader = new GroupPaymentItemHeader();
+        try {
+            listData = itemPaymentViewEntityRepository.getBillPaymentAll();
+            List<String> billNoList = listData.stream()
+                    .map(ItemPaymentViewEntity::getInvoiceNo)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            for (String bill : billNoList){
+                groupHeader = new GroupPaymentItemHeader();
+                groupHeader.setInvoiceNo(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getInvoiceNo).findFirst().orElse(""));
+                groupHeader.setBillNo(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBillNo).findFirst().orElse(""));
+               //===start =========
+                groupHeader.setBorName(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBorname).findFirst().orElse(""));
+                groupHeader.setBorLocation(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBlocation).findFirst().orElse(""));
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm a"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getInvoiceNo().equals(bill))
+                        .map(ItemPaymentViewEntity::getSaveDate)
+                        .findFirst();
+                Optional<Date> expDate = listData.stream()
+                        .filter(p -> p.getInvoiceNo().equals(bill))
+                        .map(ItemPaymentViewEntity::getExp)
+                        .findFirst();
+                groupHeader.setExpDate3(expDate.map(formatter::format).orElse("No Date Found"));
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+//===start
+                groupHeader.setQty(listData.stream()
+                        .filter(p -> p.getInvoiceNo().equals(bill))
+                        .mapToInt(ItemPaymentViewEntity::getQtycal)
+                        .sum());
+                Double total = listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getAmountscal).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setAmount(numfm.format(total));
+                Double paymentTotal = listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getTotalcal).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setPaymentTotal(numfm.format(paymentTotal));
+                groupHeader.setSunSpendTotal(numfm.format(paymentTotal-total));
+                double checkTotal = paymentTotal-total;
+                String  checkStatus = listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getStatus).findFirst().orElse("");
+                //=====let check amount != 0 then show status not ok
+                String status = "";
+                //====
+                if("wait-payment".equals(checkStatus)){
+                    status="wait-payment";
+                }else if("ok".equals(checkStatus)){
+                    if(checkTotal == 0){
+                        status = "ok";
+                    }else {
+                        status = "suspend";
+                    }
+                }else {
+                    if(checkTotal == 0){
+                        status = "ok";
+                    }else {
+                        status = "suspend";
+                    }
+                }
+                groupHeader.setStatus(status);
+                //===end data
+                groupStockItemHeaders.add(groupHeader);
+                List<ItemPaymentViewEntity> groupListData = new ArrayList<>();
+                for(ItemPaymentViewEntity listStockTxn :  listData){
+                    if(listStockTxn.getInvoiceNo().equals(bill)){
+                        groupListData.add(listStockTxn);
+                    }
+                    groupHeader.setDetails(groupListData);
+                }
+            }
+            response.setDataResponse(groupStockItemHeaders);
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Data not found");
+            }
+        }
+        catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error retrieving data: " + e.getMessage());
+            log.error("Exception: ", e);
+        }
+
+        return response;
+    }
+    public PaymentDetailsRes getPaymentItemDetail(ItemPaymentReq itemPaymentReq, String userId, String role, String branchNo){
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
+        PaymentDetailsRes response = new PaymentDetailsRes();
+        response.setLogo("http://khounkham.com/images/batery/b94de922-005b-4452-8763-5246c207fa86-b94de922-005b-4452-8763-5246c207fa86.jpg");
+        List<GroupDetailsHeader> groupStockItemHeaders = new ArrayList<>();
+        List<ItemDetailsEntity> listData = new ArrayList<>();
+        GroupDetailsHeader groupHeader = new GroupDetailsHeader();
+        try {
+            listData = itemDetailsEntityRepository.getBillPaymentDelAll();
+            List<String> billNoList = listData.stream()
+                    .map(ItemDetailsEntity::getInvoice_no)
+                    .distinct()
+                    .collect(Collectors.toList());
+            for (String bill : billNoList){
+                groupHeader = new GroupDetailsHeader();
+                groupHeader.setInvoiceNo(listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getInvoice_no).findFirst().orElse(""));
+                groupHeader.setBillNo(listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getBill_no).findFirst().orElse(""));
+               //===start =========
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm a"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getInvoice_no().equals(bill))
+                        .map(ItemDetailsEntity::getSavedate)
+                        .findFirst();
+                Optional<Date> expDate = listData.stream()
+                        .filter(p -> p.getInvoice_no().equals(bill))
+                        .map(ItemDetailsEntity::getExp)
+                        .findFirst();
+                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
+
+                groupHeader.setExpDate3(expDate.map(formatter::format).orElse("No Date Found"));
+                groupHeader.setQty(listData.stream()
+                        .filter(p -> p.getInvoice_no().equals(bill))
+                        .mapToInt(ItemDetailsEntity::getQty)
+                        .sum());
+                Double total = listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getAmount).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setAmount(numfm.format(total));
+                Double paymentTotal = listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setPaymentTotal(numfm.format(paymentTotal));
+                groupHeader.setSunSpendTotal(numfm.format(paymentTotal-total));
+                double checkTotal = paymentTotal-total;
+
+                String  checkStatus = listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getStatus).findFirst().orElse("");
+                //=====let check amount != 0 then show status not ok
+                String status = "";
+                //====
+                if("wait-payment".equals(checkStatus)){
+                    status="wait-payment";
+                }else if("ok".equals(checkStatus)){
+                    if(checkTotal == 0){
+                        status = "ok";
+                    }else {
+                        status = "suspend";
+                    }
+                }else {
+                    if(checkTotal == 0){
+                        status = "ok";
+                    }else {
+                        status = "suspend";
+                    }
+                }
+                groupHeader.setStatus(status);
+                groupStockItemHeaders.add(groupHeader);
+                List<ItemDetailsEntity> groupListData = new ArrayList<>();
+                for(ItemDetailsEntity listStockTxn :  listData){
+                    if(listStockTxn.getInvoice_no().equals(bill)){
+                        groupListData.add(listStockTxn);
+                    }
+                    groupHeader.setDetails(groupListData);
+                }
+            }
+            response.setDataResponse(groupStockItemHeaders);
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("05");
+                response.setMessage("Data not found");
+            }
+        }
+        catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error retrieving data: " + e.getMessage());
+            log.error("Exception: ", e);
+        }
+
+        return response;
+    }
+    public PaymentItemDetailsRes getReportPaymentItem(ItemPaymentReq itemPaymentReq, String userId, String role, String branchNo){
+
+        String borNumber = itemPaymentReq.getBorNumber();
+        String status = itemPaymentReq.getStatus();
+        String startDate = itemPaymentReq.getStartDate();
+        String endDate = itemPaymentReq.getEndDate();
+        log.info("borNumber:"+borNumber);
+        log.info("status:"+status);
+        log.info("startDate:"+startDate);
+        log.info("endDate:"+endDate);
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
+        PaymentItemDetailsRes response = new PaymentItemDetailsRes();
+        response.setLogo("http://khounkham.com/images/batery/b94de922-005b-4452-8763-5246c207fa86-b94de922-005b-4452-8763-5246c207fa86.jpg");
+        List<GroupPaymentItemHeader> groupStockItemHeaders = new ArrayList<>();
+        List<ItemPaymentViewEntity> listData = new ArrayList<>();
+        GroupPaymentItemHeader groupHeader = new GroupPaymentItemHeader();
+        try {
+            if(!"all".equals(status)){
+                log.info("===start 01");
+                if(!"all".equals(borNumber)){
+                    listData = itemPaymentViewEntityRepository.getBillPaymentByDateHaveStatus(startDate,endDate,status);
+                }else {
+                    listData = itemPaymentViewEntityRepository.getBillPaymentByDateHaveStatusBor(startDate,endDate,status,borNumber);
+                }
+            }else {
+                log.info("===start 02");
+                if(!"all".equals(borNumber)){
+                    log.info("===start 02.1");
+                    listData = itemPaymentViewEntityRepository.findPaymentsByDateRangeBorNumber(startDate,endDate,borNumber);
+                }else {
+                    log.info("===start 02.2");
+                    listData = itemPaymentViewEntityRepository.findPaymentsByDateRangeBor(startDate,endDate);
+                }
+            }
+
+            List<String> billNoList = Optional.ofNullable(listData)
+                    .orElse(Collections.emptyList()) // Ensure `listData` isn't null
+                    .stream()
+                    .map(ItemPaymentViewEntity::getInvoiceNo)
+                    .filter(Objects::nonNull) // Remove null values from invoiceNo
+                    .distinct()
+                    .collect(Collectors.toList());
+            for (String bill : billNoList){
+                groupHeader = new GroupPaymentItemHeader();
+                groupHeader.setInvoiceNo(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getInvoiceNo).findFirst().orElse(""));
+                groupHeader.setBillNo(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBillNo).findFirst().orElse(""));
+                //===start =========
+                groupHeader.setBorName(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBorname).findFirst().orElse(""));
+                groupHeader.setBorLocation(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBlocation).findFirst().orElse(""));
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm a"); // Desired format
+                Optional<Date> optionalDate = listData.stream()
+                        .filter(p -> p.getInvoiceNo().equals(bill))
+                        .map(ItemPaymentViewEntity::getSaveDate)
+                        .findFirst();
+                groupHeader.setTxnDate(null);
+
+                groupHeader.setQty((int) listData.stream()
+                        .filter(p -> p.getInvoiceNo().equals(bill))
+                        .count());
+                Double total = listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getAmount).collect(Collectors.summingDouble(Float::doubleValue));
+                groupHeader.setAmount(numfm.format(total));
+                groupHeader.setStatus(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getStatus).findFirst().orElse(""));
+                groupStockItemHeaders.add(groupHeader);
+                List<ItemPaymentViewEntity> groupListData = new ArrayList<>();
+                for(ItemPaymentViewEntity listStockTxn :  listData){
+                    if(listStockTxn.getInvoiceNo().equals(bill)){
+                        groupListData.add(listStockTxn);
+                    }
+                    groupHeader.setDetails(groupListData);
+                }
+            }
+            response.setDataResponse(groupStockItemHeaders);
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("Success");
+            }else {
+                response.setStatus("00");
+                response.setMessage("Data not found");
+            }
+        }
+        catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error retrieving data: " + e.getMessage());
+            log.error("Exception: ", e);
+        }
+
+        return response;
+    }
+
+    //*****payment item
+    public DataResponse paymentItem (PaymentDetailsEntityReq paymentDetailsEntity,String userId){
+        String status = paymentDetailsEntity.getStatus();
+        log.info("status:"+status);
+        log.info("exp:"+paymentDetailsEntity.getExp());
+        Date conExpiredDate = null;
+        Date expiredDate = paymentDetailsEntity.getExp();
+        if (expiredDate == null){
+            conExpiredDate = new Date();
+        }else {
+            conExpiredDate = paymentDetailsEntity.getExp();
+        }
+        DataResponse response = new DataResponse();
+        try {
+            PaymentDetailsEntity mapperEntity = mapper(paymentDetailsEntity,userId,conExpiredDate);
+            response.setDataResponse(paymentDetailsEntityRepository.save(mapperEntity));
+            if(response.getDataResponse() != null){
+                //******if payment get status = ok then update payment item set status = ok
+                if("ok".equals(status)){
+                    log.info("===let update payment to ok");
+                    itemPaymentEntityRepository.updateStatusPayment(paymentDetailsEntity.getInvoiceNo());
+                }
+                response.setStatus("00");
+                response.setMessage("success");
+            }else {
+                response.setStatus("00");
+                response.setMessage("Can't Payment This Invoice");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return  response;
+    }
+    public  PaymentDetailsEntity mapper(PaymentDetailsEntityReq paymentDetailsEntity,String userId,Date expDate){
+        PaymentDetailsEntity entity = new PaymentDetailsEntity();
+        entity.setInvoiceNo(paymentDetailsEntity.getInvoiceNo());
+        entity.setAmount(paymentDetailsEntity.getAmount());
+        entity.setCcy(paymentDetailsEntity.getCcy());
+        entity.setRexchangeRate(paymentDetailsEntity.getExchangeRate());
+        entity.setPaymentType(paymentDetailsEntity.getPaymentType());
+        entity.setType(paymentDetailsEntity.getType());
+        entity.setSaveDate(new Date());
+        entity.setSaveby(userId);
+        entity.setExp(expDate);
+        entity.setStatus(paymentDetailsEntity.getStatus());
+   return entity;
+    }
+
+    //****
+    public DataResponse getRequestItemType(){
+        DataResponse response = new DataResponse();
+        try {
+            response.setDataResponse(requestItemTypeRepository.findAll());
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("success");
+            }else {
+                response.setStatus("00");
+                response.setMessage("Data not Found !!");
+            }
+
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Data !!");
+        }
+        return response;
+    }
+
+    @Autowired
+    requestItemTypeBorNameEntityRepository requestItemTypeBorNameEntityRepository;
+    public DataResponse getRequestItemByItemType(requestData requestData,String borId){
+        log.info("borId:"+borId);
+        log.info("info req:"+requestData.toString());
+        DataResponse response = new DataResponse();
+        try {
+            response.setDataResponse(requestItemTypeBorNameEntityRepository.findByTypeAndBorNo(requestData.getReqTypeId(),borId));
+            if(response.getDataResponse() != null){
+                response.setStatus("00");
+                response.setMessage("success");
+            }else {
+                response.setStatus("00");
+                response.setMessage("Data not Found !!");
+            }
+
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Error Data !!");
+        }
+        return response;
+    }
 }
