@@ -11,7 +11,6 @@ import java.util.List;
 public interface ItemPaymentViewEntityRepository extends CrudRepository<ItemPaymentViewEntity,Long> {
     @Query(value = "SELECT * FROM v_payment_item ORDER BY status DESC", nativeQuery = true)
     List<ItemPaymentViewEntity> getBillPaymentAll();
-
     @Query(value = "SELECT * FROM v_payment_item " +
             "WHERE DATE(savedate) >= :startDate " +
             "AND DATE(savedate) <= :endDate " +

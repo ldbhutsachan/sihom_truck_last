@@ -27,7 +27,7 @@ public class PlaceStockService {
     public DataResponse getBranch(){
         DataResponse response = new DataResponse();
         try {
-            response.setDataResponse(branchEntityRepository.getBranchEntity());
+            response.setDataResponse(branchEntityRepository.getBranchModel());
             if(response.getDataResponse() != null){
                 response.setStatus("00");
                 response.setMessage("Success");

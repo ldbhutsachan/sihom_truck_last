@@ -1,11 +1,13 @@
 package com.ldb.truck.Dao.Customer;
 
+import com.ldb.truck.Entity.ItemPayment.ItemDetailsEntity;
+import com.ldb.truck.Entity.ItemPayment.ItemPaymentViewEntity;
+import com.ldb.truck.Entity.ItemPayment.PaymentModel;
 import com.ldb.truck.Model.Login.FuelStation.FuelStationOut;
 import com.ldb.truck.Model.Login.FuelStation.FuelStationReq;
 import com.ldb.truck.Model.Login.ReportStaff.AmountThatPaidStaffModel;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaff;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRanking;
-import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Model.Login.customer.CustomerOut;
 import com.ldb.truck.Model.Login.customer.CustomerReq;
@@ -25,7 +27,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +35,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 @Repository
@@ -1119,5 +1119,76 @@ public int insertTotalprice (FuelStationReq fuelStationReq) {
             return i;
         }
         return i;
+    }
+
+    public List<ItemPaymentViewEntity> getPaymentItem() {
+        String SQL = "SELECT * FROM v_payment_item ORDER BY status DESC";
+        System.out.println(SQL);
+
+        return EBankJdbcTemplate.query(SQL, new RowMapper<ItemPaymentViewEntity>() {
+            @Override
+            public ItemPaymentViewEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+                ItemPaymentViewEntity tr = new ItemPaymentViewEntity();
+                tr.setPaymentNo(rs.getLong("payment_no"));
+                tr.setPaymentSaveBy(rs.getString("payment_saveby"));
+                tr.setPaymentSaveDate(rs.getTimestamp("payment_savedate"));
+                tr.setPayBy(rs.getString("payby"));
+                tr.setPayDate(rs.getTimestamp("pay_date"));
+                tr.setDetail_id(rs.getInt("detail_id"));
+                tr.setBillNo(rs.getString("bill_no"));
+                tr.setInvoiceNo(rs.getString("invoice_no"));
+                tr.setBorname(rs.getString("borname"));
+                tr.setBlocation(rs.getString("blocation"));
+                tr.setItemId(rs.getInt("item_id"));
+                tr.setItemName(rs.getString("item_name"));
+                tr.setUnit(rs.getString("unit"));
+                tr.setSize(rs.getString("size"));
+                tr.setQty(rs.getInt("qty"));
+                tr.setPrice(rs.getBigDecimal("price"));
+                tr.setTotal(rs.getFloat("total"));
+                tr.setSaveBy(rs.getString("saveby"));
+                tr.setSaveDate(rs.getTimestamp("savedate"));
+                tr.setApproveBy(rs.getString("approveby"));
+                tr.setApproveDate(rs.getTimestamp("approvedate"));
+                tr.setBrandName(rs.getString("brand_name"));
+                tr.setItemTypeName(rs.getString("itemtype_name"));
+                tr.setImage(rs.getString("image"));
+                tr.setStatus(rs.getString("status"));
+                tr.setAmount(rs.getFloat("amount"));
+                tr.setCcy(rs.getString("ccy"));
+                tr.setExp(rs.getTimestamp("exp"));
+                tr.setTotalcal(rs.getFloat("totalcal"));
+                tr.setQtycal(rs.getInt("qtycal"));
+                tr.setAmountscal(rs.getFloat("amountscal"));
+                return tr;
+            }
+        });
+    }
+
+    public List<ItemDetailsEntity> getPaymentItemDetails() {
+        String SQL = "SELECT * FROM v_payment_item_del ORDER BY status DESC";
+        System.out.println(SQL);
+
+        return EBankJdbcTemplate.query(SQL, new RowMapper<ItemDetailsEntity>() {
+            @Override
+            public ItemDetailsEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+                ItemDetailsEntity tr = new ItemDetailsEntity();
+                tr.setPayment_no(rs.getLong("payment_no"));
+                tr.setBill_no(rs.getString("bill_no"));
+                tr.setStatus(rs.getString("status"));
+                tr.setInvoice_no(rs.getString("invoice_no"));
+                tr.setTotal(rs.getFloat("total"));
+                tr.setQty(rs.getInt("qty"));
+                tr.setAmount(rs.getFloat("amount"));
+                tr.setCcy(rs.getString("ccy"));
+                tr.setPayment_type(rs.getString("payment_type"));
+                tr.setRexchange_rate(rs.getFloat("rexchange_rate"));
+                tr.setSavedate(rs.getTimestamp("savedate"));
+                tr.setSaveby(rs.getString("saveby"));
+                tr.setType(rs.getString("type"));
+                tr.setExp(rs.getTimestamp("exp"));
+                return tr;
+            }
+        });
     }
 }

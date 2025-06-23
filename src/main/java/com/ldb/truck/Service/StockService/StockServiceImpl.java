@@ -1,5 +1,6 @@
 package com.ldb.truck.Service.StockService;
 
+import com.ldb.truck.Dao.Customer.ImpCustomerDao;
 import com.ldb.truck.Entity.Bor.BorEntity;
 import com.ldb.truck.Entity.Bor.BorEntityReq;
 import com.ldb.truck.Entity.Bor.BorEntityReqSave;
@@ -16,6 +17,7 @@ import com.ldb.truck.Repository.Payment.VCalOrderEntityRepository;
 import com.ldb.truck.Repository.RequestItem.RequestItemTypeRepository;
 import com.ldb.truck.Entity.RequestItem.requestData;
 import com.ldb.truck.Repository.RequestItem.requestItemTypeBorNameEntityRepository;
+import com.ldb.truck.Service.customer.CustomerService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 @Slf4j
 @Service
@@ -1330,79 +1335,88 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         }
         return response;
     }
+    @Autowired
+    ImpCustomerDao customerService;
     public PaymentItemDetailsRes getPaymentItem(ItemPaymentReq itemPaymentReq, String userId, String role, String branchNo){
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         PaymentItemDetailsRes response = new PaymentItemDetailsRes();
         response.setLogo("http://khounkham.com/images/batery/b94de922-005b-4452-8763-5246c207fa86-b94de922-005b-4452-8763-5246c207fa86.jpg");
         List<GroupPaymentItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<ItemPaymentViewEntity> listData = new ArrayList<>();
-        GroupPaymentItemHeader groupHeader = new GroupPaymentItemHeader();
         try {
-            listData = itemPaymentViewEntityRepository.getBillPaymentAll();
+              listData =   customerService.getPaymentItem();
             List<String> billNoList = listData.stream()
                     .map(ItemPaymentViewEntity::getInvoiceNo)
                     .distinct()
                     .collect(Collectors.toList());
+            for (String bill : billNoList) {
+                GroupPaymentItemHeader groupHeader = new GroupPaymentItemHeader();
+                // Filter once and reuse
+                List<ItemPaymentViewEntity> filteredItems = listData.stream()
+                        .filter(p -> p.getInvoiceNo().equals(bill))
+                        .collect(Collectors.toList());
+                if (filteredItems.isEmpty()) continue;
+                ItemPaymentViewEntity firstItem = filteredItems.get(0);
+                groupHeader.setInvoiceNo(firstItem.getInvoiceNo());
+                groupHeader.setBillNo(firstItem.getBillNo());
+                groupHeader.setBorName(firstItem.getBorname());
+                groupHeader.setBorLocation(firstItem.getBlocation());
 
-            for (String bill : billNoList){
-                groupHeader = new GroupPaymentItemHeader();
-                groupHeader.setInvoiceNo(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getInvoiceNo).findFirst().orElse(""));
-                groupHeader.setBillNo(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBillNo).findFirst().orElse(""));
-               //===start =========
-                groupHeader.setBorName(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBorname).findFirst().orElse(""));
-                groupHeader.setBorLocation(listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getBlocation).findFirst().orElse(""));
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+                groupHeader.setTxnDate(firstItem.getSaveDate() != null ? formatter.format(firstItem.getSaveDate()) : "No Date Found");
+                groupHeader.setExpDate3(firstItem.getExp() != null ? formatter.format(firstItem.getExp()) : "No Date Found");
 
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm a"); // Desired format
-                Optional<Date> optionalDate = listData.stream()
-                        .filter(p -> p.getInvoiceNo().equals(bill))
-                        .map(ItemPaymentViewEntity::getSaveDate)
-                        .findFirst();
-                Optional<Date> expDate = listData.stream()
-                        .filter(p -> p.getInvoiceNo().equals(bill))
-                        .map(ItemPaymentViewEntity::getExp)
-                        .findFirst();
-                groupHeader.setExpDate3(expDate.map(formatter::format).orElse("No Date Found"));
-                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
-//===start
-                groupHeader.setQty(listData.stream()
-                        .filter(p -> p.getInvoiceNo().equals(bill))
-                        .mapToInt(ItemPaymentViewEntity::getQtycal)
-                        .sum());
-                Double total = listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getAmountscal).collect(Collectors.summingDouble(Float::doubleValue));
-                groupHeader.setAmount(numfm.format(total));
-                Double paymentTotal = listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getTotalcal).collect(Collectors.summingDouble(Float::doubleValue));
-                groupHeader.setPaymentTotal(numfm.format(paymentTotal));
-                groupHeader.setSunSpendTotal(numfm.format(paymentTotal-total));
-                double checkTotal = paymentTotal-total;
-                String  checkStatus = listData.stream().filter(p -> p.getInvoiceNo().equals(bill)).map(ItemPaymentViewEntity::getStatus).findFirst().orElse("");
-                //=====let check amount != 0 then show status not ok
-                String status = "";
-                //====
-                if("wait-payment".equals(checkStatus)){
-                    status="wait-payment";
-                }else if("ok".equals(checkStatus)){
-                    if(checkTotal == 0){
-                        status = "ok";
-                    }else {
-                        status = "suspend";
-                    }
-                }else {
-                    if(checkTotal == 0){
-                        status = "ok";
-                    }else {
-                        status = "suspend";
-                    }
-                }
-                groupHeader.setStatus(status);
-                //===end data
-                groupStockItemHeaders.add(groupHeader);
-                List<ItemPaymentViewEntity> groupListData = new ArrayList<>();
+                int totalQty = filteredItems.stream().mapToInt(ItemPaymentViewEntity::getQtycal).sum();
+                double totalAmount = filteredItems.stream().mapToDouble(p -> p.getAmountscal().doubleValue()).sum();
+                double totalPayment = filteredItems.stream().mapToDouble(p -> p.getTotalcal().doubleValue()).sum();
+
+                groupHeader.setQty(totalQty);
+                groupHeader.setAmount(numfm.format(totalAmount));
+                groupHeader.setPaymentTotal(numfm.format(totalPayment));
+                groupHeader.setSunSpendTotal(numfm.format(totalPayment - totalAmount));
+                groupHeader.setStatus(firstItem.getStatus());
+
+                // Remove duplicates by detail_id if needed
+                List<ItemPaymentViewEntity> uniqueDetails = new ArrayList<>();
                 for(ItemPaymentViewEntity listStockTxn :  listData){
-                    if(listStockTxn.getInvoiceNo().equals(bill)){
-                        groupListData.add(listStockTxn);
+                    if(listStockTxn.getInvoiceNo().equals(bill)) {
+                        ItemPaymentViewEntity ent = new ItemPaymentViewEntity();
+                        ent.setPaymentNo(listStockTxn.getPaymentNo());
+                        ent.setPaymentSaveBy(listStockTxn.getPaymentSaveBy());
+                        ent.setPaymentSaveDate(listStockTxn.getPaymentSaveDate());
+                        ent.setPayBy(listStockTxn.getPayBy());
+                        ent.setPayDate(listStockTxn.getPayDate());
+                        ent.setDetail_id(listStockTxn.getDetail_id());
+                        ent.setBillNo(listStockTxn.getBillNo());
+                        ent.setInvoiceNo(listStockTxn.getInvoiceNo());
+                        ent.setBorname(listStockTxn.getBorname());
+                        ent.setBlocation(listStockTxn.getBlocation());
+                        ent.setItemId(listStockTxn.getItemId());
+                        ent.setItemName(listStockTxn.getItemName());
+                        ent.setUnit(listStockTxn.getUnit());
+                        ent.setSize(listStockTxn.getSize());
+                        ent.setQty(listStockTxn.getQty());
+                        ent.setPrice(listStockTxn.getPrice());
+                        ent.setTotal(listStockTxn.getTotal());
+                        ent.setSaveBy(listStockTxn.getSaveBy());
+                        ent.setSaveDate(listStockTxn.getSaveDate());
+                        ent.setApproveBy(listStockTxn.getApproveBy());
+                        ent.setApproveDate(listStockTxn.getApproveDate());
+                        ent.setBrandName(listStockTxn.getBrandName());
+                        ent.setItemTypeName(listStockTxn.getItemTypeName());
+                        ent.setImage(listStockTxn.getImage());
+                        ent.setStatus(listStockTxn.getStatus());
+                        ent.setAmount(listStockTxn.getAmount());
+                        ent.setCcy(listStockTxn.getCcy());
+                        ent.setExp(listStockTxn.getExp());
+                        ent.setTotalcal(listStockTxn.getTotalcal());
+                        ent.setQtycal(listStockTxn.getQtycal());
+                        ent.setAmountscal(listStockTxn.getAmountscal());
+                        uniqueDetails.add(ent);
                     }
-                    groupHeader.setDetails(groupListData);
+                    groupHeader.setDetails(uniqueDetails);
                 }
+                groupStockItemHeaders.add(groupHeader);
             }
             response.setDataResponse(groupStockItemHeaders);
             if(response.getDataResponse() != null){
@@ -1418,89 +1432,87 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             response.setMessage("Error retrieving data: " + e.getMessage());
             log.error("Exception: ", e);
         }
-
         return response;
     }
-    public PaymentDetailsRes getPaymentItemDetail(ItemPaymentReq itemPaymentReq, String userId, String role, String branchNo){
+    public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
+    }
+    public PaymentDetailsRes getPaymentItemDetail(ItemPaymentReq itemPaymentReq, String userId, String role, String branchNo) {
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         PaymentDetailsRes response = new PaymentDetailsRes();
         response.setLogo("http://khounkham.com/images/batery/b94de922-005b-4452-8763-5246c207fa86-b94de922-005b-4452-8763-5246c207fa86.jpg");
+
         List<GroupDetailsHeader> groupStockItemHeaders = new ArrayList<>();
-        List<ItemDetailsEntity> listData = new ArrayList<>();
-        GroupDetailsHeader groupHeader = new GroupDetailsHeader();
+        List<ItemDetailsEntity> listData = customerService.getPaymentItemDetails(); // Assuming this fetches your data
+
         try {
-            listData = itemDetailsEntityRepository.getBillPaymentDelAll();
+            // Filter distinct invoice_no entries
             List<String> billNoList = listData.stream()
                     .map(ItemDetailsEntity::getInvoice_no)
                     .distinct()
                     .collect(Collectors.toList());
-            for (String bill : billNoList){
-                groupHeader = new GroupDetailsHeader();
-                groupHeader.setInvoiceNo(listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getInvoice_no).findFirst().orElse(""));
-                groupHeader.setBillNo(listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getBill_no).findFirst().orElse(""));
-               //===start =========
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm a"); // Desired format
-                Optional<Date> optionalDate = listData.stream()
-                        .filter(p -> p.getInvoice_no().equals(bill))
-                        .map(ItemDetailsEntity::getSavedate)
-                        .findFirst();
-                Optional<Date> expDate = listData.stream()
-                        .filter(p -> p.getInvoice_no().equals(bill))
-                        .map(ItemDetailsEntity::getExp)
-                        .findFirst();
-                groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
 
-                groupHeader.setExpDate3(expDate.map(formatter::format).orElse("No Date Found"));
-                groupHeader.setQty(listData.stream()
-                        .filter(p -> p.getInvoice_no().equals(bill))
-                        .mapToInt(ItemDetailsEntity::getQty)
-                        .sum());
-                Double total = listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getAmount).collect(Collectors.summingDouble(Float::doubleValue));
-                groupHeader.setAmount(numfm.format(total));
-                Double paymentTotal = listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
-                groupHeader.setPaymentTotal(numfm.format(paymentTotal));
-                groupHeader.setSunSpendTotal(numfm.format(paymentTotal-total));
-                double checkTotal = paymentTotal-total;
+            for (String bill : billNoList) {
+                GroupDetailsHeader groupHeader = new GroupDetailsHeader();
 
-                String  checkStatus = listData.stream().filter(p -> p.getInvoice_no().equals(bill)).map(ItemDetailsEntity::getStatus).findFirst().orElse("");
-                //=====let check amount != 0 then show status not ok
-                String status = "";
-                //====
-                if("wait-payment".equals(checkStatus)){
-                    status="wait-payment";
-                }else if("ok".equals(checkStatus)){
-                    if(checkTotal == 0){
-                        status = "ok";
-                    }else {
-                        status = "suspend";
-                    }
-                }else {
-                    if(checkTotal == 0){
-                        status = "ok";
-                    }else {
-                        status = "suspend";
-                    }
-                }
-                groupHeader.setStatus(status);
+                List<ItemDetailsEntity> filtered = listData.stream()
+                        .filter(p -> p.getInvoice_no().equals(bill))
+                        .collect(Collectors.toList());
+
+                if (filtered.isEmpty()) continue;
+
+                ItemDetailsEntity first = filtered.get(0);
+                groupHeader.setInvoiceNo(first.getInvoice_no());
+                groupHeader.setBillNo(first.getBill_no());
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+                groupHeader.setTxnDate(first.getSavedate() != null ? formatter.format(first.getSavedate()) : "No Date Found");
+                groupHeader.setExpDate3(first.getExp() != null ? formatter.format(first.getExp()) : "No Date Found");
+
+                int totalQty = filtered.stream().mapToInt(ItemDetailsEntity::getQty).sum();
+                double totalAmount = filtered.stream().mapToDouble(p -> p.getAmount() != null ? p.getAmount() : 0f).sum();
+                double totalPayment = filtered.stream().mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0f).sum();
+
+                groupHeader.setQty(totalQty);
+                groupHeader.setAmount(numfm.format(totalAmount));
+                groupHeader.setPaymentTotal(numfm.format(totalPayment));
+                groupHeader.setSunSpendTotal(numfm.format(totalPayment - totalAmount));
+                groupHeader.setStatus(first.getStatus());
+
+                // Deep copy to avoid reference issues
+                List<ItemDetailsEntity> uniqueDetails = filtered.stream().map(item -> {
+                    ItemDetailsEntity ent = new ItemDetailsEntity();
+                    ent.setPayment_no(item.getPayment_no());
+                    ent.setBill_no(item.getBill_no());
+                    ent.setStatus(item.getStatus());
+                    ent.setInvoice_no(item.getInvoice_no());
+                    ent.setTotal(item.getTotal());
+                    ent.setQty(item.getQty());
+                    ent.setAmount(item.getAmount());
+                    ent.setCcy(item.getCcy());
+                    ent.setPayment_type(item.getPayment_type());
+                    ent.setRexchange_rate(item.getRexchange_rate());
+                    ent.setSavedate(item.getSavedate());
+                    ent.setSaveby(item.getSaveby());
+                    ent.setType(item.getType());
+                    ent.setExp(item.getExp());
+                    return ent;
+                }).collect(Collectors.toList());
+
+                groupHeader.setDetails(uniqueDetails);
                 groupStockItemHeaders.add(groupHeader);
-                List<ItemDetailsEntity> groupListData = new ArrayList<>();
-                for(ItemDetailsEntity listStockTxn :  listData){
-                    if(listStockTxn.getInvoice_no().equals(bill)){
-                        groupListData.add(listStockTxn);
-                    }
-                    groupHeader.setDetails(groupListData);
-                }
             }
+
             response.setDataResponse(groupStockItemHeaders);
-            if(response.getDataResponse() != null){
+            if (!groupStockItemHeaders.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
                 response.setMessage("Data not found");
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             response.setStatus("EE");
             response.setMessage("Error retrieving data: " + e.getMessage());
             log.error("Exception: ", e);
@@ -1509,7 +1521,6 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         return response;
     }
     public PaymentItemDetailsRes getReportPaymentItem(ItemPaymentReq itemPaymentReq, String userId, String role, String branchNo){
-
         String borNumber = itemPaymentReq.getBorNumber();
         String status = itemPaymentReq.getStatus();
         String startDate = itemPaymentReq.getStartDate();
@@ -1577,7 +1588,7 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
                     if(listStockTxn.getInvoiceNo().equals(bill)){
                         groupListData.add(listStockTxn);
                     }
-                    groupHeader.setDetails(groupListData);
+                    groupHeader.setDetails(null);
                 }
             }
             response.setDataResponse(groupStockItemHeaders);
@@ -1618,7 +1629,9 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
                 //******if payment get status = ok then update payment item set status = ok
                 if("ok".equals(status)){
                     log.info("===let update payment to ok");
-                    itemPaymentEntityRepository.updateStatusPayment(paymentDetailsEntity.getInvoiceNo());
+                    itemPaymentEntityRepository.updateStatusPayment(paymentDetailsEntity.getInvoiceNo(),status);
+                }else {
+                    itemPaymentEntityRepository.updateStatusPayment(paymentDetailsEntity.getInvoiceNo(),status);
                 }
                 response.setStatus("00");
                 response.setMessage("success");
@@ -1637,11 +1650,12 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         entity.setAmount(paymentDetailsEntity.getAmount());
         entity.setCcy(paymentDetailsEntity.getCcy());
         entity.setRexchangeRate(paymentDetailsEntity.getExchangeRate());
-        entity.setPaymentType(paymentDetailsEntity.getPaymentType());
         entity.setType(paymentDetailsEntity.getType());
+        entity.setPaymentType(paymentDetailsEntity.getPaymentType());
         entity.setSaveDate(new Date());
         entity.setSaveby(userId);
         entity.setExp(expDate);
+       /// entity.setTotal(paymentDetailsEntity.getTotal());
         entity.setStatus(paymentDetailsEntity.getStatus());
    return entity;
     }

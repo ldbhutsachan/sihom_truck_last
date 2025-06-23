@@ -12,6 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 public interface ItemPaymentEntityRepository extends CrudRepository<ItemPaymentEntity,Long> {
     @Modifying
     @Transactional
-    @Query(value = "UPDATE payment_item SET status ='ok' WHERE invoice_no = :invoiceNo", nativeQuery = true)
-    int updateStatusPayment( @Param("invoiceNo") String invoiceNo);
+    @Query(value = "UPDATE payment_item SET status =:status WHERE invoice_no = :invoiceNo", nativeQuery = true)
+    int updateStatusPayment( @Param("invoiceNo") String invoiceNo,@Param("status") String status);
 }

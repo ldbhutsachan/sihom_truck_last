@@ -19,5 +19,6 @@ public class PaymentDetailsEntityReq {
     private Date expiredDate;
     private Date exp;
     private String paymentType;
+   // private Float total;
 
 }
