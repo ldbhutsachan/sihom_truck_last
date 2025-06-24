@@ -28,7 +28,7 @@ public class StockAlertEntity {
     private String khname;
 
     @Column(name = "sole")
-    private double sole;
+    private String sole;
 
     @Column(name = "blockno")
     private String blockno;
@@ -44,5 +44,20 @@ public class StockAlertEntity {
     private Integer qty;
 
     @Column(name = "price")
-    private Double price;
+    private Float price;
+
+    @Column(name = "branch_no")
+    private String branchNo;
+
+    @Column(name = "branch_name")
+    private String branchName;
+
+    @Column(name = "bor_no")
+    private String borNo;
+
+    @Column(name = "bor_name")
+    private String borName;
+
+    @Column(name = "bor_location")
+    private String bLocation;
 }

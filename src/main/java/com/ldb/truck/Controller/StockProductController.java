@@ -151,10 +151,19 @@ public class StockProductController {
     }
     @CrossOrigin(origins = "*")
     @GetMapping("/getAlertStock.service")
-    public ResponseEntity<?> getAlertStock (){
+    public ResponseEntity<?> getAlertStock (@RequestBody AlertReq alertReq){
         DataResponse response  = new DataResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(alertReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String branchNo = userProfiles.get(0).getBranchNo();
+        String role = userProfiles.get(0).getRole();
         try {
-            response = stockService.getAlertStock();
+            AlertReq req = new AlertReq();
+            req.setBranchNo(branchNo);
+            req.setRole(role);
+            response = stockService.getAlertStock(req);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

@@ -20,6 +20,7 @@ import com.ldb.truck.Repository.RequestItem.requestItemTypeBorNameEntityReposito
 import com.ldb.truck.Service.customer.CustomerService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.el.lang.ELArithmetic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -393,10 +394,21 @@ public class StockServiceImpl {
         }
         return response;
     }
-    public DataResponse getAlertStock (){
+    public DataResponse getAlertStock (AlertReq alertReq){
+        String branchNo = alertReq.getBranchNo();
+        String role = alertReq.getRole();
+        log.info("role:"+role);
+        log.info("branchNo:"+branchNo);
         DataResponse dataResponse = new DataResponse();
         try {
-            dataResponse.setDataResponse(stockAlertRepository.findAll());
+            if(role.equals("USERSTOCK")){
+                dataResponse.setDataResponse(stockAlertRepository.getAlertByBranchNo(branchNo));
+            }
+            else if(role.equals("AUTH")){
+                dataResponse.setDataResponse(stockAlertRepository.getAlertByBranchNo(branchNo));
+            }else {
+                dataResponse.setDataResponse(stockAlertRepository.findAll());
+           }
             if(dataResponse.getDataResponse() != null){
                 dataResponse.setStatus("00");
                 dataResponse.setMessage("Success");
