@@ -150,7 +150,7 @@ public class StockProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     @CrossOrigin(origins = "*")
-    @GetMapping("/getAlertStock.service")
+    @PostMapping("/getAlertStock.service")
     public ResponseEntity<?> getAlertStock (@RequestBody AlertReq alertReq){
         DataResponse response  = new DataResponse();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(alertReq.getToKen());
@@ -243,6 +243,32 @@ public class StockProductController {
         data.setDetailId(stockItemDetailsReq.getDetailId());
         try {
              response = stockService.approveStockItemDetailsOrderProd(data);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error Controller !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/approveOrderItemAuth.service")
+    public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stockItemDetailsReq){
+        log.info("===start ====approveOrderItemAuth");
+        DataResponse response  = new DataResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = userProfiles.get(0).getUserId();
+        String role = userProfiles.get(0).getRole();
+        StockItemAuthReq data = new StockItemAuthReq();
+        data.setUserId(userId);
+        data.setBillNo(stockItemDetailsReq.getBillNo());
+        data.setRole(role);
+        data.setToKen(stockItemDetailsReq.getToKen());
+        data.setDetailId(stockItemDetailsReq.getDetailId());
+        try {
+             response = stockService.auth(data,userId);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error Controller !!");

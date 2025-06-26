@@ -35,7 +35,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             " i.branch_no = :branchNo," +
             " i.barcode = :barcode, " +
             " i.itemtypeid = :itemtypeid, " +
-            " i.houseid = :houseid " +
+            " i.houseid = :houseid,i.alertqty=:alertqty " +
             "WHERE i.item_id = :itemId",nativeQuery = true)
     int updateItem(
             Integer brandId,
@@ -57,6 +57,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             String barcode,
             Integer itemtypeid,
             Integer houseid,
+            Integer alertqty,
             Long itemId
     );
  @Modifying
@@ -79,7 +80,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             " i.branch_no = :branchNo," +
             " i.barcode = :barcode, " +
             " i.itemtypeid = :itemtypeid, " +
-            " i.houseid = :houseid " +
+            " i.houseid = :houseid,i.alertqty=:alertqty " +
             "WHERE i.item_id = :itemId",nativeQuery = true)
     int updateItemNoImage(
             Integer brandId,
@@ -100,6 +101,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             String barcode,
             Integer itemtypeid,
             Integer houseid,
+            Integer alertqty,
             Long itemId
     );
 
@@ -107,10 +109,11 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
     @Transactional
     @Query(value = "UPDATE item_inventory i SET " +
            // "i.unit =i.unit + :unit, " +
-            "i.qty =i.qty + :qty " +
+            "i.qty =i.qty + :qty ,price=:amount " +
             "WHERE i.item_id =:itemId ",nativeQuery = true)
     int updateStockInItem(
             Integer qty,
+            Float amount,
             Integer itemId
     );
 

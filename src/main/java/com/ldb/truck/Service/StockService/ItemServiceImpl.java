@@ -22,17 +22,14 @@ public class ItemServiceImpl {
         log.info("branchNo:"+branchNo);
         DataResponse response = new DataResponse();
         try {
-            if("USER".equals(role)){
-                response.setDataResponse(viewItemEntityRepository.getAllViewItemsUserId(userName));
-            }
-            else if("AUTH".equals(role)){
+            if("USERSTOCK".equals(role) || "USER".equals(role) ||  "AUTH".equals(role)){
                 response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo));
             }
             else if("PADMIN".equals(role)){
                 response.setDataResponse(viewItemEntityRepository.getAllViewItemsAdmin());
             }
             else {
-                response.setDataResponse(null);
+                response.setDataResponse(viewItemEntityRepository.getAllViewItemsAdmin());
             }
             if(response.getDataResponse() != null){
                 response.setStatus("00");
@@ -68,6 +65,7 @@ public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,St
         return response;
 }
 public DataResponse saveItem(ItemEntity viewItemEntity){
+        log.info("show alert:"+viewItemEntity.getAlertqty());
         DataResponse response = new DataResponse();
         try {
             response.setDataResponse(itemEntityRepository.save(viewItemEntity));
@@ -110,6 +108,7 @@ public DataResponse saveItem(ItemEntity viewItemEntity){
                             viewItemEntity.getBarcode(),
                             viewItemEntity.getItemtypeid(),
                             viewItemEntity.getHouseid(),
+                            viewItemEntity.getAlertqty(),
                             viewItemEntity.getItemId()));
                 }else {
                     response.setDataResponse(itemEntityRepository.updateItem(
@@ -132,6 +131,7 @@ public DataResponse saveItem(ItemEntity viewItemEntity){
                             viewItemEntity.getBarcode(),
                             viewItemEntity.getItemtypeid(),
                             viewItemEntity.getHouseid(),
+                            viewItemEntity.getAlertqty(),
                             viewItemEntity.getItemId()));
                 }
             if(response.getDataResponse() != null){

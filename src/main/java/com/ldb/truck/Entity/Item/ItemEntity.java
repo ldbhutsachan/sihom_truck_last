@@ -77,5 +77,8 @@ public class ItemEntity {
     @Column(name = "houseid", nullable = false)
     private Integer houseid;
 
+    @Column(name = "alertqty", nullable = false)
+    private Integer alertqty;
+
 
 }

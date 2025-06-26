@@ -22,7 +22,9 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.el.lang.ELArithmetic;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +56,11 @@ public class StockServiceImpl {
 
     @Value("${info.location}")
     private String location;
+
+    @Autowired
+    @Qualifier("EBankJdbcTemplate")
+    private JdbcTemplate EBankJdbcTemplate;
+
     @Autowired
     ItemDetailsEntityRepository itemDetailsEntityRepository;
     @Autowired
@@ -206,7 +213,7 @@ public class StockServiceImpl {
                 Integer qty = stock.getQty();
                 Float price = stock.getPrice();
                 Integer itemNo = stock.getItemId();
-                    itemEntityRepository.updateStockInItem(qty, itemNo);
+                    itemEntityRepository.updateStockInItem(qty,price ,itemNo);
             }
             return 1;
         }
@@ -596,9 +603,85 @@ public class StockServiceImpl {
         return response;
     }
 
+
+    private List<OrderItemReportEntity> mapOrderItemAuth(StockItemAuthReq request, String userId) {
+        List<OrderItemReportEntity> entities = new ArrayList<>();
+
+        for (StockItemAuthModel item : request.getDetailId()) {
+            OrderItemReportEntity entity = new OrderItemReportEntity();
+            entity.setBillNo(request.getBillNo());
+            entity.setItemId(item.getItemId());
+            entity.setQty(item.getQty());
+            entity.setPrice(item.getAmount());
+            entity.setApproveBy(userId);
+            entity.setApproveDate(new Date());
+            entity.setStatus("auth"); // Example default status
+            entities.add(entity);
+        }
+
+        return entities;
+    }
     @Autowired
     VCalOrderEntityRepository vCalOrderEntityRepository;
-    @Transactional
+    public DataResponse auth(StockItemAuthReq request, String userId) {
+        DataResponse response = new DataResponse();
+        try {
+            List<OrderItemReportEntity> items = authConvert(request, userId);
+            log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
+            int updated = 0;
+            final String sql = "UPDATE order_item_details SET approveby = ?, approvedate = ?, qty = ?,price = ?,status='auth' WHERE item_id = ? and bill_no=?  ";
+            for (OrderItemReportEntity item : items) {
+                log.debug("Updating detail_id = {}, qty = {}, price = {}", item.getDetailId(), item.getQty(), item.getPrice());
+                 updated = EBankJdbcTemplate.update(
+                        sql,
+                        userId,
+                        new Date(),
+                        item.getQty(),
+                        item.getPrice(),
+                        item.getDetailId(),
+                        item.getBillNo()
+                );
+                log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
+            }
+            if(updated > 0){
+                response.setDataResponse(updated);
+                response.setStatus("00");
+                response.setMessage("ການອະນຸມັດສຳເລັດ");
+            }else {
+                response.setDataResponse(updated);
+                response.setStatus("00");
+                response.setMessage("ການອະນຸມັດບໍ່ສຳເລັດ !!!");
+            }
+
+        } catch (Exception e) {
+            log.error("Approval failed", e);
+            response.setStatus("EE");
+            response.setMessage("Error while saving data: " + e.getMessage());
+        }
+
+        return response;
+    }
+    private List<OrderItemReportEntity> authConvert(StockItemAuthReq request, String userId) {
+        List<OrderItemReportEntity> entities = new ArrayList<>();
+
+        for (StockItemAuthModel item : request.getDetailId()) {
+            OrderItemReportEntity entity = new OrderItemReportEntity();
+            entity.setDetailId(item.getItemId()); // ✅ Set the missing key!
+            entity.setBillNo(request.getBillNo());
+            entity.setItemId(item.getItemId());
+            entity.setQty(item.getQty());
+            entity.setPrice(item.getAmount());
+            entity.setSaveBy(userId);
+            entity.setSaveDate(new Date());
+            entity.setStatus("wait");
+
+            entities.add(entity);
+        }
+
+        return entities;
+    }
+
+
     public DataResponse approveStockItemDetailsOrderProd(StockItemDetailsReq stockItemDetailsReq) {
         String role = stockItemDetailsReq.getRole();
         log.info("role:"+role);
@@ -614,22 +697,12 @@ public class StockServiceImpl {
             }else {
                 int updatedRows = 0;
                 String status = "";
-                if ("AUTH".equals(role)) {
-                    status = "auth";
-                } else if ("BUYER".equals(role)) {
+                 if ("BUYER".equals(role)) {
                     status = "buyer";
                 } else if ("ACCOUNTING".equals(role)) {
                     status = "wait-item";
                 }
-                if ("AUTH".equals(role)) {
-                    updatedRows = orderDetailsRepository.approveStockItemDetailsAuth(
-                            stockItemDetailsReq.getUserId(),
-                            new Date(),
-                            status,
-                            stockItemDetailsReq.getBillNo(),
-                            detailIdsStr
-                    );
-                } else if ("BUYER".equals(role)) {
+                 if ("BUYER".equals(role)) {
                     updatedRows = orderDetailsRepository.approveStockItemDetailsBuyer(
                             stockItemDetailsReq.getUserId(),
                             new Date(),
@@ -770,11 +843,12 @@ public class StockServiceImpl {
         // Process and update items
         for (OrderItemReportEntity stock : items) {
             Integer qty = stock.getQty();
+            Float amount = stock.getPrice();
             Integer itemNo = stock.getItemId();
             // Logging details before updating
             log.info("Processing item: " + itemNo + ", Quantity: " + qty);
             // Perform database update
-            itemEntityRepository.updateStockInItem(qty, itemNo);
+            itemEntityRepository.updateStockInItem(qty,amount,itemNo);
         }
     }
     //getOrderItemDetailsAuth

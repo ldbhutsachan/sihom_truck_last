@@ -60,4 +60,10 @@ public class StockAlertEntity {
 
     @Column(name = "bor_location")
     private String bLocation;
+
+    @Column(name = "alertqty")
+    private Integer alertqty;
+
+    @Column(name = "qtytotal")
+    private Integer qtytotal;
 }

@@ -41,13 +41,15 @@ public interface OrderDetailsRepository extends CrudRepository<OrderItemReportEn
     @Modifying
     @Transactional
     @Query(value = "UPDATE order_item_details SET approveby = :approveBy, " +
-            "approvedate = :approveDate, status = :status " +
+            "approvedate = :approveDate, status = :status,qty=:qty,price =:price  " +
             "WHERE FIND_IN_SET(detail_id, :detailId) and bill_no =:billNo ", nativeQuery = true)
     int approveStockItemDetailsAuth(
             @Param("approveBy") String approveBy,
             @Param("approveDate") Date approveDate,
             @Param("status") String status,
             @Param("billNo") String billNo,
+            @Param("qty") Integer qty,
+            @Param("price") Float price,
             @Param("detailId") String detailId); // Use String instead of List<Long>
 
 

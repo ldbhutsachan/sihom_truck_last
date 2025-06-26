@@ -120,4 +120,10 @@ public class viewItemEntity {
 
     @Column(name = "bor_location", nullable = false)
     private String blocation;
+
+    @Column(name = "alertqty", nullable = false)
+    private Integer alertqty;
+
+    @Column(name = "qtytotal", nullable = false)
+    private Integer qtytotal;
 }

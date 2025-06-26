@@ -61,7 +61,7 @@ public class PlaceStockService {
             if("PADMIN".equals(role)){
                 response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesAdmin());
             }
-            else if("AUTH".equals(role)){
+            else if("AUTH".equals(role) || "USERSTOCK".equals(role)){
                 response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesBranchNo(branchNo));
             }
             else if("USER".equals(role)){

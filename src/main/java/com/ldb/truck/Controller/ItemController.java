@@ -370,6 +370,7 @@ public class ItemController {
             ,@RequestParam("toKen") String  toKen
             ,@RequestParam("itemtypeid") Integer  itemtypeid
             ,@RequestParam("houseid") Integer  houseid
+            ,@RequestParam("alertqty") Integer  alertqty
             ,HttpServletRequest request) throws Exception {
         log.info("\t\t --> save item Request controller >>>>>>>>>>>>>>>>>>>>>>");
         String clientIpAddress = request.getRemoteAddr();
@@ -418,6 +419,7 @@ public class ItemController {
         data.setBrandId(brandId);
         data.setItemtypeid(itemtypeid);
         data.setHouseid(houseid);
+        data.setAlertqty(alertqty);
         //====================check doc file before upload this==============
         String fileName = "";
         String path="images/batery/";
@@ -463,6 +465,7 @@ public class ItemController {
             ,@RequestParam("toKen") String  toKen
             ,@RequestParam("itemtypeid") Integer  itemtypeid
             ,@RequestParam("houseid") Integer  houseid
+            ,@RequestParam("alertqty") Integer  alertqty
             ,HttpServletRequest request) throws Exception {
         log.info("\t\t --> save item Request controller >>>>>>>>>>>>>>>>>>>>>>");
         String clientIpAddress = request.getRemoteAddr();
@@ -509,6 +512,7 @@ public class ItemController {
         data.setBrandId(brandId);
         data.setItemtypeid(itemtypeid);
         data.setHouseid(houseid);
+        data.setAlertqty(alertqty);
         //====================check doc file before upload this==============
         // Handle file upload
         String imageUrl = "http://khounkham.com/images/image.jpg"; // Default image
