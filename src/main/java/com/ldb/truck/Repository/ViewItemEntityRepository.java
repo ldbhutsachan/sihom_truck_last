@@ -12,19 +12,19 @@ import java.util.List;
 @Repository
 public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,Long> {
     @Transactional
-    @Query(value = "SELECT * FROM v_items WHERE item_id =:item_id and make_by_id=:make_by_id ORDER BY item_id DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM v_items WHERE item_id =:item_id and make_by_id=:make_by_id ORDER BY item_name asc", nativeQuery = true)
     List<viewItemEntity> getItemByItemId(@Param("item_id") String item_id,@Param("make_by_id") String make_by_id);
 
     @Transactional
-    @Query(value = "SELECT * FROM v_items where make_by_id=:make_by_id ORDER BY item_id DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM v_items where make_by_id=:make_by_id ORDER BY item_name asc", nativeQuery = true)
     List<viewItemEntity> getAllViewItemsUserId(@Param("make_by_id") String make_by_id);
 
     @Transactional
-    @Query(value = "SELECT * FROM v_items where branch_no=:branchNo ORDER BY item_id DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM v_items where branch_no=:branchNo ORDER BY item_name asc", nativeQuery = true)
     List<viewItemEntity> getAllViewItemsBranchNo(@Param("branchNo") String branchNo);
 
 
     @Transactional
-    @Query(value = "SELECT * FROM v_items ORDER BY item_id DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM v_items ORDER BY item_name asc", nativeQuery = true)
     List<viewItemEntity> getAllViewItemsAdmin();
 }

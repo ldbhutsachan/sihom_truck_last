@@ -50,7 +50,12 @@ public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,St
         log.info("branchNo:"+branchNo);
         DataResponse response = new DataResponse();
         try {
+            if("PADMIN".equals(role)){
+                response.setDataResponse(viewItemEntityRepository.getAllViewItemsAdmin());
+            }else {
                 response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo));
+            }
+
             if(response.getDataResponse() != null){
                 response.setStatus("00");
                 response.setMessage("Success");

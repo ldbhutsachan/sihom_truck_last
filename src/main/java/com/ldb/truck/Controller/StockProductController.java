@@ -181,9 +181,11 @@ public class StockProductController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = userProfiles.get(0).getUserId();
+        String role = userProfiles.get(0).getRole();
         String billNo = stockItemDetailsEntity.getBillNo();
+
         try {
-            response = stockService.getOrderItem(billNo,userId);
+            response = stockService.getOrderItem(billNo,userId, role);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -241,8 +243,36 @@ public class StockProductController {
         data.setRole(role);
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());
+        data.setPathApi(stockItemDetailsReq.getPathApi());
         try {
              response = stockService.approveStockItemDetailsOrderProd(data);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error Controller !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/approveOrderItemAuthbyAdmin.service")
+    public ResponseEntity<?> approveOrderItemAuthbyAdmin(@RequestBody StockItemAuthReq stockItemDetailsReq){
+        log.info("===start ====approveOrderItemAuth");
+        DataResponse response  = new DataResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userId = userProfiles.get(0).getUserId();
+        String role = userProfiles.get(0).getRole();
+        StockItemAuthReq data = new StockItemAuthReq();
+        data.setUserId(userId);
+        data.setBillNo(stockItemDetailsReq.getBillNo());
+        data.setRole(role);
+        data.setToKen(stockItemDetailsReq.getToKen());
+        data.setDetailId(stockItemDetailsReq.getDetailId());
+        data.setStatus(stockItemDetailsReq.getStatus());
+        try {
+             response = stockService.authByAdmin(data,userId);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error Controller !!");
@@ -480,6 +510,8 @@ public class StockProductController {
             }
             String borId = userProfiles.get(0).getBranchNo();
             response = stockService.getRequestItemByItemType(requestData,borId);
+            log.info("response :"+response.getDataResponse());
+
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

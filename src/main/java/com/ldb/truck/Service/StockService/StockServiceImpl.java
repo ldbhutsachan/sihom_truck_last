@@ -17,17 +17,17 @@ import com.ldb.truck.Repository.Payment.VCalOrderEntityRepository;
 import com.ldb.truck.Repository.RequestItem.RequestItemTypeRepository;
 import com.ldb.truck.Entity.RequestItem.requestData;
 import com.ldb.truck.Repository.RequestItem.requestItemTypeBorNameEntityRepository;
-import com.ldb.truck.Service.customer.CustomerService;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.el.lang.ELArithmetic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -430,19 +430,24 @@ public class StockServiceImpl {
         return dataResponse;
     }
 
-   public OrderItemDetailsRes getOrderItem(String billNo, String userId){
+   public OrderItemDetailsRes getOrderItem(String billNo, String userId,String role){
         log.info("userId:"+userId);
         log.info("billNo:"+billNo);
+        log.info("role:"+role);
             DecimalFormat numfm = new DecimalFormat("###,###.###");
         OrderItemDetailsRes response = new OrderItemDetailsRes();
         List<OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<OrderItemEntity> listData = new ArrayList<>();
         OrderItemHeader groupHeader = new OrderItemHeader();
         try {
-            if(!"".equals(billNo)){
-                listData = orderTxnEntityRepository.getOrderByBillNo(userId,billNo);
+            if("PADMIN".equals(role)){
+                listData = orderTxnEntityRepository.getOrderByAdmin();
             }else {
-                listData = orderTxnEntityRepository.getOrderBySaveby(userId);
+                if(!"".equals(billNo)){
+                    listData = orderTxnEntityRepository.getOrderByBillNo(userId,billNo);
+                }else {
+                    listData = orderTxnEntityRepository.getOrderBySaveby(userId);
+                }
             }
             List<String> billNoList = listData.stream()
                     .map(OrderItemEntity::getBillNo)
@@ -629,7 +634,13 @@ public class StockServiceImpl {
             List<OrderItemReportEntity> items = authConvert(request, userId);
             log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
             int updated = 0;
-            final String sql = "UPDATE order_item_details SET approveby = ?, approvedate = ?, qty = ?,price = ?,status='auth' WHERE item_id = ? and bill_no=?  ";
+            final String sql = "UPDATE order_item_details SET " +
+                    "buyer_id = ?, " +
+                    "buyer_date = ?, " +
+                    "qty = ?," +
+                    "price = ?," +
+                    "status='buyer' " +
+                    "WHERE item_id = ? and bill_no=?  ";
             for (OrderItemReportEntity item : items) {
                 log.debug("Updating detail_id = {}, qty = {}, price = {}", item.getDetailId(), item.getQty(), item.getPrice());
                  updated = EBankJdbcTemplate.update(
@@ -643,6 +654,39 @@ public class StockServiceImpl {
                 );
                 log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
             }
+            if(updated > 0){
+                response.setDataResponse(updated);
+                response.setStatus("00");
+                response.setMessage("ການອະນຸມັດສຳເລັດ");
+            }else {
+                response.setDataResponse(updated);
+                response.setStatus("00");
+                response.setMessage("ການອະນຸມັດບໍ່ສຳເລັດ !!!");
+            }
+
+        } catch (Exception e) {
+            log.error("Approval failed", e);
+            response.setStatus("EE");
+            response.setMessage("Error while saving data: " + e.getMessage());
+        }
+
+        return response;
+    }
+    public DataResponse authByAdmin(StockItemAuthReq request, String userId) {
+        DataResponse response = new DataResponse();
+        try {
+            int updated = 0;
+            final String sql = "UPDATE order_item_details SET approveby = ?, approvedate = ?,status=? WHERE  bill_no=?  ";
+                updated = EBankJdbcTemplate.update(
+                        sql,
+                        userId,
+                        new Date(),
+                        request.getStatus(),
+                        request.getBillNo()
+
+                );
+                log.info("Updated {} row(s) for detail_id = {}", updated, request.getBillNo());
+
             if(updated > 0){
                 response.setDataResponse(updated);
                 response.setStatus("00");
@@ -684,7 +728,9 @@ public class StockServiceImpl {
 
     public DataResponse approveStockItemDetailsOrderProd(StockItemDetailsReq stockItemDetailsReq) {
         String role = stockItemDetailsReq.getRole();
+        String pathApi = stockItemDetailsReq.getPathApi();
         log.info("role:"+role);
+        log.info("pathApi:"+pathApi);
         DataResponse response = new DataResponse();
         String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
                 .map(String::valueOf)
@@ -696,25 +742,25 @@ public class StockServiceImpl {
                 response.setMessage("ທ່ານ ບໍ່ມີສິດອະນຸມັດລາຍການ !!!");
             }else {
                 int updatedRows = 0;
-                String status = "";
-                 if ("BUYER".equals(role)) {
-                    status = "buyer";
-                } else if ("ACCOUNTING".equals(role)) {
-                    status = "wait-item";
-                }
-                 if ("BUYER".equals(role)) {
+                 //=====ກວດສອບ pathApi ວ່າມາຈາກໃສ່
+                if("buyer".equals(pathApi)){
+                //***************buyer path*******
+                    log.info("===let's start api path :"+pathApi);
                     updatedRows = orderDetailsRepository.approveStockItemDetailsBuyer(
                             stockItemDetailsReq.getUserId(),
                             new Date(),
-                            status,
+                            "buyer",
                             stockItemDetailsReq.getBillNo(),
                             detailIdsStr
                     );
-                } else if ("ACCOUNTING".equals(role)) {
+                }
+                else if("accounting".equals(pathApi)){
+                //********************account path api
+                    log.info("===let's start api path :"+pathApi);
                     updatedRows = orderDetailsRepository.approveStockItemDetailsAccounting(
                             stockItemDetailsReq.getUserId(),
                             new Date(),
-                            status,
+                            "wait-item",
                             stockItemDetailsReq.getBillNo(),
                             detailIdsStr
                     );
@@ -726,15 +772,15 @@ public class StockServiceImpl {
                     String keyNo = optionalKeyNo.map(String::valueOf).orElse(null);
                     log.info("keyNo:"+keyNo);
                     ItemPaymentEntity entity = new ItemPaymentEntity();
-                        entity.setSavebBy(stockItemDetailsReq.getUserId());
-                        entity.setSaveDate(new Date());
-                        entity.setBillNo(stockItemDetailsReq.getBillNo());
-                        entity.setInvoiceNo(keyNo);
-                        entity.setCcy("LAK");
-                        entity.setStatus("wait-payment");
-                        entity.setQty(getCal.get(0).getQty());
-                        entity.setTotal(getCal.get(0).getPaymentTotal());
-                        //total
+                    entity.setSavebBy(stockItemDetailsReq.getUserId());
+                    entity.setSaveDate(new Date());
+                    entity.setBillNo(stockItemDetailsReq.getBillNo());
+                    entity.setInvoiceNo(keyNo);
+                    entity.setCcy("LAK");
+                    entity.setStatus("wait-payment");
+                    entity.setQty(getCal.get(0).getQty());
+                    entity.setTotal(getCal.get(0).getPaymentTotal());
+                    //total
                     itemPaymentEntityRepository.save(entity);
 
                     //then store data to payment entity
@@ -751,6 +797,7 @@ public class StockServiceImpl {
                     itemPaymentEntity.setExp(new Date());
                     itemPaymentEntity.setStatus("suspend");
                     paymentDetailsEntityRepository.save(itemPaymentEntity);
+
                 }
                 if (updatedRows > 0) {
                     response.setStatus("00");
@@ -798,23 +845,22 @@ public class StockServiceImpl {
         return response;
     }
     public void updateItemInTableItem(String itemId) {
+        log.info("item:"+itemId);
         // Convert itemId string to a list of Long values
         List<Long> itemIdList = Arrays.stream(itemId.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
-
         // Retrieve items from repository
+        log.info("itemIdList:"+itemIdList);
         List<RequestItemEbtity> items = requestItemRepository.findByItemId(itemIdList);
-
         // Check if items list is null or empty
         if (items == null || items.isEmpty()) {
             log.warn("No items found for itemId: " + itemId);
             return;
         }
-
         // Log the first item for debugging purposes
-        log.info("First item in list: " + items.get(0).getItemId());
-
+        log.info("First item in list id: " + items.get(0).getItemId());
+        log.info("First item in list qty:" + items.get(0).getQty());
         // Process and update items
         for (RequestItemEbtity stock : items) {
             Integer qty = stock.getQty();
@@ -868,6 +914,9 @@ public class StockServiceImpl {
         try {
             if("PADMIN".equals(role)){
                     listData =orderAuthEntityRepository.getOrderByAdmin();
+            }
+            else if("USERSTOCK".equals(role)){
+                listData =orderAuthEntityRepository.getOrderAuthByBranchNoByMaker(branchNo);
             }
             else if("AUTH".equals(role)){
                     listData =orderAuthEntityRepository.getOrderAuthByBranchNo(branchNo);
@@ -1104,7 +1153,6 @@ public class StockServiceImpl {
         String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
-
         try {
             //=====then
             int updatedRows = requestItemRepository.approveRequestItem(
@@ -1773,7 +1821,7 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         log.info("info req:"+requestData.toString());
         DataResponse response = new DataResponse();
         try {
-            response.setDataResponse(requestItemTypeBorNameEntityRepository.findByTypeAndBorNo(requestData.getReqTypeId(),borId));
+            response.setDataResponse(getBor(borId,requestData));
             if(response.getDataResponse() != null){
                 response.setStatus("00");
                 response.setMessage("success");
@@ -1788,4 +1836,39 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         }
         return response;
     }
+    //*********getBor
+    public List<requestItemTypeBorNameEntity> getBor(String borId,requestData requestData){
+        log.info("show bor:"+borId);
+        String borNo = borId;
+        String reqTypeId = requestData.getReqTypeId();
+        String conBorNo = "";
+        String conReqTypeId = "";
+
+        if(!"".equals(reqTypeId)){
+            conReqTypeId  = "\n AND req_id='"+reqTypeId+"'";
+        }else {
+            conReqTypeId= "";
+        }
+        StringBuilder sb  = new StringBuilder();
+        sb.append("select * from v_req_type where 1=1");
+        sb.append(conBorNo);
+        sb.append(conReqTypeId);
+        String sql = sb.toString();
+        return EBankJdbcTemplate.query(sql, new RowMapper<requestItemTypeBorNameEntity>() {
+            @Override
+            public requestItemTypeBorNameEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+                requestItemTypeBorNameEntity tr = new requestItemTypeBorNameEntity();
+                tr.setReqId(rs.getString("req_id"));
+                tr.setReqName(rs.getString("req_name"));
+                tr.setBorId(rs.getString("bor_id"));
+                tr.setBorNo(rs.getString("bor_no"));
+                tr.setType(rs.getString("type"));
+                tr.setLocation(rs.getString("location"));
+                return tr;
+            }
+        });
+
+
+    }
+
 }

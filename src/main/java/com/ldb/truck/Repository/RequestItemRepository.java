@@ -61,7 +61,7 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
             @Param("status") String status,
             @Param("detailId") String detailId); // Use String instead of List<Long>
 
-    @Query(value = "SELECT * FROM request_item_details WHERE detail_id IN (:itemId) and status='wait-order' ", nativeQuery = true)
+    @Query(value = "SELECT * FROM request_item_details WHERE detail_id IN (:itemId)  ", nativeQuery = true)
     List<RequestItemEbtity> findByItemId(@Param("itemId") List<Long> itemId);
 
 

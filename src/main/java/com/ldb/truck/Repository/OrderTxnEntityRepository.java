@@ -21,8 +21,10 @@ public interface OrderTxnEntityRepository extends CrudRepository<OrderItemEntity
     @Query(value = "select * from v_order_item where saveby=:saveby and bill_no=:billNo order by detail_id desc ", nativeQuery = true)
     List<OrderItemEntity> getOrderByBillNo(@Param("saveby") String saveby,@Param("billNo") String billNo);
 
-    @Query(value = "select * from v_order_item where status='wait-order' order by detail_id desc ", nativeQuery = true)
+    @Query(value = "select * from v_order_item where status in ('wait','wait-order') order by detail_id desc ", nativeQuery = true)
     List<OrderItemEntity> getOrderByAdmin();
+
+
 
     @Query(value = "select * from v_order_item  order by status desc ", nativeQuery = true)
     List<OrderItemEntity> getOrderByBillNoAdmin();
