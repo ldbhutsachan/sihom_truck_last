@@ -9,6 +9,8 @@ import com.ldb.truck.Model.Login.Report.*;
 import com.ldb.truck.Model.Login.Report.Bialieng.sumfooterOilPaid;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStock;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStockRes;
+import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelReq;
+import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -260,17 +262,16 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
     return result;
 }
 
-public ReportAllStockRes getReportDetailDailyStock(StockRequest stockRequest){
+public ReportAllStockRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest){
     ReportAllStockRes resposne = new ReportAllStockRes();
         try {
             List<ReportAllStock> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest);
-            log.info("show info :"+rsListData.size());
            if(rsListData.size() >= 1){
                 resposne.setStatus("00");
                 resposne.setMessage("Success");
                 resposne.setData(rsListData);
             }else {
-                resposne.setStatus("05");
+                resposne.setStatus("00");
                 resposne.setMessage("Data Not Found !!");
             }
         }catch (Exception e){
@@ -278,19 +279,33 @@ public ReportAllStockRes getReportDetailDailyStock(StockRequest stockRequest){
             resposne.setMessage("Error Data !!!");
         }
         return resposne;
-}public ReportAllStockRes getTxnStock(StockRequest stockRequest){
-    ReportAllStockRes resposne = new ReportAllStockRes();
+}
+    public ReportItemInOutModelResponse getTxnStock(ReportItemInOutModelReq stockRequest){
+
+        ReportItemInOutModelResponse resposne = new ReportItemInOutModelResponse();
+        List<ReportAllStock> listData = new ArrayList<>();
         try {
-            List<ReportAllStock> rsListData = reportStaffServiceDao.getTxnStock(stockRequest);
-            log.info("show info :"+rsListData.size());
-           if(rsListData.size() >= 1){
-                resposne.setStatus("00");
-                resposne.setMessage("Success");
-                resposne.setData(rsListData);
-            }else {
-                resposne.setStatus("05");
-                resposne.setMessage("Data Not Found !!");
+            listData = reportStaffServiceDao.getTxnStock(stockRequest);
+            if(listData.size() > 0){
+                double sumRaisedAmt =  listData.stream().map(ReportAllStock::getTotal).collect(Collectors.summingInt(Integer::intValue));
+                double sumInAmt =  listData.stream().map(ReportAllStock::getAmtIn).collect(Collectors.summingInt(Integer::intValue));
+                double sumOutAmt =  listData.stream().map(ReportAllStock::getAmtOut).collect(Collectors.summingInt(Integer::intValue));
+                double sumAmt =  listData.stream().map(ReportAllStock::getAmt).collect(Collectors.summingInt(Integer::intValue));
+                double sumAmount =  listData.stream().map(ReportAllStock::getPrice).collect(Collectors.summingDouble(Double::doubleValue));
+                double sumAmountIn =  listData.stream().map(ReportAllStock::getPriceIn).collect(Collectors.summingDouble(Double::doubleValue));
+                double sumAmountOut =  listData.stream().map(ReportAllStock::getPriceOut).collect(Collectors.summingDouble(Double::doubleValue));
+                resposne.setDataResponse(listData);
+                resposne.setSumRaisedAmt(sumRaisedAmt);
+                resposne.setSumInAmt(sumInAmt);
+                resposne.setSumOutAmt(sumOutAmt);
+                resposne.setSumAmt(sumAmt);
+                resposne.setSumPrice(sumAmount);
+                resposne.setSumPriceIn(sumAmountIn);
+                resposne.setSumPriceOut(sumAmountOut);
+                return resposne;
             }
+            resposne.setStatus("00");
+            resposne.setMessage("Data Not Found !!");
         }catch (Exception e){
             resposne.setStatus("EE");
             resposne.setMessage("Error Data !!!");

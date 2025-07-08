@@ -5,6 +5,8 @@ import com.ldb.truck.Model.Login.Report.*;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRes;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStockRes;
+import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelReq;
+import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelResponse;
 import com.ldb.truck.Service.ReportAllService.ReportAllService;
 import com.ldb.truck.Service.ReportStaffService.ReportStaffService;
 import com.ldb.truck.Service.VicicleFooterService.VicicleFooterService;
@@ -174,7 +176,7 @@ public ShowOilPaidRes ShowTotalOilPaid (@RequestBody ReportAllReq reportAllReq){
 //***
 @CrossOrigin(origins = "*")
 @PostMapping("/reportDetailDailyStock.service")
-public ReportAllStockRes reportAllService (@RequestBody StockRequest reportAllReq){
+public ReportAllStockRes reportAllService (@RequestBody ReportItemInOutModelReq reportAllReq){
     ReportAllStockRes result = new ReportAllStockRes();
     try {
         result = reportAllService.getReportDetailDailyStock(reportAllReq);
@@ -185,10 +187,11 @@ public ReportAllStockRes reportAllService (@RequestBody StockRequest reportAllRe
         return result;
     }
     return result;
-}@CrossOrigin(origins = "*")
+}
+@CrossOrigin(origins = "*")
 @PostMapping("/reportTxnDailyStock.service")
-public ReportAllStockRes reportTxnDailyStock (@RequestBody StockRequest reportAllReq){
-    ReportAllStockRes result = new ReportAllStockRes();
+public ReportItemInOutModelResponse reportTxnDailyStock (@RequestBody ReportItemInOutModelReq reportAllReq){
+        ReportItemInOutModelResponse result = new ReportItemInOutModelResponse();
     try {
         result = reportAllService.getTxnStock(reportAllReq);
     }catch (Exception e){

@@ -8,6 +8,7 @@ import lombok.*;
 public class ReportAllStock {
     private String image;
     private String itemName;
+
     private String itemId;
 
     private String type;
@@ -22,13 +23,22 @@ public class ReportAllStock {
     private String txnDateOut;
 
     private Integer amt;
-    private String price;
-    private String total;
+    private Double price;
+
+    private Integer total;
     private Integer amtIn;
-    private String priceIn;
+    private Double priceIn;
     private String totalIn;
+
     private Integer amtOut;
-    private String priceOut;
+    private Double priceOut;
     private String totalOut;
+
+
+    private String userStockIn;
+    private String userStockOut;
+
+    private String reqName;
+    private String borType;
 
 }

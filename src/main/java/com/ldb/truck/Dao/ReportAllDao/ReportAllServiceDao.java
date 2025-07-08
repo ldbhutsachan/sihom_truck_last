@@ -1,12 +1,13 @@
 package com.ldb.truck.Dao.ReportAllDao;
 
-import com.ldb.truck.Dao.VicicleHeaderDao.VicicleHeaderServiceDao;
 import com.ldb.truck.Entity.Stock.StockRequest;
 import com.ldb.truck.Model.Login.ForShowTotalOil.ForShowTotalOilPaid;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportFuel;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStock;
+
+import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -789,31 +787,42 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
     }
 
     //*****report stock
-    public List<ReportAllStock> getReportDetailDailyStock(StockRequest stockRequest){
+    public List<ReportAllStock> getReportDetailDailyStock(ReportItemInOutModelReq stockRequest){
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
-        String group = "\ngroup by image,item_id,item_name,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
+        String itemId= stockRequest.getItemId();
+        String conItem = "";
+        if(!"all".equals(itemId)){
+            conItem= "\n and item_id ='"+itemId+"'";
+
+        }else {
+            conItem= "";
+        }
+
+        String group = "\ngroup by e.req_name,c.bor_no,b.saveby,d.USER_LOGIN,image,item_id,item_name,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
         String startDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
         String endDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
         String tableCon = "\n from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
-                "left join request_item_details c on a.item_id=c.item_id where 1=1";
+                "\nleft join request_item_details c on a.item_id=c.item_id LEFT JOIN LOGIN d on  d.KEY_ID=c.saveby" +
+                "\nleft join request_item_type e on c.type=e.req_id where 1=1";
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append(" select  to_char(b.savedate,'yyyy-mm-dd') dateIn,to_char(c.savedate,'yyyy-mm-dd') dateOut,a.image,a.item_id,a.item_name,\n" +
+            sb.append(" select  e.req_name,c.bor_no,b.saveby,d.USER_LOGIN requestBy,to_char(b.savedate,'yyyy-mm-dd') dateIn,to_char(c.savedate,'yyyy-mm-dd') dateOut,a.image,a.item_id,a.item_name,\n" +
                     "   SUM(a.unit) AS amt,\n" +
-                    "    FORMAT(SUM(a.price), '###,###,###') AS price,\n" +
-                    "    FORMAT(SUM(a.unit * a.price), '###,###,###') AS total,\n" +
+                    "   SUM(a.price) AS price,\n" +
+                    "   SUM(a.unit * a.price) AS total,\n" +
                     "    \n" +
                     "    SUM(b.unit) AS amt_in,\n" +
-                    "    FORMAT(SUM(b.price), '###,###,###') AS price_in,\n" +
-                    "    FORMAT(SUM(b.unit * b.price), '###,###,###') AS total_in,\n" +
+                    "    SUM(b.price) AS price_in,\n" +
+                    "    SUM(b.unit * b.price) AS total_in,\n" +
                     "    \n" +
                     "    SUM(c.unit) AS amt_out,\n" +
-                    "    FORMAT(SUM(c.price), '###,###,###') AS price_out,\n" +
-                    "    FORMAT(SUM(c.unit * c.price), '###,###,###') AS total_out");
+                    "    SUM(c.price) AS price_out,\n" +
+                    "    SUM(c.unit * c.price) AS total_out");
             sb.append(tableCon);
             sb.append(startDateCon);
             sb.append(endDateCon);
+            sb.append(conItem);
             sb.append(group);
             String query = sb.toString();
             log.info("query sql:"+query);
@@ -823,20 +832,21 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                     ReportAllStock tr = new ReportAllStock();
                     tr.setImage(rs.getString("image"));
                     tr.setItemName(rs.getString("item_name"));
+                    tr.setReqName(rs.getString("req_name"));
+                    tr.setBorNo(rs.getString("bor_no"));
                     tr.setItemId(rs.getString("item_id"));
                     tr.setAmt(rs.getInt("amt"));
-                    tr.setPrice(rs.getString("price"));
-                    tr.setTotal(rs.getString("total"));
-
+                    tr.setPrice(rs.getDouble("price"));
+                    tr.setTotal(rs.getInt("total"));
                     tr.setTxnDateIn(rs.getString("dateIn"));
                     tr.setTxnDateOut(rs.getString("dateOut"));
-
-
+                    tr.setUserStockIn(rs.getString("saveby"));
+                    tr.setUserStockOut(rs.getString("requestBy"));
                     tr.setAmtIn(rs.getInt("amt_in") != 0 ? rs.getInt("amt_in") : 0);
-                    tr.setPriceIn(rs.getString("price_in") != null ? rs.getString("price_in") : "0");
+                    tr.setPriceIn(rs.getDouble("price_in"));
                     tr.setTotalIn(rs.getString("total_in") != null ? rs.getString("total_in") : "0");
                     tr.setAmtOut(rs.getInt("amt_out") != 0 ? rs.getInt("amt_out") : 0);
-                    tr.setPriceOut(rs.getString("price_out") != null ? rs.getString("price_out") : "0");
+                    tr.setPriceOut(rs.getDouble("price_out"));
                     tr.setTotalOut(rs.getString("total_out") != null ? rs.getString("total_out") : "0");
                     return tr;
                 }
@@ -847,9 +857,11 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         }
         return null;
     }
-    public List<ReportAllStock> getTxnStock(StockRequest stockRequest){
+    public List<ReportAllStock> getTxnStock(ReportItemInOutModelReq stockRequest){
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
+        String itemId = stockRequest.getItemId();
+        log.info("start itemId:"+itemId);
         String group = "\n group by a.item_id,a.image,item_name,\n" +
                 "d.req_id,d.req_name,f.key_id,f.b_name,f.location,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd') ";
         String startDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
@@ -903,13 +915,13 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                     tr.setTxnDateIn(rs.getString("txndateIn"));
                     tr.setTotalOut(rs.getString("txndateOut"));
                     tr.setAmt(rs.getInt("amt"));
-                    tr.setPrice(rs.getString("price"));
-                    tr.setTotal(rs.getString("total"));
+                    tr.setPrice(rs.getDouble("price"));
+                    tr.setTotal(rs.getInt("total"));
                     tr.setAmtIn(rs.getInt("amt_in") != 0 ? rs.getInt("amt_in") : 0);
-                    tr.setPriceIn(rs.getString("price_in") != null ? rs.getString("price_in") : "0");
+                    tr.setPriceIn(rs.getDouble("price_in"));
                     tr.setTotalIn(rs.getString("total_in") != null ? rs.getString("total_in") : "0");
                     tr.setAmtOut(rs.getInt("amt_out") != 0 ? rs.getInt("amt_out") : 0);
-                    tr.setPriceOut(rs.getString("price_out") != null ? rs.getString("price_out") : "0");
+                    tr.setPriceOut(rs.getDouble("price_out"));
                     tr.setTotalOut(rs.getString("total_out") != null ? rs.getString("total_out") : "0");
                     return tr;
                 }
@@ -920,4 +932,6 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         }
         return null;
     }
+
+
 }
