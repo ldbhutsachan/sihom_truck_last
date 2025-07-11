@@ -7,8 +7,8 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(name = "v_order_item")
-public class OrderAuthEntity {
+@Table(name = "v_aprove_tostock")
+public class ViewOrderItemReportEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,14 +24,11 @@ public class OrderAuthEntity {
     @Column(name = "item_id", nullable = false)
     private Integer itemId;
 
-    @Column(name = "item_name", nullable = false)
-    private String itemName;
-
     @Column(name = "unit", precision = 10, scale = 2)
-    private String unit;
+    private Float unit;
 
     @Column(name = "size")
-    private String size;
+    private Integer size;
 
     @Column(name = "currency", length = 200)
     private String currency;
@@ -44,6 +41,8 @@ public class OrderAuthEntity {
 
     @Column(name = "price")
     private Float price;
+
+
 
     @Column(name = "saveby", length = 200)
     private String saveBy;
@@ -72,19 +71,48 @@ public class OrderAuthEntity {
     @Column(name = "token")
     private String toKen;
 
-    @Column(name = "total")
-    private Float total;
+    @Column(name = "buyer_id")
+    private String buyerId;
 
-    @Column(name = "image")
-    private String image;
+    @Column(name = "buyer_date")
+    @Temporal(TemporalType.DATE)
+    private Date buyerDate;
 
-    @Column(name = "branchno")
-    private String branchNo;
+    @Column(name = "account_id")
+    private String accountId;
 
-    @Column(name = "borkey")
-    private String borKey;
+    @Column(name = "account_date")
+    @Temporal(TemporalType.DATE)
+    private Date accountDate;
 
-    @Column(name = "borname")
-    private String borName;
 
+    @Column(name = "real_qty")
+    private int realQty;
+
+    @Column(name = "real_currency")
+    private String realCurrency;
+
+    @Column(name = "real_exchange_rate")
+    private int realExchangeRate;
+
+    @Column(name = "r_price")
+    private Float rPrice;
+
+    @Column(name = "real_price")
+    private Float realPrice;
+
+    @Column(name = "qty_data")
+    private int realQtyData;
+
+    @Column(name = "currency_data")
+    private String realCurrencyData;
+
+    @Column(name = "exchange_rate_data")
+    private int realExchangeRatedata;
+
+    @Column(name = "price_data")
+    private Float rPriceData;
+
+    @Column(name = "real_price_data")
+    private Float realPriceData;
 }

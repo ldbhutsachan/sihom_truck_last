@@ -358,8 +358,8 @@ public class ItemController {
             ,@RequestParam("supplierId") Integer  supplierId
             ,@RequestParam("barcode") String  barcode
             ,@RequestParam("item_name") String  item_name
-            ,@RequestParam("unit") Integer  unit
-            ,@RequestParam("size") Integer  size
+            ,@RequestParam("unit") String  unit
+            ,@RequestParam("size") String  size
             ,@RequestParam("currency") String  currency
             ,@RequestParam("exchangeRate") Integer  exchangeRate
             ,@RequestParam("galatyStartDate") String  galatyStartDate
@@ -453,8 +453,8 @@ public class ItemController {
             ,@RequestParam("supplierId") Integer  supplierId
             ,@RequestParam("barcode") String  barcode
             ,@RequestParam("item_name") String  item_name
-            ,@RequestParam("unit") Integer  unit
-            ,@RequestParam("size") Integer  size
+            ,@RequestParam("unit") String  unit
+            ,@RequestParam("size") String  size
             ,@RequestParam("currency") String  currency
             ,@RequestParam("exchangeRate") Integer  exchangeRate
             ,@RequestParam("galatyStartDate") String  galatyStartDate

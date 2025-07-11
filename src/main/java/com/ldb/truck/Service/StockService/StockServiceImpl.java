@@ -91,6 +91,7 @@ public class StockServiceImpl {
     @Autowired OrderTxnEntityRepository orderTxnEntityRepository;
     @Autowired OrderItemSaveEntityRepository orderItemSaveEntityRepository;
     @Autowired OrderDetailsRepository orderDetailsRepository;
+    @Autowired ViewOrderDetailsRepository viewOrderDetailsRepository;
     @Autowired
     StockAlertRepository stockAlertRepository;
     @Autowired
@@ -213,7 +214,7 @@ public class StockServiceImpl {
                 Integer qty = stock.getQty();
                 Float price = stock.getPrice();
                 Integer itemNo = stock.getItemId();
-                    itemEntityRepository.updateStockInItem(qty,price ,itemNo);
+                    itemEntityRepository.updateStockInItemStock(qty,price ,itemNo);
             }
             return 1;
         }
@@ -550,6 +551,13 @@ public class StockServiceImpl {
             entity.setBillNo(request.getBillNo());
             entity.setItemId(item.getItem());
             entity.setQty(item.getQty());
+           // entity.setPrice(item.getPrice());
+            entity.setRealQty(item.getRealQty());
+            entity.setRPrice(item.getPrice());
+            entity.setRealPrice(item.getRealPrice());
+            entity.setExchangeRate(item.getExchangeRate());
+            entity.setRealCurrency(item.getCurrency());
+
             entity.setSaveBy(userId);
             entity.setSaveDate(new Date());
             entity.setStatus("wait"); // Example default status
@@ -639,7 +647,9 @@ public class StockServiceImpl {
                     "buyer_date = ?, " +
                     "qty = ?," +
                     "price = ?," +
-                    "status='buyer' " +
+                    "status='buyer', " +
+                    "currency= ?, " +
+                    "exchange_rate= ? " +
                     "WHERE item_id = ? and bill_no=?  ";
             for (OrderItemReportEntity item : items) {
                 log.debug("Updating detail_id = {}, qty = {}, price = {}", item.getDetailId(), item.getQty(), item.getPrice());
@@ -649,6 +659,8 @@ public class StockServiceImpl {
                         new Date(),
                         item.getQty(),
                         item.getPrice(),
+                        item.getCurrency(),
+                        item.getRealExchangeRate(),
                         item.getDetailId(),
                         item.getBillNo()
                 );
@@ -715,6 +727,10 @@ public class StockServiceImpl {
             entity.setItemId(item.getItemId());
             entity.setQty(item.getQty());
             entity.setPrice(item.getAmount());
+
+            entity.setCurrency(item.getCurrency());
+            entity.setExchangeRate(item.getExchangeRate());
+
             entity.setSaveBy(userId);
             entity.setSaveDate(new Date());
             entity.setStatus("wait");
@@ -817,7 +833,7 @@ public class StockServiceImpl {
 
     @Transactional
     public DataResponse approveItemToStock(StockItemDetailsReq stockItemDetailsReq) {
-
+   log.info("let start approve ===");
         DataResponse response = new DataResponse();
         String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
                 .map(String::valueOf)
@@ -831,7 +847,7 @@ public class StockServiceImpl {
             );
 
             if (updatedRows > 0) {
-                updateItemAndUpTotalOrder(detailIdsStr);
+                updateItemAndUpTotalOrder(detailIdsStr,stockItemDetailsReq.getBillNo());
                 response.setStatus("00");
                 response.setMessage("Stock items approve successfully.");
             } else {
@@ -872,13 +888,14 @@ public class StockServiceImpl {
         }
     }
 
-    public void updateItemAndUpTotalOrder(String itemId) {
+    public void updateItemAndUpTotalOrder(String itemId,String billNo) {
+        log.info("start 01");
         // Convert itemId string to a list of Long values
         List<Long> itemIdList = Arrays.stream(itemId.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
         // Retrieve items from repository
-        List<OrderItemReportEntity> items = orderDetailsRepository.findByItemId(itemIdList);
+        List<ViewOrderItemReportEntity> items = viewOrderDetailsRepository.findByItemIdToStock(itemIdList);
         // Check if items list is null or empty
         if (items == null || items.isEmpty()) {
             log.warn("No items found for itemId: " + itemId);
@@ -887,14 +904,27 @@ public class StockServiceImpl {
         // Log the first item for debugging purposes
         log.info("First item in list: " + items.get(0).getItemId());
         // Process and update items
-        for (OrderItemReportEntity stock : items) {
+        for (ViewOrderItemReportEntity stock : items) {
             Integer qty = stock.getQty();
             Float amount = stock.getPrice();
             Integer itemNo = stock.getItemId();
-            // Logging details before updating
+            Integer qtyData = stock.getRealQtyData();
+            Float amountData = stock.getRPriceData();
+            String currencyData = stock.getRealCurrencyData();
+            Integer exchangeRateData = stock.getRealExchangeRatedata();
+            Float realPriceData = stock.getRealPriceData();
             log.info("Processing item: " + itemNo + ", Quantity: " + qty);
-            // Perform database update
-            itemEntityRepository.updateStockInItem(qty,amount,itemNo);
+            // Perform database update inventory
+            itemEntityRepository.updateStockInItem(qty,amount,realPriceData,itemNo);
+
+            // let update details for real money
+            log.info("show before insert itemNo :"+itemNo);
+            log.info("show before insert qty :"+qtyData);
+            log.info("show before insert amount :"+amountData);
+            log.info("show before insert currency :"+currencyData);
+            log.info("show before insert exchangeRate :"+exchangeRateData);
+            log.info("show before insert realPrice :"+realPriceData);
+            itemEntityRepository.updateStockInItemOrderDetails(qtyData,amountData,currencyData,exchangeRateData,realPriceData,itemNo,billNo);
         }
     }
     //getOrderItemDetailsAuth

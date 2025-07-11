@@ -34,10 +34,10 @@ public class viewItemEntity {
     private String item_name;
 
     @Column(name = "unit", nullable = false)
-    private Integer unit;
+    private String unit;
 
     @Column(name = "size", nullable = false)
-    private Integer size; // Size might need renaming if backticks are causing issues
+    private String size; // Size might need renaming if backticks are causing issues
 
     @Column(name = "currency", nullable = false)
     private String currency; // Enum mapping
@@ -61,6 +61,9 @@ public class viewItemEntity {
 
     @Column(name = "price", nullable = false)
     private Float price;
+
+    @Column(name = "real_price", nullable = false)
+    private Float realPrice;
 
     @Column(name = "image", columnDefinition = "TEXT")
     private String image;

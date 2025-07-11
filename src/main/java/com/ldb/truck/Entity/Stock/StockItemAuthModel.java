@@ -14,4 +14,10 @@ public class StockItemAuthModel {
     private Integer qty;
     private Float amount;
     private Float total;
+
+
+
+    private String currency;
+    private Float realPrice;
+    private int exchangeRate;
 }

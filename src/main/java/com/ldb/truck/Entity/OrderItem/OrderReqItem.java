@@ -12,4 +12,10 @@ import lombok.Setter;
 public class OrderReqItem {
     private int item;
     private int qty;
+    private int realQty;
+
+    private String currency;
+    private int exchangeRate;
+    private Float realPrice;
+    private Float price;
 }

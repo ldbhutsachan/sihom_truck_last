@@ -4,6 +4,7 @@ import com.ldb.truck.Entity.Stock.StockRequest;
 import com.ldb.truck.Model.Login.Report.*;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRes;
+import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOutRes;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStockRes;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelReq;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelResponse;
@@ -176,8 +177,8 @@ public ShowOilPaidRes ShowTotalOilPaid (@RequestBody ReportAllReq reportAllReq){
 //***
 @CrossOrigin(origins = "*")
 @PostMapping("/reportDetailDailyStock.service")
-public ReportAllStockRes reportAllService (@RequestBody ReportItemInOutModelReq reportAllReq){
-    ReportAllStockRes result = new ReportAllStockRes();
+public ReportAllStockInOutRes reportAllService (@RequestBody ReportItemInOutModelReq reportAllReq){
+    ReportAllStockInOutRes result = new ReportAllStockInOutRes();
     try {
         result = reportAllService.getReportDetailDailyStock(reportAllReq);
     }catch (Exception e){

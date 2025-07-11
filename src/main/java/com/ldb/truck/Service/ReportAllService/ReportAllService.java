@@ -8,6 +8,8 @@ import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.*;
 import com.ldb.truck.Model.Login.Report.Bialieng.sumfooterOilPaid;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStock;
+import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOut;
+import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOutRes;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStockRes;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelReq;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelResponse;
@@ -262,14 +264,47 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
     return result;
 }
 
-public ReportAllStockRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest){
-    ReportAllStockRes resposne = new ReportAllStockRes();
+public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest){
+    ReportAllStockInOutRes resposne = new ReportAllStockInOutRes();
+    List<ReportAllStockInOut> rsListData = new ArrayList<>();
         try {
-            List<ReportAllStock> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest);
+             rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest);
+            List<String> itemId = rsListData.stream().map(ReportAllStockInOut::getItemId).distinct().collect(Collectors.toList());
+            log.info("itemId:"+itemId);
+            List<ReportAllStockInOut> resData = new ArrayList<>();
+            for(String itemNo : itemId){
+                ReportAllStockInOut itemdata = new ReportAllStockInOut();
+
+               // itemdata.setDetailsId(rsListData.stream().filter(p -> p.getDetailsId().equals(itemNo)).map(ReportAllStockInOut::getDetailsId).findFirst().orElse(""));
+                itemdata.setItemId(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getItemId).findFirst().orElse(""));
+                itemdata.setItemName(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getItemName).findFirst().orElse(""));
+                itemdata.setImage(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getImage).findFirst().orElse(""));
+
+                itemdata.setRaisedAmt(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getRaisedAmt).collect(Collectors.summingInt(Integer::intValue)));
+                itemdata.setInAmt(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getInAmt).collect(Collectors.summingInt(Integer::intValue)));
+                itemdata.setOutAmt(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getOutAmt).collect(Collectors.summingInt(Integer::intValue)));
+
+                int total  =rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getRaisedAmt).collect(Collectors.summingInt(Integer::intValue));
+                int inData  =rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getInAmt).collect(Collectors.summingInt(Integer::intValue));
+                int outData  =rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getOutAmt).collect(Collectors.summingInt(Integer::intValue));
+                int closAmt = rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getClosingAmt).collect(Collectors.summingInt(Integer::intValue));
+                int cal= inData;
+
+                itemdata.setClosingAmt(cal-outData);
+
+                itemdata.setDateIn(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getDateIn).findFirst().orElse(""));
+                itemdata.setDateOut(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getDateOut).findFirst().orElse(""));
+
+                itemdata.setInByUser(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getInByUser).findFirst().orElse(""));
+                itemdata.setOutByUser(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getOutByUser).findFirst().orElse(""));
+
+                resData.add(itemdata);
+            }
+
            if(rsListData.size() >= 1){
                 resposne.setStatus("00");
                 resposne.setMessage("Success");
-                resposne.setData(rsListData);
+                resposne.setData(resData);
             }else {
                 resposne.setStatus("00");
                 resposne.setMessage("Data Not Found !!");

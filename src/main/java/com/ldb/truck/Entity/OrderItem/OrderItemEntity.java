@@ -27,10 +27,10 @@ public class OrderItemEntity {
     private String itemName;
 
     @Column(name = "unit", precision = 10, scale = 2)
-    private Float unit;
+    private String unit;
 
     @Column(name = "size")
-    private Integer size;
+    private String size;
 
     @Column(name = "currency", length = 200)
     private String currency;
@@ -76,5 +76,21 @@ public class OrderItemEntity {
 
     @Column(name = "image")
     private String image;
+
+
+    @Column(name = "real_qty")
+    private int realQty;
+
+    @Column(name = "real_currency")
+    private String realCurrency;
+
+    @Column(name = "real_exchange_rate")
+    private int realExchangeRate;
+
+    @Column(name = "r_price")
+    private Float rPrice;
+
+    @Column(name = "real_price")
+    private Float realPrice;
 
 }

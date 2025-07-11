@@ -42,6 +42,8 @@ public class OrderItemReportEntity {
     @Column(name = "price")
     private Float price;
 
+
+
     @Column(name = "saveby", length = 200)
     private String saveBy;
 
@@ -83,6 +85,21 @@ public class OrderItemReportEntity {
     @Temporal(TemporalType.DATE)
     private Date accountDate;
 
+
+    @Column(name = "real_qty")
+    private int realQty;
+
+    @Column(name = "real_currency")
+    private String realCurrency;
+
+    @Column(name = "real_exchange_rate")
+    private int realExchangeRate;
+
+    @Column(name = "r_price")
+    private Float rPrice;
+
+    @Column(name = "real_price")
+    private Float realPrice;
 
 
 

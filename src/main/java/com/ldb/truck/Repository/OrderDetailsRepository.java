@@ -2,6 +2,7 @@ package com.ldb.truck.Repository;
 
 import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
 import com.ldb.truck.Entity.OrderItem.OrderItemReportEntity;
+import com.ldb.truck.Entity.OrderItem.ViewOrderItemReportEntity;
 import com.ldb.truck.Entity.Stock.StockItemDetailsEntity;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -87,6 +88,9 @@ public interface OrderDetailsRepository extends CrudRepository<OrderItemReportEn
             @Param("status") String status,
             @Param("detailId") String detailId); // Use String instead of List<Long>
 
+
+
     @Query(value = "SELECT * FROM order_item_details WHERE detail_id IN (:itemId) ", nativeQuery = true)
     List<OrderItemReportEntity> findByItemId(@Param("itemId") List<Long> itemId);
+
 }

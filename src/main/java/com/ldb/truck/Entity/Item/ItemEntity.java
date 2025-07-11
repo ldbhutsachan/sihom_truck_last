@@ -27,10 +27,10 @@ public class ItemEntity {
     private String item_name;
 
     @Column(name = "unit", nullable = false)
-    private Integer unit;
+    private String unit;
 
     @Column(name = "size", nullable = false)
-    private Integer size;
+    private String size;
 
     @Column(name = "currency", nullable = false)
     private String currency; // Enum mapping

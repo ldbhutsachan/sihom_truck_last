@@ -7,6 +7,7 @@ import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportFuel;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStock;
 
+import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOut;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelReq;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -787,68 +788,53 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
     }
 
     //*****report stock
-    public List<ReportAllStock> getReportDetailDailyStock(ReportItemInOutModelReq stockRequest){
+    public List<ReportAllStockInOut> getReportDetailDailyStock(ReportItemInOutModelReq stockRequest){
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
         String itemId= stockRequest.getItemId();
         String conItem = "";
         if(!"all".equals(itemId)){
             conItem= "\n and item_id ='"+itemId+"'";
-
         }else {
             conItem= "";
         }
-
-        String group = "\ngroup by e.req_name,c.bor_no,b.saveby,d.USER_LOGIN,image,item_id,item_name,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd')";
-        String startDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
-        String endDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
-        String tableCon = "\n from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
-                "\nleft join request_item_details c on a.item_id=c.item_id LEFT JOIN LOGIN d on  d.KEY_ID=c.saveby" +
-                "\nleft join request_item_type e on c.type=e.req_id where 1=1";
+        String startDateCon = "\n and dateIn >= '"+startDate+"'";
+        String endDateCon = "\n and dateIn <= '"+endDate+"'";
+        String orderData = "\n order by item_id desc";
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append(" select  e.req_name,c.bor_no,b.saveby,d.USER_LOGIN requestBy,to_char(b.savedate,'yyyy-mm-dd') dateIn,to_char(c.savedate,'yyyy-mm-dd') dateOut,a.image,a.item_id,a.item_name,\n" +
-                    "   SUM(a.unit) AS amt,\n" +
-                    "   SUM(a.price) AS price,\n" +
-                    "   SUM(a.unit * a.price) AS total,\n" +
-                    "    \n" +
-                    "    SUM(b.unit) AS amt_in,\n" +
-                    "    SUM(b.price) AS price_in,\n" +
-                    "    SUM(b.unit * b.price) AS total_in,\n" +
-                    "    \n" +
-                    "    SUM(c.unit) AS amt_out,\n" +
-                    "    SUM(c.price) AS price_out,\n" +
-                    "    SUM(c.unit * c.price) AS total_out");
-            sb.append(tableCon);
+            sb.append("select * from v_sum_report_inout where 1=1 \n ");
             sb.append(startDateCon);
             sb.append(endDateCon);
             sb.append(conItem);
-            sb.append(group);
+            sb.append(orderData);
             String query = sb.toString();
             log.info("query sql:"+query);
-            return EBankJdbcTemplate.query(query, new RowMapper<ReportAllStock>() {
+            return EBankJdbcTemplate.query(query, new RowMapper<ReportAllStockInOut>() {
                 @Override
-                public ReportAllStock mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    ReportAllStock tr = new ReportAllStock();
+                public ReportAllStockInOut mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ReportAllStockInOut tr = new ReportAllStockInOut();
+                    tr.setDetailsId(rs.getString("detail_id"));
+                    tr.setItemId(rs.getString("item_id"));
                     tr.setImage(rs.getString("image"));
                     tr.setItemName(rs.getString("item_name"));
-                    tr.setReqName(rs.getString("req_name"));
-                    tr.setBorNo(rs.getString("bor_no"));
-                    tr.setItemId(rs.getString("item_id"));
-                    tr.setAmt(rs.getInt("amt"));
-                    tr.setPrice(rs.getDouble("price"));
-                    tr.setTotal(rs.getInt("total"));
-                    tr.setTxnDateIn(rs.getString("dateIn"));
-                    tr.setTxnDateOut(rs.getString("dateOut"));
-                    tr.setUserStockIn(rs.getString("saveby"));
-                    tr.setUserStockOut(rs.getString("requestBy"));
-                    tr.setAmtIn(rs.getInt("amt_in") != 0 ? rs.getInt("amt_in") : 0);
-                    tr.setPriceIn(rs.getDouble("price_in"));
-                    tr.setTotalIn(rs.getString("total_in") != null ? rs.getString("total_in") : "0");
-                    tr.setAmtOut(rs.getInt("amt_out") != 0 ? rs.getInt("amt_out") : 0);
-                    tr.setPriceOut(rs.getDouble("price_out"));
-                    tr.setTotalOut(rs.getString("total_out") != null ? rs.getString("total_out") : "0");
-                    return tr;
+
+                    tr.setRaisedAmt(rs.getInt("real_qty"));
+                    tr.setInAmt(rs.getInt("amt_in"));
+                    tr.setOutAmt(rs.getInt("amt_out"));
+                    tr.setClosingAmt(rs.getInt("amt"));
+
+                    tr.setDateIn(rs.getString("dateIn"));
+                    tr.setDateOut(rs.getString("dateOut"));
+
+                    tr.setInByUser(rs.getString("saveby"));
+                    tr.setOutByUser(rs.getString("requestBy"));
+
+                  //  tr.setUsingType(null);
+                 //   tr.setUsingWith(null);
+                    tr.setType(rs.getString("type"));
+
+                   return tr;
                 }
             });
 
