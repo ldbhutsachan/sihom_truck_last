@@ -19,8 +19,13 @@ public interface RequestTxnRepository extends CrudRepository<RequestTxnEntity,Lo
     List<RequestTxnEntity> getStockByBillByUser(@Param("status") String status,@Param("saveby") String saveby);
     @Transactional
     @Modifying
-    @Query(value = "select * from v_request_item_fix where status=:status order by status desc ", nativeQuery = true)
-    List<RequestTxnEntity> getStockByBillNoAdmin(@Param("status") String status);
+    @Query(value = "select * from v_request_item_fix where status=:status and branchname=:branchNo order by status desc ", nativeQuery = true)
+    List<RequestTxnEntity> getStockByBillNoAdmin(@Param("status") String status,@Param("branchNo") String branchNo);
+
+    @Transactional
+    @Modifying
+    @Query(value = "select * from v_request_item_fix where  branchname=:branchNo order by status desc ", nativeQuery = true)
+    List<RequestTxnEntity> getStockByBranch(@Param("branchNo") String branchNo);
 
     @Transactional
     @Modifying
@@ -36,6 +41,24 @@ public interface RequestTxnRepository extends CrudRepository<RequestTxnEntity,Lo
     @Modifying
     @Query(value = "select * from v_request_item_fix where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate order by detail_id desc ", nativeQuery = true)
     List<RequestTxnEntity> getRequestReportNoStatus(@Param("startDate") String startDate,@Param("endDate") String endDate);
+
+
+    @Transactional
+    @Modifying
+    @Query(value = "select * from v_request_item_fix where branchname=:branchNo and  to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate   and status=:status order by detail_id desc ", nativeQuery = true)
+    List<RequestTxnEntity> getRequestReportBranchNo(@Param("startDate") String startDate,
+                                                    @Param("endDate") String endDate,
+                                                    @Param("status") String status,@Param("branchNo") String branchNo);
+
+
+
+    @Transactional
+    @Modifying
+    @Query(value = "select * from v_request_item_fix where branchname=:branchNo and  to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate order by detail_id desc ", nativeQuery = true)
+    List<RequestTxnEntity> getRequestReportBranchNStatuso(@Param("startDate") String startDate,
+                                                    @Param("endDate") String endDate,
+                                                   @Param("branchNo") String branchNo);
+
 
 
 }

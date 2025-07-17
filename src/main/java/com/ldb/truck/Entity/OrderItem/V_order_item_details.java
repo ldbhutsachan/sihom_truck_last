@@ -7,8 +7,7 @@ import java.util.Date;
 @Data
 @Entity
 @Table(name = "order_item_details")
-public class OrderItemEntity {
-
+public class V_order_item_details {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "detail_id")
@@ -47,6 +46,9 @@ public class OrderItemEntity {
     @Column(name = "saveby", length = 200)
     private String saveBy;
 
+    @Column(name = "savebyName", length = 200)
+    private String savebyName;
+
     @Column(name = "savedate")
     @Temporal(TemporalType.DATE)
     private Date saveDate;
@@ -54,12 +56,18 @@ public class OrderItemEntity {
     @Column(name = "editby", length = 200)
     private String editBy;
 
+    @Column(name = "edditbyName", length = 200)
+    private String edditByName;
+
     @Column(name = "editdate")
     @Temporal(TemporalType.DATE)
     private Date editDate;
 
     @Column(name = "approveby", length = 200)
     private String approveBy;
+
+    @Column(name = "approvebyName", length = 200)
+    private String approvebyName;
 
     @Column(name = "approvedate")
     @Temporal(TemporalType.DATE)
@@ -78,19 +86,16 @@ public class OrderItemEntity {
     private String image;
 
 
-//    @Column(name = "real_qty")
-//    private int realQty;
-//
-//    @Column(name = "real_currency")
-//    private String realCurrency;
-//
-//    @Column(name = "real_exchange_rate")
-//    private int realExchangeRate;
-//
-//    @Column(name = "r_price")
-//    private Float rPrice;
-//
-//    @Column(name = "real_price")
-//    private Float realPrice;
+    @Column(name="rejectby")
+    private String rejectBy;
+
+
+    @Column(name="rejectbyName")
+    private String rejectByName;
+
+    @Column(name= "rejectbyDate")
+    @Temporal(TemporalType.DATE)
+    private Date rejectDate;
+
 
 }

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -264,57 +265,73 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
     return result;
 }
 
-public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest){
-    ReportAllStockInOutRes resposne = new ReportAllStockInOutRes();
-    List<ReportAllStockInOut> rsListData = new ArrayList<>();
+    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest) {
+        ReportAllStockInOutRes response = new ReportAllStockInOutRes();
+
         try {
-             rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest);
-            List<String> itemId = rsListData.stream().map(ReportAllStockInOut::getItemId).distinct().collect(Collectors.toList());
-            log.info("itemId:"+itemId);
-            List<ReportAllStockInOut> resData = new ArrayList<>();
-            for(String itemNo : itemId){
-                ReportAllStockInOut itemdata = new ReportAllStockInOut();
+            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest);
 
-               // itemdata.setDetailsId(rsListData.stream().filter(p -> p.getDetailsId().equals(itemNo)).map(ReportAllStockInOut::getDetailsId).findFirst().orElse(""));
-                itemdata.setItemId(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getItemId).findFirst().orElse(""));
-                itemdata.setItemName(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getItemName).findFirst().orElse(""));
-                itemdata.setImage(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getImage).findFirst().orElse(""));
+            // Group by itemId and dateIn
+            Map<String, Map<String, List<ReportAllStockInOut>>> grouped =
+                    rsListData.stream().collect(Collectors.groupingBy(
+                            ReportAllStockInOut::getItemId,
+                            Collectors.groupingBy(ReportAllStockInOut::getDateIn)
+                    ));
 
-                itemdata.setRaisedAmt(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getRaisedAmt).collect(Collectors.summingInt(Integer::intValue)));
-                itemdata.setInAmt(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getInAmt).collect(Collectors.summingInt(Integer::intValue)));
-                itemdata.setOutAmt(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getOutAmt).collect(Collectors.summingInt(Integer::intValue)));
+            List<ReportAllStockInOut> resultData = new ArrayList<>();
 
-                int total  =rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getRaisedAmt).collect(Collectors.summingInt(Integer::intValue));
-                int inData  =rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getInAmt).collect(Collectors.summingInt(Integer::intValue));
-                int outData  =rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getOutAmt).collect(Collectors.summingInt(Integer::intValue));
-                int closAmt = rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getClosingAmt).collect(Collectors.summingInt(Integer::intValue));
-                int cal= inData;
+            // Process each itemId and date combination
+            for (Map.Entry<String, Map<String, List<ReportAllStockInOut>>> itemEntry : grouped.entrySet()) {
+                String itemId = itemEntry.getKey();
+                Map<String, List<ReportAllStockInOut>> dateMap = itemEntry.getValue();
 
-                itemdata.setClosingAmt(cal-outData);
+                for (Map.Entry<String, List<ReportAllStockInOut>> dateEntry : dateMap.entrySet()) {
+                    String dateIn = dateEntry.getKey();
+                    List<ReportAllStockInOut> records = dateEntry.getValue();
 
-                itemdata.setDateIn(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getDateIn).findFirst().orElse(""));
-                itemdata.setDateOut(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getDateOut).findFirst().orElse(""));
+                    ReportAllStockInOut base = records.get(0); // Use the first record as a reference
+                    ReportAllStockInOut summary = new ReportAllStockInOut();
 
-                itemdata.setInByUser(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getInByUser).findFirst().orElse(""));
-                itemdata.setOutByUser(rsListData.stream().filter(p -> p.getItemId().equals(itemNo)).map(ReportAllStockInOut::getOutByUser).findFirst().orElse(""));
+                    summary.setItemId(itemId);
+                    summary.setDateIn(dateIn);
+                    summary.setItemName(base.getItemName());
+                    summary.setImage(base.getImage());
+                    summary.setDateOut(base.getDateOut());
+                    summary.setInByUser(base.getInByUser());
+                    summary.setOutByUser(base.getOutByUser());
 
-                resData.add(itemdata);
+                    // Aggregated values
+                    int raisedAmt = records.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
+                    int inAmt = records.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
+                    int outAmt = records.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
+                    int closingAmt = records.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
+
+                    summary.setRaisedAmt(raisedAmt);
+                    summary.setInAmt(inAmt);
+                    summary.setOutAmt(outAmt);
+                    summary.setClosingAmt((raisedAmt + inAmt) - outAmt); // Custom calculation
+
+                    resultData.add(summary);
+                }
             }
 
-           if(rsListData.size() >= 1){
-                resposne.setStatus("00");
-                resposne.setMessage("Success");
-                resposne.setData(resData);
-            }else {
-                resposne.setStatus("00");
-                resposne.setMessage("Data Not Found !!");
+            if (!resultData.isEmpty()) {
+                response.setStatus("00");
+                response.setMessage("Success");
+                response.setData(resultData);
+            } else {
+                response.setStatus("00");
+                response.setMessage("Data Not Found !!");
             }
-        }catch (Exception e){
-            resposne.setStatus("EE");
-            resposne.setMessage("Error Data !!!");
+
+        } catch (Exception e) {
+            log.error("Error in getReportDetailDailyStock", e);
+            response.setStatus("EE");
+            response.setMessage("Error Data !!!");
         }
-        return resposne;
-}
+
+        return response;
+    }
     public ReportItemInOutModelResponse getTxnStock(ReportItemInOutModelReq stockRequest){
 
         ReportItemInOutModelResponse resposne = new ReportItemInOutModelResponse();

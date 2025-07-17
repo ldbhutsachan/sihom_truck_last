@@ -175,7 +175,7 @@ public class StockProductController {
     @CrossOrigin(origins = "*")
     @PostMapping("/getOrderItemDetails.service")
     public ResponseEntity<?> getOrderItemDetails(@RequestBody OrderItemEntity stockItemDetailsEntity){
-        OrderItemDetailsRes response  = new OrderItemDetailsRes();
+        V_OrderItemDetailsRes response  = new V_OrderItemDetailsRes();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -183,9 +183,10 @@ public class StockProductController {
         String userId = userProfiles.get(0).getUserId();
         String role = userProfiles.get(0).getRole();
         String billNo = stockItemDetailsEntity.getBillNo();
+        String status = stockItemDetailsEntity.getStatus();
 
         try {
-            response = stockService.getOrderItem(billNo,userId, role);
+            response = stockService.getOrderItem(billNo,userId, role,status);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -445,8 +446,9 @@ public class StockProductController {
         Integer deId = stockItemDetailsEntity.getDetailId();
         String billNo = stockItemDetailsEntity.getBillNo();
         String status = stockItemDetailsEntity.getStatus();
+        String branchNo =userProfiles.get(0).getBranchNo();
         try {
-            response = stockService.getRequestItem(billNo,role,userId,status);
+            response = stockService.getRequestItem(billNo,role,userId,status,branchNo);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -465,8 +467,9 @@ public class StockProductController {
         }
         String userId = userProfiles.get(0).getUserName();
         String role = userProfiles.get(0).getRole();
+        String borId = userProfiles.get(0).getBranchNo();
         try {
-            response = stockService.getRequestItemReport(stockRequest,userId,role);
+            response = stockService.getRequestItemReport(stockRequest,userId,role,borId);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

@@ -800,6 +800,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         }
         String startDateCon = "\n and dateIn >= '"+startDate+"'";
         String endDateCon = "\n and dateIn <= '"+endDate+"'";
+       // String orderDataAll = "\n and type='instock' ";
         String orderData = "\n order by item_id desc";
         try {
             StringBuilder sb = new StringBuilder();
@@ -807,6 +808,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             sb.append(startDateCon);
             sb.append(endDateCon);
             sb.append(conItem);
+           // sb.append(orderDataAll);
             sb.append(orderData);
             String query = sb.toString();
             log.info("query sql:"+query);
@@ -830,8 +832,6 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                     tr.setInByUser(rs.getString("saveby"));
                     tr.setOutByUser(rs.getString("requestBy"));
 
-                  //  tr.setUsingType(null);
-                 //   tr.setUsingWith(null);
                     tr.setType(rs.getString("type"));
 
                    return tr;

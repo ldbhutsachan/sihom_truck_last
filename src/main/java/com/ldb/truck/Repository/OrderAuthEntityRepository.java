@@ -10,18 +10,21 @@ import java.util.List;
 
 @Repository
 public interface OrderAuthEntityRepository extends CrudRepository<OrderAuthEntity,Long> {
-    @Query(value = "select * from v_order_item where branchno=:branchno  order by status desc ", nativeQuery = true)
-    List<OrderAuthEntity> getOrderAuthByBranchNoByMaker(@Param("branchno") String branchno);
+    @Query(value = "select * from v_order_item where branchno=:branchno and status=:status order by status desc ", nativeQuery = true)
+    List<OrderAuthEntity> getOrderAuthByBranchNoByMaker(@Param("branchno") String branchno,@Param("status") String status);
 
-    @Query(value = "select * from v_order_item where branchno=:branchno and status in ('auth','wait','wait-item') order by status desc ", nativeQuery = true)
-    List<OrderAuthEntity> getOrderAuthByBranchNo(@Param("branchno") String branchno);
+   // @Query(value = "select * from v_order_item where branchno=:branchno and status in ('auth','wait','wait-item') order by status desc ", nativeQuery = true)
+    @Query(value = "select * from v_order_item where branchno=:branchno and  status=:status order by status desc ", nativeQuery = true)
+    List<OrderAuthEntity> getOrderAuthByBranchNo(@Param("branchno") String branchno,@Param("status") String status);
 
-    @Query(value = "select * from v_order_item where status  in ('auth') order by status desc ", nativeQuery = true)
-    List<OrderAuthEntity> getOrderAuthByBuyer();
+   // @Query(value = "select * from v_order_item where status  in ('auth') order by status desc ", nativeQuery = true)
+    @Query(value = "select * from v_order_item where status=:status order by status desc ", nativeQuery = true)
+    List<OrderAuthEntity> getOrderAuthByBuyer(@Param("status") String status);
 
-    @Query(value = "select * from v_order_item where status  in ('buyer') order by status desc ", nativeQuery = true)
-    List<OrderAuthEntity> getOrderAuthByAccounting();
+  //  @Query(value = "select * from v_order_item where status  in ('buyer') order by status desc ", nativeQuery = true)
+    @Query(value = "select * from v_order_item where status=:status order by status desc ", nativeQuery = true)
+    List<OrderAuthEntity> getOrderAuthByAccounting(@Param("status") String status);
 
     @Query(value = "select * from v_order_item order by status desc ", nativeQuery = true)
-    List<OrderAuthEntity> getOrderByAdmin();
+    List<OrderAuthEntity> getOrderByAdmin(@Param("status") String status);
 }
