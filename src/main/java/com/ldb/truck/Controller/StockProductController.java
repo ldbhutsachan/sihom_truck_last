@@ -448,6 +448,7 @@ public class StockProductController {
         String status = stockItemDetailsEntity.getStatus();
         String branchNo =userProfiles.get(0).getBranchNo();
         try {
+            log.info("branchNo:"+branchNo);
             response = stockService.getRequestItem(billNo,role,userId,status,branchNo);
         }catch (Exception e){
             response.setStatus("EE");
