@@ -333,7 +333,7 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
         return response;
     }
     public ReportItemInOutModelResponse getTxnStock(ReportItemInOutModelReq stockRequest){
-
+//update
         ReportItemInOutModelResponse resposne = new ReportItemInOutModelResponse();
         List<ReportAllStock> listData = new ArrayList<>();
         try {
