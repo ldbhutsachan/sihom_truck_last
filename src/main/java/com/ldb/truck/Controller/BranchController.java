@@ -46,6 +46,19 @@ public BranchRes getShowBranchNew(@RequestBody BrachReq brachReq) {
     }
     return result;
 }
+@CrossOrigin(origins = "*")
+@PostMapping("/getData.service")
+public BranchRes getData(@RequestBody BrachReq brachReq) {
+    BranchRes result = new BranchRes();
+    try {
+        result = branchService.getShowBranchnewService(brachReq);
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exception");
+    }
+    return result;
+}
     //    update branch
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateBranch.service")

@@ -98,4 +98,18 @@ public class V_order_item_details {
     private Date rejectDate;
 
 
+    //*****ສາຂາໃດ
+    @Column(name="branchno")
+    private String branchNo;
+
+    @Column(name="bname")
+    private String branchName;
+
+    //*******ບໍ່ໃດ
+    @Column(name="borkey")
+    private String borkey;
+
+    @Column(name="borname")
+    private String borame;
+
 }

@@ -11,33 +11,43 @@ import java.util.List;
 
 @Repository
 public interface V_OrderTxnEntityRepository extends CrudRepository<V_order_item_details,Long> {
-    @Query(value = "select * from v_order_item where saveby=:saveby and detail_id=:detailId  order by detail_id desc", nativeQuery = true)
-    List<V_order_item_details> getOrderAll(@Param("saveby") String saveby,@Param("detailId") Integer detailId);
-
     @Query(value = "select * from v_order_item where saveby=:saveby and status=:status  order by detail_id desc", nativeQuery = true)
     List<V_order_item_details> getOrderBySaveby(@Param("saveby") String saveby,@Param("status") String status);
 
-    @Query(value = "select * from v_order_item where saveby=:saveby and bill_no=:billNo and status=:status order by detail_id desc ", nativeQuery = true)
-    List<V_order_item_details> getOrderByBillNo(@Param("saveby") String saveby,@Param("billNo") String billNo,@Param("status") String status);
-
-   // @Query(value = "select * from v_order_item where status in ('wait','wait-order') order by detail_id desc ", nativeQuery = true)
     @Query(value = "select * from v_order_item where status=:status order by detail_id desc ", nativeQuery = true)
     List<V_order_item_details> getOrderByAdmin(@Param("status") String status);
 
+    @Query(value = "select * from v_order_item where branchno=:branchNo and status=:status order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderByBr(@Param("status") String status);
 
+    @Query(value = "select * from v_order_item where status=:status order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderBybuyer(@Param("status") String status);
 
-    @Query(value = "select * from v_order_item  order by status desc ", nativeQuery = true)
-    List<V_order_item_details> getOrderByBillNoAdmin();
+    @Query(value = "select * from v_order_item where  status=:status order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderByAccount(@Param("status") String status);
 
-    @Query(value = "select * from v_order_item where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate   and status=:status order by detail_id desc ", nativeQuery = true)
-    List<V_order_item_details> getOrderReport(@Param("startDate") String startDate,@Param("endDate") String endDate,@Param("status") String status);
+     @Query(value = "select * from v_order_item where branchno=:branchNo and saveby=:saveby and status=:status  order by detail_id desc", nativeQuery = true)
+     List<V_order_item_details> getOrderBySavebyWithBranchNo(@Param("branchNo") String branchNo,@Param("saveby") String saveby,@Param("status") String status);
 
-    @Query(value = "select * from v_order_item where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate order by detail_id desc ", nativeQuery = true)
-    List<V_order_item_details> getOrderReportNoStatus(@Param("startDate") String startDate,@Param("endDate") String endDate);
+    @Query(value = "select * from v_order_item where branchno=:branchNo and status=:status order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderByBranchNo(@Param("branchNo") String branchNo,@Param("status") String status);
 
+    @Query(value = "select * from v_order_item where  branchno=:branchNo and status=:status order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderBybuyerBranchNo(@Param("branchNo") String branchNo,@Param("status") String status);
+    @Query(value = "select * from v_order_item where  branchno=:branchNo and status=:status order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderByAccountBranchNo(@Param("branchNo") String branchNo,@Param("status") String status);
 
+    @Query(value = "select * from v_order_item where status=:status order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderByAdminBranchNo(@Param("status") String status);
 
-
-
+    //================status all
+    @Query(value = "select * from v_order_item where branchno=:branchNo and saveby=:saveby   order by detail_id desc", nativeQuery = true)
+    List<V_order_item_details> getOrderBySavebyStatus(@Param("branchNo") String branchNo,@Param("saveby") String saveby);
+    @Query(value = "select * from v_order_item where branchno=:branchNo  order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderByBranchNoStatusAll(@Param("branchNo") String branchNo);
+    @Query(value = "select * from v_order_item where branchno=:branchNo  order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderByBranchNoStatus(@Param("branchNo") String branchNo);
+    @Query(value = "select * from v_order_item  order by detail_id desc ", nativeQuery = true)
+    List<V_order_item_details> getOrderByAdminNo();
 
 }

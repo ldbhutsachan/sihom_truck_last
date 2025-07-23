@@ -432,23 +432,68 @@ public class StockServiceImpl {
         return dataResponse;
     }
 
-   public V_OrderItemDetailsRes getOrderItem(String billNo, String userId,String role,String status){
+   public V_OrderItemDetailsRes getOrderItem(String conReq,String branchNo, String userId,String role,String status){
         log.info("userId:"+userId);
-        log.info("billNo:"+billNo);
+        log.info("branchNo:"+branchNo);
         log.info("role:"+role);
+        log.info("conReq:"+conReq);
             DecimalFormat numfm = new DecimalFormat("###,###.###");
        V_OrderItemDetailsRes response = new V_OrderItemDetailsRes();
         List<V_OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<V_order_item_details> listData = new ArrayList<>();
        V_OrderItemHeader groupHeader = new V_OrderItemHeader();
         try {
-            if("PADMIN".equals(role)){
-                listData = vOrderTxnEntityRepository.getOrderByAdmin(status);
+            //***step ກວດສອບເງືອນໄຂກ່ອນ
+            //I : ກວດສະຖານະ
+            if("all".equals(status)){
+                //I : ກວດສະຖານະ
+                if ("1".equals(conReq)) {
+                    if ("USERSTOCK".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderBySavebyStatus(branchNo, userId);
+                    } else if ("AUTH".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatusAll(branchNo);
+                    } else if ("BUYER".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatus(branchNo);
+                    } else if ("ACCOUNTING".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatus(branchNo);
+                    } else if ("PADMIN".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByAdminNo();
+                    }
+                }
+                else if ("2".equals(conReq)) {
+                    listData = vOrderTxnEntityRepository.getOrderByAdminNo();
+                }
+
             }else {
-                if(!"".equals(billNo)){
-                    listData = vOrderTxnEntityRepository.getOrderByBillNo(userId,billNo,status);
-                }else {
-                    listData = vOrderTxnEntityRepository.getOrderBySaveby(userId,status);
+                //1:ສະເເດງສະເພາະສາຂາ 2: ສະເເດງທັງໝົດລວມທັງສາຂາ
+                if ("1".equals(conReq)) {
+                    //1:ສະເເດງສະເພາະສາຂາ
+                    //====first step 1 check role mk auth padmin buyyer accounting
+                    if ("USERSTOCK".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderBySavebyWithBranchNo(branchNo, userId, status);
+                    } else if ("AUTH".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByBranchNo(branchNo, status);
+                    } else if ("BUYER".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderBybuyerBranchNo(branchNo, status);
+                    } else if ("ACCOUNTING".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByAccountBranchNo(branchNo, status);
+                    } else if ("PADMIN".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByAdminBranchNo(status);
+                    }
+                } else if ("2".equals(conReq)) {
+                    //2: ສະເເດງທັງໝົດລວມທັງສາຂາ
+                    //====first step 1 check role mk auth padmin buyyer accounting
+                    if ("USERSTOCK".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderBySaveby(userId, status);
+                    } else if ("AUTH".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByBr(status);
+                    } else if ("BUYER".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderBybuyer(status);
+                    } else if ("ACCOUNTING".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByAccount(status);
+                    } else if ("PADMIN".equals(role)) {
+                        listData = vOrderTxnEntityRepository.getOrderByAdmin(status);
+                    }
                 }
             }
             List<String> billNoList = listData.stream()

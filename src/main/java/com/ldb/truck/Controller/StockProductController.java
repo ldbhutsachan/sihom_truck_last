@@ -14,6 +14,7 @@ import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Entity.RequestItem.requestData;
+import com.ldb.truck.Model.ReportItemInOutModel.details_item_req;
 import com.ldb.truck.Service.StockService.StockServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,7 +175,7 @@ public class StockProductController {
 //======start order product
     @CrossOrigin(origins = "*")
     @PostMapping("/getOrderItemDetails.service")
-    public ResponseEntity<?> getOrderItemDetails(@RequestBody OrderItemEntity stockItemDetailsEntity){
+    public ResponseEntity<?> getOrderItemDetails(@RequestBody details_item_req stockItemDetailsEntity){
         V_OrderItemDetailsRes response  = new V_OrderItemDetailsRes();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsEntity.getToKen());
         if (userProfiles.isEmpty()) {
@@ -182,11 +183,12 @@ public class StockProductController {
         }
         String userId = userProfiles.get(0).getUserId();
         String role = userProfiles.get(0).getRole();
-        String billNo = stockItemDetailsEntity.getBillNo();
+        String branchNo = userProfiles.get(0).getBranchNo();
         String status = stockItemDetailsEntity.getStatus();
+        String conditionReq = stockItemDetailsEntity.getShowByCondition();
 
         try {
-            response = stockService.getOrderItem(billNo,userId, role,status);
+            response = stockService.getOrderItem(conditionReq,branchNo,userId, role,status);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
