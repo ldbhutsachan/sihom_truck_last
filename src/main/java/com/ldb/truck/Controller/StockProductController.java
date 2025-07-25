@@ -181,7 +181,7 @@ public class StockProductController {
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = userProfiles.get(0).getUserId();
+        String userId = userProfiles.get(0).getUserName();
         String role = userProfiles.get(0).getRole();
         String branchNo = userProfiles.get(0).getBranchNo();
         String status = stockItemDetailsEntity.getStatus();
@@ -298,6 +298,8 @@ public class StockProductController {
         data.setUserId(userId);
         data.setBillNo(stockItemDetailsReq.getBillNo());
         data.setRole(role);
+        data.setStatus(stockItemDetailsReq.getStatus());
+        data.setRemark(stockItemDetailsReq.getRemark());
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());
         try {
@@ -421,7 +423,9 @@ public class StockProductController {
         }
         String userId = userProfiles.get(0).getUserName();
         StockItemDetailsReq data = new StockItemDetailsReq();
+        data.setBillNo(stockItemDetailsReq.getBillNo());
         data.setStatus(stockItemDetailsReq.getStatus());
+        data.setRemark(stockItemDetailsReq.getRemark());
         data.setUserId(userId);
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());

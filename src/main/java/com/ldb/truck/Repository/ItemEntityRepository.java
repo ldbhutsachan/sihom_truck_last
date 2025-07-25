@@ -109,11 +109,12 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
     @Transactional
     @Query(value = "UPDATE item_inventory as i SET " +
            // "i.unit =i.unit + :unit, " +
-            "i.qty =i.qty + :qty ,i.price=:amount,i.real_price=:realPriceData " +
+            "i.qty =i.qty + :qty ,i.price=:amount,i.currency=:ccy, i.real_price=:realPriceData " +
             "\n WHERE i.item_id =:itemId ",nativeQuery = true)
     int updateStockInItem(
             Integer qty,
             Float amount,
+            String ccy,
             Float realPriceData,
             Integer itemId
     );
@@ -139,11 +140,12 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
     @Transactional
     @Query(value = "UPDATE item_inventory i SET " +
            // "i.unit =i.unit + :unit, " +
-            "i.qty =i.qty + :qty ,price=:amount " +
+            "i.qty =i.qty + :qty ,price=:amount,currency=:ccy " +
             "WHERE i.item_id =:itemId ",nativeQuery = true)
     int updateStockInItemStock(
             Integer qty,
             Float amount,
+            String ccy,
             Integer itemId
     );
 

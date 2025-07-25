@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -120,8 +121,14 @@ public Messages UpdateAssetOfficeService (AssetsOfficeReq assetsOfficeReq ){
             sumFooterGroupAsset resFooter = new sumFooterGroupAsset();
             Data = assetsOfficeDAOs.listAssetsOfficeDAOs(assetsOfficeReq);
 
-            double total_price = Data.stream().map(AssetsOfficeModel::getPrice).collect(Collectors.summingDouble(Double::doubleValue));
-              resFooter.setTotal_price(numfm.format(total_price));
+            double totalPrice = (Data != null && !Data.isEmpty())
+                    ? Data.stream()
+                    .map(AssetsOfficeModel::getPrice)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(Double::doubleValue)
+                    .sum()
+                    : 0.0;
+              resFooter.setTotal_price(numfm.format(totalPrice));
 
               if (assetsOfficeReq.getCurrency()== null){
                   result.setMessage("Success");

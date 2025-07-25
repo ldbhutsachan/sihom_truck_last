@@ -1,6 +1,10 @@
 package com.ldb.truck.Controller;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Entity.Stock.StockItemDetailsEntity;
 import com.ldb.truck.Entity.Stock.StockRequest;
+import com.ldb.truck.Model.DataResponse;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.*;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffReq;
 import com.ldb.truck.Model.Login.ReportStaff.ReportStaffRes;
@@ -15,6 +19,8 @@ import com.ldb.truck.Service.VicicleHeaderService.VicicleHeaderService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.swing.plaf.PanelUI;
@@ -26,10 +32,15 @@ import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterReq;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterRes;
 import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooter;
+
+import java.util.List;
+
 @RestController
 @RequestMapping("${base_url}")
 public class ReportAllFull {
     private static final Logger log = LogManager.getLogger(ReportAll.class);
+    @Autowired
+    ProfileDao profileDao;
     @Autowired
     ReportStaffService detailsService;
     @Autowired
@@ -180,7 +191,10 @@ public ShowOilPaidRes ShowTotalOilPaid (@RequestBody ReportAllReq reportAllReq){
 public ReportAllStockInOutRes reportAllService (@RequestBody ReportItemInOutModelReq reportAllReq){
     ReportAllStockInOutRes result = new ReportAllStockInOutRes();
     try {
-        result = reportAllService.getReportDetailDailyStock(reportAllReq);
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
+        String role = userProfiles.get(0).getRole();
+        String branchNo = userProfiles.get(0).getBranchNo();
+        result = reportAllService.getReportDetailDailyStock(reportAllReq,role,branchNo);
     }catch (Exception e){
         e.printStackTrace();
         result.setStatus("01");
@@ -189,6 +203,7 @@ public ReportAllStockInOutRes reportAllService (@RequestBody ReportItemInOutMode
     }
     return result;
 }
+
 @CrossOrigin(origins = "*")
 @PostMapping("/reportTxnDailyStock.service")
 public ReportItemInOutModelResponse reportTxnDailyStock (@RequestBody ReportItemInOutModelReq reportAllReq){

@@ -42,13 +42,32 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
     @Modifying
     @Transactional//request_item_details
     @Query(value = "UPDATE request_item_details SET approveby = :approveBy, " +
-            "approvedate = :approveDate, status = :status " +
+            "approvedate =:approveDate, status = :status " +
             "WHERE FIND_IN_SET(detail_id, :detailId)", nativeQuery = true)
     int approveRequestItem(
             @Param("approveBy") String approveBy,
             @Param("approveDate") Date approveDate,
             @Param("status") String status,
             @Param("detailId") String detailId); // Use String instead of List<Long>
+
+
+    @Modifying
+    @Transactional//request_item_details
+    @Query(value = "UPDATE request_item SET rejectBy = :rejectBy, " +
+            "rejectDate =:rejectDate, status = :status " +
+            "WHERE FIND_IN_SET(bill_no, :billNo)", nativeQuery = true)
+    int rejectItemRequestByUser(
+            @Param("rejectBy") String rejectBy,
+            @Param("rejectDate") Date rejectDate,
+            @Param("status") String status,
+            @Param("billNo") String billNo); // Use String instead of List<Long>@Modifying
+
+    @Transactional//request_item_details
+    @Query(value = "UPDATE request_item SET remark = :remark " +
+            "WHERE FIND_IN_SET(bill_no, :billNo)", nativeQuery = true)
+    int rejectItemRequestRemark(
+            @Param("remark") String remark,
+            @Param("billNo") String billNo); // Use String instead of List<Long>
 
     @Modifying
     @Transactional

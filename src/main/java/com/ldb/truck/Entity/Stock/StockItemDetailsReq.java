@@ -16,6 +16,7 @@ public class StockItemDetailsReq {
     String userId;
     String billNo;
     String status;
+    String remark;
     String pathApi;
     String role;
     List<Long> detailId;

@@ -34,6 +34,9 @@ public class ReportAllStockInOut {
 
     private String type;
 
+    private String borkey;
+    private String borname;
+
 
 
 

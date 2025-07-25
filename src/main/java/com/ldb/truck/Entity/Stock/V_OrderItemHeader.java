@@ -16,8 +16,16 @@ import java.util.List;
 public class V_OrderItemHeader {
     private String billNo;
     private String txnDate;
-    private Integer qty;
-    private String amount;
+    //lak
+    private Integer laklQty;
+    private String lakAmount;
+    //usd
+    private Integer usdQty;
+    private String usdAmount;
+    //thb
+    private Integer thbQty;
+    private String thbAmount;
+
     private String status;
     List<V_order_item_details> details;
 }

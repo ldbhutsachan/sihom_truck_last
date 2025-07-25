@@ -39,7 +39,8 @@ public class AssetsOfficeDAOs implements AssetsInterface{
                     SQL ="select * from TB_ASSETS WHERE branch_id='"+assetsOfficeReq.getBranch_id()+"' and CURRENCY='"+assetsOfficeReq.getCurrency()+"' ";
                     log.info("SQL: "+SQL);
                 }
-            }else
+            }
+            else
             {
                 if (assetsOfficeReq.getCurrency() == null){
                     SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"'";
@@ -50,8 +51,6 @@ public class AssetsOfficeDAOs implements AssetsInterface{
                     log.info("SQL: "+SQL);
                 }
             }
-
-
             return EBankJdbcTemplate.query(SQL, new RowMapper<AssetsOfficeModel>() {
                 @Override
                 public AssetsOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {

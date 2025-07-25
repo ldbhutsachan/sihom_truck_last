@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.util.Date;
 @Data
 @Entity
-@Table(name = "order_item_details")
+@Table(name = "v_order_item")
 public class V_order_item_details {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,36 +43,6 @@ public class V_order_item_details {
     @Column(name = "price")
     private Float price;
 
-    @Column(name = "saveby", length = 200)
-    private String saveBy;
-
-    @Column(name = "savebyName", length = 200)
-    private String savebyName;
-
-    @Column(name = "savedate")
-    @Temporal(TemporalType.DATE)
-    private Date saveDate;
-
-    @Column(name = "editby", length = 200)
-    private String editBy;
-
-    @Column(name = "edditbyName", length = 200)
-    private String edditByName;
-
-    @Column(name = "editdate")
-    @Temporal(TemporalType.DATE)
-    private Date editDate;
-
-    @Column(name = "approveby", length = 200)
-    private String approveBy;
-
-    @Column(name = "approvebyName", length = 200)
-    private String approvebyName;
-
-    @Column(name = "approvedate")
-    @Temporal(TemporalType.DATE)
-    private Date approveDate;
-
     @Column(name = "status", length = 200)
     private String status;
 
@@ -82,21 +52,44 @@ public class V_order_item_details {
     @Column(name = "total")
     private Float total;
 
+    @Column(name = "amount")
+    private Float amountCurrency;
+
+    @Column(name = "toal_amount")
+    private Float totalAmountCurrency;
+
     @Column(name = "image")
     private String image;
 
+    //===make by
+    @Column(name = "saveby", length = 200)
+    private String saveBy;
 
+    @Column(name = "savedate")
+    @Temporal(TemporalType.DATE)
+    private Date saveDate;
+    //======edit
+    @Column(name = "editby", length = 200)
+    private String editBy;
+
+    @Column(name = "editdate")
+    @Temporal(TemporalType.DATE)
+    private Date editDate;
+    //===approve
+    @Column(name = "approveby", length = 200)
+    private String approveBy;
+
+    @Column(name = "approvedate")
+    @Temporal(TemporalType.DATE)
+    private Date approveDate;
+
+    //===reject
     @Column(name="rejectby")
     private String rejectBy;
-
-
-    @Column(name="rejectbyName")
-    private String rejectByName;
 
     @Column(name= "rejectbyDate")
     @Temporal(TemporalType.DATE)
     private Date rejectDate;
-
 
     //*****ສາຂາໃດ
     @Column(name="branchno")
@@ -111,5 +104,8 @@ public class V_order_item_details {
 
     @Column(name="borname")
     private String borame;
+
+    @Column(name="remark")
+    private String remark;
 
 }

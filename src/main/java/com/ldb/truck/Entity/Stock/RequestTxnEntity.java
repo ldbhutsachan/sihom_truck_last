@@ -51,6 +51,9 @@ public class RequestTxnEntity {
     @Column(name = "saveby", length = 200)
     private String saveBy;
 
+    @Column(name = "savebyName", length = 200)
+    private String savebyName;
+
     @Column(name = "savedate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date saveDate;
@@ -58,12 +61,18 @@ public class RequestTxnEntity {
     @Column(name = "editby", length = 200)
     private String editBy;
 
+    @Column(name = "editbyName", length = 200)
+    private String editbyName;
+
     @Column(name = "editdate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date editDate;
 
     @Column(name = "approveby", length = 200)
     private String approveBy;
+
+    @Column(name = "approvebyName", length = 200)
+    private String approvebyName;
 
     @Column(name = "approvedate")
     @Temporal(TemporalType.TIMESTAMP)
@@ -132,5 +141,19 @@ public class RequestTxnEntity {
 
     @Column(name = "blocation", length = 200)
     private String blocation;
+
+    @Column(name = "remark", length = 200)
+    private String remark;
+
+
+    @Column(name = "reject_by", length = 200)
+    private String rejectBy;
+
+    @Column(name = "reject_name", length = 200)
+    private String reject_name;
+
+    @Column(name = "reject_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date rejectDate;
 
 }

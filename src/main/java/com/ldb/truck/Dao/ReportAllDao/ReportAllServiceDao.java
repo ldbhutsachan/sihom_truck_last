@@ -788,19 +788,37 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
     }
 
     //*****report stock
-    public List<ReportAllStockInOut> getReportDetailDailyStock(ReportItemInOutModelReq stockRequest){
+    public List<ReportAllStockInOut> getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,
+                                                               String role,String borNos){
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
         String itemId= stockRequest.getItemId();
+        String borNo= stockRequest.getBorNo();
+
+        log.info("show :"+startDate);
+        log.info("show :"+endDate);
+        log.info("show :"+itemId);
+        log.info("show :"+borNo);
+
         String conItem = "";
+        String conItemBoNo = "";
         if(!"all".equals(itemId)){
             conItem= "\n and item_id ='"+itemId+"'";
         }else {
             conItem= "";
         }
+        if("PADMIN".equals(role)){
+            if(!"all".equals(borNo)){
+                conItemBoNo ="\n and borkey='"+borNo+"'";
+            }else {
+                conItemBoNo =" ";
+            }
+        }else {
+            conItemBoNo ="\n and borkey='"+borNos+"'";
+        }
+
         String startDateCon = "\n and dateIn >= '"+startDate+"'";
         String endDateCon = "\n and dateIn <= '"+endDate+"'";
-       // String orderDataAll = "\n and type='instock' ";
         String orderData = "\n order by item_id desc";
         try {
             StringBuilder sb = new StringBuilder();
@@ -808,6 +826,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             sb.append(startDateCon);
             sb.append(endDateCon);
             sb.append(conItem);
+            sb.append(conItemBoNo);
            // sb.append(orderDataAll);
             sb.append(orderData);
             String query = sb.toString();
@@ -833,6 +852,9 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                     tr.setOutByUser(rs.getString("requestBy"));
 
                     tr.setType(rs.getString("type"));
+
+                    tr.setBorkey(rs.getString("borkey"));
+                    tr.setBorname(rs.getString("borname"));
 
                    return tr;
                 }

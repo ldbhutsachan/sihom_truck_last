@@ -265,11 +265,11 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
     return result;
 }
 
-    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest) {
+    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo) {
         ReportAllStockInOutRes response = new ReportAllStockInOutRes();
 
         try {
-            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest);
+            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest,role,borNo);
 
             // Group by itemId and dateIn
             Map<String, Map<String, List<ReportAllStockInOut>>> grouped =
