@@ -856,6 +856,10 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                     tr.setBorkey(rs.getString("borkey"));
                     tr.setBorname(rs.getString("borname"));
 
+
+                    tr.setUsingType(rs.getString("usingType"));
+                    tr.setUsingWith(rs.getString("req_name"));
+
                    return tr;
                 }
             });

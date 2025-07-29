@@ -4,6 +4,7 @@ import com.ldb.truck.Dao.Customer.ImpCustomerDao;
 import com.ldb.truck.Entity.Bor.BorEntity;
 import com.ldb.truck.Entity.Bor.BorEntityReq;
 import com.ldb.truck.Entity.Bor.BorEntityReqSave;
+import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Entity.ItemPayment.*;
 import com.ldb.truck.Entity.OrderItem.*;
 import com.ldb.truck.Entity.RequestItem.*;
@@ -64,6 +65,9 @@ public class StockServiceImpl {
 
     @Autowired
     ItemDetailsEntityRepository itemDetailsEntityRepository;
+
+    @Autowired
+    ViewItemEntityRepository viewItemEntityRepository ;
     @Autowired
     PaymentDetailsEntityRepository paymentDetailsEntityRepository;
     @Autowired
@@ -634,7 +638,6 @@ public class StockServiceImpl {
             entity.setStatus("wait"); // Example default status
             entities.add(entity);
         }
-
         return entities;
     }
     private List<OrderItemReportEntity> convertToOrderItemEntities(OrderRequest request, String userId) {
@@ -1542,7 +1545,6 @@ public class StockServiceImpl {
             response.setStatus("00");
             response.setMessage("Error order Data: " + e.getMessage());
         }
-
         return response;
     }
     private static RequestItemEbtity getRequestItemEntity(RequestItemEbtity stockItemDetailsEntity, String userId) {
@@ -1618,6 +1620,30 @@ public class StockServiceImpl {
                 requestItemRepository.rejectItemRequestByUser(stockItemDetailsReq.getUserId(),new Date(),
                         stockItemDetailsReq.getRemark(),stockItemDetailsReq.getBillNo());
             }else {
+                //=====let check product qty first
+                String itemId = detailIdsStr;
+                List<Long> itemIdList = Arrays.stream(itemId.split(","))
+                        .map(Long::valueOf)
+                        .collect(Collectors.toList());
+                // Retrieve items from repository
+                log.info("=====start check item in stock first auth:"+itemIdList);
+                List<RequestItemEbtity> items = requestItemRepository.findByItemId(itemIdList);
+                for (RequestItemEbtity item : items) {
+                    List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(item.getItemId());
+                    if (inventoryList.isEmpty() || item.getQty() > inventoryList.get(0).getQty()) {
+                        log.warn("Insufficient inventory for itemId: " + item.getItemId());
+                        String msg = String.format(
+                                "No: %s, Name: %s, QtyInStock: %s",
+                                inventoryList.get(0).getItemId(),
+                                inventoryList.get(0).getItem_name(),
+                                inventoryList.get(0).getQty()
+                        );
+                        response.setStatus("00");
+                        response.setMessage("ອາໄຫຼ່ນີ້ໝົດເເລ້ວ : "+msg);
+                        return response;
+                    }
+                }
+                //=======end check
                 int updatedRows = requestItemRepository.approveRequestItem(
                         stockItemDetailsReq.getUserId(),
                         new Date(),
@@ -1630,10 +1656,10 @@ public class StockServiceImpl {
                         updateItemInTableItem(detailIdsStr);
                     }
                     response.setStatus("00");
-                    response.setMessage("request items approve successfully.");
+                    response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງສໍາເລັດ");
                 } else {
                     response.setStatus("05");
-                    response.setMessage("No request items were approved.");
+                    response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງບໍ່ສໍາເລັດ.");
                 }
             }
         } catch (Exception e) {

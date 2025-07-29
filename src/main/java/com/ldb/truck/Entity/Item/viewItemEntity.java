@@ -1,11 +1,14 @@
 package com.ldb.truck.Entity.Item;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.type.CurrencyType;
 
 import javax.persistence.*;
 import java.security.Timestamp;
 import java.util.Date;
+
 @Entity
 @Data
 @Table(name = "v_items") // Ensure this matches your actual table name
@@ -59,7 +62,7 @@ public class viewItemEntity {
     @Column(name = "qty")
     private Integer qty;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price")
     private Float price;
 
     @Column(name = "real_price", nullable = false)
@@ -129,4 +132,12 @@ public class viewItemEntity {
 
     @Column(name = "qtytotal", nullable = false)
     private Integer qtytotal;
+
+    @Column(name = "inqty", nullable = false)
+    private Integer inqty;
+
+    @Column(name = "outqty", nullable = false)
+    private Integer outqty;
+
+
 }

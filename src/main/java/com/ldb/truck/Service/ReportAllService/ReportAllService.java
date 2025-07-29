@@ -299,6 +299,12 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
                     summary.setDateOut(base.getDateOut());
                     summary.setInByUser(base.getInByUser());
                     summary.setOutByUser(base.getOutByUser());
+                    summary.setBorkey(base.getBorkey());
+                    summary.setBorname(base.getBorname());
+
+                    summary.setType(base.getUsingType());
+                    summary.setUsingWith(base.getUsingWith());
+                    summary.setUsingType(base.getUsingType());
 
                     // Aggregated values
                     int raisedAmt = records.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();

@@ -13,7 +13,8 @@ import lombok.EqualsAndHashCode;
 @JsonPropertyOrder({
         "status",
         "message",
-        "dataResponse"
+        "dataResponse",
+        "groupHeader"
 })
 @EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -24,6 +25,9 @@ public class DataResponse {
     private String message;
     @JsonProperty("dataResponse")
     private Object dataResponse;
+
+    @JsonProperty("groupHeader")
+    private ItemGroupHeader groupHeader;
 
     @Override
     public String toString() {

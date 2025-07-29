@@ -16,6 +16,10 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     List<viewItemEntity> getItemByItemId(@Param("item_id") String item_id,@Param("make_by_id") String make_by_id);
 
     @Transactional
+    @Query(value = "SELECT * FROM v_items WHERE item_id =:item_id ORDER BY item_name asc", nativeQuery = true)
+    List<viewItemEntity> getItemByItemIds(@Param("item_id") Integer item_id);
+
+    @Transactional
     @Query(value = "SELECT * FROM v_items where make_by_id=:make_by_id ORDER BY item_name asc", nativeQuery = true)
     List<viewItemEntity> getAllViewItemsUserId(@Param("make_by_id") String make_by_id);
 
