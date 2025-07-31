@@ -91,6 +91,32 @@ public class V_order_item_details {
     @Temporal(TemporalType.DATE)
     private Date rejectDate;
 
+    //*****
+    //===approve
+    @Column(name = "buyerby", length = 200)
+    private String buyerBy;
+
+    @Column(name = "buyerdate")
+    @Temporal(TemporalType.DATE)
+    private Date buyerDate;
+    //****
+    //===approve
+    @Column(name = "accountby", length = 200)
+    private String accountBy;
+
+    @Column(name = "accountdate")
+    @Temporal(TemporalType.DATE)
+    private Date accountDate;
+
+    //===acept
+    @Column(name = "acceptby", length = 200)
+    private String acceptBy;
+
+    @Column(name = "acceptdate")
+    @Temporal(TemporalType.DATE)
+    private Date acceptDate;
+
+
     //*****ສາຂາໃດ
     @Column(name="branchno")
     private String branchNo;

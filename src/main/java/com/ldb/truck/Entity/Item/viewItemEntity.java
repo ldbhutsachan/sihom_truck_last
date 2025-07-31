@@ -65,6 +65,9 @@ public class viewItemEntity {
     @Column(name = "price")
     private Float price;
 
+    @Column(name = "totalamt")
+    private Float totalamt;
+
     @Column(name = "real_price", nullable = false)
     private Float realPrice;
 
@@ -132,6 +135,9 @@ public class viewItemEntity {
 
     @Column(name = "qtytotal", nullable = false)
     private Integer qtytotal;
+
+    @Column(name = "real_qty", nullable = false)
+    private Integer realQty;
 
     @Column(name = "inqty", nullable = false)
     private Integer inqty;

@@ -11,6 +11,7 @@ import com.ldb.truck.Model.ReportAllStock.ReportAllStock;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOut;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOutRes;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStockRes;
+import com.ldb.truck.Model.ReportInoutItem.ReportInoutItemGroup;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelReq;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelResponse;
 import org.apache.logging.log4j.LogManager;
@@ -266,65 +267,79 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
 }
 
     public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo) {
+
         ReportAllStockInOutRes response = new ReportAllStockInOutRes();
-
         try {
-            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest,role,borNo);
+          ReportInoutItemGroup groupFooter = new ReportInoutItemGroup();
+          int totalRaisedAmt = 0;
+          int totalInAmt = 0;
+          int totalOutAmt = 0;
+          int totalCloseAmt = 0;
+          List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo);
+          Map<String, Map<String, List<ReportAllStockInOut>>> grouped =
+                  rsListData.stream().collect(Collectors.groupingBy(
+                          ReportAllStockInOut::getItemId,
+                          Collectors.groupingBy(ReportAllStockInOut::getDateIn)
+                  ));
 
-            // Group by itemId and dateIn
-            Map<String, Map<String, List<ReportAllStockInOut>>> grouped =
-                    rsListData.stream().collect(Collectors.groupingBy(
-                            ReportAllStockInOut::getItemId,
-                            Collectors.groupingBy(ReportAllStockInOut::getDateIn)
-                    ));
+          List<ReportAllStockInOut> resultData = new ArrayList<>();
 
-            List<ReportAllStockInOut> resultData = new ArrayList<>();
+          for (Map.Entry<String, Map<String, List<ReportAllStockInOut>>> itemEntry : grouped.entrySet()) {
+              String itemId = itemEntry.getKey();
+              Map<String, List<ReportAllStockInOut>> dateMap = itemEntry.getValue();
 
-            // Process each itemId and date combination
-            for (Map.Entry<String, Map<String, List<ReportAllStockInOut>>> itemEntry : grouped.entrySet()) {
-                String itemId = itemEntry.getKey();
-                Map<String, List<ReportAllStockInOut>> dateMap = itemEntry.getValue();
+              for (Map.Entry<String, List<ReportAllStockInOut>> dateEntry : dateMap.entrySet()) {
+                  String dateIn = dateEntry.getKey();
+                  List<ReportAllStockInOut> records = dateEntry.getValue();
 
-                for (Map.Entry<String, List<ReportAllStockInOut>> dateEntry : dateMap.entrySet()) {
-                    String dateIn = dateEntry.getKey();
-                    List<ReportAllStockInOut> records = dateEntry.getValue();
+                  ReportAllStockInOut base = records.get(0);
 
-                    ReportAllStockInOut base = records.get(0); // Use the first record as a reference
-                    ReportAllStockInOut summary = new ReportAllStockInOut();
+                  int raisedAmt = records.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
+                  int inAmt = records.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
+                  int outAmt = records.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
+                  int closeAmt = records.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
 
-                    summary.setItemId(itemId);
-                    summary.setDateIn(dateIn);
-                    summary.setItemName(base.getItemName());
-                    summary.setImage(base.getImage());
-                    summary.setDateOut(base.getDateOut());
-                    summary.setInByUser(base.getInByUser());
-                    summary.setOutByUser(base.getOutByUser());
-                    summary.setBorkey(base.getBorkey());
-                    summary.setBorname(base.getBorname());
+                  // Update grand totals
+                  totalRaisedAmt += raisedAmt;
+                  totalInAmt += inAmt;
+                  totalOutAmt += outAmt;
+                  totalCloseAmt += (totalRaisedAmt + totalInAmt) - totalOutAmt;
 
-                    summary.setType(base.getUsingType());
-                    summary.setUsingWith(base.getUsingWith());
-                    summary.setUsingType(base.getUsingType());
+                  ReportAllStockInOut summary = new ReportAllStockInOut();
+                  summary.setItemId(itemId);
+                  summary.setDateIn(dateIn);
+                  summary.setItemName(base.getItemName());
+                  summary.setImage(base.getImage());
+                  summary.setDateOut(base.getDateOut());
+                  summary.setInByUser(base.getInByUser());
+                  summary.setOutByUser(base.getOutByUser());
+                  summary.setBorkey(base.getBorkey());
+                  summary.setBorname(base.getBorname());
+                  summary.setType(base.getUsingType());
+                  summary.setUsingWith(base.getUsingWith());
+                  summary.setUsingType(base.getUsingType());
+                  summary.setUnit(base.getUnit());
+                  summary.setDetailsId(base.getDetailsId());
 
-                    // Aggregated values
-                    int raisedAmt = records.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
-                    int inAmt = records.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
-                    int outAmt = records.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
-                    int closingAmt = records.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
+                  summary.setRaisedAmt(raisedAmt);
+                  summary.setInAmt(inAmt);
+                  summary.setOutAmt(outAmt);
+                  summary.setClosingAmt((raisedAmt + inAmt) - outAmt);
 
-                    summary.setRaisedAmt(raisedAmt);
-                    summary.setInAmt(inAmt);
-                    summary.setOutAmt(outAmt);
-                    summary.setClosingAmt((raisedAmt + inAmt) - outAmt); // Custom calculation
+                  resultData.add(summary);
+              }
+          }
 
-                    resultData.add(summary);
-                }
-            }
+          groupFooter.setRaiseAmt(totalRaisedAmt);
+          groupFooter.setInAmt(totalInAmt);
+          groupFooter.setOutAmt(totalOutAmt);
+          groupFooter.setCloseAmt(totalCloseAmt);
 
             if (!resultData.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("Success");
                 response.setData(resultData);
+                response.setGroupFooter(groupFooter);
             } else {
                 response.setStatus("00");
                 response.setMessage("Data Not Found !!");

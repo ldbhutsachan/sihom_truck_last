@@ -827,10 +827,8 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             sb.append(endDateCon);
             sb.append(conItem);
             sb.append(conItemBoNo);
-           // sb.append(orderDataAll);
             sb.append(orderData);
             String query = sb.toString();
-            log.info("query sql:"+query);
             return EBankJdbcTemplate.query(query, new RowMapper<ReportAllStockInOut>() {
                 @Override
                 public ReportAllStockInOut mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -839,6 +837,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                     tr.setItemId(rs.getString("item_id"));
                     tr.setImage(rs.getString("image"));
                     tr.setItemName(rs.getString("item_name"));
+                    tr.setUnit(rs.getString("unit"));
 
                     tr.setRaisedAmt(rs.getInt("real_qty"));
                     tr.setInAmt(rs.getInt("amt_in"));

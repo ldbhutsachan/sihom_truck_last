@@ -31,6 +31,7 @@ public class ItemServiceImpl {
         double totalLak = 0;
         double totalThb = 0;
         double totalUsd = 0;
+
         DataResponse response = new DataResponse();
         List<viewItemEntity> rspList = new ArrayList<>();
         ItemGroupHeader groupHeader = new ItemGroupHeader();
@@ -49,7 +50,7 @@ public class ItemServiceImpl {
                 response.setMessage("Success");
                 int count = rspList.size();
                 for (viewItemEntity item : rspList) {
-                    double price = item.getPrice(); // Replace with your actual amount field
+                    double price = item.getTotalamt(); // Replace with your actual amount field
                     String currency = item.getCurrency();
                     if ("LAK".equalsIgnoreCase(currency)) {
                         totalLak += price;
