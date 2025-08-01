@@ -129,6 +129,10 @@ public class RequestTxnEntity {
     @Column(name = "bor_no", length = 200)
     private String borNo;
 
+    @Column(name = "bor_name", length = 200)
+    private String borName;
+
+
     @Column(name = "total")
     private Float total;
 
@@ -137,7 +141,7 @@ public class RequestTxnEntity {
 
 
     @Column(name = "b_name", length = 200)
-    private String bName;
+    private String typeName;
 
     @Column(name = "blocation", length = 200)
     private String blocation;
