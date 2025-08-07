@@ -9,6 +9,7 @@ import com.ldb.truck.Entity.ItemPayment.*;
 import com.ldb.truck.Entity.OrderItem.*;
 import com.ldb.truck.Entity.RequestItem.*;
 import com.ldb.truck.Entity.Stock.*;
+import com.ldb.truck.Entity.User.UserHisEntity;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Repository.*;
 import com.ldb.truck.Repository.Payment.ItemDetailsEntityRepository;
@@ -62,6 +63,9 @@ public class StockServiceImpl {
     @Autowired
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
+
+    @Autowired
+    UserHisRepository userHisRepository;
 
     @Autowired
     ItemDetailsEntityRepository itemDetailsEntityRepository;
@@ -438,70 +442,178 @@ public class StockServiceImpl {
         return dataResponse;
     }
 
-   public V_OrderItemDetailsRes getOrderItem(String conReq,String branchNo, String userId,String role,String status){
+//   public V_OrderItemDetailsRes getOrderItem(String conReq,String branchNo, String userId,String role,String status){
+//        log.info("userId:"+userId);
+//        log.info("branchNo:"+branchNo);
+//        log.info("role:"+role);
+//        log.info("conReq:"+conReq);
+//          //  DecimalFormat numfm = new DecimalFormat("###,###.###");
+//       V_OrderItemDetailsRes response = new V_OrderItemDetailsRes();
+//        List<V_OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
+//        List<V_order_item_details> listData = new ArrayList<>();
+//      // V_OrderItemHeader groupHeader = new V_OrderItemHeader();
+//        try {
+//            //***step ກວດສອບເງືອນໄຂກ່ອນ
+//            //I : ກວດສະຖານະ
+//            if("all".equals(status)){
+//                //I : ກວດສະຖານະ
+//                if ("1".equals(conReq)) {
+//                    if ("USERSTOCK".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderBySavebyStatus(branchNo, userId);
+//                    } else if ("AUTH".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatusAll(branchNo);
+//                    } else if ("BUYER".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatus(branchNo);
+//                    } else if ("ACCOUNTING".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatus(branchNo);
+//                    } else if ("PADMIN".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByAdminNo();
+//                    }
+//                }
+//                else if ("2".equals(conReq)) {
+//                    listData = vOrderTxnEntityRepository.getOrderByAdminNo();
+//                }
+//
+//            }else {
+//                //1:ສະເເດງສະເພາະສາຂາ 2: ສະເເດງທັງໝົດລວມທັງສາຂາ
+//                if ("1".equals(conReq)) {
+//                    //1:ສະເເດງສະເພາະສາຂາ
+//                    //====first step 1 check role mk auth padmin buyyer accounting
+//                    if ("USERSTOCK".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderBySavebyWithBranchNo(branchNo, userId, status);
+//                    } else if ("AUTH".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByBranchNo(branchNo, status);
+//                    } else if ("BUYER".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderBybuyerBranchNo(branchNo, status);
+//                    } else if ("ACCOUNTING".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByAccountBranchNo(branchNo, status);
+//                    } else if ("PADMIN".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByAdminBranchNo(status);
+//                    }
+//                } else if ("2".equals(conReq)) {
+//                    //2: ສະເເດງທັງໝົດລວມທັງສາຂາ
+//                    //====first step 1 check role mk auth padmin buyyer accounting
+//                    if ("USERSTOCK".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderBySaveby(userId, status);
+//                    } else if ("AUTH".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByBr(status);
+//                    } else if ("BUYER".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderBybuyer(status);
+//                    } else if ("ACCOUNTING".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByAccount(status);
+//                    } else if ("PADMIN".equals(role)) {
+//                        listData = vOrderTxnEntityRepository.getOrderByAdmin(status);
+//                    }
+//                }
+//            }
+//            List<String> billNoList = listData.stream()
+//                    .map(V_order_item_details::getBillNo)
+//                    .distinct()
+//                    .collect(Collectors.toList());
+//
+//            NumberFormat numfm = NumberFormat.getNumberInstance(); // Or use DecimalFormat if needed
+//
+//            for (String bill : billNoList) {
+//                log.info("Processing billNo: {}", bill);
+//                V_OrderItemHeader groupHeader = new V_OrderItemHeader();
+//
+//                groupHeader.setBillNo(bill);
+//
+//                String formattedDate = Optional.ofNullable(listData)
+//                        .flatMap(data -> data.stream()
+//                                .filter(p -> bill.equals(p.getBillNo()))
+//                                .map(V_order_item_details::getSaveDate)
+//                                .findFirst())
+//                        .map(date -> new SimpleDateFormat("yyyy-MM-dd").format(date))
+//                        .orElse("0000-00-00");
+//
+//                groupHeader.setTxnDate(formattedDate);
+//
+//                // ==== Currency groupings ====
+//                groupHeader.setLaklQty((int) listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
+//                        .count());
+//
+//                double totalLak = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
+//                        .map(V_order_item_details::getAmountCurrency)
+//                        .filter(Objects::nonNull)
+//                        .mapToDouble(Float::doubleValue)
+//                        .sum();
+//
+//                groupHeader.setLakAmount(numfm.format(totalLak));
+//
+//                groupHeader.setUsdQty((int) listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
+//                        .count());
+//
+//                double totalUsd = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
+//                        .map(V_order_item_details::getAmountCurrency)
+//                        .filter(Objects::nonNull)
+//                        .mapToDouble(Float::doubleValue)
+//                        .sum();
+//
+//                groupHeader.setUsdAmount(numfm.format(totalUsd));
+//
+//                groupHeader.setThbQty((int) listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
+//                        .count());
+//
+//                double totalThb = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
+//                        .map(V_order_item_details::getAmountCurrency)
+//                        .filter(Objects::nonNull)
+//                        .mapToDouble(Float::doubleValue)
+//                        .sum();
+//
+//                groupHeader.setThbAmount(numfm.format(totalThb));
+//
+//                groupHeader.setStatus(listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()))
+//                        .map(V_order_item_details::getStatus)
+//                        .findFirst()
+//                        .orElse(""));
+//
+//                // Set details
+//                List<V_order_item_details> groupListData = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()))
+//                        .collect(Collectors.toList());
+//
+//                groupHeader.setDetails(groupListData);
+//                groupStockItemHeaders.add(groupHeader);
+//            }
+//            response.setDataResponse(groupStockItemHeaders);
+//            if(response.getDataResponse() != null){
+//                response.setStatus("00");
+//                response.setMessage("Success");
+//            }else {
+//                response.setStatus("05");
+//                response.setMessage("Data not found");
+//            }
+//        }catch (Exception e){
+//            response.setStatus("EE");
+//            response.setMessage("Error Data");
+//        }
+//        return response;
+//    }
+    public V_OrderItemDetailsRes getOrderItemReport(String conReq,String branchNo,
+                                                     String userId,String role,String status,String startDate,String endDate,String borNo){
         log.info("userId:"+userId);
         log.info("branchNo:"+branchNo);
         log.info("role:"+role);
         log.info("conReq:"+conReq);
+        log.info("startDate:"+startDate);
+        log.info("endDate:"+endDate);
           //  DecimalFormat numfm = new DecimalFormat("###,###.###");
        V_OrderItemDetailsRes response = new V_OrderItemDetailsRes();
         List<V_OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<V_order_item_details> listData = new ArrayList<>();
-      // V_OrderItemHeader groupHeader = new V_OrderItemHeader();
         try {
-            //***step ກວດສອບເງືອນໄຂກ່ອນ
-            //I : ກວດສະຖານະ
-            if("all".equals(status)){
-                //I : ກວດສະຖານະ
-                if ("1".equals(conReq)) {
-                    if ("USERSTOCK".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderBySavebyStatus(branchNo, userId);
-                    } else if ("AUTH".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatusAll(branchNo);
-                    } else if ("BUYER".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatus(branchNo);
-                    } else if ("ACCOUNTING".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByBranchNoStatus(branchNo);
-                    } else if ("PADMIN".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByAdminNo();
-                    }
-                }
-                else if ("2".equals(conReq)) {
-                    listData = vOrderTxnEntityRepository.getOrderByAdminNo();
-                }
 
-            }else {
-                //1:ສະເເດງສະເພາະສາຂາ 2: ສະເເດງທັງໝົດລວມທັງສາຂາ
-                if ("1".equals(conReq)) {
-                    //1:ສະເເດງສະເພາະສາຂາ
-                    //====first step 1 check role mk auth padmin buyyer accounting
-                    if ("USERSTOCK".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderBySavebyWithBranchNo(branchNo, userId, status);
-                    } else if ("AUTH".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByBranchNo(branchNo, status);
-                    } else if ("BUYER".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderBybuyerBranchNo(branchNo, status);
-                    } else if ("ACCOUNTING".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByAccountBranchNo(branchNo, status);
-                    } else if ("PADMIN".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByAdminBranchNo(status);
-                    }
-                } else if ("2".equals(conReq)) {
-                    //2: ສະເເດງທັງໝົດລວມທັງສາຂາ
-                    //====first step 1 check role mk auth padmin buyyer accounting
-                    if ("USERSTOCK".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderBySaveby(userId, status);
-                    } else if ("AUTH".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByBr(status);
-                    } else if ("BUYER".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderBybuyer(status);
-                    } else if ("ACCOUNTING".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByAccount(status);
-                    } else if ("PADMIN".equals(role)) {
-                        listData = vOrderTxnEntityRepository.getOrderByAdmin(status);
-                    }
-                }
-            }
+            listData = getDataReportDetails ( conReq, branchNo,
+                     userId, role, status, startDate, endDate,borNo);
+
             List<String> billNoList = listData.stream()
                     .map(V_order_item_details::getBillNo)
                     .distinct()
@@ -593,18 +705,122 @@ public class StockServiceImpl {
         }
         return response;
     }
+    public List<V_order_item_details> getDataReportDetails(String conReq, String branchNo,
+                                                           String userId, String role,
+                                                           String status, String startDate,
+                                                           String endDate, String borNo) {
+        try {
+            String borNoCon = "";
+            String conDate= "";
+            String conUserId= "";
+            String conBranch  = "";
+            String conStatus = "";
+            if(conReq.equals("1")){
+                conBranch = "\n AND branchno ='"+branchNo+"' ";
+            }else if (conReq.equals("2")){
+                conBranch ="";
+            }
+            if(!status.equals("all")){
+                conStatus ="\n AND status ='"+status+"' ";
+            }else {
+                conStatus = "";
+            }
+            if ("USERSTOCK".equals(role)) {
+                conUserId = "\n AND saveby ='"+userId+"' ";
+            } else if ("AUTH".equals(role)) {
+                conUserId = "";
+            } else if ("BUYER".equals(role)) {
+                conUserId = "";
+            } else if ("ACCOUNTING".equals(role)) {
+                conUserId = "";
+            } else if ("PADMIN".equals(role)) {
+                conUserId = "";
+            }
+
+            if (startDate != null && !startDate.trim().isEmpty()) {
+                conDate = "\n AND DATE_FORMAT(savedate, '%Y-%m-%d') >= '" + startDate + "' AND DATE_FORMAT(savedate, '%Y-%m-%d') <= '" + endDate + "' ";
+            } else {
+                conDate = "";
+            }
+
+            if(!borNo.equals("all")){
+                borNoCon = "\n AND borkey ='"+borNo+"' ";
+            }else {
+                borNoCon = "";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("SELECT * FROM v_order_item where 1=1 "); // You can add WHERE clauses based on parameters
+            sb.append(conBranch);
+            sb.append(conStatus);
+            sb.append(conUserId);
+            sb.append(conDate);
+            sb.append(borNoCon);
+
+            String sql = sb.toString();
+            log.info("sql:"+sql);
+            return EBankJdbcTemplate.query(sql, new RowMapper<V_order_item_details>() {
+                @Override
+                public V_order_item_details mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    V_order_item_details tr = new V_order_item_details();
+                    tr.setDetailId(rs.getInt("detail_id"));
+                    tr.setBillNo(rs.getString("bill_no"));
+                    tr.setBarcode(rs.getString("barcode"));
+                    tr.setItemId(rs.getInt("item_id"));
+                    tr.setItemName(rs.getString("item_name"));
+                    tr.setUnit(rs.getString("unit"));
+                    tr.setSize(rs.getString("size"));
+                    tr.setCurrency(rs.getString("currency"));
+                    tr.setExchangeRate(rs.getInt("exchange_rate"));
+                    tr.setQty(rs.getInt("qty"));
+                    tr.setPrice(rs.getFloat("price"));
+                    tr.setStatus(rs.getString("status"));
+                    tr.setToKen(rs.getString("token"));
+                    tr.setTotal(rs.getFloat("total"));
+                    tr.setAmountCurrency(rs.getFloat("amount"));
+                    tr.setTotalAmountCurrency(rs.getFloat("toal_amount"));
+                    tr.setImage(rs.getString("image"));
+                    tr.setSaveBy(rs.getString("saveby"));
+                    tr.setSaveDate(rs.getDate("savedate"));
+                    tr.setEditBy(rs.getString("editby"));
+                    tr.setEditDate(rs.getDate("editdate"));
+                    tr.setApproveBy(rs.getString("approveby"));
+                    tr.setApproveDate(rs.getDate("approvedate"));
+                    tr.setRejectBy(rs.getString("rejectby"));
+                    tr.setRejectDate(rs.getDate("rejectby_date"));
+                    tr.setBuyerBy(rs.getString("buyerby"));
+                    tr.setBuyerDate(rs.getDate("buyerdate"));
+                    tr.setAccountBy(rs.getString("accountby"));
+                    tr.setAccountDate(rs.getDate("accountdate"));
+                    tr.setAcceptBy(rs.getString("acceptby"));
+                    tr.setAcceptDate(rs.getDate("acceptdate"));
+                    tr.setBranchNo(rs.getString("branchno"));
+                    tr.setBranchName(rs.getString("bname"));
+                    tr.setBorkey(rs.getString("borkey"));
+                    tr.setBorame(rs.getString("borname"));
+                    tr.setRemark(rs.getString("remark"));
+                    return tr;
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace(); // Consider logging this properly
+        }
+        return null;
+    }
 
     ///-----
     public DataResponse saveItemIn(OrderRequest stockItemDetailsEntity, String userId) {
         DataResponse response = new DataResponse();
-
+        OrderGenEntity keyGen =  orderGenKeyRepository.maxReqKey();
+        String genKey = keyGen.getMaxReqKey();
+        log.info("genKey:"+genKey);
         try {
-            List<OrderItemReportEntity> entities = convertToOrderItemEntities(stockItemDetailsEntity, userId);
+            List<OrderItemReportEntity> entities = convertToOrderItemEntities(stockItemDetailsEntity, userId,genKey);
             List<OrderItemReportEntity> savedEntities = new ArrayList<>();
             orderItemSaveEntityRepository.saveAll(entities).forEach(savedEntities::add);
             if (!savedEntities.isEmpty()) {
                 OrderItemTxnEntity requestEntity = new OrderItemTxnEntity();
-                requestEntity.setBillNo(stockItemDetailsEntity.getBillNo());
+                requestEntity.setBillNo(genKey);
                 requestEntity.setSaveDate(new Date());
                 requestEntity.setSaveBy(userId);
                 orderItemTxnEntityRepository.save(requestEntity);
@@ -625,7 +841,6 @@ public class StockServiceImpl {
     }
     private List<RequestItemEbtity> convertToRequest(RequestItems request, String userId) {
         List<RequestItemEbtity> entities = new ArrayList<>();
-
         for (RequestItem item : request.getItemId()) {
             RequestItemEbtity entity = new RequestItemEbtity();
             entity.setBillNo(request.getBillNo());
@@ -640,15 +855,14 @@ public class StockServiceImpl {
         }
         return entities;
     }
-    private List<OrderItemReportEntity> convertToOrderItemEntities(OrderRequest request, String userId) {
+    private List<OrderItemReportEntity> convertToOrderItemEntities(OrderRequest request, String userId,String genKey) {
         List<OrderItemReportEntity> entities = new ArrayList<>();
 
         for (OrderReqItem item : request.getItemId()) {
             OrderItemReportEntity entity = new OrderItemReportEntity();
-            entity.setBillNo(request.getBillNo());
+            entity.setBillNo(genKey);
             entity.setItemId(item.getItem());
             entity.setQty(item.getQty());
-           // entity.setPrice(item.getPrice());
             entity.setRealQty(item.getRealQty());
             entity.setRPrice(item.getPrice());
             entity.setRealPrice(item.getRealPrice());
@@ -733,45 +947,54 @@ public class StockServiceImpl {
     }
     @Autowired
     VCalOrderEntityRepository vCalOrderEntityRepository;
-    public DataResponse auth(StockItemAuthReq request, String userId) {
+
+    public DataResponse auth(StockItemAuthReq request, String userId,String userName) {
 
         String status = request.getStatus();
+        String choiceStatus = request.getOrderStatus();
+        log.info("retry:"+request.getOrderStatus());
         DataResponse response = new DataResponse();
         try {
             int updated = 0;
-            if("wait".equals(status)){
-                log.info("status:"+request.getStatus());
-                updated =  checkStatusWait(request.getStatus(), request,userId);
-            }else if("auth".equals(status)){
-                log.info("status:"+request.getStatus());
-                updated= checkStatusAuth(request.getStatus(), request,userId);
+            //check edit or
+            if("edit".equals(choiceStatus)){
+                //****let update data only
+                log.info("==START EDIT =====");
+                updated= editTxn(request,userId,userName);
+            }else if("retry".equals(choiceStatus)){
+                log.info("==START RETRY =====");
+                updated= retryTxn(request,userId,userName);
             }
-            else if("reject".equals(status)){
-                log.info("status:"+request.getStatus());
-                updated= checkStatusReject(request.getStatus(), request,userId);
+            else {
+                if ("wait".equals(status)) {
+                    log.info("status:" + request.getStatus());
+                    updated = checkStatusWait(request.getStatus(), request, userId);
+                } else if ("auth".equals(status)) {
+                    log.info("status:" + request.getStatus());
+                    updated = checkStatusAuth(request.getStatus(), request, userId);
+                } else if ("reject".equals(status)) {
+                    log.info("status:" + request.getStatus());
+                    updated = checkStatusReject(request.getStatus(), request, userId);
+                } else if ("buyer".equals(status)) {
+                    log.info("status:" + request.getStatus());
+                    updated = checkStatusBuyer(request.getStatus(), request, userId);
+                } else if ("accounting".equals(status)) {
+                    log.info("status:" + request.getStatus());
+                    updated = checkStatusAccounting(request.getStatus(), request, userId);
+                } else if ("wait-item".equals(status)) {
+                    log.info("status:" + request.getStatus());
+                    updated = checkStatusWaitItem(request.getStatus(), request, userId);
+                } else if ("ok".equals(status)) {
+                    log.info("status:" + request.getStatus());
+                    updated = checkStatusOK(request.getStatus(), request, userId);
+                }
             }
-            else if("buyer".equals(status)){
-                log.info("status:"+request.getStatus());
-                updated= checkStatusBuyer(request.getStatus(), request,userId);
-            }
-            else if("accounting".equals(status)){
-                log.info("status:"+request.getStatus());
-                updated= checkStatusAccounting(request.getStatus(), request,userId);
-            }
-            else if("wait-item".equals(status)){
-                log.info("status:"+request.getStatus());
-                updated= checkStatusWaitItem(request.getStatus(), request,userId);
-            }
-            else if("ok".equals(status)){
-                log.info("status:"+request.getStatus());
-                updated= checkStatusOK(request.getStatus(), request,userId);
-            }
-            log.info("show size update :"+updated);
-            if(updated > 0){
+            log.info("show size update :" + updated);
+            if (updated > 0) {
                 response.setDataResponse(updated);
                 response.setStatus("00");
                 response.setMessage("ການອະນຸມັດສຳເລັດ");
-            }else {
+            } else {
                 response.setDataResponse(updated);
                 response.setStatus("00");
                 response.setMessage("ການອະນຸມັດບໍ່ສຳເລັດ !!!");
@@ -785,6 +1008,8 @@ public class StockServiceImpl {
 
         return response;
     }
+
+
     //=========wait
     public int checkStatusWait(String status,StockItemAuthReq request, String userId){
             log.info("====start service ====");
@@ -1039,75 +1264,92 @@ public class StockServiceImpl {
         return 1;
 
     }
-    //ok
-//    public int checkStatus(String status,StockItemAuthReq request, String userId){
-//        if("reject".equals(status)){
-//            log.info("====start reject ====");
-//            //*****let start rejec txn
-//            List<OrderItemReportEntity> items = authConvert(request, userId);
-//            log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
-//            int updated = 0;
-//            final String sql = "UPDATE order_item_details SET " +
-//                    "rejectby = ?, " +
-//                    "rejectbyDate = ?, " +
-//                    "qty = ?," +
-//                    "price = ?," +
-//                    "status= ? , " +
-//                    "currency= ?, " +
-//                    "exchange_rate= ? " +
-//                    "WHERE item_id = ? and bill_no=?  ";
-//            for (OrderItemReportEntity item : items) {
-//                log.debug("Updating detail_id = {}, qty = {}, price = {} ", item.getDetailId(), item.getQty(), item.getPrice() );
-//                updated = EBankJdbcTemplate.update(
-//                        sql,
-//                        userId,
-//                        new Date(),
-//                        item.getQty(),
-//                        item.getPrice(),
-//                        item.getStatus(),
-//                        item.getCurrency(),
-//                        item.getRealExchangeRate(),
-//                        item.getDetailId(),
-//                        item.getBillNo()
-//                );
-//                log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
-//            }
-//        }else {
-//            log.info("====start service ====");
-//            //****let start other service
-//            List<OrderItemReportEntity> items = authConvert(request, userId);
-//            log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
-//            int updated = 0;
-//            final String sql = "UPDATE order_item_details SET " +
-//                    "buyer_id = ?, " +
-//                    "buyer_date = ?, " +
-//                    "qty = ?," +
-//                    "price = ?," +
-//                    "status= ? , " +
-//                    "currency= ?, " +
-//                    "exchange_rate= ? " +
-//                    "WHERE item_id = ? and bill_no=?  ";
-//            for (OrderItemReportEntity item : items) {
-//                log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
-//                updated = EBankJdbcTemplate.update(
-//                        sql,
-//                        userId,
-//                        new Date(),
-//                        item.getQty(),
-//                        item.getPrice(),
-//                        item.getStatus(),
-//                        item.getCurrency(),
-//                        item.getRealExchangeRate(),
-//                        item.getDetailId(),
-//                        item.getBillNo()
-//                );
-//                log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
-//            }
-//        }
-//        return 1;
-//
-//    }
+    public int editTxn(StockItemAuthReq request, String userId,String userName){
+        log.info("====start service ====");
+        //****let start other service
+        List<OrderItemReportEntity> items = authConvert(request, userId);
+        Date now = new Date();
+        log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
+        int updated = 0;
+        final String sql = "UPDATE order_item_details SET " +
+                "qty = ?," +
+                "price = ?," +
+             //   "status= ? , " +
+                "currency= ?, " +
+                "exchange_rate= ? " +
+                "WHERE item_id = ? and bill_no=?  ";
+        for (OrderItemReportEntity item : items) {
+            log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
+            updated = EBankJdbcTemplate.update(
+                    sql,
+                 //   userId,
+                  //  new Date(),
+                    item.getQty(),
+                    item.getPrice(),
+                  //  item.getStatus(),
+                    item.getCurrency(),
+                    item.getExchangeRate(),
+                    item.getDetailId(),
+                    item.getBillNo()
+            );
+            log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
+            String details = item.getDetailId().toString();
+            //****let store log
+            UserHisEntity entity = new UserHisEntity();
+            entity.setUser_id(userId);
+            entity.setUserName(userName);
+            entity.setDetailId(item.getDetailId());
+            entity.setBillNo(item.getBillNo());
+            entity.setCreateDate(now);
+            entity.setDetails(details);
+            userHisRepository.save(entity);
+        }
+        return 1;
 
+    } public int retryTxn(StockItemAuthReq request, String userId,String userName){
+        log.info("====start service ====");
+        //****let start other service
+        List<OrderItemReportEntity> items = authConvert(request, userId);
+        Date now = new Date();
+        log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
+        int updated = 0;
+        final String sql = "UPDATE order_item_details SET " +
+                "qty = ?," +
+                "price = ?," +
+                "status= ? , " +
+                "currency= ?, " +
+                "exchange_rate= ? " +
+                "WHERE item_id = ? and bill_no=?  ";
+        for (OrderItemReportEntity item : items) {
+            log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
+            updated = EBankJdbcTemplate.update(
+                    sql,
+                 //   userId,
+                  //  new Date(),
+                    item.getQty(),
+                    item.getPrice(),
+                    item.getStatus(),
+                    item.getCurrency(),
+                    item.getExchangeRate(),
+                    item.getDetailId(),
+                    item.getBillNo()
+            );
+            log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
+            String details = item.getDetailId().toString();
+            //****let store log
+            UserHisEntity entity = new UserHisEntity();
+            entity.setId(UUID.randomUUID().toString());
+            entity.setUser_id(userId);
+            entity.setUserName(userName);
+            entity.setDetailId(item.getDetailId());
+            entity.setBillNo(item.getBillNo());
+            entity.setCreateDate(now);
+            entity.setDetails(details);
+            userHisRepository.save(entity);
+        }
+        return 1;
+
+    }
 
     public DataResponse authByAdmin(StockItemAuthReq request, String userId) {
         DataResponse response = new DataResponse();
@@ -1287,8 +1529,6 @@ public class StockServiceImpl {
         return response;
     }
     public void updateItemInTableItem(String itemId) {
-        log.info("item:"+itemId);
-        // Convert itemId string to a list of Long values
         List<Long> itemIdList = Arrays.stream(itemId.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
@@ -1305,6 +1545,7 @@ public class StockServiceImpl {
         log.info("First item in list qty:" + items.get(0).getQty());
         // Process and update items
         for (RequestItemEbtity stock : items) {
+
             Integer qty = stock.getQty();
             Integer itemNo = stock.getItemId();
 
@@ -1312,6 +1553,19 @@ public class StockServiceImpl {
             log.info("Processing item out: " + itemNo + ", Quantity: " + qty);
             // Perform database update
             itemEntityRepository.updateStockInItemOut(qty, itemNo);
+
+
+            //call check out stock
+            List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(itemNo);
+            Integer beforeQty = inventoryList.get(0).getQty();
+            String itemNoId = inventoryList.get(0).getItemId();
+            Integer delId = stock.getDetailId();
+            log.info("show beforeQty:"+beforeQty);
+            log.info("show itemNoId:"+itemNoId);
+            log.info("show delId:"+delId);
+            requestItemRepository.approveRequestItemDetails(
+                    beforeQty,delId,itemNoId
+            );
         }
     }
 
@@ -1630,6 +1884,7 @@ public class StockServiceImpl {
                 List<RequestItemEbtity> items = requestItemRepository.findByItemId(itemIdList);
                 for (RequestItemEbtity item : items) {
                     List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(item.getItemId());
+
                     if (inventoryList.isEmpty() || item.getQty() > inventoryList.get(0).getQty()) {
                         log.warn("Insufficient inventory for itemId: " + item.getItemId());
                         String msg = String.format(
@@ -1642,8 +1897,9 @@ public class StockServiceImpl {
                         response.setMessage("ອາໄຫຼ່ນີ້ໝົດເເລ້ວ : "+msg);
                         return response;
                     }
+
                 }
-                //=======end check
+                //****
                 int updatedRows = requestItemRepository.approveRequestItem(
                         stockItemDetailsReq.getUserId(),
                         new Date(),
@@ -1661,6 +1917,7 @@ public class StockServiceImpl {
                     response.setStatus("05");
                     response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງບໍ່ສໍາເລັດ.");
                 }
+                //=======end check
             }
         } catch (Exception e) {
             response.setStatus("EE");
@@ -1853,15 +2110,16 @@ public DataResponse checkKeyOrder(){
     //======make bor start =====
     //view_borRepository
 
-    public DataResponse getBorAll( BorEntityReq borEntityReq){
+    public DataResponse getBorAll(BorEntityReq borEntityReq){
         String keyId = borEntityReq.getKeyId();
+        String typeBor = borEntityReq.getTypeBor();
         log.info("role start:"+keyId);
         DataResponse response = new DataResponse();
        try {
            if(keyId.isEmpty() || keyId.equals("all") || keyId.equals("all")){
-               response.setDataResponse(view_borRepository.getBorViewEntityAll());
+               response.setDataResponse(view_borRepository.getBorViewEntityAll(typeBor));
            }else {
-               response.setDataResponse(view_borRepository.findBykeyId(keyId));
+               response.setDataResponse(view_borRepository.findBykeyId(keyId,typeBor));
            }
             if(response.getDataResponse() != null){
                 response.setStatus("00");

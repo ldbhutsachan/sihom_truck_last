@@ -14,4 +14,9 @@ public class details_item_req {
     String billNo;
     String showByCondition;
     String status;
+
+
+    String startDate;
+    String endDate;
+    String borNo;
 }

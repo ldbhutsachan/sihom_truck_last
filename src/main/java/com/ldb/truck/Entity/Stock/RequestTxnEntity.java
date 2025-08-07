@@ -31,10 +31,10 @@ public class RequestTxnEntity {
     private String itemName;
 
     @Column(name = "unit", precision = 10, scale = 2)
-    private Float unit;
+    private String unit;
 
     @Column(name = "size")
-    private Integer size;
+    private String size;
 
     @Column(name = "currency", length = 200)
     private String currency;

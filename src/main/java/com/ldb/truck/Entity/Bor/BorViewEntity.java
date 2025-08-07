@@ -42,4 +42,7 @@ public class BorViewEntity {
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "type_bor")
+    private String typeBor;
 }

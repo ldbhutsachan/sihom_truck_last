@@ -187,8 +187,12 @@ public class StockProductController {
         String status = stockItemDetailsEntity.getStatus();
         String conditionReq = stockItemDetailsEntity.getShowByCondition();
 
+        String startDate = stockItemDetailsEntity.getStartDate();
+        String endDate =  stockItemDetailsEntity.getEndDate();
+        String borNo =  stockItemDetailsEntity.getBorNo();
+
         try {
-            response = stockService.getOrderItem(conditionReq,branchNo,userId, role,status);
+                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -293,23 +297,26 @@ public class StockProductController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = userProfiles.get(0).getUserId();
+        String userName = userProfiles.get(0).getUserName();
         String role = userProfiles.get(0).getRole();
         StockItemAuthReq data = new StockItemAuthReq();
         data.setUserId(userId);
         data.setBillNo(stockItemDetailsReq.getBillNo());
         data.setRole(role);
         data.setStatus(stockItemDetailsReq.getStatus());
+        data.setOrderStatus(stockItemDetailsReq.getOrderStatus());
         data.setRemark(stockItemDetailsReq.getRemark());
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());
         try {
-             response = stockService.auth(data,userId);
+             response = stockService.auth(data,userId,userName);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error Controller !!");
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/authItemToStock.service")
     public ResponseEntity<?> authItemToStock(@RequestBody StockItemDetailsReq stockItemDetailsReq){

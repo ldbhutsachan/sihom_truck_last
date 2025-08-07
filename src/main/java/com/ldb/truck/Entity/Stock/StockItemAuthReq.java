@@ -16,6 +16,7 @@ public class StockItemAuthReq {
     String billNo;
     String status;
     String remark;
+    String orderStatus;
     String role;
     List<StockItemAuthModel> detailId;
 }

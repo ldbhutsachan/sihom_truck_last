@@ -42,13 +42,23 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
     @Modifying
     @Transactional//request_item_details
     @Query(value = "UPDATE request_item_details SET approveby = :approveBy, " +
-            "approvedate =:approveDate, status = :status " +
+            "approvedate =:approveDate, status = :status  " +
             "WHERE FIND_IN_SET(detail_id, :detailId)", nativeQuery = true)
     int approveRequestItem(
             @Param("approveBy") String approveBy,
             @Param("approveDate") Date approveDate,
             @Param("status") String status,
+          //  @Param("beforeQty") Integer beforeQty,
             @Param("detailId") String detailId); // Use String instead of List<Long>
+
+    @Modifying
+    @Transactional//request_item_details
+    @Query(value = "UPDATE request_item_details SET before_qty = :beforeQty  " +
+            "WHERE detail_id=:detailId and item_id=:itemId ", nativeQuery = true)
+    int approveRequestItemDetails(
+
+            @Param("beforeQty") Integer beforeQty,
+            @Param("detailId") Integer detailId, @Param("itemId") String itemId); // Use String instead of List<Long>
 
 
     @Modifying

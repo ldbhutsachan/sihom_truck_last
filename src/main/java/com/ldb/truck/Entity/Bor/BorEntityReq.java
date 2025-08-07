@@ -12,5 +12,6 @@ import lombok.Setter;
 public class BorEntityReq {
     private String toKen;
     private String keyId;
+    private String typeBor;
 
 }

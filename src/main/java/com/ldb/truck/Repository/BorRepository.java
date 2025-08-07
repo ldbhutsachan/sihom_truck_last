@@ -12,10 +12,10 @@ import java.util.List;
 @Repository
 public interface BorRepository extends CrudRepository<BorViewEntity,Long> {
 
-    @Query(value = "SELECT * FROM v_bor WHERE key_id = :keyId", nativeQuery = true)
-    List<BorViewEntity> findBykeyId(@Param("keyId") String keyId);
+    @Query(value = "SELECT * FROM v_bor WHERE key_id =? and type_bor=?", nativeQuery = true)
+    List<BorViewEntity> findBykeyId(String keyId , String typeBor);
 
-    @Query(value = "SELECT * FROM v_bor", nativeQuery = true)
-    List<BorViewEntity> getBorViewEntityAll();
+    @Query(value = "SELECT * FROM v_bor where  type_bor=?", nativeQuery = true)
+    List<BorViewEntity> getBorViewEntityAll(String typeBor);
 
 }

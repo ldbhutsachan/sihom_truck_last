@@ -19,11 +19,15 @@ public class ReportAllStockInOut {
 
     private int raisedAmt;
     private int inAmt;
-    private int outAmt;
     private int closingAmt;
-
-
     private String dateIn;
+
+
+
+
+    private int raisedOutAmt;
+    private int outAmt;
+    private int closingOutAmt;
     private String dateOut;
 
     private String InByUser;
@@ -38,7 +42,7 @@ public class ReportAllStockInOut {
     private String borname;
 
 
-
+    private int calTotal;
 
 
 }

@@ -817,9 +817,10 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             conItemBoNo ="\n and borkey='"+borNos+"'";
         }
 
-        String startDateCon = "\n and dateIn >= '"+startDate+"'";
-        String endDateCon = "\n and dateIn <= '"+endDate+"'";
-        String orderData = "\n order by item_id desc";
+
+        String startDateCon = "\n and dateOut >= '"+startDate+"'";
+        String endDateCon = "\n and dateOut <= '"+endDate+"'";
+        String orderData = "\n order by dateIn,item_id desc";
         try {
             StringBuilder sb = new StringBuilder();
             sb.append("select * from v_sum_report_inout where 1=1 \n ");
@@ -828,7 +829,9 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             sb.append(conItem);
             sb.append(conItemBoNo);
             sb.append(orderData);
+
             String query = sb.toString();
+            log.info("sql:"+query);
             return EBankJdbcTemplate.query(query, new RowMapper<ReportAllStockInOut>() {
                 @Override
                 public ReportAllStockInOut mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -841,16 +844,19 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
 
                     tr.setRaisedAmt(rs.getInt("real_qty"));
                     tr.setInAmt(rs.getInt("amt_in"));
-                    tr.setOutAmt(rs.getInt("amt_out"));
                     tr.setClosingAmt(rs.getInt("amt"));
-
                     tr.setDateIn(rs.getString("dateIn"));
+                    tr.setInByUser(rs.getString("saveby"));
+
+
+                    tr.setRaisedOutAmt(rs.getInt("before_qty"));
+                    tr.setOutAmt(rs.getInt("amt_out"));
+                    tr.setClosingOutAmt(rs.getInt("amtout"));
                     tr.setDateOut(rs.getString("dateOut"));
 
-                    tr.setInByUser(rs.getString("saveby"));
-                    tr.setOutByUser(rs.getString("requestBy"));
 
-                    tr.setType(rs.getString("type"));
+                    tr.setOutByUser(rs.getString("requestBy"));
+                    //tr.setType(rs.getString("type"));
 
                     tr.setBorkey(rs.getString("borkey"));
                     tr.setBorname(rs.getString("borname"));

@@ -3,14 +3,14 @@ package com.ldb.truck.Service.Login;
 import com.ldb.truck.Dao.Login.ImploginDao;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.User.UserImplDao;
-import com.ldb.truck.Model.Login.Login.GetUserLoginOut;
-import com.ldb.truck.Model.Login.Login.GetUserLoginReq;
-import com.ldb.truck.Model.Login.Login.GetUserLoginRes;
-import com.ldb.truck.Model.Login.Login.LoginReq;
+import com.ldb.truck.Entity.User.UserHisEntity;
+import com.ldb.truck.Entity.User.VUserHisEntity;
+import com.ldb.truck.Model.Login.Login.*;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.User.UserLogin;
 import com.ldb.truck.Model.Login.User.UserReq;
 import com.ldb.truck.Model.Login.User.UserRes;
+import com.ldb.truck.Repository.UserHisRepository;
 import com.ldb.truck.Service.BranchService.BranchService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +30,52 @@ public class LoginService {
     ImploginDao imploginDao;
     @Autowired
     UserImplDao userLogin;
+    @Autowired
+    UserHisRepository userHisRepository;
+
+    public UserHisResponse getUserHistory(String userId){
+        UserHisResponse resposne = new UserHisResponse();
+        try {
+            List<UserHisEntity> rslUser = userHisRepository.getDetailsUserHis(userId);
+            if(rslUser.size() >= 1 ){
+                resposne.setStatus("00");
+                resposne.setMessage("susccess");
+                resposne.setData(rslUser);
+            }
+            resposne.setStatus("00");
+            resposne.setMessage("Data Do not Found !!");
+            resposne.setData(null);
+
+        }catch (Exception e){
+            resposne.setStatus("00");
+            resposne.setMessage("Data Do not Found !!");
+            resposne.setData(null);
+        }
+        return resposne;
+    }
+
+    public UserHisViewResponse getUserHistoryView(String userId,UserHisRequest userHisRequest){
+        UserHisViewResponse resposne = new UserHisViewResponse();
+        try {
+            List<VUserHisEntity> rslUser = userHisRepository.getDetailViewIEWUserHis(userHisRequest.getDetailId());
+            if(rslUser.size() >= 1 ){
+                resposne.setStatus("00");
+                resposne.setMessage("susccess");
+                resposne.setData(rslUser);
+            }
+            resposne.setStatus("00");
+            resposne.setMessage("Data Do not Found !!");
+            resposne.setData(null);
+
+        }catch (Exception e){
+            resposne.setStatus("00");
+            resposne.setMessage("Data Do not Found !!");
+            resposne.setData(null);
+        }
+        return resposne;
+    }
+
+
     public GetUserLoginRes Userlogin(LoginReq loginReq){
         GetUserLoginRes result = new GetUserLoginRes();
         List<GetUserLoginOut> listData = new ArrayList<>();

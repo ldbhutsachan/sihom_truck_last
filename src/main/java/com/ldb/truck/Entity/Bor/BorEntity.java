@@ -34,6 +34,9 @@ public class BorEntity {
         @Column(name = "sort_name")
         private String sortName;
 
+        @Column(name = "type_bor")
+        private String typeBor;
+
         @Column(name = "brand_no")
         private String brandNo;
 
