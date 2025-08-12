@@ -814,7 +814,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         String startDateCon = "\n and dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"' " ;
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append("select * from v_sum_order_item where 1=1 \n ");
+            sb.append("select * from v_sum_order_item_sum where 1=1 \n ");
             sb.append(startDateCon);
             sb.append(conItem);
             sb.append(conItemBoNo);
