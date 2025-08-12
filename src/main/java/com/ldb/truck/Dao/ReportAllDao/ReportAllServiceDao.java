@@ -794,12 +794,6 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         String endDate = stockRequest.getEndDate();
         String itemId= stockRequest.getItemId();
         String borNo= stockRequest.getBorNo();
-
-        log.info("show :"+startDate);
-        log.info("show :"+endDate);
-        log.info("show :"+itemId);
-        log.info("show :"+borNo);
-
         String conItem = "";
         String conItemBoNo = "";
         if(!"all".equals(itemId)){
@@ -817,18 +811,13 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             conItemBoNo ="\n and borkey='"+borNos+"'";
         }
 
-
-        String startDateCon = "\n and dateOut >= '"+startDate+"'";
-        String endDateCon = "\n and dateOut <= '"+endDate+"'";
-        String orderData = "\n order by dateIn,item_id desc";
+        String startDateCon = "\n and dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"' " ;
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append("select * from v_sum_report_inout where 1=1 \n ");
+            sb.append("select * from v_sum_order_item where 1=1 \n ");
             sb.append(startDateCon);
-            sb.append(endDateCon);
             sb.append(conItem);
             sb.append(conItemBoNo);
-            sb.append(orderData);
 
             String query = sb.toString();
             log.info("sql:"+query);
@@ -836,34 +825,26 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 @Override
                 public ReportAllStockInOut mapRow(ResultSet rs, int rowNum) throws SQLException {
                     ReportAllStockInOut tr = new ReportAllStockInOut();
-                    tr.setDetailsId(rs.getString("detail_id"));
+
                     tr.setItemId(rs.getString("item_id"));
                     tr.setImage(rs.getString("image"));
                     tr.setItemName(rs.getString("item_name"));
                     tr.setUnit(rs.getString("unit"));
+                    tr.setSize(rs.getString("size"));
 
-                    tr.setRaisedAmt(rs.getInt("real_qty"));
-                    tr.setInAmt(rs.getInt("amt_in"));
-                    tr.setClosingAmt(rs.getInt("amt"));
+                    tr.setRaisedAmt(rs.getInt("closingBalance"));
+                    tr.setInAmt(rs.getInt("stockIn"));
+                    tr.setOutAmt(rs.getInt("stockOut"));
+                    tr.setClosingAmt(rs.getInt("opening_balance"));
+
                     tr.setDateIn(rs.getString("dateIn"));
-                    tr.setInByUser(rs.getString("saveby"));
-
-
-                    tr.setRaisedOutAmt(rs.getInt("before_qty"));
-                    tr.setOutAmt(rs.getInt("amt_out"));
-                    tr.setClosingOutAmt(rs.getInt("amtout"));
                     tr.setDateOut(rs.getString("dateOut"));
 
-
-                    tr.setOutByUser(rs.getString("requestBy"));
-                    //tr.setType(rs.getString("type"));
-
                     tr.setBorkey(rs.getString("borkey"));
-                    tr.setBorname(rs.getString("borname"));
+                    tr.setBorname(rs.getString("b_name"));
 
-
-                    tr.setUsingType(rs.getString("usingType"));
-                    tr.setUsingWith(rs.getString("req_name"));
+                    tr.setHouseNo(rs.getString("houseNo"));
+                    tr.setHouseName(rs.getString("houseName"));
 
                    return tr;
                 }

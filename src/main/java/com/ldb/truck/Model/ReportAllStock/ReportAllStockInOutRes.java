@@ -16,5 +16,5 @@ public class ReportAllStockInOutRes {
     private String status;
     private String message;
     public List<ReportAllStockInOut> data;
-    ReportInoutItemGroup groupFooter;
+   // ReportInoutItemGroup groupFooter;
 }

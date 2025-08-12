@@ -10,8 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReportInoutItemGroup {
-    int raiseAmt;
-    int inAmt;
-    int outAmt;
-    int closeAmt;
+    double raiseAmt;
+    double inAmt;
+    double outAmt;
+    double closeAmt;
 }

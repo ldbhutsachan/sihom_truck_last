@@ -11,38 +11,25 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ReportAllStockInOut {
 
-    private String detailsId;
     private String itemId;
     private String image;
     private String itemName;
     private String unit;
+    private String size;
 
     private int raisedAmt;
     private int inAmt;
-    private int closingAmt;
-    private String dateIn;
-
-
-
-
-    private int raisedOutAmt;
     private int outAmt;
-    private int closingOutAmt;
+    private int closingAmt;
+
+    private String dateIn;
     private String dateOut;
-
-    private String InByUser;
-    private String OutByUser;
-
-    private String usingType;
-    private String usingWith;
-
-    private String type;
 
     private String borkey;
     private String borname;
 
-
-    private int calTotal;
+    private String houseNo;
+    private String houseName;
 
 
 }

@@ -265,77 +265,19 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
     }
     return result;
 }
+
     public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo) {
 
         ReportAllStockInOutRes response = new ReportAllStockInOutRes();
         try {
-            ReportInoutItemGroup groupFooter = new ReportInoutItemGroup();
-            int totalRaisedAmt = 0;
-            int totalInAmt = 0;
-            int totalCloseAmt = 0;
-            List<ReportAllStockInOut> resultData = new ArrayList<>();
-            ReportAllStockInOut summary = new ReportAllStockInOut();
-
-            int totalOutAmt = 0;
-
-            int totalAmt = 0;
+           // ReportInoutItemGroup groupFooter = new ReportInoutItemGroup();
             List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo);
-            Map<String, Map<String, List<ReportAllStockInOut>>> grouped =
-                    rsListData.stream().collect(Collectors.groupingBy(
-                            ReportAllStockInOut::getItemId,
-                            Collectors.groupingBy(ReportAllStockInOut::getDateOut)
-                    ));
 
-           for(ReportAllStockInOut base : rsListData){
-               summary = new ReportAllStockInOut();
-
-                  int raisedAmt = base.getRaisedAmt() ;
-                  int inAmt = base.getInAmt();
-                  int closeInAmt = base.getClosingAmt();
-
-                  int raisedOutAmt = base.getRaisedOutAmt();
-                  int outAmt =base.getOutAmt();
-                  int closeOutAmt = base.getClosingOutAmt();
-                  summary.setItemId(base.getItemId());
-                  summary.setDateIn(base.getDateIn());
-                  summary.setItemName(base.getItemName());
-                  summary.setImage(base.getImage());
-                  summary.setDateOut(base.getDateOut());
-                  summary.setInByUser(base.getInByUser());
-                  summary.setOutByUser(base.getOutByUser());
-                  summary.setBorkey(base.getBorkey());
-                  summary.setBorname(base.getBorname());
-                  summary.setType(base.getUsingType());
-                  summary.setUsingWith(base.getUsingWith());
-                  summary.setUsingType(base.getUsingType());
-                  summary.setUnit(base.getUnit());
-                  summary.setDetailsId(base.getDetailsId());
-
-                  summary.setRaisedAmt(raisedAmt);
-                  summary.setInAmt(inAmt);
-                  summary.setClosingAmt(closeInAmt);
-
-                  summary.setRaisedOutAmt(raisedOutAmt);
-                  summary.setOutAmt(outAmt);
-                  summary.setClosingOutAmt(closeOutAmt);
-
-                  summary.setCalTotal(totalAmt);
-
-
-               resultData.add(summary);
-
-           }
-
-            groupFooter.setRaiseAmt(totalRaisedAmt);
-            groupFooter.setInAmt(totalInAmt);
-            groupFooter.setOutAmt(totalOutAmt);
-            groupFooter.setCloseAmt(totalCloseAmt);
-
-            if (!resultData.isEmpty()) {
+            if (!rsListData.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("Success");
-                response.setData(resultData);
-                response.setGroupFooter(groupFooter);
+                response.setData(rsListData);
+                ///response.setGroupFooter(groupFooter);
             } else {
                 response.setStatus("00");
                 response.setMessage("Data Not Found !!");
@@ -349,102 +291,6 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
 
         return response;
     }
-
-//    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo) {
-//
-//        ReportAllStockInOutRes response = new ReportAllStockInOutRes();
-//        try {
-//          ReportInoutItemGroup groupFooter = new ReportInoutItemGroup();
-//          int totalRaisedAmt = 0;
-//          int totalInAmt = 0;
-//          int totalCloseAmt = 0;
-//
-//
-//            int totalOutAmt = 0;
-//
-//            int totalAmt = 0;
-//          List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo);
-//          Map<String, Map<String, List<ReportAllStockInOut>>> grouped =
-//                  rsListData.stream().collect(Collectors.groupingBy(
-//                          ReportAllStockInOut::getItemId,
-//                          Collectors.groupingBy(ReportAllStockInOut::getDateOut)
-//                  ));
-//          log.info("grouped:"+grouped);
-//
-//          List<ReportAllStockInOut> resultData = new ArrayList<>();
-//
-//          for (Map.Entry<String, Map<String, List<ReportAllStockInOut>>> itemEntry : grouped.entrySet()) {
-//              String itemId = itemEntry.getKey();
-//              Map<String, List<ReportAllStockInOut>> dateMap = itemEntry.getValue();
-//
-//              for (Map.Entry<String, List<ReportAllStockInOut>> dateEntry : dateMap.entrySet()) {
-////                  String dateIn = dateEntry.getKey();
-//                  List<ReportAllStockInOut> records = dateEntry.getValue();
-//
-//                  log.info("records:"+records);
-//                  ReportAllStockInOut base = records.get(0);
-//
-//                  int raisedAmt = records.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
-//                  int inAmt = records.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
-//                  int closeInAmt = records.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
-//
-//                  int raisedOutAmt = records.stream().mapToInt(ReportAllStockInOut::getRaisedOutAmt).sum();
-//                  int outAmt = records.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
-//                  int closeOutAmt = records.stream().mapToInt(ReportAllStockInOut::getClosingOutAmt).sum();
-//
-//                  ReportAllStockInOut summary = new ReportAllStockInOut();
-//                  summary.setItemId(base.getItemId());
-//                  summary.setDateIn(base.getDateIn());
-//                  summary.setItemName(base.getItemName());
-//                  summary.setImage(base.getImage());
-//                  summary.setDateOut(base.getDateOut());
-//                  summary.setInByUser(base.getInByUser());
-//                  summary.setOutByUser(base.getOutByUser());
-//                  summary.setBorkey(base.getBorkey());
-//                  summary.setBorname(base.getBorname());
-//                  summary.setType(base.getUsingType());
-//                  summary.setUsingWith(base.getUsingWith());
-//                  summary.setUsingType(base.getUsingType());
-//                  summary.setUnit(base.getUnit());
-//                  summary.setDetailsId(base.getDetailsId());
-//
-//                  summary.setRaisedAmt(raisedAmt);
-//                  summary.setInAmt(inAmt);
-//                  summary.setClosingAmt(closeInAmt);
-//
-//                  summary.setRaisedOutAmt(raisedOutAmt);
-//                  summary.setOutAmt(outAmt);
-//                  summary.setClosingOutAmt(closeOutAmt);
-//
-//                  summary.setCalTotal(totalAmt);
-//                  resultData.add(summary);
-//              }
-//          }
-//
-//
-//          groupFooter.setRaiseAmt(totalRaisedAmt);
-//          groupFooter.setInAmt(totalInAmt);
-//          groupFooter.setOutAmt(totalOutAmt);
-//          groupFooter.setCloseAmt(totalCloseAmt);
-//
-//            if (!resultData.isEmpty()) {
-//                response.setStatus("00");
-//                response.setMessage("Success");
-//                response.setData(resultData);
-//                response.setGroupFooter(groupFooter);
-//            } else {
-//                response.setStatus("00");
-//                response.setMessage("Data Not Found !!");
-//            }
-//
-//        } catch (Exception e) {
-//            log.error("Error in getReportDetailDailyStock", e);
-//            response.setStatus("EE");
-//            response.setMessage("Error Data !!!");
-//        }
-//
-//        return response;
-//    }
     public ReportItemInOutModelResponse getTxnStock(ReportItemInOutModelReq stockRequest){
 //update
         ReportItemInOutModelResponse resposne = new ReportItemInOutModelResponse();
