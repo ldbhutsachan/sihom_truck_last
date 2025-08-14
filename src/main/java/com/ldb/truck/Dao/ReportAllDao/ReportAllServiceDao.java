@@ -803,7 +803,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         }
         if("PADMIN".equals(role)){
             if(!"all".equals(borNo)){
-                conItemBoNo ="\n and borkey='"+borNo+"'";
+                conItemBoNo ="\n and borNo='"+borNo+"'";
             }else {
                 conItemBoNo =" ";
             }
