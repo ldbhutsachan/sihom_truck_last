@@ -33,7 +33,12 @@ public class ImploginDao implements loginDao {
 
         List<GetUserLoginOut> data = new ArrayList<>();
         try {
-            String SQL = "select USER_LOGIN,ROLE,USERID ,STATUS ,TOKEN,BRANCH,DEPARTMENT,SPRIT_ROLE  from LOGIN   WHERE STATUS = 'A' AND USER_LOGIN = '"+loginReq.getUser()+"' AND PASSOWORD =  '"+loginReq.getPassword()+"'  ";
+            String SQL = "select A.USER_LOGIN,A.ROLE,A.USERID ,A.STATUS ,A.TOKEN,A.BRANCH,CONCAT(b.B_NAME, '--', c.B_NAME) AS DEPARTMENT\n" +
+                    ",A.SPRIT_ROLE,\n" +
+                    "b.KEY_ID branchNo,b.B_NAME branchName,c.key_id broNo,c.b_name borName\n" +
+                    "from LOGIN A\n" +
+                    "inner join TB_BRANCH  b on A.BRANCH=b.key_id\n" +
+                    "left join tb_bors c on b.key_id=c.brand_no   WHERE A.STATUS = 'A' AND A.USER_LOGIN = '"+loginReq.getUser()+"' AND A.PASSOWORD =  '"+loginReq.getPassword()+"'  ";
             System.out.println(SQL);
             data = EBankJdbcTemplate.query(SQL , new GetUserLoginOutMapper());
         }catch (Exception e){

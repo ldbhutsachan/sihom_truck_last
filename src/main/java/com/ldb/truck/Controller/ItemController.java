@@ -213,11 +213,14 @@ public class ItemController {
             String userId = userProfiles.get(0).getUserId();
             String role = userProfiles.get(0).getRole();
             String branchNo = userProfiles.get(0).getBranchNo();
+            String borNo = userProfiles.get(0).getBorNo();
+
             PlaceStockEntityReq reqBody = new PlaceStockEntityReq();
             reqBody.setRole(role);
             reqBody.setUserId(userId);
             reqBody.setKhId(reqBody.getKhId());
             reqBody.setBrandNo(branchNo);
+            reqBody.setBorNo(borNo);
             response = placeStockService.getPlaceStockHouse(reqBody);
         }catch (Exception e){
             response.setStatus("EE");
@@ -320,7 +323,8 @@ public class ItemController {
             String userId = userProfiles.get(0).getUserId();
             String role = userProfiles.get(0).getRole();
             String branchno = userProfiles.get(0).getBranchNo();
-            response = itemService.getViewItemInventory(brandReq,userId,role,branchno);
+            String borNo = userProfiles.get(0).getBorNo();
+            response = itemService.getViewItemInventory(brandReq,userId,role,branchno,borNo);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -340,7 +344,8 @@ public class ItemController {
             String userId = userProfiles.get(0).getUserId();
             String role = userProfiles.get(0).getRole();
             String branchno = userProfiles.get(0).getBranchNo();
-            response = itemService.getItemList(brandReq,userId,role,branchno);
+            String borNo = userProfiles.get(0).getBorNo();
+            response = itemService.getItemList(brandReq,userId,role,branchno,borNo);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

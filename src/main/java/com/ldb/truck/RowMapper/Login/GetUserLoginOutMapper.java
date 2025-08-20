@@ -19,6 +19,12 @@ public class GetUserLoginOutMapper implements RowMapper {
             data.setBranch(rs.getString("BRANCH"));
             data.setDepartment(rs.getString("DEPARTMENT"));
             data.setSprit_role(rs.getString("SPRIT_ROLE"));
+
+
+            data.setBranchNo(rs.getString("branchNo"));
+            data.setBranchName(rs.getString("branchName"));
+            data.setBorNo(rs.getString("broNo"));
+            data.setBorName(rs.getString("borName"));
         }catch (Exception e){
             e.printStackTrace();
             return data;

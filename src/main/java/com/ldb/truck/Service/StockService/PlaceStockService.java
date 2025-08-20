@@ -52,6 +52,7 @@ public class PlaceStockService {
         String role = placeStockEntity.getRole();
         String branchNo = placeStockEntity.getBrandNo();
         String userId = placeStockEntity.getUserId();
+        String borNo = placeStockEntity.getBorNo();
         log.info("userId : "+userId);
         log.info("role : "+role);
         log.info("branchNo : "+branchNo);
@@ -62,7 +63,7 @@ public class PlaceStockService {
                 response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesAdmin());
             }
             else if("AUTH".equals(role) || "USERSTOCK".equals(role)){
-                response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesBranchNo(branchNo));
+                response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesBranchNo(branchNo,borNo));
             }
             else if("USER".equals(role)){
                 response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesUserId(userId));

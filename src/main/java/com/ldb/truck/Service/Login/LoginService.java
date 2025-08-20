@@ -94,13 +94,11 @@ public class LoginService {
             data.setToKen(listData.get(0).getToKen());
             data.setDepartment(listData.get(0).getDepartment());
             data.setSprit_role(listData.get(0).getSprit_role());
-            System.out.println("login getStaftName:"+listData.get(0).getStaftName());
-            System.out.println("login getStaftId:"+listData.get(0).getStaftId());
-            System.out.println("login getRole:"+listData.get(0).getRole());
-            System.out.println("login getStatus:"+listData.get(0).getStatus());
-            System.out.println("login getToKen:"+listData.get(0).getToKen());
-            System.out.println("login getDepartment:"+listData.get(0).getDepartment());
-            System.out.println("login getDepartment:"+listData.get(0).getSprit_role());
+            data.setBranchNo(listData.get(0).getBranchNo());
+            data.setBranchName(listData.get(0).getBranchName());
+            data.setBorNo(listData.get(0).getBorNo());
+            data.setBorName(listData.get(0).getBorName());
+
             result.setMessage("success");
             result.setStatus("00");
             result.setData(data);

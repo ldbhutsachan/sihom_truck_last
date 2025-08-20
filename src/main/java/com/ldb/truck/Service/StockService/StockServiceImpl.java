@@ -726,7 +726,7 @@ public class StockServiceImpl {
                 conStatus = "";
             }
             if ("USERSTOCK".equals(role)) {
-                conUserId = "\n AND saveby ='"+userId+"' ";
+                conUserId = "\n AND saveby ='"+userId+"' and borkey='"+borNo+"' ";
             } else if ("AUTH".equals(role)) {
                 conUserId = "";
             } else if ("BUYER".equals(role)) {
@@ -1612,12 +1612,13 @@ public class StockServiceImpl {
     //getOrderItemDetailsAuth
     @Autowired
     OrderAuthEntityRepository orderAuthEntityRepository;
-    public OrderAuthResponse getOrderItemAuth(String billNo, String role, String userId,String branchNo,String status){
+    public OrderAuthResponse getOrderItemAuth(String billNo, String role, String userId,String branchNo,String borNo,String status){
         log.info("billNo:"+billNo);
         log.info("userId:"+userId);
         log.info("role:"+role);
         log.info("branchNo:"+branchNo);
         log.info("status:"+status);
+        log.info("borNo:"+borNo);
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         OrderAuthResponse response = new OrderAuthResponse();
         List<OrderAuthHeader> groupStockItemHeaders = new ArrayList<>();
@@ -1628,10 +1629,10 @@ public class StockServiceImpl {
                     listData =orderAuthEntityRepository.getOrderByAdmin(status);
             }
             else if("USERSTOCK".equals(role)){
-                listData =orderAuthEntityRepository.getOrderAuthByBranchNoByMaker(branchNo,status);
+                listData =orderAuthEntityRepository.getOrderAuthByBranchNoByMaker(branchNo,status,borNo);
             }
             else if("AUTH".equals(role)){
-                    listData =orderAuthEntityRepository.getOrderAuthByBranchNo(branchNo,status);
+                    listData =orderAuthEntityRepository.getOrderAuthByBranchNo(branchNo,status,borNo);
             }
             else if("BUYER".equals(role)){
                 listData =orderAuthEntityRepository.getOrderAuthByBuyer(status);
@@ -1688,7 +1689,7 @@ public class StockServiceImpl {
         return response;
     }
 
-    public OrderItemDetailsRes getReportOrderItem(StockRequest stockRequest, String userName){
+    public OrderItemDetailsRes getReportOrderItem(StockRequest stockRequest, String userName,String role,String borNo){
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         OrderItemDetailsRes response = new OrderItemDetailsRes();
         List<OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
@@ -1698,12 +1699,23 @@ public class StockServiceImpl {
             String startDate = stockRequest.getStartDate();
             String endDate = stockRequest.getEndDate();
             String status = stockRequest.getStatus();
-            if(!"ALL".equals(status)) {
-                log.info("show 1");
-                listData = orderTxnEntityRepository.getOrderReport(startDate, endDate, status);
+            if("PADMIN".equals(role)){
+                if (!"ALL".equals(status)) {
+                    log.info("show 1");
+                    listData = orderTxnEntityRepository.getOrderReportPadmin(startDate, endDate, status);
+                } else {
+                    log.info("show 2");
+                    listData = orderTxnEntityRepository.getOrderReportNoStatusPAdmin(startDate, endDate);
+                }
             }else {
-                log.info("show 2");
-                listData = orderTxnEntityRepository.getOrderReportNoStatus(startDate, endDate);
+
+                if (!"ALL".equals(status)) {
+                    log.info("show 1");
+                    listData = orderTxnEntityRepository.getOrderReport(startDate, endDate, status,borNo);
+                } else {
+                    log.info("show 2");
+                    listData = orderTxnEntityRepository.getOrderReportNoStatus(startDate, endDate,borNo);
+                }
             }
             List<String> billNoList = listData.stream()
                     .map(OrderItemEntity::getBillNo)
@@ -2583,12 +2595,12 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
 
     @Autowired
     requestItemTypeBorNameEntityRepository requestItemTypeBorNameEntityRepository;
-    public DataResponse getRequestItemByItemType(requestData requestData,String borId){
+    public DataResponse getRequestItemByItemType(requestData requestData,String borId,String boNo){
         log.info("borId:"+borId);
         log.info("info req:"+requestData.toString());
         DataResponse response = new DataResponse();
         try {
-            response.setDataResponse(getBor(borId,requestData));
+            response.setDataResponse(getBor(boNo,requestData));
             if(response.getDataResponse() != null){
                 response.setStatus("00");
                 response.setMessage("success");
@@ -2611,13 +2623,14 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         String conBorNo = "";
         String conReqTypeId = "";
 
+
         if(!"".equals(reqTypeId)){
             conReqTypeId  = "\n AND req_id='"+reqTypeId+"'";
         }else {
             conReqTypeId= "";
         }
         StringBuilder sb  = new StringBuilder();
-        sb.append("select * from v_req_type where 1=1");
+        sb.append("select * from v_req_type where bor_id='"+borNo+"' and 1=1");
         sb.append(conBorNo);
         sb.append(conReqTypeId);
         String sql = sb.toString();

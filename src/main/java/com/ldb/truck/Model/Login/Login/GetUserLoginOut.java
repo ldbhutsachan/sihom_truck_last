@@ -20,4 +20,9 @@ public class GetUserLoginOut {
     private String department;
     private String sprit_role;
 
+    private String branchNo;
+    private String branchName;
+    private String borNo;
+    private String borName;
+
 }

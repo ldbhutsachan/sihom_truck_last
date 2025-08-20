@@ -355,8 +355,9 @@ public class StockProductController {
         String role = userProfiles.get(0).getRole();
         String billNo = stockItemDetailsEntity.getBillNo();
         String branchNo =userProfiles.get(0).getBranchNo();
+        String borNo =userProfiles.get(0).getBranchNo();
         try {
-            response = stockService.getOrderItemAuth(billNo,role,userId,branchNo, stockItemDetailsEntity.getStatus());
+            response = stockService.getOrderItemAuth(billNo,role,userId,branchNo,borNo, stockItemDetailsEntity.getStatus());
         }catch (Exception e){
             response.setStatus("00");
             response.setMessage("Data Error Controller!!");
@@ -374,9 +375,11 @@ public class StockProductController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = userProfiles.get(0).getUserName();
+        String role = userProfiles.get(0).getRole();
+        String borNo = userProfiles.get(0).getBorNo();
 
         try {
-            response = stockService.getReportOrderItem(stockRequest,userId);
+            response = stockService.getReportOrderItem(stockRequest,userId,role,borNo);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -526,7 +529,8 @@ public class StockProductController {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
             String borId = userProfiles.get(0).getBranchNo();
-            response = stockService.getRequestItemByItemType(requestData,borId);
+            String boNo = userProfiles.get(0).getBorNo();
+            response = stockService.getRequestItemByItemType(requestData,borId,boNo);
             log.info("response :"+response.getDataResponse());
 
         }catch (Exception e){

@@ -24,8 +24,8 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     List<viewItemEntity> getAllViewItemsUserId(@Param("make_by_id") String make_by_id);
 
     @Transactional
-    @Query(value = "SELECT * FROM v_items where branch_no=:branchNo ORDER BY item_name asc", nativeQuery = true)
-    List<viewItemEntity> getAllViewItemsBranchNo(@Param("branchNo") String branchNo);
+    @Query(value = "SELECT * FROM v_items where branch_no=:branchNo and bor_no=:borNo ORDER BY item_name asc", nativeQuery = true)
+    List<viewItemEntity> getAllViewItemsBranchNo(@Param("branchNo") String branchNo,@Param("borNo") String borNo);
 
 
     @Transactional

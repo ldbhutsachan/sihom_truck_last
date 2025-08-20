@@ -22,4 +22,5 @@ public class PlaceStockEntityReq {
     private String toKen;
     private String role;
     private String brandNo;
+
 }

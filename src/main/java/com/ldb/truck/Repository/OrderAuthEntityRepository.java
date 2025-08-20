@@ -10,12 +10,12 @@ import java.util.List;
 
 @Repository
 public interface OrderAuthEntityRepository extends CrudRepository<OrderAuthEntity,Long> {
-    @Query(value = "select * from v_order_item where branchno=:branchno and status=:status order by status desc ", nativeQuery = true)
-    List<OrderAuthEntity> getOrderAuthByBranchNoByMaker(@Param("branchno") String branchno,@Param("status") String status);
+    @Query(value = "select * from v_order_item where branchno=:branchno and status=:status and borkey=:borNo order by status desc ", nativeQuery = true)
+    List<OrderAuthEntity> getOrderAuthByBranchNoByMaker(@Param("branchno") String branchno,@Param("status") String status,@Param("borNo") String borNo );
 
    // @Query(value = "select * from v_order_item where branchno=:branchno and status in ('auth','wait','wait-item') order by status desc ", nativeQuery = true)
-    @Query(value = "select * from v_order_item where branchno=:branchno and  status=:status order by status desc ", nativeQuery = true)
-    List<OrderAuthEntity> getOrderAuthByBranchNo(@Param("branchno") String branchno,@Param("status") String status);
+    @Query(value = "select * from v_order_item where branchno=:branchno and  status=:status and borkey=:borNo order by status desc ", nativeQuery = true)
+    List<OrderAuthEntity> getOrderAuthByBranchNo(@Param("branchno") String branchno,@Param("status") String status,@Param("borNo") String borNo);
 
    // @Query(value = "select * from v_order_item where status  in ('auth') order by status desc ", nativeQuery = true)
     @Query(value = "select * from v_order_item where status=:status order by status desc ", nativeQuery = true)

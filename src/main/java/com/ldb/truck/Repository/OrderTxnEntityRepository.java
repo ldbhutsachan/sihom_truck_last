@@ -30,15 +30,19 @@ public interface OrderTxnEntityRepository extends CrudRepository<OrderItemEntity
     @Query(value = "select * from v_order_item  order by status desc ", nativeQuery = true)
     List<OrderItemEntity> getOrderByBillNoAdmin();
 
-    @Query(value = "select * from v_order_item where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate   and status=:status order by detail_id desc ", nativeQuery = true)
-    List<OrderItemEntity> getOrderReport(@Param("startDate") String startDate,@Param("endDate") String endDate,@Param("status") String status);
+    @Query(value = "select * from v_order_item where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate   and status=:status  and borkey=:borNo order by detail_id desc ", nativeQuery = true)
+    List<OrderItemEntity> getOrderReport(@Param("startDate") String startDate,@Param("endDate") String endDate,@Param("status") String status,@Param("borNo") String borNo);
+
+    @Query(value = "select * from v_order_item where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate and borkey=:borNo order by detail_id desc ", nativeQuery = true)
+    List<OrderItemEntity> getOrderReportNoStatus(@Param("startDate") String startDate,@Param("endDate") String endDate,@Param("borNo") String borNo);
+
+
+
+    @Query(value = "select * from v_order_item where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate   and status=:status  order by detail_id desc ", nativeQuery = true)
+    List<OrderItemEntity> getOrderReportPadmin(@Param("startDate") String startDate,@Param("endDate") String endDate,@Param("status") String status);
 
     @Query(value = "select * from v_order_item where to_char(savedate,'yyyy-mm-dd') >=:startDate and to_char(savedate,'yyyy-mm-dd') <=:endDate order by detail_id desc ", nativeQuery = true)
-    List<OrderItemEntity> getOrderReportNoStatus(@Param("startDate") String startDate,@Param("endDate") String endDate);
-
-
-
-
+    List<OrderItemEntity> getOrderReportNoStatusPAdmin(@Param("startDate") String startDate,@Param("endDate") String endDate);
 
 
 }

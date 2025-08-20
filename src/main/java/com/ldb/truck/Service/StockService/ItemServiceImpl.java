@@ -23,10 +23,11 @@ public class ItemServiceImpl {
     ViewItemEntityRepository viewItemEntityRepository;
     @Autowired
     ItemEntityRepository itemEntityRepository;
-    public DataResponse getViewItemInventory(viewItemEntity viewItemEntity,String userName,String role,String branchNo){
+    public DataResponse getViewItemInventory(viewItemEntity viewItemEntity,String userName,String role,String branchNo,String borNo){
         log.info("role:"+role);
         log.info("userName:"+userName);
         log.info("branchNo:"+branchNo);
+        log.info("borNo:"+borNo);
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         double totalLak = 0;
         double totalThb = 0;
@@ -37,7 +38,7 @@ public class ItemServiceImpl {
         ItemGroupHeader groupHeader = new ItemGroupHeader();
         try {
             if("USERSTOCK".equals(role) || "USER".equals(role) ||  "AUTH".equals(role)){
-               rspList = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo);
+               rspList = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo,borNo);
             }
             else if("PADMIN".equals(role)){
                 rspList = viewItemEntityRepository.getAllViewItemsAdmin();
@@ -78,7 +79,7 @@ public class ItemServiceImpl {
         }
         return response;
 }
-public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,String role,String branchNo){
+public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,String role,String branchNo,String borNo){
         log.info("role:"+role);
         log.info("userName:"+userName);
         log.info("branchNo:"+branchNo);
@@ -87,7 +88,7 @@ public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,St
             if("PADMIN".equals(role)){
                 response.setDataResponse(viewItemEntityRepository.getAllViewItemsAdmin());
             }else {
-                response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo));
+                response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo,borNo));
             }
 
             if(response.getDataResponse() != null){

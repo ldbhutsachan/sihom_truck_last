@@ -51,10 +51,10 @@ public class ProfileDao {
     }
 
     public List<Profile> getProfileInfoByToken(String toKen){
-        log.info("get data info:"+toKen);
+
         try{
-            String SQL = "select b.KEY_ID as userId ,b.USER_LOGIN as userName ,b.ROLE,b.BRANCH as branchNo ,a.B_NAME as banchName \n" +
-                    "from LOGIN b inner join TB_BRANCH a on a.KEY_ID  =b.BRANCH  where token='"+toKen+"'";
+            String SQL = "select b.KEY_ID as userId ,b.USER_LOGIN as userName ,b.ROLE,b.BRANCH as branchNo ,a.B_NAME as banchName,c.key_id broNo,c.b_name borName \n" +
+                    "from LOGIN b left join TB_BRANCH a on a.KEY_ID  =b.BRANCH left join tb_bors c on a.key_id=c.brand_no   where token='"+toKen+"'";
             log.info("SQL:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<Profile>() {
                 @Override
@@ -65,6 +65,9 @@ public class ProfileDao {
                     tr.setRole(rs.getString("ROLE"));
                     tr.setBranchNo(rs.getString("branchNo"));
                     tr.setBranchName(rs.getString("banchName"));
+
+                    tr.setBorNo(rs.getString("broNo"));
+                    tr.setBorName(rs.getString("borName"));
                     return tr;
                 }
             });

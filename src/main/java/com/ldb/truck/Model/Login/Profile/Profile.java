@@ -15,4 +15,8 @@ public class Profile {
     private String role;
     private String branchNo;
     private String branchName;
+
+    private String borNo;
+    private String borName;
+
 }
