@@ -2125,7 +2125,7 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
                 log.info("SQL_THB:" + sql);
             }else {
 //            removed STATUS='Y' AND
-                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND branch_id= '"+offerPaperReq.getBranch_id()+"' AND datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                sql = "SELECT SUM(totalPriceCur)*moneyRate AS Real_totalMoney,SUM(totalPriceCur) AS totalPriceCur FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND branch_id= '"+offerPaperReq.getBranch_id()+"' AND datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
                 log.info("SQL_THB:" + sql);
             }
         }
@@ -2133,11 +2133,11 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
         {
             //            removed STATUS='N' AND
             if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "'";
+                sql = "SELECT SUM(totalPriceCur)*moneyRate AS Real_totalMoney,SUM(totalPriceCur) AS totalPriceCur FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH='" + offerPaperReq.getBranch() + "'";
                 log.info("SQL_THB:" + sql);
             }else {
 //            removed STATUS='Y' AND
-                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH= '"+offerPaperReq.getBranch()+"' AND datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
+                sql = "SELECT  SUM(totalPriceCur)*moneyRate AS Real_totalMoney,SUM(totalPriceCur) AS totalPriceCur FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND BRANCH= '"+offerPaperReq.getBranch()+"' AND datePay between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "'";
                 log.info("SQL_THB:" + sql);
             }
         }
