@@ -2121,7 +2121,7 @@ public List<ReportOfferPaperModelTHB> ShowReportSumofferpaperTHB(OfferPaperReq o
         {
             //            removed STATUS='N' AND
             if(offerPaperReq.getStartDate()==null && offerPaperReq.getEndDate() ==null){
-                sql = "SELECT * FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "'";
+                sql = "SELECT SUM(totalPriceCur)*moneyRate AS Real_totalMoney,SUM(totalPriceCur) AS totalPriceCur FROM V_OFFER_PAPER  where STATUS_CREDITS='NO' AND currency = 'THB' AND STATUS='Y' AND branch_id='" + offerPaperReq.getBranch_id() + "'";
                 log.info("SQL_THB:" + sql);
             }else {
 //            removed STATUS='Y' AND
