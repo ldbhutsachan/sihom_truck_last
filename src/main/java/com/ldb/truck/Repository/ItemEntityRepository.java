@@ -32,7 +32,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             " i.image = :image, " +
             "i.approve_by = :approveBy," +
             " i.approve_date = :approveDate," +
-            " i.branch_no = :branchNo," +
+
             " i.barcode = :barcode, " +
             " i.itemtypeid = :itemtypeid, " +
             " i.houseid = :houseid,i.alertqty=:alertqty " +
@@ -53,7 +53,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             String image,
             String approveBy,
             Date approveDate,
-            String branchNo,
+
             String barcode,
             Integer itemtypeid,
             Integer houseid,
@@ -77,7 +77,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             " i.price = :price," +
             "i.approve_by = :approveBy," +
             " i.approve_date = :approveDate," +
-            " i.branch_no = :branchNo," +
+
             " i.barcode = :barcode, " +
             " i.itemtypeid = :itemtypeid, " +
             " i.houseid = :houseid,i.alertqty=:alertqty " +
@@ -97,7 +97,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             Float price,
             String approveBy,
             Date approveDate,
-            String branchNo,
+
             String barcode,
             Integer itemtypeid,
             Integer houseid,

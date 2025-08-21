@@ -68,8 +68,8 @@ public class ItemEntity {
     @Column(name = "approve_date")
     private Date approveDate;
 
-    @Column(name = "branch_no", nullable = false)
-    private String branchNo;
+//    @Column(name = "branch_no", nullable = false)
+//    private String branchNo;
 
     @Column(name = "itemtypeid", nullable = false)
     private Integer itemtypeid;

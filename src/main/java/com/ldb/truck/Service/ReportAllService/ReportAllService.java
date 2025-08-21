@@ -266,12 +266,12 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
     return result;
 }
 
-    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo) {
+    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo,String borNoss) {
 
         ReportAllStockInOutRes response = new ReportAllStockInOutRes();
         try {
            // ReportInoutItemGroup groupFooter = new ReportInoutItemGroup();
-            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo);
+            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo,borNoss);
 
             if (!rsListData.isEmpty()) {
                 response.setStatus("00");

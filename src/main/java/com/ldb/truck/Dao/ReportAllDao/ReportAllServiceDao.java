@@ -789,7 +789,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
 
     //*****report stock
     public List<ReportAllStockInOut> getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,
-                                                               String role,String borNos){
+                                                               String role,String borNos,String borNoss){
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
         String itemId= stockRequest.getItemId();
@@ -808,7 +808,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 conItemBoNo =" ";
             }
         }else {
-            conItemBoNo ="\n and borkey='"+borNos+"'";
+            conItemBoNo ="\n and borkey='"+borNoss+"'";
         }
 
         String startDateCon = "\n and dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"' " ;

@@ -144,7 +144,7 @@ public DataResponse saveItem(ItemEntity viewItemEntity){
                             viewItemEntity.getPrice(),
                             viewItemEntity.getApproveBy(),
                             viewItemEntity.getApproveDate(),
-                            viewItemEntity.getBranchNo(),
+
                             viewItemEntity.getBarcode(),
                             viewItemEntity.getItemtypeid(),
                             viewItemEntity.getHouseid(),
@@ -167,7 +167,7 @@ public DataResponse saveItem(ItemEntity viewItemEntity){
                             viewItemEntity.getImage(),
                             viewItemEntity.getApproveBy(),
                             viewItemEntity.getApproveDate(),
-                            viewItemEntity.getBranchNo(),
+
                             viewItemEntity.getBarcode(),
                             viewItemEntity.getItemtypeid(),
                             viewItemEntity.getHouseid(),

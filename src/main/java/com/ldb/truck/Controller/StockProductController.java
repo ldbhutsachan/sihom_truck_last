@@ -189,10 +189,11 @@ public class StockProductController {
 
         String startDate = stockItemDetailsEntity.getStartDate();
         String endDate =  stockItemDetailsEntity.getEndDate();
-        String borNo =  stockItemDetailsEntity.getBorNo();
+        String borNo = userProfiles.get(0).getBorNo();
+        String borNoFone = stockItemDetailsEntity.getBorNo();
 
         try {
-                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo);
+                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo,borNoFone);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

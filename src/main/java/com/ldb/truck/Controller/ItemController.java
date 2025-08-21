@@ -402,7 +402,7 @@ public class ItemController {
 
         //================================================================
         String userId = userIn.get(0).getUserId();
-        String branchNo = userIn.get(0).getBranchNo();
+
         DataResponse dataResponse = new DataResponse();
         ItemEntity data = new ItemEntity();
         data.setBrandId(brandId);
@@ -419,7 +419,7 @@ public class ItemController {
         data.setQty(qty);
         data.setPrice(price);
         data.setMakeById(userId);
-        data.setBranchNo(branchNo);
+
         data.setMakeDate(new Date());
         data.setBrandId(brandId);
         data.setItemtypeid(itemtypeid);
@@ -494,7 +494,7 @@ public class ItemController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = userProfiles.get(0).getUserId();
-        String branchNo = userProfiles.get(0).getBranchNo();
+
         DataResponse dataResponse = new DataResponse();
         ItemEntity data = new ItemEntity();
         data.setItemId(item_id);
@@ -512,7 +512,7 @@ public class ItemController {
         data.setQty(qty);
         data.setPrice(price);
         data.setApproveBy(userId);
-        data.setBranchNo(branchNo);
+
         data.setApproveDate(new Date());
         data.setBrandId(brandId);
         data.setItemtypeid(itemtypeid);

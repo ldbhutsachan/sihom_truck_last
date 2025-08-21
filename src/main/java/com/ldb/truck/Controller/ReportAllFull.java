@@ -194,7 +194,8 @@ public ReportAllStockInOutRes reportAllService (@RequestBody ReportItemInOutMode
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
         String role = userProfiles.get(0).getRole();
         String branchNo = userProfiles.get(0).getBranchNo();
-        result = reportAllService.getReportDetailDailyStock(reportAllReq,role,branchNo);
+        String borNoss = userProfiles.get(0).getBorNo();
+        result = reportAllService.getReportDetailDailyStock(reportAllReq,role,branchNo,borNoss);
     }catch (Exception e){
         e.printStackTrace();
         result.setStatus("01");

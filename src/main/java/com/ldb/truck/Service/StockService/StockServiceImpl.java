@@ -598,9 +598,11 @@ public class StockServiceImpl {
 //        return response;
 //    }
     public V_OrderItemDetailsRes getOrderItemReport(String conReq,String branchNo,
-                                                     String userId,String role,String status,String startDate,String endDate,String borNo){
+                                                     String userId,String role,String status,String startDate,String endDate,String borNo,String borNoFone){
         log.info("userId:"+userId);
         log.info("branchNo:"+branchNo);
+        log.info("borNo:"+borNo);
+        log.info("borNoFone:"+borNoFone);
         log.info("role:"+role);
         log.info("conReq:"+conReq);
         log.info("startDate:"+startDate);
@@ -612,7 +614,7 @@ public class StockServiceImpl {
         try {
 
             listData = getDataReportDetails ( conReq, branchNo,
-                     userId, role, status, startDate, endDate,borNo);
+                     userId, role, status, startDate, endDate,borNo,borNoFone);
 
             List<String> billNoList = listData.stream()
                     .map(V_order_item_details::getBillNo)
@@ -708,7 +710,7 @@ public class StockServiceImpl {
     public List<V_order_item_details> getDataReportDetails(String conReq, String branchNo,
                                                            String userId, String role,
                                                            String status, String startDate,
-                                                           String endDate, String borNo) {
+                                                           String endDate, String borNo,String borNoFone) {
         try {
             String borNoCon = "";
             String conDate= "";
@@ -743,7 +745,7 @@ public class StockServiceImpl {
                 conDate = "";
             }
 
-            if(!borNo.equals("all")){
+            if(!borNoFone.equals("all")){
                 borNoCon = "\n AND borkey ='"+borNo+"' ";
             }else {
                 borNoCon = "";
@@ -2630,7 +2632,7 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             conReqTypeId= "";
         }
         StringBuilder sb  = new StringBuilder();
-        sb.append("select * from v_req_type where bor_id='"+borNo+"' and 1=1");
+        sb.append("select * from v_req_type where  1=1");
         sb.append(conBorNo);
         sb.append(conReqTypeId);
         String sql = sb.toString();
