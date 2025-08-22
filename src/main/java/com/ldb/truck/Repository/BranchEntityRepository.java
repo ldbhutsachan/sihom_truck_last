@@ -10,6 +10,6 @@ import java.util.List;
 
 @Repository
 public interface BranchEntityRepository extends CrudRepository<BranchModel,Long> {
-    @Query(value = "select * from TB_BRANCH",nativeQuery = true)
+    @Query(value = "select * from TB_BRANCH where type=1",nativeQuery = true)
     List<BranchModel> getBranchModel();
 }
