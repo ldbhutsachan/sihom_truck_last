@@ -68,5 +68,8 @@ public class CarOfficeReq {
     private String userId;
     private String startDate;
     private String endDate;
+    //add new
+    private String startdate_kongnam;
+    private String enddate_kongnam;
 //    private String lean;
 }

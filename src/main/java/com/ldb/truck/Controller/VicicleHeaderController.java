@@ -826,7 +826,10 @@ public Messages saveVicicleHeader(
             @RequestParam("lekmai_next") String  lekmai_next  ,
             @RequestParam("date_change_lean") String  date_change_lean ,
             @RequestParam("date_change_lean_next") String  date_change_lean_next,
-            @RequestParam("leanGiaNextday") String  leanGiaNextday
+            @RequestParam("leanGiaNextday") String  leanGiaNextday,
+            //add new
+            @RequestParam("startdate_kongnam") String  startdate_kongnam,
+            @RequestParam("enddate_kongnam") String  enddate_kongnam
     ){
         log.info("===================================save header==================================================");
         Date date = new Date();
@@ -884,6 +887,10 @@ public Messages saveVicicleHeader(
             data.setDate_change_lean(date_change_lean);
             data.setDate_change_lean_next(date_change_lean_next);
             data.setLeanGiaNextday(leanGiaNextday);
+            //add new
+            data.setStartdate_kongnam(startdate_kongnam);
+            data.setEnddate_kongnam(enddate_kongnam);
+
             log.error("******file lenght"+files);
             log.error(data);
             String fileName = "";
@@ -1058,7 +1065,10 @@ public Messages saveVicicleHeader(
             @RequestParam("lekmai_next") String  lekmai_next,
             @RequestParam("date_change_lean") String  date_change_lean ,
             @RequestParam("date_change_lean_next") String  date_change_lean_next,
-            @RequestParam("leanGiaNextday") String  leanGiaNextday
+            @RequestParam("leanGiaNextday") String  leanGiaNextday,
+            //add new
+            @RequestParam("startdate_kongnam") String  startdate_kongnam,
+            @RequestParam("enddate_kongnam") String  enddate_kongnam
 
     ){
         log.info("===================================save header==================================================");
@@ -1118,6 +1128,9 @@ public Messages saveVicicleHeader(
             data.setDate_change_lean(date_change_lean);
             data.setDate_change_lean_next(date_change_lean_next);
             data.setLeanGiaNextday(leanGiaNextday);
+            //add new
+            data.setStartdate_kongnam(startdate_kongnam);
+            data.setEnddate_kongnam(enddate_kongnam);
 //            log.error("******file lenght"+files);
 //            log.error(data);
 //            String fileName = "";
