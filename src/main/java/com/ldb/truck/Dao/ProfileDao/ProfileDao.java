@@ -67,7 +67,7 @@ public class ProfileDao {
                     tr.setBranchName(rs.getString("banchName"));
 
                     tr.setBorNo(rs.getString("bor_no"));
-                  //  tr.setBorName(rs.getString("borName"));
+
                     return tr;
                 }
             });
