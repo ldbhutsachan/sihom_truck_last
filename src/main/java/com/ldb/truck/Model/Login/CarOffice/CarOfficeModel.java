@@ -72,5 +72,8 @@ public class CarOfficeModel {
     private String dateChangeLeeanNext;
     private String leanFuengThaiy;
     private String leanGiaNextday;
+//    add new
+    private String startdate_kongnam;
+    private String enddate_kongnam;
 
 }

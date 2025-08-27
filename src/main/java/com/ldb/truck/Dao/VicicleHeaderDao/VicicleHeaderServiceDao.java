@@ -372,6 +372,9 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
                     tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
                     tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
                     tr.setLeanGiaNextday(rs.getString("leanGiaNextday"));
+//                    add new
+                    tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
+                    tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
 
                     String phoneNumber = "8562092661111"; // Replace with actual phone number
                     String carInfo = "Car Brand: " + tr.getCar_brand() + ", License Plate: " + tr.getLicense_plate();
@@ -631,6 +634,11 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
                     tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));     //fix 12-12-2024 time 10:32
                     tr.setLeanGiaNextday(rs.getString("leanGiaNextday"));     //fix 12-12-2024 time 10:32
+                    //add new
+                    tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
+                    tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
+//                    tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
+//                    tr.setEnddate_kongnam(rs.getString("endate_kongnam"));
                     return tr ;
                 }
             });
@@ -994,7 +1002,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             String SQL = "insert into CARS_OFFICE (img,license_plate,battery_code_name,license_plate_end,license_plate_start," +
                     "car_year,car_type,car_brand,lekJuk,lekThung,carColor,font_light,back_light,millor_back,millor_side,car_mileage_now,cc,leanGia," +
                     "insurance_Lao,insurance_viet,insurance_thai,insurance_Lao_expireDate,insurance_viet_expireDate,insurance_thai_expireDate," +
-                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next,leanFuengThaiy,leanGiaNextday) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next,leanFuengThaiy,leanGiaNextday,startdate_kongnam,enddate_kongnam) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(path + fileName);
@@ -1055,6 +1063,9 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getDate_change_lean_next());
             paramList.add(carOfficeReq.getLeanFuengThaiy());
             paramList.add(carOfficeReq.getLeanGiaNextday());
+            //add new
+            paramList.add(carOfficeReq.getEnddate_kongnam());
+            paramList.add(carOfficeReq.getStartdate_kongnam());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -1094,7 +1105,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
 //        log.info("sqlEndDate:"+sqlEndDate);
         List<VicicleHeader> data = new ArrayList<>();
         try{
-            String SQL = "update CARS_OFFICE set license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,tungsitnumber=?,tungsitDateExpire=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=?,leanFuengThaiy=?,leanGiaNextday=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
+            String SQL = "update CARS_OFFICE set license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,tungsitnumber=?,tungsitDateExpire=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=?,leanFuengThaiy=?,leanGiaNextday=?,startdate_kongnam=?,enddate_kongnam=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
 //            paramList.add(path + fileName);
@@ -1147,6 +1158,10 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getDate_change_lean_next());
             paramList.add(carOfficeReq.getLeanFuengThaiy());
             paramList.add(carOfficeReq.getLeanGiaNextday());
+            //add new
+            paramList.add(carOfficeReq.getEnddate_kongnam());
+            paramList.add(carOfficeReq.getStartdate_kongnam());
+
             paramList.add(carOfficeReq.getKEY_ID());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
