@@ -1064,8 +1064,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getLeanFuengThaiy());
             paramList.add(carOfficeReq.getLeanGiaNextday());
             //add new
-            paramList.add(carOfficeReq.getEnddate_kongnam());
             paramList.add(carOfficeReq.getStartdate_kongnam());
+            paramList.add(carOfficeReq.getEnddate_kongnam());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -1159,8 +1159,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getLeanFuengThaiy());
             paramList.add(carOfficeReq.getLeanGiaNextday());
             //add new
-            paramList.add(carOfficeReq.getEnddate_kongnam());
             paramList.add(carOfficeReq.getStartdate_kongnam());
+            paramList.add(carOfficeReq.getEnddate_kongnam());
 
             paramList.add(carOfficeReq.getKEY_ID());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
