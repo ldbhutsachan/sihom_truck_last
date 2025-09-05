@@ -289,6 +289,9 @@ public PerformanceSaveRes savePerformance (PerformanceReq performanceReq){
         log.info("show=================UserBname:"+userIn.get(0).getBranchName());
         log.info("show=================Role:"+userIn.get(0).getRole());
         log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+
+        log.info("startDate: " + performanceReq.getStartDate());
+        log.info("endDate: " + performanceReq.getEndDate());
         //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();

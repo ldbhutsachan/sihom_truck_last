@@ -202,7 +202,7 @@ public List<ReportAll> viewPopup(PerformanceReq performanceReq) {
         String startDate = performanceReq.getStartDate() != null ? performanceReq.getStartDate() : today;
         String endDate = performanceReq.getEndDate() != null ? performanceReq.getEndDate() : today;
 
-        // SQL query พร้อม parameter
+        // SQL query with parameter
         String sql = "SELECT * FROM V_RE_ALL a " +
                 "INNER JOIN LOGIN b ON a.userId = b.KEY_ID " +
                 "WHERE a.D_STATUS = 'N' " +
@@ -595,20 +595,57 @@ public List<ReportAll> viewPopup(PerformanceReq performanceReq) {
     }
     //---view popup details
 
-    @Override
-    public List<v_performance> v_popupPerformance(PerformanceReq performanceReq) {
-        List<v_performance> result = new ArrayList<>();
-        try {
-//  vpp          String SQL = "select * from V_PERFORMANCE where STATUS ='N' order by PERFORMANCEDATE desc";
-            String SQL = "select * from V_PERFORMANCE a inner join LOGIN b  on a.userId=b.KEY_ID  where a.STATUS ='N' AND b.BRANCH ='"+performanceReq.getBranch()+"' order by PERFORMANCEDATE desc";
-            System.out.println(SQL);
-            result = EBankJdbcTemplate.query(SQL , new v_performanceMapper());
-        }catch (Exception e){
-            e.printStackTrace();
-            return result;
-        }
-        return result;
+//    @Override
+//    public List<v_performance> v_popupPerformance(PerformanceReq performanceReq) {
+//        List<v_performance> result = new ArrayList<>();
+//        try {
+//            // check startDate / endDate must not null
+//            String today = LocalDate.now().toString();
+//            String startDate = performanceReq.getStartDate() != null ? performanceReq.getStartDate() : today;
+//            String endDate = performanceReq.getEndDate() != null ? performanceReq.getEndDate() : today;
+//            // SQL
+//            String SQL = "select * from V_PERFORMANCE a inner join LOGIN b  on a.userId=b.KEY_ID  where a.STATUS ='N' AND b.BRANCH ='"+performanceReq.getBranch()+"' order by PERFORMANCEDATE desc";
+//            System.out.println(SQL);
+//            result = EBankJdbcTemplate.query(SQL , new v_performanceMapper());
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            return result;
+//        }
+//        return result;
+//    }
+@Override
+public List<v_performance> v_popupPerformance(PerformanceReq performanceReq) {
+    List<v_performance> result = new ArrayList<>();
+    try {
+        // กำหนดวันที่ปัจจุบันถ้า client ไม่ส่ง
+        String today = LocalDate.now().toString();
+        String startDate = performanceReq.getStartDate() != null ? performanceReq.getStartDate() : today;
+        String endDate = performanceReq.getEndDate() != null ? performanceReq.getEndDate() : today;
+
+        // SQL query พร้อม filter OUT_DATE และใช้ parameter
+        String SQL = "SELECT * FROM V_PERFORMANCE a " +
+                "INNER JOIN LOGIN b ON a.userId = b.KEY_ID " +
+                "WHERE a.STATUS = 'N' " +
+                "AND b.BRANCH = ? " +
+                "AND a.OUT_DATE BETWEEN ? AND ? " +
+                "ORDER BY PERFORMANCEDATE DESC";
+
+        System.out.println(SQL);
+
+        // Execute query พร้อม parameter
+        result = EBankJdbcTemplate.query(
+                SQL,
+                new Object[]{performanceReq.getBranch(), startDate, endDate},
+                new v_performanceMapper()
+        );
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    return result;
+}
+
     @Override
     public List<v_performance> ListV_performancebyBillNo(PerformanceReq performanceReq) {
         String SQL = null;
