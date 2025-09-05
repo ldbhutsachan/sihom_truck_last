@@ -475,19 +475,23 @@ public FixRes proofFixReqService(FixReq fixReq){
     }
     // pay to shop service
     // Move item to stock
-    public PayToShopRes PayToShopService (List<PayToShopReq> payToShopReq){
+    public PayToShopRes PayToShopService(List<PayToShopReq> payToShopReq) {
         PayToShopRes result = new PayToShopRes();
         try {
-            inventoryDao.PayToShopDao(payToShopReq);
-            result.setMessage("Successful");
-            result.setStatus("00");
-            return result;
-        }catch (Exception e){
+            int i = inventoryDao.PayToShopDao(payToShopReq);
+            if (i >= 1) {
+                result.setMessage("Successful");
+                result.setStatus("00");
+            } else {
+                result.setMessage("Not successful");
+                result.setStatus("01");
+            }
+        } catch (Exception e) {
             e.printStackTrace();
-            result.setMessage("exeption");
+            result.setMessage("Exception: " + e.getMessage());
             result.setStatus("01");
-            return result;
         }
+        return result;
     }
     //report stock
     public ReportStockRes ReportStockService (MoveToStockReq moveToStockReq ){
@@ -1097,43 +1101,19 @@ public ReportShowOfferPaper reportShowofferpaperCurrencyServiceLAK (@RequestBody
     //===================set data to userId===============================
     offerPaperReq.setUserId(userId);
     offerPaperReq.setBranch(userBranchNo);
-    //====================================================================
-//    List<ReportOfferPaperModelTHB> listDataTHB = new ArrayList<>();
-//    List<ReportOfferPaperModel> listDataUSD = new ArrayList<>();
+
     List<ReportOfferPaperModelLAK> listDataLAK = new ArrayList<>();
     ReportShowOfferPaper result = new ReportShowOfferPaper();
     DecimalFormat numfm = new DecimalFormat("###,###.###");
     try {
-//        listDataTHB = inventoryDao.ShowReportSumofferpaperTHB(offerPaperReq);
-//        sumFooterGroupOfferReportCurrency restFooterTHB = new sumFooterGroupOfferReportCurrency();
-//        double sumMoneyTHB =  listDataTHB.stream().map(ReportOfferPaperModelTHB::getSumMoneyCurrencyTHB).collect(Collectors.summingDouble(Double::doubleValue));
-//        restFooterTHB.setSumMoneyCurrencyTHB(numfm.format(sumMoneyTHB));
-//        result.setSumFooter_Currency(restFooterTHB);
-////=============================================================================================
-//
-//        listDataUSD = inventoryDao.ShowReportSumofferpaperUSD(offerPaperReq);
-//        sumFooterGroupOfferReportCurrency restFooterUSD = new sumFooterGroupOfferReportCurrency();
-//        double sumMoneyUSD =  listDataUSD.stream().map(ReportOfferPaperModel::getSumMoneycurrencyUSD).collect(Collectors.summingDouble(Double::doubleValue));
-//        restFooterUSD.setSumMoneycurrencyUSD(numfm.format(sumMoneyUSD));
-//        result.setSumFooter_Currency(restFooterUSD);
-//=============================================================================================
 
         listDataLAK = inventoryDao.ShowReportSumofferpaperLAK(offerPaperReq);
         sumFooterGroupOfferReportCurrency restFooterLAK = new sumFooterGroupOfferReportCurrency();
         double sumMoneyLAK =  listDataLAK.stream().map(ReportOfferPaperModelLAK::getSumMoneycurrencyLAK).collect(Collectors.summingDouble(Double::doubleValue));
         restFooterLAK.setSumMoneycurrencyLAK(numfm.format(sumMoneyLAK));
-
         result.setMessage("Success");
         result.setStatus("00");
-//        result.setData(listDataTHB);
-//        result.setData(listDataUSD);
-//        result.setData(listDataLAK);
-//        result.setSumFooter_Currency(restFooterUSD);
-//        result.setSumFooter_Currency(restFooterTHB);
         result.setSumFooter_Currency(restFooterLAK);
-//=============================================================================================
-
-
         return result;
     }catch (Exception e){
         e.printStackTrace();
