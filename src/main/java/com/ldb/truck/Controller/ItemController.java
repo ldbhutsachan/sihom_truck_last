@@ -53,8 +53,8 @@ public class ItemController {
         try {
             response = brandService.getBrand(brandReq);
         }catch (Exception e){
-            response.setStatus("EE");
-            response.setMessage("Data Error !!");
+          //  response.setStatus("EE");
+           // response.setMessage("Data Error !!");
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

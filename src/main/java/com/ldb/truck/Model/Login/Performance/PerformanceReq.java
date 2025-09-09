@@ -69,4 +69,7 @@ public class PerformanceReq {
     private String add_feecontrainer;
     private String add_feepayang;
     private String lAHUD_POYLOD;
+    //vee add
+    private String endDate;
+    private String startDate;
 }

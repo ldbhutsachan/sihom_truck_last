@@ -1523,108 +1523,95 @@ public int FixDaoIftruckNullXiengKhouang (FixReq fixReq) {
         }
         return 0;
     }
-    // update price to pay to shop
-//    public int PayToShopDao (List<PayToShopReq> payToShopReq) {
-//        try {
-//            String sql = "update PURCHASE_ORDER set paid = paid + '"+payToShopReq.get(0)+"', tid = total - paid, DateCreatePO = now() where pocode = '"+payToShopReq.get(0)+"'";
-////            String sql = "update PURCHASE_ORDER set paid= paid + '"+payToShopReq.getPaid()+"',tid= total - paid ,DateCreatePO=now() where pocode='"+payToShopReq.getPocode()+"'";
-//            log.info("SQL:"+sql);
-//            List<Object[]> paramList = new ArrayList<Object[]>();
-//            for(PayToShopReq resList : payToShopReq) {
-//
-//                Object[] objectArray = {
-//                        resList.getPaid(),
-//                        resList.getTid()
-//                };
-//                paramList.add(objectArray);
-//            }
-//            EBankJdbcTemplate.batchUpdate(sql, paramList);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return -1;
-//        }
-//        return 0;
-//    }
 //    pay to shop
-    public int PayToShopDao(List<PayToShopReq> payToShopReq) {
-        if (payToShopReq == null || payToShopReq.isEmpty()) {
-            return -1; // Handle empty input
-        }
-
-//        String sql = "UPDATE PURCHASE_ORDER SET paid = paid + ?, tid = total - paid, DateCreatePO = NOW() WHERE pocode = ?";
-        String sql = "UPDATE PURCHASE_ORDER SET paid = paid + ?, tid = total - paid, DateCreatePO = NOW() WHERE pocode = ?";
-//        String sql2 = "UPDATE OFFER_PAPER SET moneyRate2 = ? ,totalMoney = moneyRate2 * unit_price * qty_offer WHERE offer_CODE = ? ";
-        String sql2 = "UPDATE OFFER_PAPER SET totalMoney = (moneyRate * unit_price * qty_offer),\n" +
-                "totalMoney1 = (moneyRate * unit_price1 * qty_offer1),\n" +
-                "totalMoney2 = (moneyRate * unit_price2 * qty_offer2),\n" +
-                "totalMoney3 = (moneyRate * unit_price3 * qty_offer3),\n" +
-                "totalMoney4 = (moneyRate * unit_price4 * qty_offer4),\n" +
-                "totalMoney5 = (moneyRate * unit_price5 * qty_offer5),\n" +
-                "totalMoney6 = (moneyRate * unit_price6 * qty_offer6),\n" +
-                "totalMoney7 = (moneyRate * unit_price7 * qty_offer7),\n" +
-                "totalMoney8 = (moneyRate * unit_price8 * qty_offer8),\n" +
-                "totalMoney9 = (moneyRate * unit_price9 * qty_offer9),\n " +
-                "Real_totalMoney = (moneyRate * unit_price * qty_offer )+\n" +
-                "(moneyRate * unit_price1 * qty_offer1 )+\n" +
-                "(moneyRate * unit_price2 * qty_offer2 )+\n" +
-                "(moneyRate * unit_price3 * qty_offer3 )+\n" +
-                "(moneyRate * unit_price4 * qty_offer4 )+\n" +
-                "(moneyRate * unit_price5 * qty_offer5 )+\n" +
-                "(moneyRate * unit_price6 * qty_offer6 )+\n" +
-                "(moneyRate * unit_price7 * qty_offer7 )+\n" +
-                "(moneyRate * unit_price8 * qty_offer8 )+\n" +
-                "(moneyRate * unit_price9 * qty_offer9) , datePay =? ,STATUS_CREDITS='NO' WHERE offer_CODE = ?";
-        String sql3 = "INSERT INTO currency_in_kip (OFFER_CODE,TOTAL_MONEY,DATE,CUR,userId,branch_id) SELECT OFFER_CODE,Real_totalMoney,datePay,currency,userId,branch_id from OFFER_PAPER WHERE offer_CODE = ?";
-
-        log.info(sql);
-        log.info(sql2);
-        log.info(sql3);
-        try {
-            // Prepare parameter lists for each query
-            List<Object[]> paramList1 = new ArrayList<>();
-            List<Object[]> paramList2 = new ArrayList<>();
-            List<Object[]> paramList3 = new ArrayList<>();
-
-            for (PayToShopReq req : payToShopReq) {
-                // First query parameters
-                Object[] objectArray1 = {
-                        req.getPaid(),
-                        req.getPocode()
-                };
-                paramList1.add(objectArray1);
-
-                // Second query parameters
-                Object[] objectArray2 = {
-//                        req.getMoneyRate(),
-                        req.getDatePay(),
-                        req.getOffer_CODE()
-                };
-                paramList2.add(objectArray2);
-
-                Object[] objectArray3 = {
-                        req.getOffer_CODE(),
-                        req.getRealTotalMoney(),
-                        req.getDatePay(),
-                        req.getCur(),
-                        req.getUserId(),
-                        req.getOffer_CODE(),
-                };
-                paramList3.add(objectArray3);
-            }
-            // Execute batch updates
-            int[] updateCounts1 = EBankJdbcTemplate.batchUpdate(sql, paramList1);
-            int[] updateCounts2 = EBankJdbcTemplate.batchUpdate(sql2, paramList2);
-            int[] updateCounts3 = EBankJdbcTemplate.batchUpdate(sql3, paramList3);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1; // Indicate failure
-        }
-        return 0; // Indicate success
+public int PayToShopDao(List<PayToShopReq> payToShopReq) {
+    if (payToShopReq == null || payToShopReq.isEmpty()) {
+        return 0; // ถ้าไม่มีข้อมูล return เลย
     }
 
+    try {
+        // 1) อัปเดต PURCHASE_ORDER
+        updatePurchaseOrder(payToShopReq);
 
+        // 2) อัปเดต OFFER_PAPER
+        updateOfferPaper(payToShopReq);
 
+        // 3) Insert ลง currency_in_kip
+        insertCurrencyInKip(payToShopReq);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return 0; // ถ้ามี error return fail
+    }
+
+    return 1; // success
+}
+
+    private void updatePurchaseOrder(List<PayToShopReq> reqs) {
+        String sql = "UPDATE PURCHASE_ORDER " +
+                "SET paid = paid + ?, tid = total - paid, DateCreatePO = NOW() " +
+                "WHERE pocode = ?";
+
+        List<Object[]> paramList = new ArrayList<>();
+        for (PayToShopReq req : reqs) {
+            paramList.add(new Object[]{ req.getPaid(), req.getPocode() });
+        }
+
+        EBankJdbcTemplate.batchUpdate(sql, paramList);
+    }
+
+    private void updateOfferPaper(List<PayToShopReq> reqs) {
+        String offer_CODE = reqs.get(0).getOffer_CODE();
+
+        String sql = "UPDATE OFFER_PAPER SET " +
+                "totalMoney = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney1 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price1,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer1,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney2 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price2,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer2,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney3 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price3,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer3,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney4 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price4,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer4,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney5 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price5,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer5,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney6 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price6,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer6,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney7 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price7,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer7,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney8 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price8,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer8,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "totalMoney9 = (IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price9,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer9,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "Real_totalMoney = " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price1,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer1,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price2,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer2,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price3,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer3,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price4,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer4,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price5,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer5,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price6,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer6,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price7,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer7,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price8,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer8,'') AS DECIMAL(20,2)),0.0)) + " +
+                "(IFNULL(moneyRate,0.0) * IFNULL(CAST(NULLIF(unit_price9,'') AS DECIMAL(20,2)),0.0) * IFNULL(CAST(NULLIF(qty_offer9,'') AS DECIMAL(20,2)),0.0)),\n" +
+                "datePay = ?, STATUS_CREDITS = ? WHERE offer_CODE = ?";
+        List<Object[]> paramList = new ArrayList<>();
+        for (PayToShopReq req : reqs) {
+            java.sql.Date sqlDate = java.sql.Date.valueOf(req.getDatePay());
+            paramList.add(new Object[]{ sqlDate, "NO", req.getOffer_CODE() });
+        }
+        EBankJdbcTemplate.batchUpdate(sql, paramList);
+    }
+
+    private void insertCurrencyInKip(List<PayToShopReq> reqs) {
+        String sql = "INSERT INTO currency_in_kip (OFFER_CODE,TOTAL_MONEY,DATE,CUR,userId,branch_id) " +
+                "SELECT OFFER_CODE,Real_totalMoney,datePay,currency,userId,branch_id " +
+                "FROM OFFER_PAPER WHERE offer_CODE = ?";
+        List<Object[]> paramList = new ArrayList<>();
+        for (PayToShopReq req : reqs) {
+            paramList.add(new Object[]{
+                    req.getOffer_CODE(),
+                    req.getRealTotalMoney(),
+                    req.getDatePay(),
+                    req.getCur(),
+                    req.getUserId(),
+                    req.getOffer_CODE()
+            });
+        }
+
+        EBankJdbcTemplate.batchUpdate(sql, paramList);
+    }
 
     // save offer paper DAOs
     public int savePurchaseorderDao (PurchaseOrderReq purchaseOrderReq) {
