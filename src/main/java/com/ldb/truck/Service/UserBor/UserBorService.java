@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class UserBorService {
@@ -82,4 +83,19 @@ public class UserBorService {
         return response;
     }
 
-}
+    // show User
+        // ดึง user ทั้งหมด
+        public DataResponse getAllUsers() {
+            DataResponse response = new DataResponse();
+            try {
+                List<UserBorEntity> users = userBorRepository.findAllUsersNative();
+                response.setStatus("00");
+                response.setMessage("Success");
+                response.setDataResponse(users);
+            } catch (Exception e) {
+                response.setStatus("EE");
+                response.setMessage("Error: " + e.getMessage());
+            }
+            return response;
+        }
+    }

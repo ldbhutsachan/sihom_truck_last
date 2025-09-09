@@ -32,7 +32,7 @@ public interface UserBorRepository extends JpaRepository<UserBorEntity, Integer>
             @Param("saveById") String saveById,
             @Param("department") String department,
             @Param("spritRole") String spritRole,
-            @Param("borNo") Integer borNo
+            @Param("borNo") String borNo
     );
 
     //update userBor
@@ -55,7 +55,14 @@ public interface UserBorRepository extends JpaRepository<UserBorEntity, Integer>
             @Param("saveById") String saveById,
             @Param("department") String department,
             @Param("spritRole") String spritRole,
-            @Param("borNo") Integer borNo
+            @Param("borNo") String borNo
     );
+
+    //User showing
+
+        // ดึง user ทั้งหมด
+        @Query(value = "SELECT * FROM LOGIN", nativeQuery = true)
+        List<UserBorEntity> findAllUsersNative();
+
 
 }

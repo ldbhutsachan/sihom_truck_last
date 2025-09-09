@@ -42,8 +42,10 @@ public class UserBorEntity {
     @Column(name = "BRANCH")
     private String branch;
 
-    @Column(name = "saveById")
-    private String saveById;
+   @Column(name = "savebyid")   // ต้องตรงกับ DB จริง
+   private String saveById;     // ชื่อตัวแปร Java จะใช้ camelCase ได้
+
+
 
     @Column(name = "DEPARTMENT")
     private String department;
@@ -52,7 +54,7 @@ public class UserBorEntity {
     private String spritRole;
 
     @Column(name = "bor_no")
-    private Integer borNo;
+    private String borNo;
 }
 
 

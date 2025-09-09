@@ -27,4 +27,22 @@ public class userController {
         DataResponse response = userBorService.updateUser(user);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    //show user
+    @RestController
+    @RequestMapping("${base_url}")
+    @CrossOrigin(origins = "*")
+    public class UserController {
+
+        @Autowired
+        private UserBorService userBorService;
+
+        // Show all users
+        @GetMapping("/showAllUsers.service")
+        public ResponseEntity<DataResponse> showAllUsers() {
+            DataResponse response = userBorService.getAllUsers();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+    }
+
 }
