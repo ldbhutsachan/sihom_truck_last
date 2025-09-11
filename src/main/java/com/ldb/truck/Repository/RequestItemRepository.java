@@ -18,7 +18,7 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
     @Transactional//request_item_details
     @Query(value = "UPDATE request_item_details SET rejectby = :rejectby, " +
             "rejectDate =:rejectDate, status ='reject'  " +
-            "WHERE FIND_IN_SET(item_id, :itemId) and billNo=:billNo ", nativeQuery = true)
+            "WHERE FIND_IN_SET(item_id, :itemId) and bill_no=:billNo ", nativeQuery = true)
     int updateItemStatusById(
             @Param("rejectby") String rejectby,
             @Param("rejectDate") Date rejectDate,
@@ -55,13 +55,14 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
     @Transactional//request_item_details
     @Query(value = "UPDATE request_item_details SET approveby = :approveBy, " +
             "approvedate =:approveDate, status = :status  " +
-            "WHERE FIND_IN_SET(detail_id, :detailId)", nativeQuery = true)
+            "WHERE FIND_IN_SET(item_id, :itemId) and bill_no=:billNo ", nativeQuery = true)
     int approveRequestItem(
             @Param("approveBy") String approveBy,
             @Param("approveDate") Date approveDate,
             @Param("status") String status,
           //  @Param("beforeQty") Integer beforeQty,
-            @Param("detailId") String detailId); // Use String instead of List<Long>
+
+            @Param("itemId") Long itemId,@Param("billNo") String billNo); // Use String instead of List<Long>
 
     @Modifying
     @Transactional//request_item_details
@@ -99,8 +100,11 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
             @Param("status") String status,
             @Param("detailId") String detailId); // Use String instead of List<Long>
 
-    @Query(value = "SELECT * FROM request_item_details WHERE detail_id IN (:itemId)  ", nativeQuery = true)
-    List<RequestItemEbtity> findByItemId(@Param("itemId") List<Long> itemId);
+    @Query(value = "SELECT * FROM request_item_details WHERE detail_id IN (:itemId) and bill_no=:billNo  ", nativeQuery = true)
+    List<RequestItemEbtity> findByItemId(@Param("itemId") Long itemId,@Param("billNo") String billNo );
 
+
+    @Query(value = "SELECT * FROM request_item_details WHERE detail_id IN (:itemId) and bill_no=:billNo  ", nativeQuery = true)
+    List<RequestItemEbtity> findByItemId2(@Param("itemId") List<Long> itemId,@Param("billNo") String billNo );
 
 }

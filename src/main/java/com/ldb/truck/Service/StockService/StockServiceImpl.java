@@ -968,6 +968,11 @@ public class StockServiceImpl {
                 log.info("==START RETRY =====");
                 updated= retryTxn(request,userId,userName);
             }
+            else if("reject_buyer".equals(choiceStatus)){
+                //****i want reject when buyer  check no data
+                log.info("show :reject_buyer:"+ choiceStatus);
+                updated= retryTxnReject(request,userId,userName);
+            }
             else {
                 if ("wait".equals(status)) {
                     log.info("status:" + request.getStatus());
@@ -1309,7 +1314,8 @@ public class StockServiceImpl {
         }
         return 1;
 
-    } public int retryTxn(StockItemAuthReq request, String userId,String userName){
+    }
+    public int retryTxn(StockItemAuthReq request, String userId,String userName){
         log.info("====start service ====");
         //****let start other service
         List<OrderItemReportEntity> items = authConvert(request, userId);
@@ -1349,6 +1355,48 @@ public class StockServiceImpl {
             entity.setCreateDate(now);
             entity.setDetails(details);
             userHisRepository.save(entity);
+        }
+        return 1;
+
+    }
+    public int retryTxnReject(StockItemAuthReq request, String userId,String userName){
+        log.info("====start service ====");
+        //****let start other service
+        List<OrderItemReportEntity> items = authConvert(request, userId);
+        Date now = new Date();
+        log.info("Reject {} item(s) for billNo: {}", items.size(), request.getBillNo());
+        int updated = 0;
+        final String sql = "UPDATE order_item_details SET " +
+                "qty = ?," +
+                "price = ?," +
+                "status= ? , " +
+                "currency= ?, " +
+                "exchange_rate= ? " +
+                "WHERE item_id = ?  and bill_no=?  ";
+        for (OrderItemReportEntity item : items) {
+            log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
+            updated = EBankJdbcTemplate.update(
+                    sql,
+                    item.getQty(),
+                    item.getPrice(),
+                    item.getStatus(),
+                    item.getCurrency(),
+                    item.getExchangeRate(),
+                    item.getDetailId(),
+                    item.getBillNo()
+            );
+            log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
+          //  String details = item.getDetailId().toString();
+            //****let store log
+//            UserHisEntity entity = new UserHisEntity();
+//            entity.setId(UUID.randomUUID().toString());
+//            entity.setUser_id(userId);
+//            entity.setUserName(userName);
+//            entity.setDetailId(item.getDetailId());
+//            entity.setBillNo(item.getBillNo());
+//            entity.setCreateDate(now);
+//            entity.setDetails(details);
+//            userHisRepository.save(entity);
         }
         return 1;
 
@@ -1531,13 +1579,9 @@ public class StockServiceImpl {
         }
         return response;
     }
-    public void updateItemInTableItem(String itemId) {
-        List<Long> itemIdList = Arrays.stream(itemId.split(","))
-                .map(Long::valueOf)
-                .collect(Collectors.toList());
-        // Retrieve items from repository
-        log.info("itemIdList:"+itemIdList);
-        List<RequestItemEbtity> items = requestItemRepository.findByItemId(itemIdList);
+    public void updateItemInTableItem(Long itemId,String billNo) {
+
+        List<RequestItemEbtity> items = requestItemRepository.findByItemId(itemId,billNo);
         // Check if items list is null or empty
         if (items == null || items.isEmpty()) {
             log.warn("No items found for itemId: " + itemId);
@@ -1629,7 +1673,7 @@ public class StockServiceImpl {
         OrderAuthHeader groupHeader = new OrderAuthHeader();
         try {
             if("PADMIN".equals(role)){
-                    listData =orderAuthEntityRepository.getOrderByAdmin(status);
+                    listData =orderAuthEntityRepository.getOrderByAdmin(status);///
             }
             else if("USERSTOCK".equals(role)){
                 listData =orderAuthEntityRepository.getOrderAuthByBranchNoByMaker(branchNo,status,borNo);
@@ -1876,9 +1920,9 @@ public class StockServiceImpl {
     public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq) {
         log.info("show status:"+stockItemDetailsReq.getStatus());
         DataResponse response = new DataResponse();
-        String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
+//        String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
+//                .map(String::valueOf)
+//                .collect(Collectors.joining(","));
 
 
         try {
@@ -1914,15 +1958,13 @@ public class StockServiceImpl {
             else {
                 log.info("ok =====");
                 //=====let check product qty first
-                String itemId = detailIdsStr;
-
                 List<Long> itemIdList = stockItemDetailsReq.getDetailId().stream()
                         .map(RequestItemDetailsReq.OrderObject::getItemId)
                         .collect(Collectors.toList());
 
                 // Retrieve items from repository
                 log.info("=====start check item in stock first auth:"+itemIdList);
-                List<RequestItemEbtity> items = requestItemRepository.findByItemId(itemIdList);
+                List<RequestItemEbtity> items = requestItemRepository.findByItemId2(itemIdList,  stockItemDetailsReq.getBillNo());
                 for (RequestItemEbtity item : items) {
                     List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(item.getItemId());
 
@@ -1941,16 +1983,23 @@ public class StockServiceImpl {
 
                 }
                 //****
-                int updatedRows = requestItemRepository.approveRequestItem(
-                        stockItemDetailsReq.getUserId(),
-                        new Date(),
-                        stockItemDetailsReq.getStatus(),
-                        detailIdsStr
-                );
+                int updatedRows = 0;
+                for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+                     updatedRows = requestItemRepository.approveRequestItem(
+                            stockItemDetailsReq.getUserId(),
+                            new Date(),
+                            stockItemDetailsReq.getStatus(),
+                             item.getItemId(),
+                            stockItemDetailsReq.getBillNo()
+                    );
+                }
+
                 if (updatedRows > 0) {
                     if(stockItemDetailsReq.getStatus().equals("ok")){
                         log.info("=====start update item inventory=====");
-                        updateItemInTableItem(detailIdsStr);
+                        for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+                            updateItemInTableItem(item.getItemId(),stockItemDetailsReq.getBillNo());
+                        }
                     }
                     response.setStatus("00");
                     response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງສໍາເລັດ");
@@ -2653,25 +2702,23 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         String conReqTypeId = "";
         String conQuery = "";
         if(reqTypeId.equals("50")){
-
             //50 ທົ່ວໄປ
             conReqTypeId  = "\n AND req_id='"+reqTypeId+"'";
-            conQuery = "\nselect *  v_req_type where  1=1 ";
+            conQuery = "\nselect * from v_req_type where  1=1 ";
         }else if(reqTypeId.equals("51")) {
             //51 ຫົວເຈາະ
             //*****check addmin
             if(role.equals("PADMIN")){
                 conQuery = "select '51' req_id,a.mch_name req_name,a.mch_no bor_id,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
-                        "tb_bors b  on b.key_id=a.borNo where a.borNo='"+borId+"' and 1=1";
+                        "tb_bors b  on b.key_id=a.borNo where  1=1";
             }else {
                 //51 ຫົວເຈາະ
                 conQuery = "select '51' req_id,a.mch_name req_name,a.mch_no bor_id,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
-                        "tb_bors b  on b.key_id=a.borNo where a.borNo='"+borId+"' and 1=1";
+                        "tb_bors b  on b.key_id=a.borNo where a.borNo='"+borNo+"' and 1=1";
             }
-
         }
         else {
-            conQuery = "\nselect *  v_req_type where  1=1 ";
+            conQuery = "\n select * from  v_req_type where  1=1 ";
         }
         StringBuilder sb  = new StringBuilder();
         sb.append(conQuery);

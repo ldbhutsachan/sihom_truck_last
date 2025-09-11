@@ -9,50 +9,52 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 @Component
 public class MachineDao implements MachineInterface {
     @Autowired
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate JdbcTemplate;
-    StringBuilder  sb = new StringBuilder();
+
 
     @Override
     public List<Machine> getMachine(MachineRPReq machineRPReq) {
+        StringBuilder  sb = new StringBuilder();
         String mch_no = machineRPReq.getMch_no();
-        String borNo = machineRPReq.getBorNo();
-        String startDate = machineRPReq.getStartDate();
-        String endDate = machineRPReq.getEndDate();
-        String status = machineRPReq.getStatus();
+     //   String borNo = machineRPReq.getBorNo();
+//        String startDate = machineRPReq.getStartDate();
+//        String endDate = machineRPReq.getEndDate();
+//        String status = machineRPReq.getStatus();
         try {
             String conMchNo = null;
             String conBorNo = null;
             String conStartDate = null;
             String conStatus = null;
-            if(mch_no != null){
-                conMchNo = "\n AND mch_no ='"+mch_no+"'  ";
-            }
-            if(borNo != null){
-                conBorNo  ="\n AND borNo='"+borNo+"' ";
-            }
-            if(startDate != null){
-                conStartDate = "\n DATE_FORMAT(request_Date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(request_Date, '%Y-%m-%d')  <= '"+endDate+"'";
-            }
-            if(status != null){
-                conStatus = "\n status='"+status+"'";
-            }
+//            if(mch_no != null || mch_no.isEmpty() || mch_no.equals("")){
+//                conMchNo = "\n AND mch_no ='"+mch_no+"'  ";
+//            }
+//            if(borNo != null){
+//                conBorNo  ="\n AND borNo='"+borNo+"' ";
+//            }
+//            if(startDate != null || startDate.isEmpty()){
+//                conStartDate = "\n AND DATE_FORMAT(a.create_date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(a.create_date, '%Y-%m-%d')  <= '"+endDate+"'";
+//            }
+//            if(status != null){
+//                conStatus = "\n AND a.status='"+status+"'";
+//            }
             sb.append("select \n" +
                     "a.key_id,a.mch_no,a.mch_name,a.mch_branch_name,a.mch_model,a.mch_product_year,\n" +
                     "a.create_date,a.create_by,c.USER_LOGIN,c.`ROLE`,a.status\n" +
                     ",a.borNo,b.b_name borname,b.location borlocationnaem\n" +
                     "from tb_bors b inner join tb_machine a on b.key_id=a.borNo\n" +
-                    "LEFT join LOGIN c on  a.create_by =c.KEY_ID  where 1=1 ");
-            sb.append(conMchNo);
-            sb.append(conBorNo);
-            sb.append(conStartDate);
-            sb.append(status);
-            String sql = sb.toString();
+                    "LEFT join LOGIN c on  a.create_by =c.KEY_ID  where 1=1  ");
 
+         //   sb.append(conMchNo);
+           // sb.append(conBorNo);
+           // sb.append(conStartDate);
+          //  sb.append(conStatus);
+            String sql = sb.toString();
             return JdbcTemplate.query(sql, new RowMapper<Machine>() {
                 @Override
                 public Machine mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -83,6 +85,7 @@ public class MachineDao implements MachineInterface {
 
     @Override
     public List<MachineDetails> getReportMachineDetails(MachineRPReq machineRPReq) {
+        StringBuilder  sb = new StringBuilder();
         String mch_no = machineRPReq.getMch_no();
         String borNo = machineRPReq.getBorNo();
         String startDate = machineRPReq.getStartDate();
@@ -100,16 +103,16 @@ public class MachineDao implements MachineInterface {
                 conBorNo  ="\n AND borNo='"+borNo+"' ";
             }
             if(startDate != null){
-                conStartDate = "\n DATE_FORMAT(request_Date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(request_Date, '%Y-%m-%d')  <= '"+endDate+"'";
+                conStartDate = "\nAND DATE_FORMAT(request_Date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(request_Date, '%Y-%m-%d')  <= '"+endDate+"'";
             }
             if(status != null){
-                conStatus = "\n status='"+status+"'";
+                conStatus = "\n AND status='"+status+"'";
             }
             sb.append("SELECT * FROM rp_machine_detail where 1=1 ");
             sb.append(conMchNo);
             sb.append(conBorNo);
             sb.append(conStartDate);
-            sb.append(status);
+            sb.append(conStatus);
             String sql = sb.toString();
 
             return JdbcTemplate.query(sql, new RowMapper<MachineDetails>() {
@@ -148,6 +151,7 @@ public class MachineDao implements MachineInterface {
 
     @Override
     public List<MachineReport> getReportMachine(MachineRPReq machineRPReq) {
+        StringBuilder  sb = new StringBuilder();
         String mch_no = machineRPReq.getMch_no();
         String borNo = machineRPReq.getBorNo();
         String startDate = machineRPReq.getStartDate();
@@ -165,10 +169,10 @@ public class MachineDao implements MachineInterface {
                 conBorNo  ="\n AND borNo='"+borNo+"' ";
             }
             if(startDate != null){
-                conStartDate = "\n DATE_FORMAT(request_Date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(request_Date, '%Y-%m-%d')  <= '"+endDate+"'";
+                conStartDate = "\n AND DATE_FORMAT(request_Date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(request_Date, '%Y-%m-%d')  <= '"+endDate+"'";
             }
             if(status != null){
-                conStatus = "\n status='"+status+"'";
+                conStatus = "\n AND status='"+status+"'";
             }
             sb.append("SELECT \n" +
                     "mch_id, mch_no, mch_name, mch_branch_name, mch_model, mch_product_year,\n" +
@@ -216,10 +220,10 @@ public class MachineDao implements MachineInterface {
     @Override
     public int saveMachine(MachineReq machineReq) {
         try {
-            String sql = "INSERT INTO rp_machine_detail (" +
+            String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
                     "create_date, create_by, status, borNo) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
                    // machineReq.getKeyId(),
@@ -228,6 +232,7 @@ public class MachineDao implements MachineInterface {
                     machineReq.getMchBranchName(),
                     machineReq.getMchModel(),
                     machineReq.getMchProductYear(),
+                    new Date(),
                     machineReq.getCreateBy(),
                     machineReq.getStatus(),
                     machineReq.getBorNo()
@@ -242,13 +247,13 @@ public class MachineDao implements MachineInterface {
     @Override
     public int updateMachine(MachineReq machineReq) {
         try {
-            String sql = "UPDATE rp_machine_detail SET " +
+            String sql = "UPDATE tb_machine SET " +
                     "mch_no = ?, " +
                     "mch_name = ?, " +
                     "mch_branch_name = ?, " +
                     "mch_model = ?, " +
                     "mch_product_year = ?, " +
-                    "update_date = now(), " +
+                    "update_date = ?, " +
                     "update_by = ?, " +
                     "status = ?, " +
                     "borNo = ? " +
@@ -260,6 +265,7 @@ public class MachineDao implements MachineInterface {
                     machineReq.getMchBranchName(),
                     machineReq.getMchModel(),
                     machineReq.getMchProductYear(),
+                   new Date(),
                     machineReq.getCreateBy(),
                     machineReq.getStatus(),
                     machineReq.getBorNo(),
