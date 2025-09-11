@@ -426,14 +426,14 @@ public class StockProductController {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/approveRequestItem.service")
-    public ResponseEntity<?> approveRequestItem(@RequestBody StockItemDetailsReq stockItemDetailsReq){
+    public ResponseEntity<?> approveRequestItem(@RequestBody RequestItemDetailsReq stockItemDetailsReq){
         DataResponse response  = new DataResponse();
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = userProfiles.get(0).getUserName();
-        StockItemDetailsReq data = new StockItemDetailsReq();
+        RequestItemDetailsReq data = new RequestItemDetailsReq();
         data.setBillNo(stockItemDetailsReq.getBillNo());
         data.setStatus(stockItemDetailsReq.getStatus());
         data.setRemark(stockItemDetailsReq.getRemark());
@@ -531,7 +531,8 @@ public class StockProductController {
             }
             String borId = userProfiles.get(0).getBranchNo();
             String boNo = userProfiles.get(0).getBorNo();
-            response = stockService.getRequestItemByItemType(requestData,borId,boNo);
+            String role = userProfiles.get(0).getRole();
+            response = stockService.getRequestItemByItemType(requestData,borId,boNo,role);
             log.info("response :"+response.getDataResponse());
 
         }catch (Exception e){

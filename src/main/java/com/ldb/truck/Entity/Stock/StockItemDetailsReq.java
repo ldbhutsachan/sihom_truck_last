@@ -1,5 +1,6 @@
 package com.ldb.truck.Entity.Stock;
 
+import com.ldb.truck.Entity.OrderItem.OrderReqItem;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,4 +21,7 @@ public class StockItemDetailsReq {
     String pathApi;
     String role;
     List<Long> detailId;
+
 }
+
+

@@ -156,8 +156,8 @@ public class RequestTxnEntity {
     @Column(name = "reject_name", length = 200)
     private String reject_name;
 
-    @Column(name = "reject_date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date rejectDate;
+//    @Column(name = "reject_date")
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private Date rejectDate;
 
 }
