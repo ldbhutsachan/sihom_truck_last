@@ -72,6 +72,7 @@ public class StockServiceImpl {
 
     @Autowired
     ViewItemEntityRepository viewItemEntityRepository ;
+
     @Autowired
     PaymentDetailsEntityRepository paymentDetailsEntityRepository;
     @Autowired
@@ -1872,27 +1873,53 @@ public class StockServiceImpl {
     }
 
     @Transactional
-    public DataResponse approveRequestItem(StockItemDetailsReq stockItemDetailsReq) {
+    public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq) {
         log.info("show status:"+stockItemDetailsReq.getStatus());
         DataResponse response = new DataResponse();
         String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
+
+
         try {
             //=====then
-            if("reject".equals(stockItemDetailsReq.getStatus())){
-                log.info("=====let update reject data =====");
-                //let update remark
-                requestItemRepository.rejectItemRequestRemark (stockItemDetailsReq.getRemark(),stockItemDetailsReq.getBillNo());
+            boolean allRejected = stockItemDetailsReq.getDetailId().stream()
+                    .allMatch(item -> "reject".equalsIgnoreCase(item.getStatus()));
+
+            if (allRejected) {
+                log.info("=====reject =====");
                 //let update reject by who
-                requestItemRepository.rejectItemRequestByUser(stockItemDetailsReq.getUserId(),new Date(),
-                        stockItemDetailsReq.getRemark(),stockItemDetailsReq.getBillNo());
-            }else {
+                requestItemRepository.rejectItemRequestByUser(stockItemDetailsReq.getRemark(),
+                        stockItemDetailsReq.getBillNo());
+                //****call to reject item inRequest
+
+                int check = 0;
+                for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+                   check =  requestItemRepository.updateItemStatusById(
+                            stockItemDetailsReq.getUserId(),
+                            new Date(),
+                            item.getItemId(),
+                            stockItemDetailsReq.getBillNo()
+                    );
+                }
+                if (check > 0){
+                    response.setStatus("00");
+                    response.setMessage("Ready Reject Del OK ");
+                    return response;
+                }
+                response.setStatus("EE");
+                response.setMessage("Can't Reject this del No!!!!");
+                return response;
+            }
+            else {
+                log.info("ok =====");
                 //=====let check product qty first
                 String itemId = detailIdsStr;
-                List<Long> itemIdList = Arrays.stream(itemId.split(","))
-                        .map(Long::valueOf)
+
+                List<Long> itemIdList = stockItemDetailsReq.getDetailId().stream()
+                        .map(RequestItemDetailsReq.OrderObject::getItemId)
                         .collect(Collectors.toList());
+
                 // Retrieve items from repository
                 log.info("=====start check item in stock first auth:"+itemIdList);
                 List<RequestItemEbtity> items = requestItemRepository.findByItemId(itemIdList);
@@ -2597,12 +2624,12 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
 
     @Autowired
     requestItemTypeBorNameEntityRepository requestItemTypeBorNameEntityRepository;
-    public DataResponse getRequestItemByItemType(requestData requestData,String borId,String boNo){
+    public DataResponse getRequestItemByItemType(requestData requestData,String borId,String boNo,String role){
         log.info("borId:"+borId);
         log.info("info req:"+requestData.toString());
         DataResponse response = new DataResponse();
         try {
-            response.setDataResponse(getBor(boNo,requestData));
+            response.setDataResponse(getBor(boNo,requestData,role));
             if(response.getDataResponse() != null){
                 response.setStatus("00");
                 response.setMessage("success");
@@ -2618,24 +2645,40 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         return response;
     }
     //*********getBor
-    public List<requestItemTypeBorNameEntity> getBor(String borId,requestData requestData){
+    public List<requestItemTypeBorNameEntity> getBor(String borId,requestData requestData,String role){
         log.info("show bor:"+borId);
         String borNo = borId;
         String reqTypeId = requestData.getReqTypeId();
         String conBorNo = "";
         String conReqTypeId = "";
+        String conQuery = "";
+        if(reqTypeId.equals("50")){
 
-
-        if(!"".equals(reqTypeId)){
+            //50 ທົ່ວໄປ
             conReqTypeId  = "\n AND req_id='"+reqTypeId+"'";
-        }else {
-            conReqTypeId= "";
+            conQuery = "\nselect *  v_req_type where  1=1 ";
+        }else if(reqTypeId.equals("51")) {
+            //51 ຫົວເຈາະ
+            //*****check addmin
+            if(role.equals("PADMIN")){
+                conQuery = "select '51' req_id,a.mch_name req_name,a.mch_no bor_id,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
+                        "tb_bors b  on b.key_id=a.borNo where a.borNo='"+borId+"' and 1=1";
+            }else {
+                //51 ຫົວເຈາະ
+                conQuery = "select '51' req_id,a.mch_name req_name,a.mch_no bor_id,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
+                        "tb_bors b  on b.key_id=a.borNo where a.borNo='"+borId+"' and 1=1";
+            }
+
+        }
+        else {
+            conQuery = "\nselect *  v_req_type where  1=1 ";
         }
         StringBuilder sb  = new StringBuilder();
-        sb.append("select * from v_req_type where  1=1");
+        sb.append(conQuery);
         sb.append(conBorNo);
         sb.append(conReqTypeId);
         String sql = sb.toString();
+        log.info("sql bor and machine :"+ sql);
         return EBankJdbcTemplate.query(sql, new RowMapper<requestItemTypeBorNameEntity>() {
             @Override
             public requestItemTypeBorNameEntity mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -13,6 +13,18 @@ import java.util.List;
 
 @Repository
 public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,Long> {
+
+    @Modifying
+    @Transactional//request_item_details
+    @Query(value = "UPDATE request_item_details SET rejectby = :rejectby, " +
+            "rejectDate =:rejectDate, status ='reject'  " +
+            "WHERE FIND_IN_SET(item_id, :itemId) and billNo=:billNo ", nativeQuery = true)
+    int updateItemStatusById(
+            @Param("rejectby") String rejectby,
+            @Param("rejectDate") Date rejectDate,
+            @Param("itemId") Long itemId,
+            @Param("billNo") String billNo); // Use String instead of List<Long>
+
     @Modifying
     @Transactional
     @Query("UPDATE RequestItemEbtity s SET s.billNo = :billNo, s.barcode = :barcode, s.itemId = :itemId, "
@@ -63,13 +75,10 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
 
     @Modifying
     @Transactional//request_item_details
-    @Query(value = "UPDATE request_item SET rejectBy = :rejectBy, " +
-            "rejectDate =:rejectDate, status = :status " +
+    @Query(value = "UPDATE request_item SET remark = :remark " +
             "WHERE FIND_IN_SET(bill_no, :billNo)", nativeQuery = true)
     int rejectItemRequestByUser(
-            @Param("rejectBy") String rejectBy,
-            @Param("rejectDate") Date rejectDate,
-            @Param("status") String status,
+            @Param("remark") String remark,
             @Param("billNo") String billNo); // Use String instead of List<Long>@Modifying
 
     @Transactional//request_item_details
