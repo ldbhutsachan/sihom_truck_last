@@ -77,12 +77,13 @@ public class RequestItemEbtity {
     @Column(name = "note")
     private String note;
 
+    @Column(name = "using_status", length = 200)
+    private String using_status;
 
 
-//    @Column(name = "rejectby", length = 200)
-//    private String rejectby;
-//
-//    @Column(name = "rejectDate")
-//    @Temporal(TemporalType.TIMESTAMP)
-//    private Date rejectDate;
+    @Column(name = "using_date", length = 200)
+    private Date using_date;
+
+    @Column(name = "using_by", length = 200)
+    private String usingBy;
 }

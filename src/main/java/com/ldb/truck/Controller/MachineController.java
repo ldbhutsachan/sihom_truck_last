@@ -23,6 +23,120 @@ private final  MachineService MACHINE_SERVICE;
     }
 
     @CrossOrigin(origins = "*")
+    @PostMapping("/acceptMachineHis.service")
+    public ResponseEntity<?>  acceptMachineHis(@RequestBody AceptItemReq machineRPReq){
+        MachineResponse response = new MachineResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userName = userProfiles.get(0).getUserName();
+        log.info("show role"+ userName);
+        try {
+            response = MACHINE_SERVICE.aceptMachineHis(machineRPReq,userName);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/saveMachineHis.service")
+    public ResponseEntity<?>  saveMachineHis(@RequestBody MachineHisReq machineRPReq){
+        MachineResponse response = new MachineResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userName = userProfiles.get(0).getUserName();
+        log.info("show role"+ userName);
+        try {
+            response = MACHINE_SERVICE.saveMachineHis(machineRPReq,userName);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateMachineHis.service")
+    public ResponseEntity<?>  updateMachineHis(@RequestBody MachineHisReq machineRPReq){
+        MachineResponse response = new MachineResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userName = userProfiles.get(0).getUserName();
+        log.info("show role"+ userName);
+        try {
+            response = MACHINE_SERVICE.updateMachineHis(machineRPReq,userName);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+ @CrossOrigin(origins = "*")
+    @PostMapping("/enableMachineHis.service")
+    public ResponseEntity<?>  enableMachineHis(@RequestBody MachineHisReq machineRPReq){
+        MachineResponse response = new MachineResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String userName = userProfiles.get(0).getUserName();
+        log.info("show role"+ userName);
+        try {
+            response = MACHINE_SERVICE.enableMachineHis(machineRPReq,userName);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getMachineHis.service")
+    public ResponseEntity<?>  getMachineHis(@RequestBody MachineHisReq machineRPReq){
+        MachineHisResponse response = new MachineHisResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String role = userProfiles.get(0).getRole();
+        String borNo = userProfiles.get(0).getBorNo();
+        log.info("show role"+ role);
+        try {
+            response = MACHINE_SERVICE.getMachineHis(machineRPReq,borNo);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getRequestItemList.service")
+    public ResponseEntity<?>  getRequestItemList(@RequestBody MachineStockDetailsReq machineRPReq){
+        MachineStockDetailsResponse response = new MachineStockDetailsResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String role = userProfiles.get(0).getRole();
+        String borNo = userProfiles.get(0).getBorNo();
+        log.info("show role"+ role);
+        try {
+            response = MACHINE_SERVICE.getRequestItemList(machineRPReq,borNo);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
     @PostMapping("/getMachine.service")
     public ResponseEntity<?>  getMachine(@RequestBody MachineRPReq machineRPReq){
         MachineResponse response = new MachineResponse();
