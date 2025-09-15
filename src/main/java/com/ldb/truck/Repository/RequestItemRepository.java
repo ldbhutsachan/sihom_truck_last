@@ -14,6 +14,11 @@ import java.util.List;
 @Repository
 public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,Long> {
 
+
+    @Query(value = "SELECT * FROM request_item_details WHERE bill_no = :billNo AND item_id IN :itemId ORDER BY savedate DESC", nativeQuery = true)
+    List<RequestItemEbtity> findByKeyIdRequest(@Param("billNo") String billNo, @Param("itemId") List<Integer> itemId);
+
+
     @Modifying
     @Transactional//request_item_details
     @Query(value = "UPDATE request_item_details SET rejectby = :rejectby, " +

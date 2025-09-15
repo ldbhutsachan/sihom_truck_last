@@ -25,6 +25,6 @@ public interface OrderAuthEntityRepository extends CrudRepository<OrderAuthEntit
     @Query(value = "select * from v_order_item where status=:status order by status desc ", nativeQuery = true)
     List<OrderAuthEntity> getOrderAuthByAccounting(@Param("status") String status);
 
-    @Query(value = "select * from v_order_item  where status=:status order by status desc ", nativeQuery = true)
+    @Query(value = "select * from v_order_item   order by status desc ", nativeQuery = true)
     List<OrderAuthEntity> getOrderByAdmin(@Param("status") String status);
 }

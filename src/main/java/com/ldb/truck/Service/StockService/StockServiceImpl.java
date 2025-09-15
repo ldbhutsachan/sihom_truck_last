@@ -680,8 +680,9 @@ public class StockServiceImpl {
 
                 groupHeader.setThbAmount(numfm.format(totalThb));
 
+
                 groupHeader.setStatus(listData.stream()
-                        .filter(p -> bill.equals(p.getBillNo()))
+                        .filter(p -> bill.equals(p.getBillNo()) && !p.getStatus().equals("reject_buyer") && !p.getStatus().equals("reject"))
                         .map(V_order_item_details::getStatus)
                         .findFirst()
                         .orElse(""));
@@ -1714,7 +1715,7 @@ public class StockServiceImpl {
                 Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderAuthEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
                 groupHeader.setAmount(numfm.format(total));
 
-                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill) && !p.getStatus().equals("reject_buyer")).map(OrderAuthEntity::getStatus).findFirst().orElse(""));
+                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill) && !p.getStatus().equals("reject_buyer") && !p.getStatus().equals("reject")).map(OrderAuthEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
                 List<OrderAuthEntity> groupListData = new ArrayList<>();
                 for(OrderAuthEntity listStockTxn :  listData){
@@ -1924,11 +1925,6 @@ public class StockServiceImpl {
     public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq) {
         log.info("show status:"+stockItemDetailsReq.getStatus());
         DataResponse response = new DataResponse();
-//        String detailIdsStr = stockItemDetailsReq.getDetailId().stream()
-//                .map(String::valueOf)
-//                .collect(Collectors.joining(","));
-
-
         try {
             //=====then
             boolean allRejected = stockItemDetailsReq.getDetailId().stream()

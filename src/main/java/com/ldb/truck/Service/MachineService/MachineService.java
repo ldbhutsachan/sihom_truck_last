@@ -3,7 +3,6 @@ package com.ldb.truck.Service.MachineService;
 import com.ldb.truck.Dao.MachineDao.MachineInterface;
 import com.ldb.truck.Model.Machine.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,8 +11,168 @@ import java.util.List;
 @Service
 @Slf4j
 public class MachineService {
-    @Autowired
-    MachineInterface machineInterface;
+    private final MachineInterface machineInterface;
+
+    public MachineService(MachineInterface machineInterface) {
+        this.machineInterface = machineInterface;
+    }
+
+    public MachineResponse saveMachineHis(MachineHisReq machineHisReq,String userName){
+        MachineResponse response = new MachineResponse();
+        try {
+            int check  = machineInterface.saveMachinedaily(machineHisReq,userName);
+            if(check >= 1 ){
+                response.setStatus("00");
+                response.setMessage("OK");
+                response.setData(null);
+                return response;
+            }
+            response.setStatus("00");
+            response.setMessage("Can't Save Data !!!!");
+            response.setData(null);
+            return response;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            response.setStatus("00");
+            response.setMessage("Error Can't Save Data !!!!");
+            response.setData(null);
+            //return response;
+        }
+
+        return response;
+    }
+    public MachineResponse aceptMachineHis(AceptItemReq machineHisReq,String userName){
+        MachineResponse response = new MachineResponse();
+        try {
+            int check  = machineInterface.acceptItem(machineHisReq,userName);
+            if(check >= 1 ){
+                response.setStatus("00");
+                response.setMessage("OK");
+                response.setData(null);
+                return response;
+            }
+            response.setStatus("00");
+            response.setMessage("Can't Accept Data !!!!");
+            response.setData(null);
+            return response;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            response.setStatus("00");
+            response.setMessage("Error Can't Accept Data !!!!");
+            response.setData(null);
+            //return response;
+        }
+
+        return response;
+    }
+    public MachineResponse updateMachineHis(MachineHisReq machineHisReq,String userName){
+        MachineResponse response = new MachineResponse();
+        try {
+            int check  = machineInterface.updateMachinedaily(machineHisReq);
+            if(check == 1  ){
+                response.setStatus("00");
+                response.setMessage("OK");
+                response.setData(null);
+                return response;
+            }
+            else if(check == 2){
+                response.setStatus("00");
+                response.setMessage("You're data is Error!!!!");
+                response.setData(null);
+                return response;
+            }
+            response.setStatus("00");
+            response.setMessage("Can't update Data !!!!");
+            response.setData(null);
+            return response;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            response.setStatus("00");
+            response.setMessage("Error Can't update Data !!!!");
+            response.setData(null);
+        }
+
+        return response;
+    }
+
+    public MachineResponse enableMachineHis(MachineHisReq machineHisReq,String userName){
+        MachineResponse response = new MachineResponse();
+        try {
+            int check  = machineInterface.enableMachinedaily(machineHisReq);
+            if(check == 1  ){
+                response.setStatus("00");
+                response.setMessage("OK");
+                response.setData(null);
+                return response;
+            }
+            else if(check == 2){
+                response.setStatus("00");
+                response.setMessage("You're data is Error!!!!");
+                response.setData(null);
+                return response;
+            }
+            response.setStatus("00");
+            response.setMessage("Can't update Data !!!!");
+            response.setData(null);
+            return response;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            response.setStatus("00");
+            response.setMessage("Error Can't update Data !!!!");
+            response.setData(null);
+            //return response;
+        }
+
+        return response;
+    }
+    public MachineHisResponse getMachineHis(MachineHisReq machineHisReq,String borNo){
+        MachineHisResponse response = new MachineHisResponse();
+
+        try {
+            List<MachineHis> rspList = machineInterface.getMachineHis(machineHisReq,borNo);
+
+            if (rspList != null && !rspList.isEmpty()){
+                response.setData(rspList);
+                response.setMessage("OK");
+                response.setStatus("00");
+            }
+            response.setData(null);
+            response.setMessage("Do not data not found !!!!!");
+            response.setStatus("00");
+
+        }catch (Exception e){
+            response.setData(null);
+            response.setMessage("Error !!!!!");
+            response.setStatus("05");
+            e.printStackTrace();
+        }
+        return  response;
+
+    }
+    public MachineStockDetailsResponse getRequestItemList(MachineStockDetailsReq machineHisReq,String borNo){
+        MachineStockDetailsResponse response = new MachineStockDetailsResponse();
+
+        try {
+            List<MachineStockDetails> rspList = machineInterface.getRequestItemList(machineHisReq,borNo);
+
+            response.setData(rspList);
+            response.setMessage("OK");
+            response.setStatus("00");
+
+        }catch (Exception e){
+            response.setData(null);
+            response.setMessage("Error !!!!!");
+            response.setStatus("05");
+            e.printStackTrace();
+        }
+        return  response;
+
+    }
+
     public MachineResponse getMachine(MachineRPReq machineRPReq,String role,String borNo) {
         String mesTime1 = "OK";
         String mesTime2 = "LOW";
@@ -176,6 +335,7 @@ public class MachineService {
 
         return response;
     }
+
     public MachineReportResposne updateMachine(MachineReq machineReq) {
         MachineReportResposne response = new MachineReportResposne();
         try {

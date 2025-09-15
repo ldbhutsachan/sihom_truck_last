@@ -5,6 +5,13 @@ import com.ldb.truck.Model.Machine.*;
 import java.util.List;
 
 public interface MachineInterface {
+  public int acceptItem(AceptItemReq req,String userName);
+
+  public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req,String borNo);
+  public List<MachineHis> getMachineHis(MachineHisReq machineHisReq,String borNo);
+  public int saveMachinedaily(MachineHisReq machineHisReq,String userName);
+  public int updateMachinedaily(MachineHisReq machineHisReq);
+  public int enableMachinedaily(MachineHisReq machineHisReq);
   public List<Machine> getMachineByMerchantNo(MachineReq machineRPReq);
   public List<Machine> getMachine(MachineRPReq machineRPReq,String role, String borNo);
   public List<MachineDetails> getReportMachineDetails(MachineRPReq machineRPReq ,String role ,String borNo);
