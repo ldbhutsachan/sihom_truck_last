@@ -1,58 +1,82 @@
 package com.ldb.truck.Controller;
 
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Machine.*;
 import com.ldb.truck.Service.MachineService.MachineService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+@Slf4j
 @RestController
 @RequestMapping("${base_url}")
 public class MachineController {
+private final ProfileDao profileDao;
 private final  MachineService MACHINE_SERVICE;
 
-    public MachineController(MachineService machineService) {
+    public MachineController(ProfileDao profileDao, MachineService machineService) {
+        this.profileDao = profileDao;
         MACHINE_SERVICE = machineService;
     }
 
     @CrossOrigin(origins = "*")
     @PostMapping("/getMachine.service")
-    public MachineResponse getMachine(@RequestBody MachineRPReq machineRPReq){
-        MachineResponse result = new MachineResponse();
-        try {
-            result = MACHINE_SERVICE.getMachine(machineRPReq);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setStatus("01");
-            result.setMessage("Error !!");
-            return result;
+    public ResponseEntity<?>  getMachine(@RequestBody MachineRPReq machineRPReq){
+        MachineResponse response = new MachineResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return result;
-    } @CrossOrigin(origins = "*")
+        String role = userProfiles.get(0).getRole();
+        String borNo = userProfiles.get(0).getBorNo();
+        log.info("show role"+ role);
+        try {
+            response = MACHINE_SERVICE.getMachine(machineRPReq,role,borNo);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
     @PostMapping("/getReportMachineDetail.service")
-    public MachineDetailsResponse getReportMachineDetail(@RequestBody MachineRPReq machineRPReq){
-        MachineDetailsResponse result = new MachineDetailsResponse();
-        try {
-            result = MACHINE_SERVICE.getReportMachineDetail(machineRPReq);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setStatus("01");
-            result.setMessage("Error !!");
-            return result;
+    public ResponseEntity<?>  getReportMachineDetail(@RequestBody MachineRPReq machineRPReq){
+        MachineDetailsResponse response = new MachineDetailsResponse();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return result;
+        String role = userProfiles.get(0).getRole();
+        String borNo = userProfiles.get(0).getBorNo();
+        try {
+            response = MACHINE_SERVICE.getReportMachineDetail(machineRPReq,role,borNo);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getReportMachineSum.service")
-    public MachineReportResposne getReportMachineSum(@RequestBody MachineRPReq machineRPReq){
-        MachineReportResposne result = new MachineReportResposne();
-        try {
-            result = MACHINE_SERVICE.getReportMachineSum(machineRPReq);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setStatus("01");
-            result.setMessage("Error !!");
-            return result;
+    public ResponseEntity<?> getReportMachineSum(@RequestBody MachineRPReq machineRPReq){
+        MachineReportResposne response = new MachineReportResposne();
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return result;
+        String role = userProfiles.get(0).getRole();
+        String borNo = userProfiles.get(0).getBorNo();
+        try {
+            response = MACHINE_SERVICE.getReportMachineSum(machineRPReq,role,borNo);
+        }catch (Exception e){
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @CrossOrigin(origins = "*")

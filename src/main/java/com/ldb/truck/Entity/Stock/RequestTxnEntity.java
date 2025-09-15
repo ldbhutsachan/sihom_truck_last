@@ -141,7 +141,10 @@ public class RequestTxnEntity {
 
 
     @Column(name = "b_name", length = 200)
-    private String typeName;
+    private String machineName;
+
+    @Column(name = "use_no", length = 200)
+    private String machineNo;
 
     @Column(name = "blocation", length = 200)
     private String blocation;
@@ -155,6 +158,9 @@ public class RequestTxnEntity {
 
     @Column(name = "reject_name", length = 200)
     private String reject_name;
+
+
+
 
 //    @Column(name = "reject_date")
 //    @Temporal(TemporalType.TIMESTAMP)

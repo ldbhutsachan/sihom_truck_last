@@ -1,6 +1,7 @@
 package com.ldb.truck.Dao.MachineDao;
 
 import com.ldb.truck.Model.Machine.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 @Component
+@Slf4j
 public class MachineDao implements MachineInterface {
     @Autowired
     @Qualifier("EBankJdbcTemplate")
@@ -19,42 +21,54 @@ public class MachineDao implements MachineInterface {
 
 
     @Override
-    public List<Machine> getMachine(MachineRPReq machineRPReq) {
+    public List<Machine> getMachineByMerchantNo(MachineReq machineRPReq) {
         StringBuilder  sb = new StringBuilder();
-        String mch_no = machineRPReq.getMch_no();
-     //   String borNo = machineRPReq.getBorNo();
-//        String startDate = machineRPReq.getStartDate();
-//        String endDate = machineRPReq.getEndDate();
-//        String status = machineRPReq.getStatus();
+        String merNo = machineRPReq.getMchNo();
         try {
-            String conMchNo = null;
-            String conBorNo = null;
-            String conStartDate = null;
-            String conStatus = null;
-//            if(mch_no != null || mch_no.isEmpty() || mch_no.equals("")){
-//                conMchNo = "\n AND mch_no ='"+mch_no+"'  ";
-//            }
-//            if(borNo != null){
-//                conBorNo  ="\n AND borNo='"+borNo+"' ";
-//            }
-//            if(startDate != null || startDate.isEmpty()){
-//                conStartDate = "\n AND DATE_FORMAT(a.create_date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(a.create_date, '%Y-%m-%d')  <= '"+endDate+"'";
-//            }
-//            if(status != null){
-//                conStatus = "\n AND a.status='"+status+"'";
-//            }
-            sb.append("select \n" +
-                    "a.key_id,a.mch_no,a.mch_name,a.mch_branch_name,a.mch_model,a.mch_product_year,\n" +
-                    "a.create_date,a.create_by,c.USER_LOGIN,c.`ROLE`,a.status\n" +
-                    ",a.borNo,b.b_name borname,b.location borlocationnaem\n" +
-                    "from tb_bors b inner join tb_machine a on b.key_id=a.borNo\n" +
-                    "LEFT join LOGIN c on  a.create_by =c.KEY_ID  where 1=1  ");
+            String conMchNo =  "\n AND a.mch_no ='"+merNo+"'  ";
+            sb.append("SELECT\n" +
+                    "    a.key_id,\n" +
+                    "    a.mch_no,\n" +
+                    "    a.mch_name,\n" +
+                    "    a.mch_branch_name,\n" +
+                    "    a.mch_model,\n" +
+                    "    a.mch_product_year,\n" +
+                    "    a.create_date,\n" +
+                    "    a.create_by,\n" +
+                    "    c.USER_LOGIN,\n" +
+                    "    c.ROLE,\n" +
+                    "    a.status,\n" +
+                    "    a.borNo,\n" +
+                    "    b.b_name AS borname,\n" +
+                    "    b.location borlocationnaem,\n" +
+                    "    a.time_fix,\n" +
+                    "    a.time_fix_monitor,\n" +
+                    "    a.time_oil_fix,\n" +
+                    "    a.time_oil_fix_mo,\n" +
+                    "    \n" +
+                    "    -- Use COALESCE to return 0 if the sum is null\n" +
+                    "    (a.time_fix - \n" +
+                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
+                    "               FROM tb_machine_his ss \n" +
+                    "               WHERE ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n" +
+                    "\n" +
+                    "    (a.time_oil_fix - \n" +
+                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
+                    "               FROM tb_machine_his ss \n" +
+                    "               WHERE ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n" +
+                    "\n" +
+                    "FROM \n" +
+                    "    tb_bors b \n" +
+                    "INNER JOIN \n" +
+                    "    tb_machine a ON b.key_id = a.borNo\n" +
+                    "LEFT JOIN \n" +
+                    "    LOGIN c ON a.create_by = c.KEY_ID  \n" +
+                    "WHERE \n" +
+                    "    1 = 1 ");
 
-         //   sb.append(conMchNo);
-           // sb.append(conBorNo);
-           // sb.append(conStartDate);
-          //  sb.append(conStatus);
+            sb.append(conMchNo);
             String sql = sb.toString();
+            log.info("sql:"+sql);
             return JdbcTemplate.query(sql, new RowMapper<Machine>() {
                 @Override
                 public Machine mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -73,6 +87,17 @@ public class MachineDao implements MachineInterface {
                     tr.setBorNo(rs.getString("borNo"));
                     tr.setBorName(rs.getString("borname"));
                     tr.setBorLocationName(rs.getString("borlocationnaem"));
+
+
+                    tr.setTime_fix(rs.getInt("time_fix"));
+                    tr.setTime_fix_monitor(rs.getInt("time_fix_monitor"));
+
+                    tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
+                    tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
+
+                    tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
+                    tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
+
                     return tr;
                 }
             });
@@ -84,10 +109,114 @@ public class MachineDao implements MachineInterface {
     }
 
     @Override
-    public List<MachineDetails> getReportMachineDetails(MachineRPReq machineRPReq) {
+    public List<Machine> getMachine(MachineRPReq machineRPReq,String role, String borNo) {
         StringBuilder  sb = new StringBuilder();
-        String mch_no = machineRPReq.getMch_no();
-        String borNo = machineRPReq.getBorNo();
+        String merNo = machineRPReq.getMerNo();
+        try {
+            String conMchNo = null;
+            String conAdmin = null;
+            String conOrder = "\n  order by a.key_id desc";
+
+            if (merNo == null || merNo.isEmpty()) {
+                conMchNo = "";
+            } else {
+                conMchNo = "\n AND a.mch_no ='"+merNo+"'  ";
+            }
+            //******ກວດສິດການ query  serch by borNo
+            if(!role.equals("PADMIN")){
+                conAdmin = "\n AND a.borNo='"+borNo+"' ";
+            }else {
+                conAdmin= "";
+            }
+            sb.append("SELECT\n" +
+                    "    a.key_id,\n" +
+                    "    a.mch_no,\n" +
+                    "    a.mch_name,\n" +
+                    "    a.mch_branch_name,\n" +
+                    "    a.mch_model,\n" +
+                    "    a.mch_product_year,\n" +
+                    "    a.create_date,\n" +
+                    "    a.create_by,\n" +
+                    "    c.USER_LOGIN,\n" +
+                    "    c.ROLE,\n" +
+                    "    a.status,\n" +
+                    "    a.borNo,\n" +
+                    "    b.b_name AS borname,\n" +
+                    "    b.location borlocationnaem,\n" +
+                    "    a.time_fix,\n" +
+                    "    a.time_fix_monitor,\n" +
+                    "    a.time_oil_fix,\n" +
+                    "    a.time_oil_fix_mo,\n" +
+                    "    \n" +
+                    "    -- Use COALESCE to return 0 if the sum is null\n" +
+                    "    (a.time_fix - \n" +
+                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
+                    "               FROM tb_machine_his ss \n" +
+                    "               WHERE ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n" +
+                    "\n" +
+                    "    (a.time_oil_fix - \n" +
+                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
+                    "               FROM tb_machine_his ss \n" +
+                    "               WHERE ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n" +
+                    "\n" +
+                    "FROM \n" +
+                    "    tb_bors b \n" +
+                    "INNER JOIN \n" +
+                    "    tb_machine a ON b.key_id = a.borNo\n" +
+                    "LEFT JOIN \n" +
+                    "    LOGIN c ON a.create_by = c.KEY_ID  \n" +
+                    "WHERE \n" +
+                    "    1 = 1 ");
+
+            sb.append(conMchNo);
+            sb.append(conAdmin);
+            sb.append(conOrder);
+
+            String sql = sb.toString();
+            log.info("sql:"+sql);
+            return JdbcTemplate.query(sql, new RowMapper<Machine>() {
+                @Override
+                public Machine mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Machine tr = new Machine();
+                    tr.setKeyId(rs.getInt("key_id"));
+                    tr.setMchNo(rs.getString("mch_no"));
+                    tr.setMchName(rs.getString("mch_name"));
+                    tr.setMchBranchName(rs.getString("mch_branch_name"));
+                    tr.setMchModel(rs.getString("mch_model"));
+                    tr.setMchProductYear(rs.getString("mch_product_year"));
+                    tr.setCreateDate(rs.getTimestamp("create_date").toLocalDateTime());
+                    tr.setCreateBy(rs.getString("create_by"));
+                    tr.setUserLogin(rs.getString("USER_LOGIN"));
+                    tr.setRole(rs.getString("ROLE"));
+                    tr.setStatus(rs.getString("status"));
+                    tr.setBorNo(rs.getString("borNo"));
+                    tr.setBorName(rs.getString("borname"));
+                    tr.setBorLocationName(rs.getString("borlocationnaem"));
+
+
+                    tr.setTime_fix(rs.getInt("time_fix"));
+                    tr.setTime_fix_monitor(rs.getInt("time_fix_monitor"));
+
+                    tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
+                    tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
+
+                    tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
+                    tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
+
+                    return tr;
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public List<MachineDetails> getReportMachineDetails(MachineRPReq machineRPReq,String role ,String borNo) {
+        StringBuilder  sb = new StringBuilder();
+        String mch_no = machineRPReq.getMerNo();
         String startDate = machineRPReq.getStartDate();
         String endDate = machineRPReq.getEndDate();
         String status = machineRPReq.getStatus();
@@ -96,16 +225,24 @@ public class MachineDao implements MachineInterface {
             String conBorNo = null;
             String conStartDate = null;
             String conStatus = null;
-            if(mch_no != null){
+            if(mch_no == null || mch_no.isEmpty()){
+                conMchNo = "";
+            }else {
                 conMchNo = "\n AND mch_no ='"+mch_no+"'  ";
             }
-            if(borNo != null){
+            if(borNo.isEmpty() || borNo == null){
+                conBorNo = "";
+            }else {
                 conBorNo  ="\n AND borNo='"+borNo+"' ";
             }
-            if(startDate != null){
+            if(startDate == null || startDate.isEmpty()){
+                conStartDate = "";
+            }else {
                 conStartDate = "\nAND DATE_FORMAT(request_Date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(request_Date, '%Y-%m-%d')  <= '"+endDate+"'";
             }
-            if(status != null){
+            if(status.isEmpty() || status == null){
+                conStatus = "";
+            }else {
                 conStatus = "\n AND status='"+status+"'";
             }
             sb.append("SELECT * FROM rp_machine_detail where 1=1 ");
@@ -114,6 +251,7 @@ public class MachineDao implements MachineInterface {
             sb.append(conStartDate);
             sb.append(conStatus);
             String sql = sb.toString();
+
 
             return JdbcTemplate.query(sql, new RowMapper<MachineDetails>() {
                 @Override
@@ -150,10 +288,9 @@ public class MachineDao implements MachineInterface {
     }
 
     @Override
-    public List<MachineReport> getReportMachine(MachineRPReq machineRPReq) {
+    public List<MachineReport> getReportMachine(MachineRPReq machineRPReq,String role,String borNo) {
         StringBuilder  sb = new StringBuilder();
-        String mch_no = machineRPReq.getMch_no();
-        String borNo = machineRPReq.getBorNo();
+        String mchNo = machineRPReq.getMerNo();
         String startDate = machineRPReq.getStartDate();
         String endDate = machineRPReq.getEndDate();
         String status = machineRPReq.getStatus();
@@ -162,16 +299,25 @@ public class MachineDao implements MachineInterface {
             String conBorNo = null;
             String conStartDate = null;
             String conStatus = null;
-            if(mch_no != null){
-                conMchNo = "\n AND mch_no ='"+mch_no+"'  ";
+            if (mchNo == null || mchNo.isEmpty()) {
+                conMchNo = "";
+            }else {
+                conMchNo = "\n AND mch_no ='"+mchNo+"'  ";
             }
-            if(borNo != null){
+            if (borNo == null || borNo.isEmpty()) {
+                conBorNo = "";
+            }else {
                 conBorNo  ="\n AND borNo='"+borNo+"' ";
             }
-            if(startDate != null){
+            if (startDate == null || startDate.isEmpty()) {
+                conStartDate = "";
+            }else {
                 conStartDate = "\n AND DATE_FORMAT(request_Date, '%Y-%m-%d') >= '"+startDate+"'  AND DATE_FORMAT(request_Date, '%Y-%m-%d')  <= '"+endDate+"'";
             }
-            if(status != null){
+
+            if (status == null || status.isEmpty()) {
+                conStatus = "";
+            }else {
                 conStatus = "\n AND status='"+status+"'";
             }
             sb.append("SELECT \n" +
@@ -187,6 +333,7 @@ public class MachineDao implements MachineInterface {
             sb.append(conStartDate);
             sb.append(conStatus);
             String sql = sb.toString();
+            log.info("reposrt :"+ sql);
             return JdbcTemplate.query(sql, new RowMapper<MachineReport>() {
                 @Override
                 public MachineReport mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -222,8 +369,8 @@ public class MachineDao implements MachineInterface {
         try {
             String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-                    "create_date, create_by, status, borNo) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "create_date, create_by, status, borNo,time_fix,time_fix_monitor,time_oil_fix,time_oil_fix_mo) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
                    // machineReq.getKeyId(),
@@ -235,7 +382,12 @@ public class MachineDao implements MachineInterface {
                     new Date(),
                     machineReq.getCreateBy(),
                     machineReq.getStatus(),
-                    machineReq.getBorNo()
+                    machineReq.getBorNo(),
+
+                    machineReq.getTime_fix(),
+                    machineReq.getTime_fix_monitor(),
+                    machineReq.getTime_oil_fix(),
+                    machineReq.getTime_oil_fix_mo()
             );
 
         } catch (Exception e) {
@@ -256,7 +408,11 @@ public class MachineDao implements MachineInterface {
                     "update_date = ?, " +
                     "update_by = ?, " +
                     "status = ?, " +
-                    "borNo = ? " +
+                    "borNo = ? , " +
+                    "time_fix=?," +
+                    "time_fix_monitor=?," +
+                    "time_oil_fix=?," +
+                    "time_oil_fix_mo=? " +
                     "WHERE key_id = ?";
 
             return JdbcTemplate.update(sql,
@@ -269,6 +425,12 @@ public class MachineDao implements MachineInterface {
                     machineReq.getCreateBy(),
                     machineReq.getStatus(),
                     machineReq.getBorNo(),
+
+                    machineReq.getTime_fix(),
+                    machineReq.getTime_fix_monitor(),
+                    machineReq.getTime_oil_fix(),
+                    machineReq.getTime_oil_fix_mo(),
+
                     machineReq.getKeyId()
             );
 

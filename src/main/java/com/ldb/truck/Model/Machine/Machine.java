@@ -20,4 +20,17 @@ public class Machine {
     private String borNo;
     private String borName;
     private String borLocationName;
+  //  a.,a.time_fix_monitor,a.time_oil_fix,a.time_oil_fix_mo
+    private Integer time_fix;
+    private Integer time_fix_monitor;
+
+    private Integer time_oil_fix;
+    private Integer time_oil_fix_mo;
+
+    private Integer totalFixMo;
+    private Integer totalFixMoOil;
+
+
+    private String status_mo;
+    private String status_oil_mo;
 }
