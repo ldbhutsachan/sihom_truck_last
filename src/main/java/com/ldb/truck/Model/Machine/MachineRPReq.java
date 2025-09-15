@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class MachineRPReq {
     private String toKen;
-    private String mch_no;
+    private String merNo;
     private String borNo;
     private String startDate;
     private String endDate;

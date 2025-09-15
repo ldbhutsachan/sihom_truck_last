@@ -1694,6 +1694,9 @@ public class StockServiceImpl {
                     .map(OrderAuthEntity::getBillNo)
                     .distinct()
                     .collect(Collectors.toList());
+
+            // Collect distinct billNo values where status is not 'reject_buyer'
+
             for (String bill : billNoList){
                 groupHeader = new OrderAuthHeader();
                 groupHeader.setBillNo(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderAuthEntity::getBillNo).findFirst().orElse(""));
@@ -1711,7 +1714,7 @@ public class StockServiceImpl {
                 Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderAuthEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
                 groupHeader.setAmount(numfm.format(total));
 
-                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(OrderAuthEntity::getStatus).findFirst().orElse(""));
+                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill) && !p.getStatus().equals("reject_buyer")).map(OrderAuthEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
                 List<OrderAuthEntity> groupListData = new ArrayList<>();
                 for(OrderAuthEntity listStockTxn :  listData){
@@ -1846,6 +1849,7 @@ public class StockServiceImpl {
                 requestEntity.setSaveDate(new Date());
                 requestEntity.setSaveBy(userId);
                 requestItemEntityRepository.save(requestEntity);
+
                 response.setDataResponse(savedEntities);
                 response.setStatus("00");
                 response.setMessage("Success");
@@ -2097,7 +2101,8 @@ public DataResponse checkKeyOrder(){
                 Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
 
                 groupHeader.setAmount(numfm.format(total));
-                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getStatus).findFirst().orElse(""));
+
+                groupHeader.setStatus(listData.stream().filter(p -> p.getBillNo().equals(bill) && !p.getStatus().equals("reject_buyer") && !p.getStatus().equals("reject")).map(RequestTxnEntity::getStatus).findFirst().orElse(""));
                 groupStockItemHeaders.add(groupHeader);
                 List<RequestTxnEntity> groupListData = new ArrayList<>();
                 for(RequestTxnEntity listStockTxn :  listData){

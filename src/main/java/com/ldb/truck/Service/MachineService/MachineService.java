@@ -2,26 +2,89 @@ package com.ldb.truck.Service.MachineService;
 
 import com.ldb.truck.Dao.MachineDao.MachineInterface;
 import com.ldb.truck.Model.Machine.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class MachineService {
     @Autowired
     MachineInterface machineInterface;
-    public MachineResponse getMachine(MachineRPReq machineRPReq) {
+    public MachineResponse getMachine(MachineRPReq machineRPReq,String role,String borNo) {
+        String mesTime1 = "OK";
+        String mesTime2 = "LOW";
+        String mesTime3 = "EP";
+        String totalMsg = "";
+        String totalMs2 = "";
         MachineResponse response = new MachineResponse();
+        List<Machine> data = new ArrayList<>();
+        List<Machine> dataRsp = new ArrayList<>();
         try {
-            List<Machine> data = machineInterface.getMachine(machineRPReq);
-            if (data != null && !data.isEmpty()) {
+             data = machineInterface.getMachine(machineRPReq,role,borNo);
+             for (Machine resp : data){
+                 Machine machine = new Machine();
+                 machine.setKeyId(resp.getKeyId());
+                 machine.setMchNo(resp.getMchNo());
+                 machine.setMchName(resp.getMchName());
+                 machine.setMchBranchName(resp.getMchBranchName());
+                 machine.setMchModel(resp.getMchModel());
+                 machine.setMchProductYear(resp.getMchProductYear());
+                 machine.setCreateDate(resp.getCreateDate());
+                 machine.setCreateBy(resp.getCreateBy());
+                 machine.setUserLogin(resp.getUserLogin());
+                 machine.setRole(resp.getRole());
+                 machine.setStatus(resp.getStatus());
+                 machine.setBorNo(resp.getBorNo());
+                 machine.setBorName(resp.getBorName());
+                 machine.setBorLocationName(resp.getBorLocationName());
+                 machine.setTime_fix(resp.getTime_fix());
+                 machine.setTime_fix_monitor(resp.getTime_fix_monitor());
+                 machine.setTime_oil_fix(resp.getTime_oil_fix());
+                 machine.setTime_oil_fix_mo(resp.getTime_oil_fix_mo());
+
+                 machine.setTotalFixMo(resp.getTotalFixMo());
+                 machine.setTotalFixMoOil(resp.getTotalFixMoOil());
+
+                 //ກຳນົດ limit monitor
+                 int time1 = resp.getTime_fix_monitor();
+                 // ຄໍານວນ ຍໍ້າມັນ
+                 int time2 = resp.getTotalFixMo();
+                 // ຄໍານວນ ນໍ້າມັນ ໄຮໂດລິກ
+                 int time3 = resp.getTotalFixMoOil();
+
+                 //ກວດສະຖານະນໍ້າມັຫນ
+                 if(time2 > time1 ){
+                     totalMsg = mesTime1;
+                 }else if(time2 ==0  ){
+                     totalMsg = mesTime3;
+                 }else  {
+                     totalMsg = mesTime2;
+                 }
+                 //ກວດສະຖານະນ ໄຮໂດລິກ
+                 if(time3 > time1 ){
+                     totalMs2 = mesTime1;
+                 }else if(time3 ==0  ){
+                     totalMs2 = mesTime3;
+                 }else  {
+                     totalMs2 = mesTime2;
+                 }
+
+                 machine.setStatus_mo(totalMsg);
+                 machine.setStatus_oil_mo(totalMs2);
+
+                 dataRsp.add(machine);
+             }
+            if (dataRsp != null && !dataRsp.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("OK");
-                response.setData(data);
+                response.setData(dataRsp);
             } else {
                 response.setStatus("01");
-                response.setMessage("Data not found");
+                response.setMessage("Data not found  !!!");
                 response.setData(null);
             }
 
@@ -33,11 +96,10 @@ public class MachineService {
 
         return response;
     }
-    public MachineDetailsResponse getReportMachineDetail(MachineRPReq machineRPReq) {
+    public MachineDetailsResponse getReportMachineDetail(MachineRPReq machineRPReq,String role ,String borNo) {
         MachineDetailsResponse response = new MachineDetailsResponse();
-
         try {
-            List<MachineDetails> data = machineInterface.getReportMachineDetails(machineRPReq);
+            List<MachineDetails> data = machineInterface.getReportMachineDetails(machineRPReq,role,borNo);
             if (data != null && !data.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("OK");
@@ -57,11 +119,12 @@ public class MachineService {
         return response;
     }
 
-    public MachineReportResposne getReportMachineSum(MachineRPReq machineRPReq) {
+    public MachineReportResposne getReportMachineSum(MachineRPReq machineRPReq,String role,String borNo) {
         MachineReportResposne response = new MachineReportResposne();
 
         try {
-            List<MachineReport> data = machineInterface.getReportMachine(machineRPReq);
+            List<MachineReport> data = machineInterface.getReportMachine(machineRPReq,role,borNo);
+
             if (data != null && !data.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("OK");
@@ -83,18 +146,25 @@ public class MachineService {
 
     public MachineReportResposne saveMachine(MachineReq machineReq) {
         MachineReportResposne response = new MachineReportResposne();
-
+        int result = 0;
         try {
-            int result = machineInterface.saveMachine(machineReq);
-
-            if (result > 0) {
-                response.setStatus("00");
-                response.setMessage("Data saved successfully");
+            ///ກວດສອບ merCode
+            List<Machine> getMer = machineInterface.getMachineByMerchantNo(machineReq);
+            if (getMer != null && !getMer.isEmpty()) {
+                response.setStatus("EE");
+                response.setMessage("ຂໍ້ມູນເຄື່ອງຈັກຂອງມີເເລ້ວ ມັນຊໍາກັນ !!!!");
                 response.setData(null); // You can return saved ID or object if needed
-            } else {
-                response.setStatus("01");
-                response.setMessage("Failed to save data");
-                response.setData(null);
+            }else {
+                result = machineInterface.saveMachine(machineReq);
+                if (result > 0) {
+                    response.setStatus("00");
+                    response.setMessage("Data saved successfully");
+                    response.setData(null); // You can return saved ID or object if needed
+                } else {
+                    response.setStatus("01");
+                    response.setMessage("Failed to save data");
+                    response.setData(null);
+                }
             }
 
         } catch (Exception e) {

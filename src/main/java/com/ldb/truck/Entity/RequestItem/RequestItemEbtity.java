@@ -79,10 +79,10 @@ public class RequestItemEbtity {
 
 
 
-    @Column(name = "rejectby", length = 200)
-    private String rejectby;
-
-    @Column(name = "rejectDate")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date rejectDate;
+//    @Column(name = "rejectby", length = 200)
+//    private String rejectby;
+//
+//    @Column(name = "rejectDate")
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private Date rejectDate;
 }
