@@ -8,6 +8,7 @@ import com.ldb.truck.Model.Login.delivery.DeliveryReq;
 import java.util.List;
 
 public interface TruckDao {
+    public void savetest();
 
     List<TruckOut> getAllTruck();
     List<TruckOut> getTruckById( TruckReq truckReq);

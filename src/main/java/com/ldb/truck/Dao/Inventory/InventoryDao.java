@@ -223,20 +223,27 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
     //list show report stock
     public List<ReportStockModel> ListStock(MoveToStockReq moveToStockReq) {
         String SQL;
-        String SQL1;
-        try{
-            if (moveToStockReq.getBranch_id() != null)
-            {
-                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur,limitQty from TB_items where branch_id='"+moveToStockReq.getBranch_id()+"' ";
-                log.info("SQL:"+SQL);
-            }else
-            {
-                SQL ="select item_name,Qty,img,item_id,unit,size,brand,ber,unit_price,unit_price * Qty as total_price,cur,limitQty from TB_items a inner join LOGIN b on a.userId =b.KEY_ID  where b.BRANCH='"+moveToStockReq.getBranch()+"' ";
-                log.info("SQL:"+SQL);
+        Object[] params;
+
+        try {
+            if (moveToStockReq.getBranch_id() != null) {
+                // กรณีมี branch_id
+                SQL = "select item_name, Qty, img, item_id, unit, size, brand, ber, unit_price, " +
+                        "unit_price * Qty as total_price, cur, limitQty " +
+                        "from TB_items where branch_id = ?";
+                params = new Object[]{moveToStockReq.getBranch_id()};
+            } else {
+                // กรณีไม่มี branch_id → ใช้ branch จาก user (token)
+                SQL = "select item_name, Qty, img, item_id, unit, size, brand, ber, unit_price, " +
+                        "unit_price * Qty as total_price, cur, limitQty " +
+                        "from TB_items a inner join LOGIN b on a.userId = b.KEY_ID " +
+                        "where b.BRANCH = ?";
+                params = new Object[]{moveToStockReq.getBranch()};
             }
 
+            log.info("SQL: " + SQL + " | Params: " + Arrays.toString(params));
 
-            return EBankJdbcTemplate.query(SQL, new RowMapper<ReportStockModel>() {
+            return EBankJdbcTemplate.query(SQL, params, new RowMapper<ReportStockModel>() {
                 @Override
                 public ReportStockModel mapRow(ResultSet rs, int rowNum) throws SQLException {
                     ReportStockModel tr = new ReportStockModel();
@@ -253,15 +260,16 @@ public List<FillOilModel> ListHisFillOillDao(FillOilReq fillOilReq) {
                     tr.setSumUnitWithPrice(rs.getString("total_price"));
                     tr.setCurrency(rs.getString("cur"));
                     tr.setLimitQty(rs.getString("limitQty"));
-
                     return tr;
                 }
             });
-        }catch (Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
+
     // item his Dao
     public List<ItemHis> ItemHisDao(ItemHisReq itemHisReq) {
         String SQL;

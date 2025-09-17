@@ -38,14 +38,15 @@ public class TestDaoQuery {
 
         for (Object[] row : results) {
             ItemTestModel item = new ItemTestModel(
-                    (String) row[0],                       // branchName
-                    String.valueOf(row[1]),                // houseId
-                    (String) row[2],                       // khname
-                    (String) row[3],                       // borName
-                    row[4] != null ? ((Number) row[4]).doubleValue() : 0.0, // totalLAK
-                    row[5] != null ? ((Number) row[5]).doubleValue() : 0.0, // totalTHB
-                    row[6] != null ? ((Number) row[6]).doubleValue() : 0.0  // totalUSD
+                    row[0] != null ? row[0].toString() : null,
+                    row[1] != null ? row[1].toString() : null,
+                    row[2] != null ? row[2].toString() : null,
+                    row[3] != null ? row[3].toString() : null,
+                    row[4] != null ? ((Number) row[4]).doubleValue() : 0.0,
+                    row[5] != null ? ((Number) row[5]).doubleValue() : 0.0,
+                    row[6] != null ? ((Number) row[6]).doubleValue() : 0.0
             );
+
             list.add(item);
         }
 
