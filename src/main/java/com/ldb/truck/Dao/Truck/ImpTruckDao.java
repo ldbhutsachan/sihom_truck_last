@@ -27,6 +27,12 @@ public class ImpTruckDao  implements TruckDao{
     @Autowired
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
+
+    @Override
+    public void savetest() {
+
+    }
+
     @Override
     public List<TruckOut> getAllTruck() {
 
