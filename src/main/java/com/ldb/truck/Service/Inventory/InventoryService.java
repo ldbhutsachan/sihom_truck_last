@@ -1039,18 +1039,23 @@ public ReportShowOfferPaper reportShowofferpaperCurrencyServiceTHB (@RequestBody
     offerPaperReq.setBranch(userBranchNo);
     //====================================================================
     List<ReportOfferPaperModelTHB> listDataTHB = new ArrayList<>();
-//    List<ReportOfferPaperModel> listDataUSD = new ArrayList<>();
-//    List<ReportOfferPaperModelLAK> listDataLAK = new ArrayList<>();
     ReportShowOfferPaper result = new ReportShowOfferPaper();
-    DecimalFormat numfm = new DecimalFormat("###,###.###");
+//    DecimalFormat numfm = new DecimalFormat("###,###.###");
+    DecimalFormat numfm = new DecimalFormat("###,###");
     try {
         listDataTHB = inventoryDao.ShowReportSumofferpaperTHB(offerPaperReq);
         sumFooterGroupOfferReportCurrency restFooterTHB = new sumFooterGroupOfferReportCurrency();
         double sumMoneyTHB =  listDataTHB.stream().map(ReportOfferPaperModelTHB::getSumMoneyCurrencyTHB).collect(Collectors.summingDouble(Double::doubleValue));
 
-        double curTHB =  listDataTHB.stream().map(ReportOfferPaperModelTHB::getTotalPriceCur).collect(Collectors.summingDouble(Double::doubleValue));
+//        double curTHB =  listDataTHB.stream().map(ReportOfferPaperModelTHB::getTotalPriceCur).collect(Collectors.summingDouble(Double::doubleValue));
+//        restFooterTHB.setThb(numfm.format(curTHB));
+        double curTHB = listDataTHB.stream()
+                .map(ReportOfferPaperModelTHB::getTotalPriceCur)
+                .collect(Collectors.summingDouble(Double::doubleValue));
 
-        restFooterTHB.setThb(numfm.format(curTHB));
+        long roundedCurTHB = Math.round(curTHB);  // ปัดเศษ .5 ขึ้น, ต่ำกว่า .5 ลง
+
+        restFooterTHB.setThb(numfm.format(roundedCurTHB));
         restFooterTHB.setSumMoneyCurrencyTHB(numfm.format(sumMoneyTHB));
         result.setSumFooter_Currency(restFooterTHB);
 //=============================================================================================
