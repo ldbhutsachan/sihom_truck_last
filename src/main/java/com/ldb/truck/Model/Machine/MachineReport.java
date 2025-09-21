@@ -7,6 +7,7 @@ public class MachineReport {
     private Integer mchId;
     private String mchNo;
     private String mchName;
+
     private String mchBranchName;
     private String mchModel;
     private String mchProductYear;
@@ -20,4 +21,6 @@ public class MachineReport {
     private Integer qty;
     private BigDecimal price;
     private BigDecimal total;
+
+
 }

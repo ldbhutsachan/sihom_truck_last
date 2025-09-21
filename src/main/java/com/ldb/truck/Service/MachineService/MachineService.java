@@ -1,12 +1,16 @@
 package com.ldb.truck.Service.MachineService;
 
 import com.ldb.truck.Dao.MachineDao.MachineInterface;
+import com.ldb.truck.Model.Login.Payment.GenerateInvoiceID;
+import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
 import com.ldb.truck.Model.Machine.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -278,6 +282,63 @@ public class MachineService {
         return response;
     }
 
+    public MachineReportSumResposne getSumReportMachine(MachineRPReq machineRPReq,String role,String borNo) {
+        MachineReportSumResposne response = new MachineReportSumResposne();
+        try {
+            List<MachineStockDetails> data = machineInterface.getSumReportMachine(machineRPReq,role,borNo);
+           log.info("show data:"+data.size());
+            List<String> merCodeList = data.stream()
+                    .map(MachineStockDetails::getMchNo)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            List<MachineSumRptModel> dataList = new ArrayList<>();
+
+            for (String merCo : merCodeList) {
+                List<MachineStockDetails> filtered = data.stream()
+                        .filter(p -> merCo.equals(p.getMchNo()))
+                        .collect(Collectors.toList());
+
+                if (filtered.isEmpty()) continue;
+
+                MachineSumRptModel rePData = new MachineSumRptModel();
+                MachineStockDetails first = filtered.get(0); // assuming consistent mchId/mchName per mchNo
+
+                rePData.setMchId(first.getKeyId());
+                rePData.setMchNo(first.getMchNo());
+                rePData.setMchName(first.getMchName());
+
+                List<MachineSumRptModel.GroupItemList> groupItemList = filtered.stream()
+                        .map(p -> {
+                            MachineSumRptModel.GroupItemList item = new MachineSumRptModel.GroupItemList();
+                            item.setBorNo(p.getBorNo());
+                            item.setBorName(p.getBorName());
+                            item.setItemId(p.getItemId());
+                            item.setItemName(p.getItemName());
+                            item.setQty(p.getQty());
+                            item.setPrice(p.getPrice());
+                            item.setTotal(p.getTotal());
+                            return item;
+                        })
+                        .collect(Collectors.toList());
+
+                rePData.setGroupItemList(groupItemList);
+                dataList.add(rePData);
+            }
+
+                response.setStatus("00");
+                response.setMessage("OK");
+                response.setData(dataList);
+
+
+        } catch (Exception e) {
+            response.setStatus("05");
+            response.setMessage("Error occurred while retrieving data");
+            response.setData(null);
+        }
+
+        return response;
+    }
     public MachineReportResposne getReportMachineSum(MachineRPReq machineRPReq,String role,String borNo) {
         MachineReportResposne response = new MachineReportResposne();
 

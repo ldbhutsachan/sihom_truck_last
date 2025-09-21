@@ -5,6 +5,7 @@ import com.ldb.truck.Model.Machine.*;
 import java.util.List;
 
 public interface MachineInterface {
+  public List<MachineStockDetails> getSumReportMachine(MachineRPReq machineRPReq,String role,String borNo);
   public int acceptItem(AceptItemReq req,String userName);
 
   public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req,String borNo);
