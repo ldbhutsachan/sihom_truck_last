@@ -39,6 +39,72 @@ public class MachineDao implements MachineInterface {
 
 
     @Override
+    public List<MachineStockDetails> getSumReportMachine(MachineRPReq req, String role, String borNo) {
+        StringBuilder sb = new StringBuilder();
+        String status = req.getStatus();
+        String conBorNo = "";
+        String conDate = "";
+        String conStatus= "";
+        String orderData  = "\n order by d.savedate desc ";
+
+        try {
+            if (req.getStartDate() != null && !req.getStartDate().isEmpty()) {
+                conDate = "\nAND DATE_FORMAT(using_date, '%Y-%m-%d') >= '"+req.getStartDate()+"'  AND DATE_FORMAT(using_date, '%Y-%m-%d')  <= '"+req.getStartDate()+"'";
+            } else {
+                conDate = "\n ";
+            }
+            if (status != null && !status.isEmpty()) {
+                conStatus = "\n AND using_status = '" + status + "' ";
+            } else {
+                conStatus = "\n AND using_status is null ";
+            }
+            if(!borNo.isEmpty() || !borNo.equals(null)){
+                conBorNo = "\n AND d.bor_no = '"+borNo+"'";
+            }else {
+                conBorNo = "";
+            }
+            //a.key_id,a.mch_no,a.create_date,a.create_by,a.time_total,a.txn_date,a.status,
+            sb.append("select \n" +
+                    "d.detail_id key_id,b.mch_no,using_date create_date,d.saveby_name create_by,0 time_total,d.using_date txn_date,0 status,\n" +
+                    "b.mch_name,b.mch_branch_name,b.mch_model,b.mch_product_year,\n" +
+                    "d.bor_no,d.bor_name,\n" +
+                    "bill_no,d.item_id,d.item_name,d.unit,\n" +
+                    "d.currency,d.qty,d.price,d.price*d.qty total,\n" +
+                    "case when using_status is null then 'wait' else 'ok'  end using_status\n" +
+                    "from  tb_machine b \n" +
+                    "inner join  tb_bors c on b.borNo=c. key_id\n" +
+                    "inner join v_request_item_fix d on d.bor_no=b.borNo\n" +
+                    "where using_status  is  null  and  1=1  ");
+           // sb.append(conBorNo);
+          //  sb.append(conStatus);
+          //  sb.append(conDate);
+            sb.append(orderData);
+            String sql =  sb.toString();
+            log.info("info sql:"+sql);
+            return JdbcTemplate.query(sql, new RowMapper<MachineStockDetails>() {
+                @Override
+                public MachineStockDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    MachineStockDetails tr = new MachineStockDetails();
+                    tr.setKeyId(rs.getInt("key_id"));
+                    tr.setMchNo(rs.getString("mch_no"));
+                    tr.setMchName(rs.getString("mch_name"));
+                    tr.setBorNo(rs.getString("bor_no"));
+                    tr.setBorName(rs.getString("bor_name"));
+                    tr.setItemId(rs.getString("item_id"));
+                    tr.setItemName(rs.getString("item_name"));
+                    tr.setQty(rs.getInt("qty"));
+                    tr.setPrice(rs.getDouble("price"));
+                    tr.setTotal(rs.getDouble("total"));
+                    return tr;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
     public int acceptItem(AceptItemReq req,String userName) {
         List<Integer> itemList = req.getItemList();
 
