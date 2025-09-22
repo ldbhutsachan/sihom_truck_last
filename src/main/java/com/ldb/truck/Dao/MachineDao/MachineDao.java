@@ -226,74 +226,145 @@ public class MachineDao implements MachineInterface {
         return null;
     }
 
-    @Override
-    public List<MachineHis> getMachineHis(MachineHisReq machineHisReq,String borNo) {
-        StringBuilder sb = new StringBuilder();
-        Integer keyId = machineHisReq.getKeyId();
-        Integer status = machineHisReq.getStatus();
+//    @Override
+//    public List<MachineHis> getMachineHis(MachineHisReq machineHisReq,String borNo) {
+//        StringBuilder sb = new StringBuilder();
+//        Integer keyId = machineHisReq.getKeyId();
+//        Integer status = machineHisReq.getStatus();
+//
+//        String conOrder = "\n order by a.key_id desc";
+//        String conBoNo = "";
+//        String conkeyId = "";
+//        String conStatus = "";
+//        if (status != null) {
+//            conStatus ="\n AND a.status='"+status+"'";
+//        }else {
+//            conStatus = "";
+//        }
+//        if (keyId != null) {
+//            conkeyId = "\n AND a.key_id = '" + keyId + "' ";
+//        } else {
+//            conkeyId = "";
+//        }
+////        if(!borNo.isEmpty() || !borNo.equals(null)){
+////            conBoNo = "\n b.borNo='"+borNo+"' ";
+////        }else {
+////            conBoNo = "";
+////        }
+//        try {
+////            sb.append("select \n" +
+////                    "a.key_id,a.mch_no,a.create_date,a.create_by,D.USER_LOGIN,a.time_total,a.txn_date,a.status,\n" +
+////                    "b.mch_name,b.mch_branch_name,b.mch_model,b.mch_product_year,\n" +
+////                    "c.key_id borNo,c.b_name borName\n" +
+////                    "from tb_machine_his a inner join tb_machine b on a.mch_no =b.mch_no\n" +
+////                    "inner join  tb_bors c on b.borNo=c.key_id inner join LOGIN d on a.create_by=d.key_id where 1=1  ");
+//
+//
+//            sb.append(conBoNo);
+//            sb.append(conkeyId);
+//            sb.append(conStatus);
+//            sb.append(conOrder);
+//            String sql = sb.toString();
+//            return  JdbcTemplate.query(sql, new RowMapper<MachineHis>() {
+//                @Override
+//                public MachineHis mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                    MachineHis tr = new MachineHis();
+//                    tr.setKeyId(rs.getInt("key_id"));
+//                    tr.setMchNo(rs.getString("mch_no"));
+//                    tr.setCreateDate(rs.getTimestamp("create_date"));
+//                    tr.setCreateBy(rs.getString("USER_LOGIN"));
+//                    tr.setTimeTotal(rs.getString("time_total"));
+//                    tr.setTxnDate(rs.getDate("txn_date"));
+//                    tr.setStatus(rs.getInt("status"));
+//                    tr.setBorNo(rs.getString("borNo"));
+//                    tr.setBorName(rs.getString("borName"));
+//                    return tr;
+//                }
+//            });
+//
+//
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            log.error("Error in getMachineHis: ", e);
+//        }
+//        return null;
+//    }
+@Override
+public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo) {
+    StringBuilder sb = new StringBuilder();
+    Integer keyId = machineHisReq.getKeyId();
+    Integer status = machineHisReq.getStatus();
 
-        String conOrder = "\n order by a.key_id desc";
-        String conBoNo = "";
-        String conkeyId = "";
-        String conStatus = "";
-        if (status != null) {
-            conStatus ="\n AND a.status='"+status+"'";
-        }else {
-            conStatus = "";
-        }
-        if (keyId != null) {
-            conkeyId = "\n AND a.key_id = '" + keyId + "' ";
-        } else {
-            conkeyId = "";
-        }
-        if(!borNo.isEmpty() || !borNo.equals(null)){
-            conBoNo = "\n b.borNo='"+borNo+"' ";
-        }else {
-            conBoNo = "";
-        }
+    String conOrder = "\n order by a.key_id desc";
+    String conBoNo = "";
+    String conkeyId = "";
+    String conStatus = "";
 
-        try {
-            sb.append("select \n" +
-                    "a.key_id,a.mch_no,a.create_date,a.create_by,D.USER_LOGIN,a.time_total,a.txn_date,a.status,\n" +
-                    "b.mch_name,b.mch_branch_name,b.mch_model,b.mch_product_year,\n" +
-                    "c.key_id borNo,c.b_name borName\n" +
-                    "from tb_machine_his a inner join tb_machine b on a.mch_no =b.mch_no\n" +
-                    "inner join  tb_bors c on b.borNo=c.key_id inner join LOGIN d on a.create_by=d.key_id where 1=1  ");
-            sb.append(conBoNo);
-            sb.append(conkeyId);
-            sb.append(conStatus);
-            sb.append(conOrder);
-            String sql = sb.toString();
-            return  JdbcTemplate.query(sql, new RowMapper<MachineHis>() {
-                @Override
-                public MachineHis mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    MachineHis tr = new MachineHis();
-                    tr.setKeyId(rs.getInt("key_id"));
-                    tr.setMchNo(rs.getString("mch_no"));
-                    tr.setCreateDate(rs.getTimestamp("create_date"));
-                    tr.setCreateBy(rs.getString("USER_LOGIN"));
-                    tr.setTimeTotal(rs.getString("time_total"));
-                    tr.setTxnDate(rs.getDate("txn_date"));
-                    tr.setStatus(rs.getInt("status"));
-                    tr.setBorNo(rs.getString("borNo"));
-                    tr.setBorName(rs.getString("borName"));
-                    return tr;
-                }
-            });
-
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return null;
+    if (status != null) {
+        conStatus = "\n AND a.status='" + status + "'";
     }
 
+    if (keyId != null) {
+        conkeyId = "\n AND a.key_id = '" + keyId + "' ";
+    }
+
+    if (borNo != null && !borNo.isEmpty()) {
+        conBoNo = "\n AND b.borNo = '" + borNo + "' ";
+    }
+
+    // create SQL
+    sb.append("select \n" +
+            "a.key_id,a.mch_no,a.create_date,a.create_by,d.`USER_LOGIN` as USER_LOGIN,a.time_total,a.txn_date,a.status,\n" +
+            "b.mch_name,b.mch_branch_name,b.mch_model,b.mch_product_year,\n" +
+            "c.key_id borNo,c.b_name borName\n" +
+            "from tb_machine_his a \n" +
+            "inner join tb_machine b on a.mch_no = b.mch_no\n" +
+            "inner join tb_bors c on b.borNo = c.key_id \n" +
+            "inner join LOGIN d on a.create_by = d.key_id \n" +
+            "where 1=1 ");
+
+    // Append เงื่อนไข dynamic
+    sb.append(conBoNo);
+    sb.append(conkeyId);
+    sb.append(conStatus);
+    sb.append(conOrder);
+
+    // แปลงเป็น string และ log SQL
+    String sql = sb.toString();
+    log.info("SQL for getMachineHis: \n" + sql);
+
+    try {
+        return JdbcTemplate.query(sql, new RowMapper<MachineHis>() {
+            @Override
+            public MachineHis mapRow(ResultSet rs, int rowNum) throws SQLException {
+                MachineHis tr = new MachineHis();
+                tr.setKeyId(rs.getInt("key_id"));
+                tr.setMchNo(rs.getString("mch_no"));
+                tr.setCreateDate(rs.getTimestamp("create_date"));
+                tr.setCreateBy(rs.getString("USER_LOGIN"));
+                tr.setTimeTotal(rs.getString("time_total"));
+                tr.setTxnDate(rs.getDate("txn_date"));
+                tr.setStatus(rs.getInt("status"));
+                tr.setBorNo(rs.getString("borNo"));
+                tr.setBorName(rs.getString("borName"));
+                return tr;
+            }
+        });
+    } catch (Exception e) {
+        log.error("Error in getMachineHis: ", e);
+    }
+
+    return null;
+}
+
+
     @Override
-    public int saveMachinedaily(MachineHisReq machineHisReq,String userName) {
+    public int saveMachinedaily(MachineHisReq machineHisReq,String userId) {
         MerchineHisEntity entity = new MerchineHisEntity();
         entity.setMchNo(machineHisReq.getMchNo());
         entity.setCreateDate(new Date());
-        entity.setCreateBy(userName); // You might want to make this dynamic
+        entity.setCreateBy(userId);
+        log.info("👉 Saving MachineHis with createBy = " + userId);
         entity.setTime_total(machineHisReq.getTimeClose());
         entity.setTxnDate(machineHisReq.getTxnDate());
         entity.setStatus(1); // Assuming '1' means active or a specific status

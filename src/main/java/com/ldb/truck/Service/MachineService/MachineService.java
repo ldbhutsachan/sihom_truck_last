@@ -21,10 +21,10 @@ public class MachineService {
         this.machineInterface = machineInterface;
     }
 
-    public MachineResponse saveMachineHis(MachineHisReq machineHisReq,String userName){
+    public MachineResponse saveMachineHis(MachineHisReq machineHisReq,String userId){
         MachineResponse response = new MachineResponse();
         try {
-            int check  = machineInterface.saveMachinedaily(machineHisReq,userName);
+            int check  = machineInterface.saveMachinedaily(machineHisReq,userId);
             if(check >= 1 ){
                 response.setStatus("00");
                 response.setMessage("OK");
@@ -136,24 +136,43 @@ public class MachineService {
     public MachineHisResponse getMachineHis(MachineHisReq machineHisReq,String borNo){
         MachineHisResponse response = new MachineHisResponse();
 
+//        try {
+//            List<MachineHis> rspList = machineInterface.getMachineHis(machineHisReq,borNo);
+//
+//            if (rspList != null && !rspList.isEmpty()){
+//                response.setData(rspList);
+//                response.setMessage("OK");
+//                response.setStatus("00");
+//            }
+//            response.setData(null);
+//            response.setMessage("Do not data not found !!!!!");
+//            response.setStatus("00");
+//
+//        }catch (Exception e){
+//            response.setData(null);
+//            response.setMessage("Error !!!!!");
+//            response.setStatus("05");
+//            e.printStackTrace();
+//        }
         try {
-            List<MachineHis> rspList = machineInterface.getMachineHis(machineHisReq,borNo);
+            List<MachineHis> rspList = machineInterface.getMachineHis(machineHisReq, borNo);
 
-            if (rspList != null && !rspList.isEmpty()){
+            if (rspList != null && !rspList.isEmpty()) {
                 response.setData(rspList);
                 response.setMessage("OK");
                 response.setStatus("00");
+            } else {
+                response.setData(null);
+                response.setMessage("Do not data not found !!!!!");
+                response.setStatus("00");
             }
-            response.setData(null);
-            response.setMessage("Do not data not found !!!!!");
-            response.setStatus("00");
-
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setData(null);
             response.setMessage("Error !!!!!");
             response.setStatus("05");
             e.printStackTrace();
         }
+
         return  response;
 
     }
