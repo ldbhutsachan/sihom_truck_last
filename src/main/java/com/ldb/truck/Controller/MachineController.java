@@ -48,10 +48,10 @@ private final  MachineService MACHINE_SERVICE;
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userName = userProfiles.get(0).getUserName();
-        log.info("show role"+ userName);
+        String userId = userProfiles.get(0).getUserId();
+        log.info("show role"+ userId);
         try {
-            response = MACHINE_SERVICE.saveMachineHis(machineRPReq,userName);
+            response = MACHINE_SERVICE.saveMachineHis(machineRPReq,userId);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

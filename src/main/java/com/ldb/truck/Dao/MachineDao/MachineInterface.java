@@ -10,7 +10,7 @@ public interface MachineInterface {
 
   public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req,String borNo);
   public List<MachineHis> getMachineHis(MachineHisReq machineHisReq,String borNo);
-  public int saveMachinedaily(MachineHisReq machineHisReq,String userName);
+  public int saveMachinedaily(MachineHisReq machineHisReq,String userId);
   public int updateMachinedaily(MachineHisReq machineHisReq);
   public int enableMachinedaily(MachineHisReq machineHisReq);
   public List<Machine> getMachineByMerchantNo(MachineReq machineRPReq);
