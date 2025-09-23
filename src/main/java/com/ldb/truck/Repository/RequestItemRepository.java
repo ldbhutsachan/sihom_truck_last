@@ -112,4 +112,8 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
     @Query(value = "SELECT * FROM request_item_details WHERE detail_id IN (:itemId) and bill_no=:billNo  ", nativeQuery = true)
     List<RequestItemEbtity> findByItemId2(@Param("itemId") List<Long> itemId,@Param("billNo") String billNo );
 
+    @Query(value = "SELECT * FROM request_item_details WHERE item_id IN (:itemIds) AND bill_no = :billNo", nativeQuery = true)
+    List<RequestItemEbtity> findByItemIdsAndBillNo(@Param("itemIds") List<Long> itemIds, @Param("billNo") String billNo);
+
+
 }
