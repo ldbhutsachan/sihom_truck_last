@@ -850,6 +850,7 @@ public class StockServiceImpl {
             entity.setBillNo(request.getBillNo());
             entity.setItemId(item.getItem());
             entity.setBorNo(item.getBorNo());
+            entity.setMchNo(item.getMchNo());
             entity.setType(item.getType());
             entity.setQty(item.getQty());
             entity.setSaveBy(userId);
@@ -2705,16 +2706,18 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         if(reqTypeId.equals("50")){
             //50 ທົ່ວໄປ
             conReqTypeId  = "\n AND req_id='"+reqTypeId+"'";
-            conQuery = "\nselect * from v_req_type where  1=1 ";
+            conQuery = "\nselect \n" +
+                    "key_id,b_name,location,`type`,req_id,req_name,bor_no,bor_id,\n" +
+                    "'' mch_no from v_req_type where  1=1 ";
         }else if(reqTypeId.equals("51")) {
             //51 ຫົວເຈາະ
             //*****check addmin
             if(role.equals("PADMIN")){
-                conQuery = "select '51' req_id,a.mch_name req_name,a.mch_no bor_id,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
+                conQuery = "select '51' req_id,a.mch_name req_name,b.key_id bor_id ,a.mch_no,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
                         "tb_bors b  on b.key_id=a.borNo where  1=1";
             }else {
                 //51 ຫົວເຈາະ
-                conQuery = "select '51' req_id,a.mch_name req_name,a.mch_no bor_id,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
+                conQuery = "select '51' req_id,a.mch_name req_name,b.key_id bor_id ,a.mch_no,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
                         "tb_bors b  on b.key_id=a.borNo where a.borNo='"+borNo+"' and 1=1";
             }
         }
@@ -2737,6 +2740,7 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
                 tr.setBorNo(rs.getString("bor_no"));
                 tr.setType(rs.getString("type"));
                 tr.setLocation(rs.getString("location"));
+                tr.setMchNo(rs.getString("mch_no"));
                 return tr;
             }
         });

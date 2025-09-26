@@ -29,4 +29,10 @@ public class requestItemTypeBorNameEntity
     @Column(name = "bor_id")
     private String borId;
 
+
+    @Column(name = "mch_no")
+    private String mchNo;
+
+
+
 }

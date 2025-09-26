@@ -77,6 +77,9 @@ public class RequestItemEbtity {
     @Column(name = "note")
     private String note;
 
+    @Column(name = "mch_no")
+    private String mchNo;
+
     @Column(name = "using_status", length = 200)
     private String using_status;
 

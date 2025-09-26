@@ -14,4 +14,5 @@ public class RequestItem {
     private int qty;
     private String type;
     private String borNo;
+    private String mchNo;
 }
