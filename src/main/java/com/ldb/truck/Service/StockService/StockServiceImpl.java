@@ -1921,101 +1921,102 @@ public class StockServiceImpl {
         }
         return response;
     }
+@Transactional
+public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq) {
+    log.info("show status: " + stockItemDetailsReq.getStatus());
+    DataResponse response = new DataResponse();
 
-    @Transactional
-    public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq) {
-        log.info("show status:"+stockItemDetailsReq.getStatus());
-        DataResponse response = new DataResponse();
-        try {
-            //=====then
-            boolean allRejected = stockItemDetailsReq.getDetailId().stream()
-                    .allMatch(item -> "reject".equalsIgnoreCase(item.getStatus()));
+    try {
+        // ===== ตรวจสอบว่า reject ทั้งหมดหรือไม่
+        boolean allRejected = stockItemDetailsReq.getDetailId().stream()
+                .allMatch(item -> "reject".equalsIgnoreCase(item.getStatus()));
 
-            if (allRejected) {
-                log.info("=====reject =====");
-                //let update reject by who
-                requestItemRepository.rejectItemRequestByUser(stockItemDetailsReq.getRemark(),
-                        stockItemDetailsReq.getBillNo());
-                //****call to reject item inRequest
+        if (allRejected) {
+            log.info("=====reject all items=====");
+            requestItemRepository.rejectItemRequestByUser(
+                    stockItemDetailsReq.getRemark(),
+                    stockItemDetailsReq.getBillNo()
+            );
 
-                int check = 0;
-                for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
-                   check =  requestItemRepository.updateItemStatusById(
-                            stockItemDetailsReq.getUserId(),
-                            new Date(),
-                            item.getItemId(),
-                            stockItemDetailsReq.getBillNo()
-                    );
-                }
-                if (check > 0){
-                    response.setStatus("00");
-                    response.setMessage("Ready Reject Del OK ");
-                    return response;
-                }
+            int check = 0;
+            for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+                check = requestItemRepository.updateItemStatusById(
+                        stockItemDetailsReq.getUserId(),
+                        new Date(),
+                        item.getItemId(),
+                        stockItemDetailsReq.getBillNo()
+                );
+            }
+
+            if (check > 0) {
+                response.setStatus("00");
+                response.setMessage("Ready Reject Del OK");
+            } else {
                 response.setStatus("EE");
                 response.setMessage("Can't Reject this del No!!!!");
-                return response;
             }
-            else {
-                log.info("ok =====");
-                //=====let check product qty first
-                List<Long> itemIdList = stockItemDetailsReq.getDetailId().stream()
-                        .map(RequestItemDetailsReq.OrderObject::getItemId)
-                        .collect(Collectors.toList());
-
-                // Retrieve items from repository
-                log.info("=====start check item in stock first auth:"+itemIdList);
-                List<RequestItemEbtity> items = requestItemRepository.findByItemId2(itemIdList,  stockItemDetailsReq.getBillNo());
-                for (RequestItemEbtity item : items) {
-                    List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(item.getItemId());
-
-                    if (inventoryList.isEmpty() || item.getQty() > inventoryList.get(0).getQty()) {
-                        log.warn("Insufficient inventory for itemId: " + item.getItemId());
-                        String msg = String.format(
-                                "No: %s, Name: %s, QtyInStock: %s",
-                                inventoryList.get(0).getItemId(),
-                                inventoryList.get(0).getItem_name(),
-                                inventoryList.get(0).getQty()
-                        );
-                        response.setStatus("00");
-                        response.setMessage("ອາໄຫຼ່ນີ້ໝົດເເລ້ວ : "+msg);
-                        return response;
-                    }
-
-                }
-                //****
-                int updatedRows = 0;
-                for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
-                     updatedRows = requestItemRepository.approveRequestItem(
-                            stockItemDetailsReq.getUserId(),
-                            new Date(),
-                            stockItemDetailsReq.getStatus(),
-                             item.getItemId(),
-                            stockItemDetailsReq.getBillNo()
-                    );
-                }
-
-                if (updatedRows > 0) {
-                    if(stockItemDetailsReq.getStatus().equals("ok")){
-                        log.info("=====start update item inventory=====");
-                        for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
-                            updateItemInTableItem(item.getItemId(),stockItemDetailsReq.getBillNo());
-                        }
-                    }
-                    response.setStatus("00");
-                    response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງສໍາເລັດ");
-                } else {
-                    response.setStatus("05");
-                    response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງບໍ່ສໍາເລັດ.");
-                }
-                //=======end check
-            }
-        } catch (Exception e) {
-            response.setStatus("EE");
-            response.setMessage("Error while updating request details.");
+            return response;
         }
-        return response;
+
+        // ===== ตรวจสอบ stock ก่อน approve
+        List<Long> itemIdList = stockItemDetailsReq.getDetailId().stream()
+                .map(RequestItemDetailsReq.OrderObject::getItemId)
+                .collect(Collectors.toList());
+
+        log.info("=====start check item in stock first: " + itemIdList);
+
+        // ดึงรายการที่ request ไว้จาก DB
+        List<RequestItemEbtity> items = requestItemRepository.findByItemIdsAndBillNo(
+                itemIdList,
+                stockItemDetailsReq.getBillNo()
+        );
+
+        for (RequestItemEbtity item : items) {
+            List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(item.getItemId());
+
+            if (inventoryList.isEmpty() || item.getQty() > inventoryList.get(0).getQty()) {
+                String msg = String.format(
+                        "No: %s, Name: %s, QtyInStock: %s, RequestedQty: %s",
+                        inventoryList.isEmpty() ? "?" : inventoryList.get(0).getItemId(),
+                        inventoryList.isEmpty() ? "?" : inventoryList.get(0).getItem_name(),
+                        inventoryList.isEmpty() ? 0 : inventoryList.get(0).getQty(),
+                        item.getQty()
+                );
+                response.setStatus("05");
+                response.setMessage("ອາໄຫຼ່ນີ້ໝົດເເລ້ວ : " + msg);
+                return response; // หยุด function ไม่ให้ approve
+            }
+        }
+
+        // ===== approve items
+        int updatedRows = 0;
+        for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+            updatedRows = requestItemRepository.approveRequestItem(
+                    stockItemDetailsReq.getUserId(),
+                    new Date(),
+                    stockItemDetailsReq.getStatus(),
+                    item.getItemId(),
+                    stockItemDetailsReq.getBillNo()
+            );
+        }
+
+        if (updatedRows > 0) {
+            response.setStatus("00");
+            response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງສໍາເລັດ");
+        } else {
+            response.setStatus("05");
+            response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງບໍ່ສໍາເລັດ");
+        }
+
+    } catch (Exception e) {
+        log.error("Error while approving request item: ", e);
+        response.setStatus("EE");
+        response.setMessage("Error while updating request details.");
     }
+
+    return response;
+}
+
     public DataResponse getRequestKey(){
         //RequestGenKeyRepository
         DataResponse response = new DataResponse();
