@@ -24,8 +24,11 @@ public interface RequestTxnRepository extends CrudRepository<RequestTxnEntity,Lo
 
     @Transactional
     @Modifying
-    @Query(value = "select * from v_request_item_fix where  branchname=:branchNo order by status desc ", nativeQuery = true)
-    List<RequestTxnEntity> getStockByBranch(@Param("branchNo") String branchNo);
+//    @Query(value = "select * from v_request_item_fix where  branchname=:branchNo order by status desc ", nativeQuery = true)
+//    List<RequestTxnEntity> getStockByBranch(@Param("branchNo") String branchNo);
+    @Query(value = "select * from v_request_item_fix where branchname=:branchNo and bor_no=:borNo order by status desc ", nativeQuery = true)
+    List<RequestTxnEntity> getStockByBranch(@Param("branchNo") String branchNo, @Param("borNo") String borNo);
+
 
     @Transactional
     @Modifying
