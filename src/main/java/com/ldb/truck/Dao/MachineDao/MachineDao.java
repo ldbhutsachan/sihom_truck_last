@@ -266,8 +266,8 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
                 "    MIN(d.bor_name) AS bor_name\n" +
                 "FROM tb_machine b\n" +
                 "INNER JOIN tb_bors c ON b.borNo = c.key_id\n" +
-                "INNER JOIN v_request_item_fix d ON d.bor_no = b.borNo\n" +
-                "WHERE 1=1 ");
+                "INNER JOIN v_request_item_fix d ON d.jukNo = b.mch_no\n" +
+                "WHERE 1=1  and d.status ='ok'");
 
         // Dynamic conditions
         if (req.getItemId() != null && !req.getItemId().isEmpty()) {
