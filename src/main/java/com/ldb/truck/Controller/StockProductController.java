@@ -464,9 +464,11 @@ public class StockProductController {
         String billNo = stockItemDetailsEntity.getBillNo();
         String status = stockItemDetailsEntity.getStatus();
         String branchNo =userProfiles.get(0).getBranchNo();
+        String borNo =userProfiles.get(0).getBorNo();
+
         try {
             log.info("branchNo:"+branchNo);
-            response = stockService.getRequestItem(billNo,role,userId,status,branchNo);
+            response = stockService.getRequestItem(billNo,role,userId,status,branchNo,borNo);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

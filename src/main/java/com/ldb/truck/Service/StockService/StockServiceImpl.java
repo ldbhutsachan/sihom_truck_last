@@ -2056,7 +2056,7 @@ public DataResponse checkKeyOrder(){
 
     //save request item when have insert data
 
-    public RequestItemDetailsRes getRequestItem(String billNo, String role, String userName, String status,String branchNo){
+    public RequestItemDetailsRes getRequestItem(String billNo, String role, String userName, String status,String branchNo, String borNo){
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         RequestItemDetailsRes response = new RequestItemDetailsRes();
         List<RequestItemHeader> groupStockItemHeaders = new ArrayList<>();
@@ -2070,7 +2070,7 @@ public DataResponse checkKeyOrder(){
                 if("PADMIN".equals(role)) {
                     listData = requestTxnRepository.getStockByBillNoAdminAll();
                 }else {
-                    listData = requestTxnRepository.getStockByBranch(branchNo);
+                    listData = requestTxnRepository.getStockByBranch(branchNo,borNo);
                 }
             }
             else {
