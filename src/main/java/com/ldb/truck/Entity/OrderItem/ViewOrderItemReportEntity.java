@@ -101,14 +101,17 @@ public class ViewOrderItemReportEntity {
     @Column(name = "real_price")
     private Float realPrice;
 
+//    @Column(name = "qty_data")
+//    private int realQtyData;
+
     @Column(name = "qty_data")
-    private int realQtyData;
+    private Integer realQtyData;
 
     @Column(name = "currency_data")
     private String realCurrencyData;
 
     @Column(name = "exchange_rate_data")
-    private int realExchangeRatedata;
+    private Integer  realExchangeRatedata;
 
     @Column(name = "price_data")
     private Float rPriceData;

@@ -1618,46 +1618,96 @@ public class StockServiceImpl {
         }
     }
 
-    public void updateItemAndUpTotalOrder(String itemId,String billNo) {
+//    public void updateItemAndUpTotalOrder(String itemId,String billNo) {
+//        log.info("start 01");
+//        // Convert itemId string to a list of Long values
+//        List<Long> itemIdList = Arrays.stream(itemId.split(","))
+//                .map(Long::valueOf)
+//                .collect(Collectors.toList());
+//        // Retrieve items from repository
+//        List<ViewOrderItemReportEntity> items = viewOrderDetailsRepository.findByItemIdToStock(itemIdList);
+//        // Check if items list is null or empty
+//        if (items == null || items.isEmpty()) {
+//            log.warn("No items found for itemId: " + itemId);
+//            return;
+//        }
+//        // Log the first item for debugging purposes
+//        log.info("First item in list: " + items.get(0).getItemId());
+//        // Process and update items
+//        for (ViewOrderItemReportEntity stock : items) {
+//            Integer qty = stock.getQty();
+//            Float amount = stock.getPrice();
+//            Integer itemNo = stock.getItemId();
+//            Integer qtyData = stock.getRealQtyData();
+//            String ccy = stock.getCurrency();
+//            Float amountData = stock.getRPriceData();
+//            String currencyData = stock.getRealCurrencyData();
+//            Integer exchangeRateData = stock.getRealExchangeRatedata();
+//            Float realPriceData = stock.getRealPriceData();
+//            log.info("Processing item: " + itemNo + ", Quantity: " + qty);
+//            // Perform database update inventory
+//            itemEntityRepository.updateStockInItem(qty,amount,ccy,realPriceData,itemNo);
+//
+//            // let update details for real money
+//            log.info("show before insert itemNo :"+itemNo);
+//            log.info("show before insert qty :"+qtyData);
+//            log.info("show before insert amount :"+amountData);
+//            log.info("show before insert currency :"+currencyData);
+//            log.info("show before insert exchangeRate :"+exchangeRateData);
+//            log.info("show before insert realPrice :"+realPriceData);
+//            itemEntityRepository.updateStockInItemOrderDetails(qtyData,amountData,currencyData,exchangeRateData,realPriceData,itemNo,billNo);
+//        }
+//    }
+
+    public void updateItemAndUpTotalOrder(String itemId, String billNo) {
         log.info("start 01");
-        // Convert itemId string to a list of Long values
+
+        // แปลง itemId string เป็น List<Long>
         List<Long> itemIdList = Arrays.stream(itemId.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
-        // Retrieve items from repository
+
+        // ดึงรายการ items จาก repository
         List<ViewOrderItemReportEntity> items = viewOrderDetailsRepository.findByItemIdToStock(itemIdList);
-        // Check if items list is null or empty
         if (items == null || items.isEmpty()) {
             log.warn("No items found for itemId: " + itemId);
             return;
         }
-        // Log the first item for debugging purposes
-        log.info("First item in list: " + items.get(0).getItemId());
-        // Process and update items
-        for (ViewOrderItemReportEntity stock : items) {
-            Integer qty = stock.getQty();
-            Float amount = stock.getPrice();
-            Integer itemNo = stock.getItemId();
-            Integer qtyData = stock.getRealQtyData();
-            String ccy = stock.getCurrency();
-            Float amountData = stock.getRPriceData();
-            String currencyData = stock.getRealCurrencyData();
-            Integer exchangeRateData = stock.getRealExchangeRatedata();
-            Float realPriceData = stock.getRealPriceData();
-            log.info("Processing item: " + itemNo + ", Quantity: " + qty);
-            // Perform database update inventory
-            itemEntityRepository.updateStockInItem(qty,amount,ccy,realPriceData,itemNo);
 
-            // let update details for real money
-            log.info("show before insert itemNo :"+itemNo);
-            log.info("show before insert qty :"+qtyData);
-            log.info("show before insert amount :"+amountData);
-            log.info("show before insert currency :"+currencyData);
-            log.info("show before insert exchangeRate :"+exchangeRateData);
-            log.info("show before insert realPrice :"+realPriceData);
-            itemEntityRepository.updateStockInItemOrderDetails(qtyData,amountData,currencyData,exchangeRateData,realPriceData,itemNo,billNo);
+        // Loop update inventory + order details
+        for (ViewOrderItemReportEntity stock : items) {
+
+            // Null-safe สำหรับทุก field
+            Integer qty = stock.getQty() != null ? stock.getQty() : 0;
+            Float amount = stock.getPrice() != null ? stock.getPrice() : 0.0f;
+            Integer itemNo = stock.getItemId() != null ? stock.getItemId() : 0;
+
+            Integer qtyData = stock.getRealQtyData() != null ? stock.getRealQtyData() : 0;
+            Float amountData = stock.getRPriceData() != null ? stock.getRPriceData() : 0.0f;
+
+            String ccy = stock.getCurrency() != null ? stock.getCurrency() : "LAK";
+            String currencyData = stock.getRealCurrencyData() != null ? stock.getRealCurrencyData() : "LAK";
+
+            Integer exchangeRateData = stock.getRealExchangeRatedata() != null ? stock.getRealExchangeRatedata() : 1;
+            Float realPriceData = stock.getRealPriceData() != null ? stock.getRealPriceData() : 0.0f;
+
+
+            log.info("Processing item: " + itemNo + ", Quantity: " + qty);
+
+            // Update inventory
+            itemEntityRepository.updateStockInItem(qty, amount, ccy, realPriceData, itemNo);
+
+            // Update order details
+            itemEntityRepository.updateStockInItemOrderDetails(
+                    qtyData, amountData, currencyData, exchangeRateData, realPriceData, itemNo, billNo
+            );
         }
+
+        log.info("Finished updateItemAndUpTotalOrder");
     }
+
+
+
     //getOrderItemDetailsAuth
     @Autowired
     OrderAuthEntityRepository orderAuthEntityRepository;
