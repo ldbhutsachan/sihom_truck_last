@@ -1,8 +1,10 @@
 package com.ldb.truck.Service.MachineService;
 
 import com.ldb.truck.Dao.MachineDao.MachineInterface;
+import com.ldb.truck.Model.Login.Pay.PrintBillPayment;
 import com.ldb.truck.Model.Login.Payment.GenerateInvoiceID;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
+import com.ldb.truck.Model.Login.Performance.v_performance;
 import com.ldb.truck.Model.Machine.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -135,28 +138,8 @@ public class MachineService {
     }
     public MachineHisResponse getMachineHis(MachineHisReq machineHisReq,String borNo){
         MachineHisResponse response = new MachineHisResponse();
-
-//        try {
-//            List<MachineHis> rspList = machineInterface.getMachineHis(machineHisReq,borNo);
-//
-//            if (rspList != null && !rspList.isEmpty()){
-//                response.setData(rspList);
-//                response.setMessage("OK");
-//                response.setStatus("00");
-//            }
-//            response.setData(null);
-//            response.setMessage("Do not data not found !!!!!");
-//            response.setStatus("00");
-//
-//        }catch (Exception e){
-//            response.setData(null);
-//            response.setMessage("Error !!!!!");
-//            response.setStatus("05");
-//            e.printStackTrace();
-//        }
         try {
             List<MachineHis> rspList = machineInterface.getMachineHis(machineHisReq, borNo);
-
             if (rspList != null && !rspList.isEmpty()) {
                 response.setData(rspList);
                 response.setMessage("OK");
@@ -200,6 +183,7 @@ public class MachineService {
         String mesTime1 = "OK";
         String mesTime2 = "LOW";
         String mesTime3 = "EP";
+
         String totalMsg = "";
         String totalMs2 = "";
         MachineResponse response = new MachineResponse();
@@ -237,11 +221,10 @@ public class MachineService {
                  int time2 = resp.getTotalFixMo();
                  // ຄໍານວນ ນໍ້າມັນ ໄຮໂດລິກ
                  int time3 = resp.getTotalFixMoOil();
-
                  //ກວດສະຖານະນໍ້າມັຫນ
                  if(time2 > time1 ){
                      totalMsg = mesTime1;
-                 }else if(time2 ==0  ){
+                 }else if(time2 <=0  ){
                      totalMsg = mesTime3;
                  }else  {
                      totalMsg = mesTime2;
@@ -249,7 +232,7 @@ public class MachineService {
                  //ກວດສະຖານະນ ໄຮໂດລິກ
                  if(time3 > time1 ){
                      totalMs2 = mesTime1;
-                 }else if(time3 ==0  ){
+                 }else if(time3 <= 0  ){
                      totalMs2 = mesTime3;
                  }else  {
                      totalMs2 = mesTime2;
@@ -302,60 +285,72 @@ public class MachineService {
     }
 
     public MachineReportSumResposne getSumReportMachine(MachineRPReq machineRPReq,String role,String borNo) {
+
         MachineReportSumResposne response = new MachineReportSumResposne();
+        GroupHeaderReport groupHeader = new GroupHeaderReport();
+        List<MachineSumRptModel> dataList = new ArrayList<>();
+        double sumTotalThb = 0.0;
+        double sumTotalUsd = 0.0;
+        double sumTotalLak =0.0;
         try {
-            List<MachineStockDetails> data = machineInterface.getSumReportMachine(machineRPReq,role,borNo);
-           log.info("show data:"+data.size());
-            List<String> merCodeList = data.stream()
-                    .map(MachineStockDetails::getMchNo)
-                    .distinct()
-                    .collect(Collectors.toList());
+            List<MachineStockDetails> data = machineInterface.getSumReportMachine(machineRPReq, role, borNo);
+            if(data.size()> 1){
+                sumTotalLak = data.stream().filter(p -> p.getCcy().equals("LAK")).map(MachineStockDetails::getTotal).collect(Collectors.summingDouble(Double::doubleValue));
+                sumTotalThb = data.stream().filter(p -> p.getCcy().equals("THB")).map(MachineStockDetails::getTotal).collect(Collectors.summingDouble(Double::doubleValue));
+                sumTotalUsd = data.stream().filter(p -> p.getCcy().equals("USD")).map(MachineStockDetails::getTotal).collect(Collectors.summingDouble(Double::doubleValue));
 
-            List<MachineSumRptModel> dataList = new ArrayList<>();
-
-            for (String merCo : merCodeList) {
-                List<MachineStockDetails> filtered = data.stream()
-                        .filter(p -> merCo.equals(p.getMchNo()))
+                List<String> merCodeList = data.stream()
+                        .map(MachineStockDetails::getMchNo)
+                        .distinct()
                         .collect(Collectors.toList());
 
-                if (filtered.isEmpty()) continue;
+                for (String merCo : merCodeList) {
+                    List<MachineStockDetails> filtered = data.stream()
+                            .filter(p -> merCo.equals(p.getMchNo()))
+                            .collect(Collectors.toList());
 
-                MachineSumRptModel rePData = new MachineSumRptModel();
-                MachineStockDetails first = filtered.get(0); // assuming consistent mchId/mchName per mchNo
+                    if (filtered.isEmpty()) continue;
 
-                rePData.setMchId(first.getKeyId());
-                rePData.setMchNo(first.getMchNo());
-                rePData.setMchName(first.getMchName());
+                    MachineSumRptModel rePData = new MachineSumRptModel();
+                    MachineStockDetails first = filtered.get(0); // assuming consistent mchId/mchName per mchNo
+                    rePData.setMchId(first.getKeyId());
+                    rePData.setMchNo(first.getMchNo());
+                    rePData.setMchName(first.getMchName());
 
-                List<MachineSumRptModel.GroupItemList> groupItemList = filtered.stream()
-                        .map(p -> {
-                            MachineSumRptModel.GroupItemList item = new MachineSumRptModel.GroupItemList();
-                            item.setBorNo(p.getBorNo());
-                            item.setBorName(p.getBorName());
-                            item.setItemId(p.getItemId());
-                            item.setItemName(p.getItemName());
-                            item.setQty(p.getQty());
-                            item.setPrice(p.getPrice());
-                            item.setTotal(p.getTotal());
-                            return item;
-                        })
-                        .collect(Collectors.toList());
+                    List<MachineSumRptModel.GroupItemList> groupItemList = filtered.stream()
+                            .map(p -> {
+                                MachineSumRptModel.GroupItemList item = new MachineSumRptModel.GroupItemList();
+                                item.setBorNo(p.getBorNo());
+                                item.setBorName(p.getBorName());
+                                item.setItemId(p.getItemId());
+                                item.setItemName(p.getItemName());
+                                item.setCcy(p.getCcy());
+                                item.setQty(p.getQty());
+                                item.setPrice(p.getPrice());
+                                item.setTotal(p.getTotal());
+                                return item;
+                            })
+                            .collect(Collectors.toList());
 
-                rePData.setGroupItemList(groupItemList);
-                dataList.add(rePData);
-            }
+                    rePData.setGroupItemList(groupItemList);
+                    dataList.add(rePData);
+                }
+
+                groupHeader.setSumLak(sumTotalLak);
+                groupHeader.setSumthb(sumTotalThb);
+                groupHeader.setSumUsd(sumTotalUsd);
 
                 response.setStatus("00");
                 response.setMessage("OK");
+                response.setGroupHeader(groupHeader);
                 response.setData(dataList);
-
-
-        } catch (Exception e) {
+            }
+        } catch (Exception e){
             response.setStatus("05");
-            response.setMessage("Error occurred while retrieving data");
+            response.setMessage(e.getMessage());
+            response.setGroupHeader(null);
             response.setData(null);
         }
-
         return response;
     }
     public MachineReportResposne getReportMachineSum(MachineRPReq machineRPReq,String role,String borNo) {
