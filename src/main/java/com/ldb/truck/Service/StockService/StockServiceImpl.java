@@ -94,6 +94,8 @@ public class StockServiceImpl {
     @Autowired
     OrderGenKeyRepository orderGenKeyRepository;
     @Autowired
+    OrderGenKeyReqRepository orderGenKeyReqRepository;
+    @Autowired
     RequestItemRepository requestItemRepository;
     @Autowired
     RequestTxnRepository requestTxnRepository;
@@ -843,11 +845,11 @@ public class StockServiceImpl {
 
         return response;
     }
-    private List<RequestItemEbtity> convertToRequest(RequestItems request, String userId) {
+    private List<RequestItemEbtity> convertToRequest(String keyIdBill,RequestItems request, String userId) {
         List<RequestItemEbtity> entities = new ArrayList<>();
         for (RequestItem item : request.getItemId()) {
             RequestItemEbtity entity = new RequestItemEbtity();
-            entity.setBillNo(request.getBillNo());
+            entity.setBillNo(keyIdBill);
             entity.setItemId(item.getItem());
             entity.setBorNo(item.getBorNo());
             entity.setMchNo(item.getMchNo());
@@ -1890,14 +1892,19 @@ public class StockServiceImpl {
 //        return response;
 //    }
     public DataResponse saveRequestItem(RequestItems stockItemDetailsEntity, String userId) {
+
         DataResponse response = new DataResponse();
+
+        OrderGenReqEntity keyGen =  orderGenKeyReqRepository.maxReqKey();
+        String genKey = keyGen.getMaxReqKey();
+        log.info("genKey:"+genKey);
         try {
-            List<RequestItemEbtity> entities = convertToRequest(stockItemDetailsEntity, userId);
+            List<RequestItemEbtity> entities = convertToRequest(genKey,stockItemDetailsEntity, userId);
             List<RequestItemEbtity> savedEntities = new ArrayList<>();
             requestItemRepository.saveAll(entities).forEach(savedEntities::add);
             if (!savedEntities.isEmpty()) {
                 RequestItemEntity requestEntity = new RequestItemEntity();
-                requestEntity.setBillNo(stockItemDetailsEntity.getBillNo());
+                requestEntity.setBillNo(genKey);
                 requestEntity.setSaveDate(new Date());
                 requestEntity.setSaveBy(userId);
                 requestItemEntityRepository.save(requestEntity);

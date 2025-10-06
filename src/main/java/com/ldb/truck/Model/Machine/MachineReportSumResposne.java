@@ -9,5 +9,7 @@ public class MachineReportSumResposne {
     private String status;
     private String message;
 
+    private GroupHeaderReport groupHeader;
+
     private List<MachineSumRptModel> data;
 }

@@ -18,6 +18,7 @@ public class MachineSumRptModel {
         private String borName;
         private String itemId;
         private String itemName;
+        private String ccy;
         private Integer qty;
         private Double price;
         private Double total;

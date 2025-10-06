@@ -33,11 +33,6 @@ public class MachineDao implements MachineInterface {
         MERCHIN_HIS_REPOSITORY = merchinHisRepository;
         this.repository = repository;
     }
-    @Override
-    public int enableMachine(MachineReq machineReq) {
-        return 0;
-    }
-
 
     @Override
     public List<MachineStockDetails> getSumReportMachine(MachineRPReq req, String role, String borNo) {
@@ -525,21 +520,12 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
 
     @Override
     public int enableMachinedaily(MachineHisReq machineHisReq) {
-        Optional<MerchineHisEntity> optionalEntity = MERCHIN_HIS_REPOSITORY.findByKeyId(machineHisReq.getKeyId());
-
-        if (optionalEntity.isPresent()) {
-            MerchineHisEntity entity = optionalEntity.get();
-
-            entity.setStatus(machineHisReq.getStatus()); // Assuming status is part of MachineHisReq
-            try {
-                MERCHIN_HIS_REPOSITORY.save(entity); // Save the updated entity
-                return 1; // Return 0 for success
-            } catch (Exception e) {
-                e.printStackTrace();
-                return -1; // Return -1 for failure
-            }
-        } else {
-            return 1; // Return 1 if the entity does not exist
+        try {
+            int updated = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
+            return updated > 0 ? 0 : -1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
         }
     }
 

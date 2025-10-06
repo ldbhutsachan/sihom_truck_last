@@ -14,6 +14,7 @@ public class MachineStockDetails {
     private Date txnDate; // txn_date
     private Integer status; // status
     private String mchName; // mch_name
+    private String ccy; // mch_name
     private String mchBranchName; // mch_branch_name
     private String mchModel; // mch_model
     private Integer mchProductYear; // mch_product_year
