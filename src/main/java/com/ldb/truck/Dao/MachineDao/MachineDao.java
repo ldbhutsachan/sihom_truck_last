@@ -61,7 +61,8 @@ public class MachineDao implements MachineInterface {
 
             // ✅ Base SQL
             sb.append("SELECT \n")
-                    .append(" d.detail_id AS key_id, \n")
+                    .append(" d.saveby_name,d.savedate,\n" +
+                            "d.approveby,d.approvedate,d.detail_id AS key_id, \n")
                     .append(" b.mch_no, d.using_date AS create_date, d.saveby_name AS create_by, \n")
                     .append(" 0 AS time_total, d.using_date AS txn_date, 0 AS status, \n")
                     .append(" b.mch_name, b.mch_branch_name, b.mch_model, b.mch_product_year, \n")
@@ -90,10 +91,17 @@ public class MachineDao implements MachineInterface {
                 tr.setKeyId(rs.getInt("key_id"));
                 tr.setMchNo(rs.getString("mch_no"));
                 tr.setMchName(rs.getString("mch_name"));
+
+                tr.setSaveBy(rs.getString("saveby_name"));
+                tr.setSaveDate(rs.getString("savedate"));
+                tr.setApproveBy(rs.getString("approveby"));
+                tr.setApproveDate(rs.getString("approvedate"));
+
                 tr.setBorNo(rs.getString("bor_no"));
                 tr.setBorName(rs.getString("bor_name"));
                 tr.setItemId(rs.getString("item_id"));
                 tr.setItemName(rs.getString("item_name"));
+                tr.setCcy(rs.getString("currency"));
                 tr.setQty(rs.getInt("qty"));
                 tr.setPrice(rs.getDouble("price"));
                 tr.setTotal(rs.getDouble("total"));
@@ -518,16 +526,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         }
     }
 
-    @Override
-    public int enableMachinedaily(MachineHisReq machineHisReq) {
-        try {
-            int updated = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
-            return updated > 0 ? 0 : -1;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1;
-        }
-    }
+
 
     @Override
     public List<Machine> getMachineByMerchantNo(MachineReq machineRPReq) {
@@ -637,7 +636,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
             }else {
                 conAdmin= "";
             }
-            sb.append("SELECT\n" +
+            sb.append("SELECT a.drillrod_pq3,a.drillrod_hq3,a.core_barrelhq3_1_5m,a.backReamer,a.caphq,a.drillbit_hq3,a.water_pump,a.pipewrench24,a.pipewrench36,a.pipewrench48,a.monkey_wrench_hq3,a.rodpuller,a.adapter3in1_hq,a.lifting_plug_hq,a.circuit_breaker,a.led_light,a.fuel,\n" +
                     "    a.key_id,\n" +
                     "    a.mch_no,\n" +
                     "    a.mch_name,\n" +
@@ -712,6 +711,23 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                     tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
                     tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
 
+
+                    tr.setDrillrod_pq3(rs.getString("drillrod_hq3"));
+                    tr.setCore_barrelhq3_1_5m(rs.getString("core_barrelhq3_1_5m"));
+                    tr.setBackReamer(rs.getString("backReamer"));
+                    tr.setCaphq(rs.getString("caphq"));
+                    tr.setDrillbit_hq3(rs.getString("drillbit_hq3"));
+                    tr.setWater_pump(rs.getString("water_pump"));
+                    tr.setPipewrench24(rs.getString("pipewrench24"));
+                    tr.setPipewrench36(rs.getString("pipewrench36"));
+                    tr.setPipewrench48(rs.getString("pipewrench48"));
+                    tr.setMonkey_wrench_hq3(rs.getString("monkey_wrench_hq3"));
+                    tr.setRodpuller(rs.getString("rodpuller"));
+                    tr.setAdapter3in1_hq(rs.getString("adapter3in1_hq"));
+                    tr.setLifting_plug_hq(rs.getString("lifting_plug_hq"));
+                    tr.setCircuit_breaker(rs.getString("circuit_breaker"));
+                    tr.setLed_light(rs.getString("led_light"));
+                    tr.setFuel(rs.getString("fuel"));
                     return tr;
                 }
             });
@@ -786,6 +802,24 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                     tr.setRequest_by(rs.getString("request_by"));
                     tr.setRequest_Date(rs.getTimestamp("request_Date").toLocalDateTime());
                     tr.setStatus(rs.getString("status"));
+
+                    tr.setDrillrod_pq3(rs.getString("drillrod_hq3"));
+                    tr.setCore_barrelhq3_1_5m(rs.getString("core_barrelhq3_1_5m"));
+                    tr.setBackReamer(rs.getString("backReamer"));
+                    tr.setCaphq(rs.getString("caphq"));
+                    tr.setDrillbit_hq3(rs.getString("drillbit_hq3"));
+                    tr.setWater_pump(rs.getString("water_pump"));
+                    tr.setPipewrench24(rs.getString("pipewrench24"));
+                    tr.setPipewrench36(rs.getString("pipewrench36"));
+                    tr.setPipewrench48(rs.getString("pipewrench48"));
+                    tr.setMonkey_wrench_hq3(rs.getString("monkey_wrench_hq3"));
+                    tr.setRodpuller(rs.getString("rodpuller"));
+                    tr.setAdapter3in1_hq(rs.getString("adapter3in1_hq"));
+                    tr.setLifting_plug_hq(rs.getString("lifting_plug_hq"));
+                    tr.setCircuit_breaker(rs.getString("circuit_breaker"));
+                    tr.setLed_light(rs.getString("led_light"));
+                    tr.setFuel(rs.getString("fuel"));
+
                     return tr;
                 }
             });
@@ -879,8 +913,25 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         try {
             String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-                    "create_date, create_by, status, borNo,time_fix,time_fix_monitor,time_oil_fix,time_oil_fix_mo) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "create_date, create_by, status, borNo,time_fix,time_fix_monitor,time_oil_fix,time_oil_fix_mo," +
+                    "    drillrod_pq3,\n" +
+                    "    drillrod_hq3,\n" +
+                    "    core_barrelhq3_1_5m,\n" +
+                    "    backReamer,\n" +
+                    "    caphq,\n" +
+                    "    drillbit_hq3,\n" +
+                    "    water_pump,\n" +
+                    "    pipewrench24,\n" +
+                    "    pipewrench36,\n" +
+                    "    pipewrench48,\n" +
+                    "    monkey_wrench_hq3,\n" +
+                    "    rodpuller,\n" +
+                    "    adapter3in1_hq,\n" +
+                    "    lifting_plug_hq,\n" +
+                    "    circuit_breaker,\n" +
+                    "    led_light,\n" +
+                    "     fuel) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
             return JdbcTemplate.update(sql,
                    // machineReq.getKeyId(),
@@ -897,7 +948,27 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                     machineReq.getTime_fix(),
                     machineReq.getTime_fix_monitor(),
                     machineReq.getTime_oil_fix(),
-                    machineReq.getTime_oil_fix_mo()
+                    machineReq.getTime_oil_fix_mo(),
+
+                    machineReq.getDrillrod_pq3(),
+                    machineReq.getDrillrod_hq3(),
+                    machineReq.getCore_barrelhq3_1_5m(),
+                    machineReq.getBackReamer(),
+                    machineReq.getCaphq(),
+                    machineReq.getDrillbit_hq3(),
+                    machineReq.getWater_pump(),
+                    machineReq.getPipewrench24(),
+                    machineReq.getPipewrench36(),
+                    machineReq.getPipewrench48(),
+                    machineReq.getMonkey_wrench_hq3(),
+                    machineReq.getRodpuller(),
+                    machineReq.getAdapter3in1_hq(),
+                    machineReq.getLifting_plug_hq(),
+                    machineReq.getCircuit_breaker(),
+                    machineReq.getLed_light(),
+                    machineReq.getFuel()
+
+
             );
 
         } catch (Exception e) {
@@ -922,7 +993,24 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                     "time_fix=?," +
                     "time_fix_monitor=?," +
                     "time_oil_fix=?," +
-                    "time_oil_fix_mo=? " +
+                    "time_oil_fix_mo=?, " +
+                    "drillrod_pq3=?,\n" +
+                    "     drillrod_hq3=?,\n" +
+                    "    core_barrelhq3_1_5m=?,\n" +
+                    "    backReamer=?,\n" +
+                    "    caphq=?,\n" +
+                    "    drillbit_hq3=?,\n" +
+                    "    water_pump=?,\n" +
+                    "    pipewrench24=?,\n" +
+                    "    pipewrench36=?,\n" +
+                    "    pipewrench48=?,\n" +
+                    "    monkey_wrench_hq3=?,\n" +
+                    "    rodpuller=?,\n" +
+                    "    adapter3in1_hq=?,\n" +
+                    "    lifting_plug_hq=?,\n" +
+                    "    circuit_breaker=?,\n" +
+                    "    led_light=?,\n" +
+                    "     fuel=? " +
                     "WHERE key_id = ?";
 
             return JdbcTemplate.update(sql,
@@ -940,6 +1028,24 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                     machineReq.getTime_fix_monitor(),
                     machineReq.getTime_oil_fix(),
                     machineReq.getTime_oil_fix_mo(),
+
+                    machineReq.getDrillrod_pq3(),
+                    machineReq.getDrillrod_hq3(),
+                    machineReq.getCore_barrelhq3_1_5m(),
+                    machineReq.getBackReamer(),
+                    machineReq.getCaphq(),
+                    machineReq.getDrillbit_hq3(),
+                    machineReq.getWater_pump(),
+                    machineReq.getPipewrench24(),
+                    machineReq.getPipewrench36(),
+                    machineReq.getPipewrench48(),
+                    machineReq.getMonkey_wrench_hq3(),
+                    machineReq.getRodpuller(),
+                    machineReq.getAdapter3in1_hq(),
+                    machineReq.getLifting_plug_hq(),
+                    machineReq.getCircuit_breaker(),
+                    machineReq.getLed_light(),
+                    machineReq.getFuel(),
 
                     machineReq.getKeyId()
             );

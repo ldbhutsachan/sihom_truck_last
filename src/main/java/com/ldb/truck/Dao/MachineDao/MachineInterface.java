@@ -12,7 +12,6 @@ public interface MachineInterface {
   public List<MachineHis> getMachineHis(MachineHisReq machineHisReq,String borNo);
   public int saveMachinedaily(MachineHisReq machineHisReq,String userId);
   public int updateMachinedaily(MachineHisReq machineHisReq);
-  public int enableMachinedaily(MachineHisReq machineHisReq);
   public List<Machine> getMachineByMerchantNo(MachineReq machineRPReq);
   public List<Machine> getMachine(MachineRPReq machineRPReq,String role, String borNo);
   public List<MachineDetails> getReportMachineDetails(MachineRPReq machineRPReq ,String role ,String borNo);

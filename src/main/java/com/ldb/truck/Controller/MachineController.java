@@ -87,7 +87,6 @@ private final  MachineService MACHINE_SERVICE;
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userName = userProfiles.get(0).getUserName();
-        log.info("show role"+ userName);
         try {
             response = MACHINE_SERVICE.enableMachineHis(machineRPReq,userName);
         }catch (Exception e){
@@ -211,25 +210,6 @@ private final  MachineService MACHINE_SERVICE;
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-//@CrossOrigin(origins = "*")
-//    @PostMapping("/getSumReportMachine.segetSumReportMachinervice")
-//    public ResponseEntity<?> (@RequestBody MachineRPReq machineRPReq){
-//    MachineReportSumResposne response = new MachineReportSumResposne();
-//        List<Profile> userProfiles = profileDao.getProfileInfoByToken(machineRPReq.getToKen());
-//        if (userProfiles.isEmpty()) {
-//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-//        }
-//        String role = userProfiles.get(0).getRole();
-//        String borNo = userProfiles.get(0).getBorNo();
-//        try {
-//            response = MACHINE_SERVICE.getSumReportMachine(machineRPReq,role,borNo);
-//        }catch (Exception e){
-//            response.setStatus("EE");
-//            response.setMessage("Data Error !!");
-//        }
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
-
     @CrossOrigin(origins = "*")
     @PostMapping("/saveMachine.service")
     public MachineReportResposne saveMachine(@RequestBody MachineReq machineRPReq){
