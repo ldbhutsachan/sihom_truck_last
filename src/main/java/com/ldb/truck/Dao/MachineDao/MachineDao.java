@@ -59,6 +59,10 @@ public class MachineDao implements MachineInterface {
                 conditions.add("d.bor_no = '" + borNo + "'");
             }
 
+            // ✅ MchNo filter
+            if (req.getMchNo() != null && !req.getMchNo().isEmpty()) {
+                conditions.add("b.mch_no = '" + req.getMchNo() + "'");
+            }
             // ✅ Base SQL
             sb.append("SELECT \n")
                     .append(" d.saveby_name,d.savedate,\n" +
