@@ -6,23 +6,21 @@ import com.ldb.truck.Model.Login.Payment.GenerateInvoiceID;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
 import com.ldb.truck.Model.Login.Performance.v_performance;
 import com.ldb.truck.Model.Machine.*;
+import com.ldb.truck.Repository.MachineHis.MerchinHisRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class MachineService {
     private final MachineInterface machineInterface;
+    private final MerchinHisRepository MERCHIN_HIS_REPOSITORY;
 
-    public MachineService(MachineInterface machineInterface) {
-        this.machineInterface = machineInterface;
-    }
 
     public MachineResponse saveMachineHis(MachineHisReq machineHisReq,String userId){
         MachineResponse response = new MachineResponse();
@@ -108,7 +106,8 @@ public class MachineService {
     public MachineResponse enableMachineHis(MachineHisReq machineHisReq,String userName){
         MachineResponse response = new MachineResponse();
         try {
-            int check  = machineInterface.enableMachinedaily(machineHisReq);
+            int check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
+            log.info("check:"+check);
             if(check == 1  ){
                 response.setStatus("00");
                 response.setMessage("OK");
@@ -180,9 +179,7 @@ public class MachineService {
     }
 
     public MachineResponse getMachine(MachineRPReq machineRPReq,String role,String borNo) {
-        String mesTime1 = "OK";
-        String mesTime2 = "LOW";
-        String mesTime3 = "EP";
+
 
         String totalMsg = "";
         String totalMs2 = "";
@@ -215,12 +212,36 @@ public class MachineService {
                  machine.setTotalFixMo(resp.getTotalFixMo());
                  machine.setTotalFixMoOil(resp.getTotalFixMoOil());
 
+                 //ADD NEW
+                 machine.setDrillrod_pq3(resp.getDrillrod_pq3());
+                         machine.setDrillrod_hq3(resp.getDrillrod_hq3());
+                         machine.setCore_barrelhq3_1_5m(resp.getCore_barrelhq3_1_5m());
+                         machine.setBackReamer(resp.getBackReamer());
+                         machine.setCaphq(resp.getCaphq());
+                         machine.setDrillbit_hq3(resp.getDrillbit_hq3());
+                         machine.setWater_pump(resp.getWater_pump());
+                         machine.setPipewrench24(resp.getPipewrench24());
+                         machine.setPipewrench36(resp.getPipewrench36());
+                         machine.setPipewrench48(resp.getPipewrench48());
+                         machine.setMonkey_wrench_hq3(resp.getMonkey_wrench_hq3());
+                         machine.setRodpuller(resp.getRodpuller());
+                         machine.setAdapter3in1_hq(resp.getAdapter3in1_hq());
+                         machine.setLifting_plug_hq(resp.getLifting_plug_hq());
+                         machine.setCircuit_breaker(resp.getCircuit_breaker());
+                         machine.setLed_light(resp.getLed_light());
+                         machine.setFuel(resp.getFuel());
+
                  //ກຳນົດ limit monitor
                  int time1 = resp.getTime_fix_monitor();
                  // ຄໍານວນ ຍໍ້າມັນ
                  int time2 = resp.getTotalFixMo();
                  // ຄໍານວນ ນໍ້າມັນ ໄຮໂດລິກ
                  int time3 = resp.getTotalFixMoOil();
+
+                 String mesTime1 = "OK";
+                 String mesTime2 = "LOW";
+                 String mesTime3 = "EP";
+
                  //ກວດສະຖານະນໍ້າມັຫນ
                  if(time2 > time1 ){
                      totalMsg = mesTime1;
@@ -295,9 +316,30 @@ public class MachineService {
         try {
             List<MachineStockDetails> data = machineInterface.getSumReportMachine(machineRPReq, role, borNo);
             if(data.size()> 1){
-                sumTotalLak = data.stream().filter(p -> p.getCcy().equals("LAK")).map(MachineStockDetails::getTotal).collect(Collectors.summingDouble(Double::doubleValue));
-                sumTotalThb = data.stream().filter(p -> p.getCcy().equals("THB")).map(MachineStockDetails::getTotal).collect(Collectors.summingDouble(Double::doubleValue));
-                sumTotalUsd = data.stream().filter(p -> p.getCcy().equals("USD")).map(MachineStockDetails::getTotal).collect(Collectors.summingDouble(Double::doubleValue));
+
+                 sumTotalLak = Optional.ofNullable(data)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .filter(p -> "LAK".equals(p.getCcy()))
+                        .mapToDouble(MachineStockDetails::getTotal)
+                        .sum();
+
+                sumTotalThb = Optional.ofNullable(data)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .filter(p -> "THB".equals(p.getCcy()))
+                        .mapToDouble(MachineStockDetails::getTotal)
+                        .sum();
+
+                sumTotalUsd = Optional.ofNullable(data)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .filter(p -> "USD".equals(p.getCcy()))
+                        .mapToDouble(MachineStockDetails::getTotal)
+                        .sum();
+
+
+
 
                 List<String> merCodeList = data.stream()
                         .map(MachineStockDetails::getMchNo)
@@ -320,6 +362,12 @@ public class MachineService {
                     List<MachineSumRptModel.GroupItemList> groupItemList = filtered.stream()
                             .map(p -> {
                                 MachineSumRptModel.GroupItemList item = new MachineSumRptModel.GroupItemList();
+
+                                item.setSaveBy(p.getSaveBy());
+                                item.setSaveDate(p.getSaveDate());
+                                item.setApproveBy(p.getApproveBy());
+                                item.setApproveDate(p.getApproveDate());
+
                                 item.setBorNo(p.getBorNo());
                                 item.setBorName(p.getBorName());
                                 item.setItemId(p.getItemId());

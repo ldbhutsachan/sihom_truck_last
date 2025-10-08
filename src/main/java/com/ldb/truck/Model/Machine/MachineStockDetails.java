@@ -18,6 +18,12 @@ public class MachineStockDetails {
     private String mchBranchName; // mch_branch_name
     private String mchModel; // mch_model
     private Integer mchProductYear; // mch_product_year
+
+    private String saveDate;
+    private String saveBy;
+    private String approveDate;
+    private String approveBy;
+
     private String borNo; // bor_no
     private String borName; // bor_name
     private String billNo; // bill_no

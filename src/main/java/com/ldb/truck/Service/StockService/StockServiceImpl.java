@@ -2780,7 +2780,10 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             }
         }
         else {
-            conQuery = "\n select * from  v_req_type where  1=1 ";
+            conReqTypeId  = "\n AND req_id='"+reqTypeId+"'";
+            conQuery = "\n select \n" +
+                    "key_id,b_name,location,`type`,req_id,req_name,bor_no,bor_id,\n" +
+                    "'' mch_no from v_req_type where  1=1 ";
         }
         StringBuilder sb  = new StringBuilder();
         sb.append(conQuery);

@@ -14,6 +14,11 @@ public class MachineSumRptModel {
 
     @Data
     public static class  GroupItemList{
+        private String saveDate;
+        private String saveBy;
+        private String approveDate;
+        private String approveBy;
+
         private String borNo;
         private String borName;
         private String itemId;
