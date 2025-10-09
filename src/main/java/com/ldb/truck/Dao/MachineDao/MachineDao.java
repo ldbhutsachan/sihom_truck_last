@@ -635,11 +635,25 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                 conMchNo = "\n AND a.mch_no ='"+merNo+"'  ";
             }
             //******ກວດສິດການ query  serch by borNo
-            if(!role.equals("PADMIN")){
-                conAdmin = "\n AND a.borNo='"+borNo+"' ";
-            }else {
-                conAdmin= "";
+//            if(!role.equals("PADMIN")){
+//                conAdmin = "\n AND a.borNo='"+borNo+"' ";
+//            }else {
+//                conAdmin= "";
+//            }
+            //******ກວດສິດການ query  serch by borNo
+            String reqBorNo = machineRPReq.getBorNo();
+
+            if (reqBorNo != null && !reqBorNo.isEmpty()) {
+                // ถ้ามีค่า borNo จาก client ให้ใช้ค่านั้นกรองเสมอ
+                conAdmin = "\n AND a.borNo='" + reqBorNo + "' ";
+            } else if (!role.equals("PADMIN")) {
+                // ถ้าไม่มีค่า borNo จาก client และไม่ใช่ admin ให้กรองตาม borNo ของ user
+                conAdmin = "\n AND a.borNo='" + borNo + "' ";
+            } else {
+                // ถ้าเป็น admin และไม่มีค่า borNo จาก client ให้ดึงทั้งหมด
+                conAdmin = "";
             }
+
             sb.append("SELECT a.drillrod_pq3,a.drillrod_hq3,a.core_barrelhq3_1_5m,a.backReamer,a.caphq,a.drillbit_hq3,a.water_pump,a.pipewrench24,a.pipewrench36,a.pipewrench48,a.monkey_wrench_hq3,a.rodpuller,a.adapter3in1_hq,a.lifting_plug_hq,a.circuit_breaker,a.led_light,a.fuel,\n" +
                     "    a.key_id,\n" +
                     "    a.mch_no,\n" +
