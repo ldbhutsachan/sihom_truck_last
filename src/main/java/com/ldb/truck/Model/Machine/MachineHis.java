@@ -8,6 +8,7 @@ import java.util.Date;
 public class MachineHis {
     private Integer keyId; // key_id int(30)
     private String mchNo; // mch_no varchar(100)
+    private String mch_name;
     private Date createDate; // create_date datetime
     private String createBy; // create_by varchar(100)
     private String timeTotal; // time_close varchar(10)

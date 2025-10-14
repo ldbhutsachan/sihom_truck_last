@@ -8,6 +8,7 @@ import java.util.Collection;
 public class MachineRPReq {
     private String toKen;
     private String merNo;
+    private String mchNo; //add more
     private String borNo;
     private String startDate;
     private String endDate;
