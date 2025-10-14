@@ -701,7 +701,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                     "    (a.time_oil_fix - \n" +
                     "     COALESCE((SELECT SUM(ss.time_total) \n" +
                     "               FROM tb_machine_his ss \n" +
-                    "               WHERE ss.status=1 and ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n" +
+                    "               WHERE ss.status2=1 and ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n" +
                     "\n" +
                     "FROM \n" +
                     "    tb_bors b \n" +

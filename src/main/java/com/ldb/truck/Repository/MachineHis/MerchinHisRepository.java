@@ -22,5 +22,14 @@ public interface MerchinHisRepository extends CrudRepository<MerchineHisEntity,S
     @Query(value = "UPDATE tb_machine_his SET status = 3  WHERE mch_no =:mchNo", nativeQuery = true)
     int updateMachineStatusToClosed(@Param("mchNo") String mchNo);
 
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE tb_machine_his SET status2 = 3  WHERE mch_no =:mchNo", nativeQuery = true)
+    int updateMachineStatusToClosedTye2(@Param("mchNo") String mchNo);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE tb_machine_his SET status = 3,status2 = 3  WHERE mch_no =:mchNo", nativeQuery = true)
+    int updateMachineStatusToClosedTyeAll(@Param("mchNo") String mchNo);
 
 }
