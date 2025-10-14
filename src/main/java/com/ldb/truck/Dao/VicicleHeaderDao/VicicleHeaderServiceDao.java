@@ -1,9 +1,6 @@
 package com.ldb.truck.Dao.VicicleHeaderDao;
 
-import com.ldb.truck.Model.Login.CarOffice.CarOfficeModel;
-import com.ldb.truck.Model.Login.CarOffice.CarOfficeReq;
-import com.ldb.truck.Model.Login.CarOffice.CarPaidModel;
-import com.ldb.truck.Model.Login.CarOffice.PaidCarDaoReq;
+import com.ldb.truck.Model.Login.CarOffice.*;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportHeader;
 import com.ldb.truck.Model.Login.Report.ReportHeaderReq;
@@ -187,16 +184,13 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
         }
         return null;
     }
-    // list car office
-    @Override
-//    public List<CarOfficeModel> listCarOfficeDAOs (CarOfficeReq carOfficeReq) {
-//        String transactionID = transactionIDGenerator.generateTransactionID();
-//        log.info("=======================TransactionID=======================:"+transactionID);
-//        try{
+
+  //list car Office
+//    public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq) {
+//        try {
+//            String SQL = "SELECT * FROM V_OFFIE_CAR_STATUS a JOIN LOGIN c ON a.userId = c.KEY_ID WHERE c.BRANCH='" + carOfficeReq.getBranch() + "' ORDER BY arange ASC";
+//            log.info("SQL: " + SQL);
 //
-//            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' ORDER BY arange ASC ";
-//            log.info("SQL"+SQL);
-////            new adapt
 //            return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
 //                @SneakyThrows
 //                @Override
@@ -261,158 +255,200 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
 //                    tr.setLekmai_next_status(rs.getString("LEKMAI_NEXT_STATUS"));
 //                    tr.setDateChangeLeean(rs.getString("date_change_lean"));
 //                    tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
+//                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
+//                    tr.setLeanGiaNextday(rs.getString("leanGiaNextday"));
+////                    add new
+//                    tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
+//                    tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
 //
-//                    // Check the condition for sending SMS
+//                    String phoneNumber = "8562092661111"; // Replace with actual phone number
+//                    String carInfo = "Car Brand: " + tr.getCar_brand() + ", License Plate: " + tr.getLicense_plate();
+//
+//                    // Send SMS reminders based on status conditions
 //                    if ("E".equals(rs.getString("technic_check_STATUS"))) {
-//                        // ====================================================================== SMS =============================================
-//                        ArrayList<String> phoneNumbers = new ArrayList<>();
-//                        phoneNumbers.add("8562092607628");
-//                        String baseJsonBody = "{\n" +
-//                                "  \"transaction_id\": \"" + transactionID + "\",\n" +
-//                                "  \"header\": \"Khounkham\",\n" +
-//                                "  \"phoneNumber\": \"8562092607628\",\n" +
-//                                "  \"message\": \"ໃບກວດກາເຕັກນິກໃກ້ຈະໝົດອາຍຸແລ້ວ\"\n"
-//                                "}";
-//                        for (String phoneNumber : phoneNumbers) {
-//                            String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
-//                                    "\"phoneNumber\": \"" + phoneNumber + "\"");
-//
-//                            HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
-//                                    .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
-//                                    .header("Content-Type", "application/json")
-//                                    .body(jsonBody)
-//                                    .asJson();
-//                            // Handle the response for each SMS
-//                            if (response.getStatus() == 200) {
-//                                log.info("SMS sent to " + phoneNumber + " successfully!");
-//                            } else {
-//                                System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
-//                            }
-//                        }
-//                        // ================================================================================================================================
+//                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ໃບກວດກາເຕັກນິກໃກ້ຈະໝົດອາຍຸແລ້ວ.ໃນວັນທີ");
+//                    } else if ("E".equals(rs.getString("LICENSE_STATUS"))) {
+//                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ໃບທະບຽນລົດໃກ້ຈະໝົດອາຍຸແລ້ວ.");
+//                    } else if ("E".equals(rs.getString("insurance_Lao_STATUS"))) {
+//                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພລາວໃກ້ຈະໝົດອາຍຸແລ້ວ.");
+//                    } else if ("E".equals(rs.getString("insurance_thai_STATUS"))) {
+//                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພໄທໃກ້ຈະໝົດອາຍຸແລ້ວ.");
+//                    } else if ("E".equals(rs.getString("insurance_viet_STATUS"))) {
+//                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພຫວຽດໃກ້ຈະໝົດອາຍຸແລ້ວ.");
+//                    } else if ("E".equals(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"))) {
+//                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+" ໃກ້ຈະຄົບກຳນົດວັນທີປ່ຽນນ້ຳມັນເຄື່ອງແລ້ວ.");
+//                    } else if ("E".equals(rs.getString("TUNGSIT_STATUS")))
+//                    {
+//                        sendSmsReminder(phoneNumber, carInfo, "ເລກຕັງຊິດ"+"ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+" ໃກ້ຈະໝົດອາຍຸແລ້ວ");
 //                    }
-//                    return tr ;
-//                }
-//            });
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-    public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq) {
-
-        try {
-
-            String SQL = "SELECT * FROM V_OFFIE_CAR_STATUS a JOIN LOGIN c ON a.userId = c.KEY_ID WHERE c.BRANCH='" + carOfficeReq.getBranch() + "' ORDER BY arange ASC";
-            log.info("SQL: " + SQL);
-
-            return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
-                @SneakyThrows
-                @Override
-                public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    CarOfficeModel tr = new CarOfficeModel();
-                    tr.setKEY_ID(rs.getString("KEY_ID"));
-                    tr.setImg(rs.getString("img"));
-                    tr.setLicense_plate(rs.getString("license_plate"));
-                    tr.setBattery_code_name(rs.getString("battery_code_name"));
-                    tr.setLicense_plate_end(rs.getString("license_plate_end"));
-                    tr.setLicense_plate_start(rs.getString("license_plate_start"));
-                    tr.setCar_year(rs.getString("car_year"));
-                    tr.setCar_type(rs.getString("car_type"));
-                    tr.setCar_brand(rs.getString("car_brand"));
-                    tr.setLekJuk(rs.getString("lekJuk"));
-                    tr.setLekThung(rs.getString("lekThung"));
-                    tr.setCarColor(rs.getString("carColor"));
-                    tr.setFont_light(rs.getString("font_light"));
-                    tr.setBack_light(rs.getString("back_light"));
-                    tr.setMillor_back(rs.getString("millor_back"));
-                    tr.setMillor_side(rs.getString("millor_side"));
-                    tr.setCar_mileage_now(rs.getString("car_mileage_now"));
-                    tr.setCc(rs.getString("cc"));
-                    tr.setLeanGia(rs.getString("leanGia"));
-                    tr.setInsurance_Lao(rs.getString("insurance_Lao"));
-                    tr.setInsurance_viet(rs.getString("insurance_viet"));
-                    tr.setInsurance_thai(rs.getString("insurance_thai"));
-                    tr.setInsurance_Lao_expireDate(rs.getString("insurance_Lao_expireDate"));
-                    tr.setInsurance_viet_expireDate(rs.getString("insurance_viet_expireDate"));
-                    tr.setInsurance_thai_expireDate(rs.getString("insurance_thai_expireDate"));
-                    tr.setTechnic_check_dateStart(rs.getString("technic_check_dateStart"));
-                    tr.setTechnic_check_dateEnd(rs.getString("technic_check_dateEnd"));
-                    tr.setTotal_weigh_car(rs.getString("total_weigh_car"));
-                    tr.setOil(rs.getString("oil"));
-                    tr.setCar_model(rs.getString("car_model"));
-                    tr.setOwner_car(rs.getString("owner_car"));
-                    tr.setSteering_wheel(rs.getString("steering_wheel"));
-                    tr.setDao(rs.getString("dao"));
-                    tr.setWide(rs.getString("wide"));
-                    tr.setLongg(rs.getString("longg"));
-                    tr.setTall(rs.getString("tall"));
-                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
-                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
-                    tr.setSerial_wheel_left_font(rs.getString("serial_wheel_left_font"));
-                    tr.setSerial_wheel_left_back(rs.getString("serial_wheel_left_back"));
-                    tr.setSerial_wheel_right_font(rs.getString("serial_wheel_right_font"));
-                    tr.setSerial_wheel_right_back(rs.getString("serial_wheel_right_back"));
-                    tr.setLICENSE_STATUS(rs.getString("LICENSE_STATUS"));
-                    tr.setInsurance_Lao_STATUS(rs.getString("insurance_Lao_STATUS"));
-                    tr.setInsurance_thai_STATUS(rs.getString("insurance_thai_STATUS"));
-                    tr.setInsurance_viet_STATUS(rs.getString("insurance_viet_STATUS"));
-                    tr.setTechnic_check_STATUS(rs.getString("technic_check_STATUS"));
-                    tr.setLean_STATUS(rs.getString("LEAN_STATUS"));
-                    tr.setLean(rs.getString("lean"));
-                    tr.setLean_gia_STATUS(rs.getString("LEAN_GIA_STATUS"));
-                    tr.setTungsitnumber(rs.getString("tungsitnumber"));
-                    tr.setTungsitDateExpire(rs.getString("tungsitDateExpire"));
-                    tr.setTUNGSIT_STATUS(rs.getString("TUNGSIT_STATUS"));
-                    tr.setLekmai_next(rs.getString("lekmai_next"));
-                    tr.setSerial_tire_second(rs.getString("serial_tire_second"));
-                    tr.setLean_engine_date_next_status(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"));
-                    tr.setLekmai_next_status(rs.getString("LEKMAI_NEXT_STATUS"));
-                    tr.setDateChangeLeean(rs.getString("date_change_lean"));
-                    tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
-                    tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
-                    tr.setLeanGiaNextday(rs.getString("leanGiaNextday"));
-//                    add new
-                    tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
-                    tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
-
-                    String phoneNumber = "8562092661111"; // Replace with actual phone number
-                    String carInfo = "Car Brand: " + tr.getCar_brand() + ", License Plate: " + tr.getLicense_plate();
-
-                    // Send SMS reminders based on status conditions
-                    if ("E".equals(rs.getString("technic_check_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ໃບກວດກາເຕັກນິກໃກ້ຈະໝົດອາຍຸແລ້ວ.ໃນວັນທີ");
-                    } else if ("E".equals(rs.getString("LICENSE_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ໃບທະບຽນລົດໃກ້ຈະໝົດອາຍຸແລ້ວ.");
-                    } else if ("E".equals(rs.getString("insurance_Lao_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພລາວໃກ້ຈະໝົດອາຍຸແລ້ວ.");
-                    } else if ("E".equals(rs.getString("insurance_thai_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພໄທໃກ້ຈະໝົດອາຍຸແລ້ວ.");
-                    } else if ("E".equals(rs.getString("insurance_viet_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+"ປະກັນໄພຫວຽດໃກ້ຈະໝົດອາຍຸແລ້ວ.");
-                    } else if ("E".equals(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"))) {
-                        sendSmsReminder(phoneNumber, carInfo, "ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+" ໃກ້ຈະຄົບກຳນົດວັນທີປ່ຽນນ້ຳມັນເຄື່ອງແລ້ວ.");
-                    } else if ("E".equals(rs.getString("TUNGSIT_STATUS")))
-                    {
-                        sendSmsReminder(phoneNumber, carInfo, "ເລກຕັງຊິດ"+"ລົດ "+tr.getCar_brand()+" ທະບຽນ "+tr.getLicense_plate()+" ໃກ້ຈະໝົດອາຍຸແລ້ວ");
-                    }
-                    return tr;
-                }
-            });
-
-        } catch (Exception e) {
-            log.error("Error retrieving car office data:", e);
-            throw new RuntimeException("Error retrieving car office data", e);
-        }
-    }
 //                    return tr;
 //                }
 //            });
+//
 //        } catch (Exception e) {
-//            e.printStackTrace();
+//            log.error("Error retrieving car office data:", e);
+//            throw new RuntimeException("Error retrieving car office data", e);
 //        }
-//        return null;
 //    }
+public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq) {
+    try {
+        StringBuilder SQL = new StringBuilder();
+        SQL.append("SELECT * FROM V_OFFIE_CAR_STATUS a ")
+                .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
+                .append("WHERE c.BRANCH = '").append(carOfficeReq.getBranch()).append("' ");
+
+        // ✅ ตรวจสอบค่า borNo
+        log.info("borNo from request: " + carOfficeReq.getBorNo());
+
+        if (carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()) {
+            SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
+            log.info("Query condition: BRANCH + BOR_NO");
+        } else {
+            SQL.append("AND a.borNo IS NULL ");
+            log.info("Query condition: BRANCH + BOR_NO IS NULL");
+        }
+
+        SQL.append("ORDER BY arange ASC");
+
+        log.info("Final SQL: " + SQL.toString());
+
+        return EBankJdbcTemplate.query(SQL.toString(), new RowMapper<CarOfficeModel>() {
+            @SneakyThrows
+            @Override
+            public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                CarOfficeModel tr = new CarOfficeModel();
+
+                tr.setKEY_ID(rs.getString("KEY_ID"));
+                tr.setImg(rs.getString("img"));
+                tr.setLicense_plate(rs.getString("license_plate"));
+                tr.setBattery_code_name(rs.getString("battery_code_name"));
+                tr.setLicense_plate_end(rs.getString("license_plate_end"));
+                tr.setLicense_plate_start(rs.getString("license_plate_start"));
+                tr.setCar_year(rs.getString("car_year"));
+                tr.setCar_type(rs.getString("car_type"));
+                tr.setCar_brand(rs.getString("car_brand"));
+                tr.setLekJuk(rs.getString("lekJuk"));
+                tr.setLekThung(rs.getString("lekThung"));
+                tr.setCarColor(rs.getString("carColor"));
+                tr.setFont_light(rs.getString("font_light"));
+                tr.setBack_light(rs.getString("back_light"));
+                tr.setMillor_back(rs.getString("millor_back"));
+                tr.setMillor_side(rs.getString("millor_side"));
+                tr.setCar_mileage_now(rs.getString("car_mileage_now"));
+                tr.setCc(rs.getString("cc"));
+                tr.setLeanGia(rs.getString("leanGia"));
+                tr.setInsurance_Lao(rs.getString("insurance_Lao"));
+                tr.setInsurance_viet(rs.getString("insurance_viet"));
+                tr.setInsurance_thai(rs.getString("insurance_thai"));
+                tr.setInsurance_Lao_expireDate(rs.getString("insurance_Lao_expireDate"));
+                tr.setInsurance_viet_expireDate(rs.getString("insurance_viet_expireDate"));
+                tr.setInsurance_thai_expireDate(rs.getString("insurance_thai_expireDate"));
+                tr.setTechnic_check_dateStart(rs.getString("technic_check_dateStart"));
+                tr.setTechnic_check_dateEnd(rs.getString("technic_check_dateEnd"));
+                tr.setTotal_weigh_car(rs.getString("total_weigh_car"));
+                tr.setOil(rs.getString("oil"));
+                tr.setCar_model(rs.getString("car_model"));
+                tr.setOwner_car(rs.getString("owner_car"));
+                tr.setSteering_wheel(rs.getString("steering_wheel"));
+                tr.setDao(rs.getString("dao"));
+                tr.setWide(rs.getString("wide"));
+                tr.setLongg(rs.getString("longg"));
+                tr.setTall(rs.getString("tall"));
+                tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
+                tr.setSerial_wheel_left_font(rs.getString("serial_wheel_left_font"));
+                tr.setSerial_wheel_left_back(rs.getString("serial_wheel_left_back"));
+                tr.setSerial_wheel_right_font(rs.getString("serial_wheel_right_font"));
+                tr.setSerial_wheel_right_back(rs.getString("serial_wheel_right_back"));
+                tr.setLICENSE_STATUS(rs.getString("LICENSE_STATUS"));
+                tr.setInsurance_Lao_STATUS(rs.getString("insurance_Lao_STATUS"));
+                tr.setInsurance_thai_STATUS(rs.getString("insurance_thai_STATUS"));
+                tr.setInsurance_viet_STATUS(rs.getString("insurance_viet_STATUS"));
+                tr.setTechnic_check_STATUS(rs.getString("technic_check_STATUS"));
+                tr.setLean_STATUS(rs.getString("LEAN_STATUS"));
+                tr.setLean(rs.getString("lean"));
+                tr.setLean_gia_STATUS(rs.getString("LEAN_GIA_STATUS"));
+                tr.setTungsitnumber(rs.getString("tungsitnumber"));
+                tr.setTungsitDateExpire(rs.getString("tungsitDateExpire"));
+                tr.setTUNGSIT_STATUS(rs.getString("TUNGSIT_STATUS"));
+                tr.setLekmai_next(rs.getString("lekmai_next"));
+                tr.setSerial_tire_second(rs.getString("serial_tire_second"));
+                tr.setLean_engine_date_next_status(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"));
+                tr.setLekmai_next_status(rs.getString("LEKMAI_NEXT_STATUS"));
+                tr.setDateChangeLeean(rs.getString("date_change_lean"));
+                tr.setDateChangeLeeanNext(rs.getString("date_change_lean_next"));
+                tr.setLeanFuengThaiy(rs.getString("leanFuengThaiy"));
+                tr.setLeanGiaNextday(rs.getString("leanGiaNextday"));
+                tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
+                tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
+                tr.setBorNo(rs.getString("borNo"));
+                tr.setBorName(rs.getString("borName"));
+
+                // ✅ ส่ง SMS แจ้งเตือนตามเงื่อนไข
+                String phoneNumber = "8562092661111"; // Replace with actual number
+                String carInfo = "Car Brand: " + tr.getCar_brand() + ", License Plate: " + tr.getLicense_plate();
+
+                if ("E".equals(rs.getString("technic_check_STATUS"))) {
+                    sendSmsReminder(phoneNumber, carInfo,
+                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ໃບກວດກາເຕັກນິກໃກ້ຈະໝົດອາຍຸ.");
+                } else if ("E".equals(rs.getString("LICENSE_STATUS"))) {
+                    sendSmsReminder(phoneNumber, carInfo,
+                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ໃບທະບຽນລົດໃກ້ຈະໝົດອາຍຸ.");
+                } else if ("E".equals(rs.getString("insurance_Lao_STATUS"))) {
+                    sendSmsReminder(phoneNumber, carInfo,
+                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ປະກັນໄພລາວໃກ້ຈະໝົດອາຍຸ.");
+                } else if ("E".equals(rs.getString("insurance_thai_STATUS"))) {
+                    sendSmsReminder(phoneNumber, carInfo,
+                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ປະກັນໄພໄທໃກ້ຈະໝົດອາຍຸ.");
+                } else if ("E".equals(rs.getString("insurance_viet_STATUS"))) {
+                    sendSmsReminder(phoneNumber, carInfo,
+                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ປະກັນໄພຫວຽດໃກ້ຈະໝົດອາຍຸ.");
+                } else if ("E".equals(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"))) {
+                    sendSmsReminder(phoneNumber, carInfo,
+                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ໃກ້ຈະຄົບກຳນົດປ່ຽນນ້ຳມັນເຄື່ອງ.");
+                } else if ("E".equals(rs.getString("TUNGSIT_STATUS"))) {
+                    sendSmsReminder(phoneNumber, carInfo,
+                            "ເລກຕັງຊິດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ໃກ້ຈະໝົດອາຍຸ.");
+                }
+
+                return tr;
+            }
+        });
+
+    } catch (Exception e) {
+        log.error("Error retrieving car office data:", e);
+        throw new RuntimeException("Error retrieving car office data", e);
+    }
+}
+
+//query car bor
+public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq) {
+    StringBuilder SQL = new StringBuilder();
+    SQL.append("SELECT a.KEY_ID, a.img, a.borNo, a.borName, a.license_plate, a.Dao FROM V_OFFIE_CAR_STATUS a ")
+            .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
+            .append("WHERE c.BRANCH='").append(CarBorReq.getBranch()).append("' ");
+
+    if (CarBorReq.getBorNo() != null && !CarBorReq.getBorNo().trim().isEmpty()) {
+        SQL.append("AND a.borNo = '").append(CarBorReq.getBorNo()).append("' ");
+    } else {
+        SQL.append("AND a.borNo IS NULL ");
+    }
+
+    SQL.append("ORDER BY arange ASC");
+
+    return EBankJdbcTemplate.query(SQL.toString(), (rs, rowNum) -> {
+        CarBorModel tr = new CarBorModel();
+        tr.setKEY_ID(rs.getString("KEY_ID"));
+        tr.setImg(rs.getString("img"));
+        tr.setBorNo(rs.getString("borNo"));
+        tr.setBorName(rs.getString("borName"));
+        tr.setLicense_plate(rs.getString("license_plate"));
+        tr.setDao(rs.getString("Dao"));
+        return tr;
+    });
+}
+
+
+
 private void sendSmsReminder(String phoneNumber, String carInfo, String messageBody) {
     String transactionID = transactionIDGenerator.generateTransactionID(); // Ensure proper resource management in generateTransactionID()
 
@@ -1002,7 +1038,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             String SQL = "insert into CARS_OFFICE (img,license_plate,battery_code_name,license_plate_end,license_plate_start," +
                     "car_year,car_type,car_brand,lekJuk,lekThung,carColor,font_light,back_light,millor_back,millor_side,car_mileage_now,cc,leanGia," +
                     "insurance_Lao,insurance_viet,insurance_thai,insurance_Lao_expireDate,insurance_viet_expireDate,insurance_thai_expireDate," +
-                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next,leanFuengThaiy,leanGiaNextday,startdate_kongnam,enddate_kongnam) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next,leanFuengThaiy,leanGiaNextday,startdate_kongnam,enddate_kongnam,borNo) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(path + fileName);
@@ -1066,6 +1102,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             //add new
             paramList.add(carOfficeReq.getStartdate_kongnam());
             paramList.add(carOfficeReq.getEnddate_kongnam());
+            paramList.add(carOfficeReq.getBorNo());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();

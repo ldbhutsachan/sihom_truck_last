@@ -160,14 +160,17 @@ public class VicicleHeaderService  {
         //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
+        //add more
+        String borNo = userIn.get(0).getBorNo();
+
         //===================set data to userId===============================
         carOfficeReq.setUserId(userId);
         carOfficeReq.setBranch(userBranchNo);
+        //add more
+        carOfficeReq.setBorNo(borNo);
         //====================================================================
         List<CarOfficeModel> CarOfficeModel = new ArrayList<>();
         CarOfficeRes result = new CarOfficeRes();
-//        String transactionID = transactionIDGenerator.generateTransactionID();
-//        log.info("=======================TransactionID=======================:"+transactionID);
         try {
 //======================================================================SMS============================================
 //            ArrayList<String> phoneNumbers = new ArrayList<>();
@@ -179,31 +182,6 @@ public class VicicleHeaderService  {
 ////            phoneNumbers.add("8562092607633");
 ////            phoneNumbers.add("8562092607634");
 ////            phoneNumbers.add("8562092607635");
-//
-//            String baseJsonBody = "{\n" +
-//                    "  \"transaction_id\": \"" + transactionID + "\",\n" +
-//                    "  \"header\": \"Khounkham\",\n" +
-//                    "  \"phoneNumber\": \"8562092607628\",\n" +
-//                    "  \"message\": \"pida test SMS\"\n" +
-//                    "}";
-//            for (String phoneNumber : phoneNumbers) {
-//                String jsonBody = baseJsonBody.replace("\"phoneNumber\": \"8562092607628\"",
-//                        "\"phoneNumber\": \"" + phoneNumber + "\"");
-//
-//                HttpResponse<JsonNode> response = Unirest.post("https://apicenter.laotel.com:9443/api/sms_center/submit_sms")
-//                        .header("apikey", "jkurfS6hxJiyf9Ag6rAodo7AiU1rEda6")
-//                        .header("Content-Type", "application/json")
-//                        .body(jsonBody)
-//                        .asJson();
-//
-//                // Handle the response for each SMS
-//                if (response.getStatus() == 200) {
-//                    log.info("SMS sent to " + phoneNumber + " successfully!");
-//                } else {
-//                    System.out.println("Error sending SMS to " + phoneNumber + ": " + response.getStatus() + " - " + response.getBody());
-//                }
-//            }
-//======================================================================================================================================================
             CarOfficeModel = vicicleHeaderDao.listCarOfficeDAOs(carOfficeReq);
             if(CarOfficeModel.size() < 1 ){
                 result.setMessage("have No List of Car yet");
@@ -223,6 +201,46 @@ public class VicicleHeaderService  {
             return result;
         }
     }
+
+    //car bor service
+    public CarBorRes listCarOfficeBorService (@RequestBody CarBorReq CarBorReq){
+        log.info("toKen=======================:"+CarBorReq.getToKen());
+        //============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(CarBorReq.getToKen());
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        //add more
+        String borNo = userIn.get(0).getBorNo();
+
+        //===================set data to userId===============================
+        CarBorReq.setUserId(userId);
+        CarBorReq.setBranch(userBranchNo);
+        //add more
+        CarBorReq.setBorNo(borNo);
+        //====================================================================
+        List<CarBorModel> CarBorModel = new ArrayList<>();
+        CarBorRes result = new CarBorRes();
+        try {
+            CarBorModel = vicicleHeaderDao.listCarBorDao(CarBorReq);
+            if(CarBorModel.size() < 1 ){
+                result.setMessage("have No List of Car yet");
+                result.setStatus("01");
+                return result;
+            }else {
+
+                result.setMessage("Success");
+                result.setStatus("00");
+                result.setData(CarBorModel);
+                return result;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setMessage("data not found");
+            result.setStatus("01");
+            return result;
+        }
+    }
+
     // list lod dao that paid
     public CarPaidRes listCarDaoPaidService (@RequestBody CarOfficeReq carOfficeReq){
         log.info("toKen=======================:"+carOfficeReq.getToKen());
