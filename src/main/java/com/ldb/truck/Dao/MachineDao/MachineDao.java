@@ -421,46 +421,62 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
 @Override
 public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo) {
     StringBuilder sb = new StringBuilder();
+
     Integer keyId = machineHisReq.getKeyId();
-    Integer status = machineHisReq.getStatus();
+//    Integer status = machineHisReq.getStatus();
+    String mchNo = machineHisReq.getMchNo();
 
-    String conOrder = "\n order by a.key_id desc";
-    String conBoNo = "";
-    String conkeyId = "";
-    String conStatus = "";
+    String conOrder = "\n ORDER BY a.key_id DESC";
+    String conBorNo = "";
+    String conKeyId = "";
+//    String conStatus = "";
+    String conMchNo = "";
 
-    if (status != null) {
-        conStatus = "\n AND a.status='" + status + "'";
-    }
+    // ✅ เงื่อนไข status
+//    if (status != null) {
+//        conStatus = "\n AND a.status = " + status;
+//    }
+//    if (status != null && status != 0) { // สมมติ 0 หมายถึง "all"
+//        conStatus = "\n AND a.status = " + status;
+//    }
 
+
+    // ✅ เงื่อนไข keyId
     if (keyId != null) {
-        conkeyId = "\n AND a.key_id = '" + keyId + "' ";
+        conKeyId = "\n AND a.key_id = " + keyId;
     }
 
-    if (borNo != null && !borNo.isEmpty()) {
-        conBoNo = "\n AND b.borNo = '" + borNo + "' ";
+    // ✅ เงื่อนไข borNo (จาก parameter borNo)
+    if (borNo != null && !borNo.trim().isEmpty()) {
+        conBorNo = "\n AND b.borNo = '" + borNo + "'";
     }
 
-    // create SQL
-    sb.append("select \n" +
-            "a.key_id,a.mch_no,a.create_date,a.create_by,d.`USER_LOGIN` as USER_LOGIN,a.time_total,a.txn_date,a.status,\n" +
-            "b.mch_name,b.mch_branch_name,b.mch_model,b.mch_product_year,\n" +
-            "c.key_id borNo,c.b_name borName\n" +
-            "from tb_machine_his a \n" +
-            "inner join tb_machine b on a.mch_no = b.mch_no\n" +
-            "inner join tb_bors c on b.borNo = c.key_id \n" +
-            "inner join LOGIN d on a.create_by = d.key_id \n" +
-            "where 1=1 ");
+    // ✅ เงื่อนไข mchNo (จาก body request)
+    if (mchNo != null && !mchNo.trim().isEmpty()) {
+        conMchNo = "\n AND a.mch_no = '" + mchNo + "'";
+    }
 
-    // Append เงื่อนไข dynamic
-    sb.append(conBoNo);
-    sb.append(conkeyId);
-    sb.append(conStatus);
+    // ✅ สร้าง SQL หลัก
+    sb.append("SELECT \n")
+            .append("a.key_id, a.mch_no, a.create_date, a.create_by, d.USER_LOGIN AS USER_LOGIN, a.time_total, a.txn_date, a.status,\n")
+            .append("b.mch_name, b.mch_branch_name, b.mch_model, b.mch_product_year,\n")
+            .append("c.key_id borNo, c.b_name borName\n")
+            .append("FROM tb_machine_his a\n")
+            .append("INNER JOIN tb_machine b ON a.mch_no = b.mch_no\n")
+            .append("INNER JOIN tb_bors c ON b.borNo = c.key_id\n")
+            .append("INNER JOIN LOGIN d ON a.create_by = d.key_id\n")
+            .append("WHERE 1=1");
+
+    // ✅ append เงื่อนไขตามค่าที่มี
+    sb.append(conBorNo);
+    sb.append(conMchNo);
+    sb.append(conKeyId);
+//    sb.append(conStatus);
     sb.append(conOrder);
 
-    // แปลงเป็น string และ log SQL
+    // Log SQL
     String sql = sb.toString();
-    log.info("SQL for getMachineHis: \n" + sql);
+    log.info("SQL for getMachineHis:\n" + sql);
 
     try {
         return JdbcTemplate.query(sql, new RowMapper<MachineHis>() {
@@ -469,6 +485,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                 MachineHis tr = new MachineHis();
                 tr.setKeyId(rs.getInt("key_id"));
                 tr.setMchNo(rs.getString("mch_no"));
+                tr.setMch_name(rs.getString("mch_name"));
                 tr.setCreateDate(rs.getTimestamp("create_date"));
                 tr.setCreateBy(rs.getString("USER_LOGIN"));
                 tr.setTimeTotal(rs.getString("time_total"));
@@ -485,6 +502,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
 
     return null;
 }
+
 
 
     @Override
