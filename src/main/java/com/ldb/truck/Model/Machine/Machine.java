@@ -1,10 +1,16 @@
 package com.ldb.truck.Model.Machine;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Machine {
     private Integer keyId;
     private String mchNo;
@@ -20,35 +26,26 @@ public class Machine {
     private String borNo;
     private String borName;
     private String borLocationName;
-  //  a.,a.time_fix_monitor,a.time_oil_fix,a.time_oil_fix_mo
+
     private Integer time_fix;
     private Integer time_fix_monitor;
-
     private Integer time_oil_fix;
     private Integer time_oil_fix_mo;
-
     private Integer totalFixMo;
     private Integer totalFixMoOil;
 
-    private String drillrod_pq3;
-    private String  drillrod_hq3;
-    private String core_barrelhq3_1_5m;
-    private String backReamer;
-    private String caphq;
-    private String drillbit_hq3;
-    private String water_pump;
-    private String pipewrench24;
-    private String pipewrench36;
-    private String pipewrench48;
-    private String monkey_wrench_hq3;
-    private String rodpuller;
-    private String adapter3in1_hq;
-    private String lifting_plug_hq;
-    private String circuit_breaker;
-    private String led_light;
-    private String  fuel;
-
-
     private String status_mo;
     private String status_oil_mo;
+
+    // ✅ List ของ tools ที่จะ return ไปให้ client
+    private List<Tool> tools = new ArrayList<>();
+
+    // ✅ Inner class Tool
+    @Data
+    @NoArgsConstructor // จำเป็นสำหรับ Jackson
+    @AllArgsConstructor
+    public static class Tool {
+        private String tool_name;
+        private int qty;
+    }
 }

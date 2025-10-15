@@ -243,24 +243,8 @@ public class MachineService {
                  machine.setTotalFixMo(resp.getTotalFixMo());
                  machine.setTotalFixMoOil(resp.getTotalFixMoOil());
 
-                 //ADD NEW
-                 machine.setDrillrod_pq3(resp.getDrillrod_pq3());
-                         machine.setDrillrod_hq3(resp.getDrillrod_hq3());
-                         machine.setCore_barrelhq3_1_5m(resp.getCore_barrelhq3_1_5m());
-                         machine.setBackReamer(resp.getBackReamer());
-                         machine.setCaphq(resp.getCaphq());
-                         machine.setDrillbit_hq3(resp.getDrillbit_hq3());
-                         machine.setWater_pump(resp.getWater_pump());
-                         machine.setPipewrench24(resp.getPipewrench24());
-                         machine.setPipewrench36(resp.getPipewrench36());
-                         machine.setPipewrench48(resp.getPipewrench48());
-                         machine.setMonkey_wrench_hq3(resp.getMonkey_wrench_hq3());
-                         machine.setRodpuller(resp.getRodpuller());
-                         machine.setAdapter3in1_hq(resp.getAdapter3in1_hq());
-                         machine.setLifting_plug_hq(resp.getLifting_plug_hq());
-                         machine.setCircuit_breaker(resp.getCircuit_breaker());
-                         machine.setLed_light(resp.getLed_light());
-                         machine.setFuel(resp.getFuel());
+                 // ✅ เพิ่มตรงนี้เพื่อ map tools ด้วย
+                 machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
 
                  //ກຳນົດ limit monitor
                  int time1 = resp.getTime_fix_monitor();
