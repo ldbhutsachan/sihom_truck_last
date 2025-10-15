@@ -9,10 +9,14 @@ import com.ldb.truck.Model.Machine.*;
 import com.ldb.truck.Repository.MachineHis.MerchinHisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.sql.Timestamp;
+
 
 @Service
 @Slf4j
@@ -20,6 +24,8 @@ import java.util.stream.Collectors;
 public class MachineService {
     private final MachineInterface machineInterface;
     private final MerchinHisRepository MERCHIN_HIS_REPOSITORY;
+    private final JdbcTemplate jdbcTemplate;
+
 
 
     public MachineResponse saveMachineHis(MachineHisReq machineHisReq,String userId){
@@ -451,60 +457,121 @@ public class MachineService {
         return response;
     }
 
-    public MachineReportResposne saveMachine(MachineReq machineReq) {
+    @Transactional
+    public MachineReportResposne saveMachineWithTools(MachineReq machineReq) {
         MachineReportResposne response = new MachineReportResposne();
-        int result = 0;
         try {
-            ///ກວດສອບ merCode
+            // ตรวจสอบเครื่องจักรซ้ำ
             List<Machine> getMer = machineInterface.getMachineByMerchantNo(machineReq);
             if (getMer != null && !getMer.isEmpty()) {
                 response.setStatus("EE");
-                response.setMessage("ຂໍ້ມູນເຄື່ອງຈັກຂອງມີເເລ້ວ ມັນຊໍາກັນ !!!!");
-                response.setData(null); // You can return saved ID or object if needed
-            }else {
-                result = machineInterface.saveMachine(machineReq);
-                if (result > 0) {
-                    response.setStatus("00");
-                    response.setMessage("Data saved successfully");
-                    response.setData(null); // You can return saved ID or object if needed
-                } else {
-                    response.setStatus("01");
-                    response.setMessage("Failed to save data");
-                    response.setData(null);
+                response.setMessage("เครื่องจักรนี้มีอยู่แล้ว");
+                response.setData(null);
+                return response;
+            }
+
+            // 1. Insert เครื่องจักร
+            int result = machineInterface.saveMachine(machineReq);
+
+            // 2. Insert tools
+            if (result > 0 && machineReq.getTools() != null) {
+                for (MachineReq.ToolReq tool : machineReq.getTools()) {
+                    String sqlTool = "INSERT INTO tb_machine_tool (mch_no, tool_name, qty, status, update_date, updated_by) " +
+                            "VALUES (?, ?, ?, ?, ?, ?)";
+                    jdbcTemplate.update(sqlTool,
+                            machineReq.getMchNo(),
+                            tool.getToolName(),
+                            tool.getQty(),
+                            "ok",
+                            new java.sql.Timestamp(System.currentTimeMillis()),
+                            machineReq.getCreateBy()
+                    );
                 }
             }
 
+            response.setStatus("00");
+            response.setMessage("Data saved successfully");
+
         } catch (Exception e) {
-            e.printStackTrace(); // Consider logging this instead
-            response.setStatus("05");
-            response.setMessage("An error occurred while saving data");
-            response.setData(null);
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage("Error while saving data");
         }
 
         return response;
     }
 
-    public MachineReportResposne updateMachine(MachineReq machineReq) {
-        MachineReportResposne response = new MachineReportResposne();
-        try {
-            int result = machineInterface.updateMachine(machineReq);
-            if (result > 0) {
-                response.setStatus("00");
-                response.setMessage("Data Update successfully");
-                response.setData(null); // You can return saved ID or object if needed
-            } else {
-                response.setStatus("01");
-                response.setMessage("Failed to Update data");
-                response.setData(null);
+
+
+//    public MachineReportResposne updateMachine(MachineReq machineReq) {
+//        MachineReportResposne response = new MachineReportResposne();
+//        try {
+//            int result = machineInterface.updateMachine(machineReq);
+//            if (result > 0) {
+//                response.setStatus("00");
+//                response.setMessage("Data Update successfully");
+//                response.setData(null); // You can return saved ID or object if needed
+//            } else {
+//                response.setStatus("01");
+//                response.setMessage("Failed to Update data");
+//                response.setData(null);
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace(); // Consider logging this instead
+//            response.setStatus("05");
+//            response.setMessage("An error occurred while Updating data");
+//            response.setData(null);
+//        }
+//
+//        return response;
+//    }
+@Transactional
+public MachineReportResposne updateMachine(MachineReq machineReq) {
+    MachineReportResposne response = new MachineReportResposne();
+    try {
+        // 1. Update tb_machine
+        int result = machineInterface.updateMachine(machineReq);
+
+        // 2. Update/Insert tools
+        if (result > 0 && machineReq.getTools() != null) {
+            // ลบ tools เก่าของ mch_no ก่อน
+            String deleteSql = "DELETE FROM tb_machine_tool WHERE mch_no = ?";
+            jdbcTemplate.update(deleteSql, machineReq.getMchNo());
+
+            // Insert tools ใหม่
+            String insertSql = "INSERT INTO tb_machine_tool " +
+                    "(mch_no, tool_name, qty, status, update_date, updated_by) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+            for (MachineReq.ToolReq tool : machineReq.getTools()) {
+                jdbcTemplate.update(insertSql,
+                        machineReq.getMchNo(),
+                        tool.getToolName(),
+                        tool.getQty(),
+                        "ok",
+                        new Timestamp(System.currentTimeMillis()),
+                        machineReq.getCreateBy()
+                );
             }
+        }
 
-        } catch (Exception e) {
-            e.printStackTrace(); // Consider logging this instead
-            response.setStatus("05");
-            response.setMessage("An error occurred while Updating data");
+        if (result > 0) {
+            response.setStatus("00");
+            response.setMessage("Data updated successfully");
+            response.setData(null); // หรือส่ง keyId กลับก็ได้
+        } else {
+            response.setStatus("01");
+            response.setMessage("Failed to update data");
             response.setData(null);
         }
 
-        return response;
+    } catch (Exception e) {
+        e.printStackTrace();
+        response.setStatus("05");
+        response.setMessage("An error occurred while updating data");
+        response.setData(null);
     }
+
+    return response;
+}
 }

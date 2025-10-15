@@ -1,5 +1,6 @@
 package com.ldb.truck.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Machine.*;
@@ -8,7 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+
+
+import java.util.ArrayList;
 import java.util.List;
 @Slf4j
 @RestController
@@ -210,33 +218,151 @@ private final  MachineService MACHINE_SERVICE;
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    @CrossOrigin(origins = "*")
-    @PostMapping("/saveMachine.service")
-    public MachineReportResposne saveMachine(@RequestBody MachineReq machineRPReq){
-        MachineReportResposne result = new MachineReportResposne();
-        try {
-            result = MACHINE_SERVICE.saveMachine(machineRPReq);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setStatus("01");
-            result.setMessage("Error !!");
-            return result;
+//    @CrossOrigin(origins = "*")
+//    @PostMapping("/saveMachine.service")
+//    public ResponseEntity<MachineReportResposne> saveMachine(@RequestBody MachineReq machineRPReq) {
+//        MachineReportResposne result = new MachineReportResposne();
+//        try {
+//            // เรียกใช้ method ใหม่ที่ insert machine + tools
+//            result = MACHINE_SERVICE.saveMachineWithTools(machineRPReq);
+//            return new ResponseEntity<>(result, HttpStatus.OK);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            result.setStatus("01");
+//            result.setMessage("Error !!");
+//            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+@CrossOrigin(origins = "*")
+@PostMapping("/saveMachine.service")
+public ResponseEntity<MachineReportResposne> saveMachine(
+        @RequestParam("mchNo") String mchNo,
+        @RequestParam("mchName") String mchName,
+        @RequestParam("createBy") String createBy,
+        @RequestParam("status") String status,
+        @RequestParam(value = "borNo", required = false) String borNo,
+        @RequestParam(value = "time_fix", required = false) Integer timeFix,
+        @RequestParam(value = "time_fix_monitor", required = false) Integer timeFixMonitor,
+        @RequestParam(value = "time_oil_fix", required = false) Integer timeOilFix,
+        @RequestParam(value = "time_oil_fix_mo", required = false) Integer timeOilFixMo,
+        @RequestParam(value = "tools", required = false) String toolsJson,
+        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+        @RequestParam(value = "mchBranchName", required = false) String mchBranchName,
+        @RequestParam(value = "mchModel", required = false) String mchModel,
+        @RequestParam(value = "mchProductYear", required = false) String mchProductYear
+) {
+    MachineReportResposne result = new MachineReportResposne();
+    try {
+        MachineReq machineReq = new MachineReq();
+        machineReq.setMchNo(mchNo);
+        machineReq.setMchName(mchName);
+        machineReq.setCreateBy(createBy);
+        machineReq.setStatus(status);
+        machineReq.setBorNo(borNo);
+        machineReq.setTime_fix(timeFix);
+        machineReq.setTime_fix_monitor(timeFixMonitor);
+        machineReq.setTime_oil_fix(timeOilFix);
+        machineReq.setTime_oil_fix_mo(timeOilFixMo);
+        machineReq.setMchBranchName(mchBranchName);
+        machineReq.setMchModel(mchModel);
+        machineReq.setMchProductYear(mchProductYear);
+
+        // แปลง JSON string ของ tools เป็น List<ToolReq>
+        if (toolsJson != null && !toolsJson.isEmpty()) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                List<MachineReq.ToolReq> tools = mapper.readValue(
+                        toolsJson,
+                        new TypeReference<List<MachineReq.ToolReq>>() {}
+                );
+                machineReq.setTools(tools);
+            } catch (Exception e) {
+                e.printStackTrace();
+                machineReq.setTools(new ArrayList<>()); // fallback
+            }
         }
-        return result;
+        // แปลง MultipartFile เป็น byte[]
+        if (imageFile != null && !imageFile.isEmpty()) {
+            machineReq.setImageBytes(imageFile.getBytes());
+        }
+
+        result = MACHINE_SERVICE.saveMachineWithTools(machineReq);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    } catch (Exception e) {
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("Error !!");
+        return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+
+
+//    @CrossOrigin(origins = "*")
+//    @PostMapping("/updateMachine.service")
+//    public MachineReportResposne updateMachine(@RequestBody MachineReq machineRPReq){
+//        MachineReportResposne result = new MachineReportResposne();
+//        try {
+//            result = MACHINE_SERVICE.updateMachine(machineRPReq);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            result.setStatus("01");
+//            result.setMessage("Error !!");
+//            return result;
+//        }
+//        return result;
+//    }
+@PostMapping("/updateMachine.service")
+public ResponseEntity<MachineReportResposne> updateMachine(
+        @RequestParam("keyId") Integer keyId,
+        @RequestParam("mchNo") String mchNo,
+        @RequestParam("mchName") String mchName,
+        @RequestParam("createBy") String createBy,
+        @RequestParam("status") String status,
+        @RequestParam(value = "borNo", required = false) String borNo,
+        @RequestParam(value = "time_fix", required = false) Integer timeFix,
+        @RequestParam(value = "time_fix_monitor", required = false) Integer timeFixMonitor,
+        @RequestParam(value = "time_oil_fix", required = false) Integer timeOilFix,
+        @RequestParam(value = "time_oil_fix_mo", required = false) Integer timeOilFixMo,
+        @RequestParam(value = "mchBranchName", required = false) String mchBranchName,
+        @RequestParam(value = "mchModel", required = false) String mchModel,
+        @RequestParam(value = "mchProductYear", required = false) String mchProductYear,
+        @RequestParam(value = "tools", required = false) String toolsJson,
+        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+) throws Exception {
+
+    MachineReq machineReq = new MachineReq();
+    machineReq.setKeyId(keyId);
+    machineReq.setMchNo(mchNo);
+    machineReq.setMchName(mchName);
+    machineReq.setCreateBy(createBy);
+    machineReq.setStatus(status);
+    machineReq.setBorNo(borNo);
+    machineReq.setTime_fix(timeFix);
+    machineReq.setTime_fix_monitor(timeFixMonitor);
+    machineReq.setTime_oil_fix(timeOilFix);
+    machineReq.setTime_oil_fix_mo(timeOilFixMo);
+    machineReq.setMchBranchName(mchBranchName);
+    machineReq.setMchModel(mchModel);
+    machineReq.setMchProductYear(mchProductYear);
+
+    if (toolsJson != null && !toolsJson.isEmpty()) {
+        ObjectMapper mapper = new ObjectMapper();
+        List<MachineReq.ToolReq> tools = mapper.readValue(
+                toolsJson, new TypeReference<List<MachineReq.ToolReq>>() {}
+        );
+        machineReq.setTools(tools);
     }
 
-    @CrossOrigin(origins = "*")
-    @PostMapping("/updateMachine.service")
-    public MachineReportResposne updateMachine(@RequestBody MachineReq machineRPReq){
-        MachineReportResposne result = new MachineReportResposne();
-        try {
-            result = MACHINE_SERVICE.updateMachine(machineRPReq);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setStatus("01");
-            result.setMessage("Error !!");
-            return result;
-        }
-        return result;
+    if (imageFile != null && !imageFile.isEmpty()) {
+        machineReq.setImageBytes(imageFile.getBytes());
     }
+
+    MachineReportResposne result = MACHINE_SERVICE.updateMachine(machineReq);
+    return new ResponseEntity<>(result, HttpStatus.OK);
+}
+
+
+
+
 }

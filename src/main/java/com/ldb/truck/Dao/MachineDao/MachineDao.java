@@ -14,10 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -947,27 +944,12 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     @Override
     public int saveMachine(MachineReq machineReq) {
         try {
+            byte[] imageBytes = machineReq.getImageBytes();
+
             String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-                    "create_date, create_by, status, borNo,time_fix,time_fix_monitor,time_oil_fix,time_oil_fix_mo," +
-                    "    drillrod_pq3,\n" +
-                    "    drillrod_hq3,\n" +
-                    "    core_barrelhq3_1_5m,\n" +
-                    "    backReamer,\n" +
-                    "    caphq,\n" +
-                    "    drillbit_hq3,\n" +
-                    "    water_pump,\n" +
-                    "    pipewrench24,\n" +
-                    "    pipewrench36,\n" +
-                    "    pipewrench48,\n" +
-                    "    monkey_wrench_hq3,\n" +
-                    "    rodpuller,\n" +
-                    "    adapter3in1_hq,\n" +
-                    "    lifting_plug_hq,\n" +
-                    "    circuit_breaker,\n" +
-                    "    led_light,\n" +
-                    "     fuel) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
                    // machineReq.getKeyId(),
@@ -985,25 +967,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                     machineReq.getTime_fix_monitor(),
                     machineReq.getTime_oil_fix(),
                     machineReq.getTime_oil_fix_mo(),
-
-                    machineReq.getDrillrod_pq3(),
-                    machineReq.getDrillrod_hq3(),
-                    machineReq.getCore_barrelhq3_1_5m(),
-                    machineReq.getBackReamer(),
-                    machineReq.getCaphq(),
-                    machineReq.getDrillbit_hq3(),
-                    machineReq.getWater_pump(),
-                    machineReq.getPipewrench24(),
-                    machineReq.getPipewrench36(),
-                    machineReq.getPipewrench48(),
-                    machineReq.getMonkey_wrench_hq3(),
-                    machineReq.getRodpuller(),
-                    machineReq.getAdapter3in1_hq(),
-                    machineReq.getLifting_plug_hq(),
-                    machineReq.getCircuit_breaker(),
-                    machineReq.getLed_light(),
-                    machineReq.getFuel()
-
+                    imageBytes // <-- image
 
             );
 
@@ -1013,84 +977,122 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         return 0;
     }
 
-    @Override
-    public int updateMachine(MachineReq machineReq) {
-        try {
-            String sql = "UPDATE tb_machine SET " +
-                    "mch_no = ?, " +
-                    "mch_name = ?, " +
-                    "mch_branch_name = ?, " +
-                    "mch_model = ?, " +
-                    "mch_product_year = ?, " +
-                    "update_date = ?, " +
-                    "update_by = ?, " +
-                    "status = ?, " +
-                    "borNo = ? , " +
-                    "time_fix=?," +
-                    "time_fix_monitor=?," +
-                    "time_oil_fix=?," +
-                    "time_oil_fix_mo=?, " +
-                    "drillrod_pq3=?,\n" +
-                    "     drillrod_hq3=?,\n" +
-                    "    core_barrelhq3_1_5m=?,\n" +
-                    "    backReamer=?,\n" +
-                    "    caphq=?,\n" +
-                    "    drillbit_hq3=?,\n" +
-                    "    water_pump=?,\n" +
-                    "    pipewrench24=?,\n" +
-                    "    pipewrench36=?,\n" +
-                    "    pipewrench48=?,\n" +
-                    "    monkey_wrench_hq3=?,\n" +
-                    "    rodpuller=?,\n" +
-                    "    adapter3in1_hq=?,\n" +
-                    "    lifting_plug_hq=?,\n" +
-                    "    circuit_breaker=?,\n" +
-                    "    led_light=?,\n" +
-                    "     fuel=? " +
-                    "WHERE key_id = ?";
+//    @Override
+//    public int updateMachine(MachineReq machineReq) {
+//        try {
+//            String sql = "UPDATE tb_machine SET " +
+//                    "mch_no = ?, " +
+//                    "mch_name = ?, " +
+//                    "mch_branch_name = ?, " +
+//                    "mch_model = ?, " +
+//                    "mch_product_year = ?, " +
+//                    "update_date = ?, " +
+//                    "update_by = ?, " +
+//                    "status = ?, " +
+//                    "borNo = ? , " +
+//                    "time_fix=?," +
+//                    "time_fix_monitor=?," +
+//                    "time_oil_fix=?," +
+//                    "time_oil_fix_mo=?, " +
+//                    "drillrod_pq3=?,\n" +
+//                    "     drillrod_hq3=?,\n" +
+//                    "    core_barrelhq3_1_5m=?,\n" +
+//                    "    backReamer=?,\n" +
+//                    "    caphq=?,\n" +
+//                    "    drillbit_hq3=?,\n" +
+//                    "    water_pump=?,\n" +
+//                    "    pipewrench24=?,\n" +
+//                    "    pipewrench36=?,\n" +
+//                    "    pipewrench48=?,\n" +
+//                    "    monkey_wrench_hq3=?,\n" +
+//                    "    rodpuller=?,\n" +
+//                    "    adapter3in1_hq=?,\n" +
+//                    "    lifting_plug_hq=?,\n" +
+//                    "    circuit_breaker=?,\n" +
+//                    "    led_light=?,\n" +
+//                    "     fuel=? " +
+//                    "WHERE key_id = ?";
+//
+//            return JdbcTemplate.update(sql,
+//                    machineReq.getMchNo(),
+//                    machineReq.getMchName(),
+//                    machineReq.getMchBranchName(),
+//                    machineReq.getMchModel(),
+//                    machineReq.getMchProductYear(),
+//                   new Date(),
+//                    machineReq.getCreateBy(),
+//                    machineReq.getStatus(),
+//                    machineReq.getBorNo(),
+//
+//                    machineReq.getTime_fix(),
+//                    machineReq.getTime_fix_monitor(),
+//                    machineReq.getTime_oil_fix(),
+//                    machineReq.getTime_oil_fix_mo(),
+//
+//                    machineReq.getKeyId()
+//            );
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return 0;
+//    }
+@Override
+public int updateMachine(MachineReq machineReq) {
+    try {
+        // สร้าง SQL พื้นฐาน
+        StringBuilder sql = new StringBuilder("UPDATE tb_machine SET " +
+                "mch_no = ?, " +
+                "mch_name = ?, " +
+                "mch_branch_name = ?, " +
+                "mch_model = ?, " +
+                "mch_product_year = ?, " +
+                "update_date = ?, " +
+                "update_by = ?, " +
+                "status = ?, " +
+                "borNo = ?, " +
+                "time_fix = ?, " +
+                "time_fix_monitor = ?, " +
+                "time_oil_fix = ?, " +
+                "time_oil_fix_mo = ?");
 
-            return JdbcTemplate.update(sql,
-                    machineReq.getMchNo(),
-                    machineReq.getMchName(),
-                    machineReq.getMchBranchName(),
-                    machineReq.getMchModel(),
-                    machineReq.getMchProductYear(),
-                   new Date(),
-                    machineReq.getCreateBy(),
-                    machineReq.getStatus(),
-                    machineReq.getBorNo(),
+        List<Object> params = new ArrayList<>();
+        params.add(machineReq.getMchNo());
+        params.add(machineReq.getMchName());
+        params.add(machineReq.getMchBranchName());
+        params.add(machineReq.getMchModel());
+        params.add(machineReq.getMchProductYear());
+        params.add(new Date()); // update_date
+        params.add(machineReq.getCreateBy());
+        params.add(machineReq.getStatus());
+        params.add(machineReq.getBorNo());
+        params.add(machineReq.getTime_fix());
+        params.add(machineReq.getTime_fix_monitor());
+        params.add(machineReq.getTime_oil_fix());
+        params.add(machineReq.getTime_oil_fix_mo());
 
-                    machineReq.getTime_fix(),
-                    machineReq.getTime_fix_monitor(),
-                    machineReq.getTime_oil_fix(),
-                    machineReq.getTime_oil_fix_mo(),
-
-                    machineReq.getDrillrod_pq3(),
-                    machineReq.getDrillrod_hq3(),
-                    machineReq.getCore_barrelhq3_1_5m(),
-                    machineReq.getBackReamer(),
-                    machineReq.getCaphq(),
-                    machineReq.getDrillbit_hq3(),
-                    machineReq.getWater_pump(),
-                    machineReq.getPipewrench24(),
-                    machineReq.getPipewrench36(),
-                    machineReq.getPipewrench48(),
-                    machineReq.getMonkey_wrench_hq3(),
-                    machineReq.getRodpuller(),
-                    machineReq.getAdapter3in1_hq(),
-                    machineReq.getLifting_plug_hq(),
-                    machineReq.getCircuit_breaker(),
-                    machineReq.getLed_light(),
-                    machineReq.getFuel(),
-
-                    machineReq.getKeyId()
-            );
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        // ถ้ามีรูปภาพใหม่ เพิ่ม column image
+        if (machineReq.getImageBytes() != null) {
+            sql.append(", image = ?");
+            params.add(machineReq.getImageBytes());
         }
+        //.............
+         System.out.println("Executing SQL: " + sql);
+         System.out.println("Params: " + params);
+
+        sql.append(" WHERE key_id = ?");
+        params.add(machineReq.getKeyId());
+
+        return JdbcTemplate.update(sql.toString(), params.toArray());
+
+    } catch (Exception e) {
+        e.printStackTrace();
         return 0;
     }
+}
+
+
+
 
 
 
