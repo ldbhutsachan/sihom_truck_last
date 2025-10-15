@@ -34,11 +34,8 @@ public class Machine {
     private Integer totalFixMo;
     private Integer totalFixMoOil;
 
-    private  String image;
-
     private String status_mo;
     private String status_oil_mo;
-
 
     // ✅ List ของ tools ที่จะ return ไปให้ client
     private List<Tool> tools = new ArrayList<>();
@@ -50,7 +47,5 @@ public class Machine {
     public static class Tool {
         private String tool_name;
         private int qty;
-        private int id;
-        private String mch_no;
     }
 }
