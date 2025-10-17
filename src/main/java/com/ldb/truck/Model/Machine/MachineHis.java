@@ -16,4 +16,5 @@ public class MachineHis {
     private Integer status; // status int(11)
     private String borNo;
     private String borName;
+    private Integer status2;
 }

@@ -2,10 +2,14 @@ package com.ldb.truck.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Machine.*;
 import com.ldb.truck.Service.MachineService.MachineService;
+import com.ldb.truck.Service.MediaUploadServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.buf.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 @Slf4j
 @RestController
@@ -24,6 +29,8 @@ import java.util.List;
 public class MachineController {
 private final ProfileDao profileDao;
 private final  MachineService MACHINE_SERVICE;
+@Autowired
+ private MediaUploadService mediaUploadService;
 
     public MachineController(ProfileDao profileDao, MachineService machineService) {
         this.profileDao = profileDao;
@@ -218,21 +225,6 @@ private final  MachineService MACHINE_SERVICE;
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-//    @CrossOrigin(origins = "*")
-//    @PostMapping("/saveMachine.service")
-//    public ResponseEntity<MachineReportResposne> saveMachine(@RequestBody MachineReq machineRPReq) {
-//        MachineReportResposne result = new MachineReportResposne();
-//        try {
-//            // เรียกใช้ method ใหม่ที่ insert machine + tools
-//            result = MACHINE_SERVICE.saveMachineWithTools(machineRPReq);
-//            return new ResponseEntity<>(result, HttpStatus.OK);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            result.setStatus("01");
-//            result.setMessage("Error !!");
-//            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
 @CrossOrigin(origins = "*")
 @PostMapping("/saveMachine.service")
 public ResponseEntity<MachineReportResposne> saveMachine(
@@ -269,23 +261,27 @@ public ResponseEntity<MachineReportResposne> saveMachine(
 
         // แปลง JSON string ของ tools เป็น List<ToolReq>
         if (toolsJson != null && !toolsJson.isEmpty()) {
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                List<MachineReq.ToolReq> tools = mapper.readValue(
-                        toolsJson,
-                        new TypeReference<List<MachineReq.ToolReq>>() {}
-                );
-                machineReq.setTools(tools);
-            } catch (Exception e) {
-                e.printStackTrace();
-                machineReq.setTools(new ArrayList<>()); // fallback
-            }
+            ObjectMapper mapper = new ObjectMapper();
+            List<MachineReq.ToolReq> tools = mapper.readValue(
+                    toolsJson,
+                    new TypeReference<List<MachineReq.ToolReq>>() {}
+            );
+            machineReq.setTools(tools);
         }
-        // แปลง MultipartFile เป็น byte[]
-        if (imageFile != null && !imageFile.isEmpty()) {
-            machineReq.setImageBytes(imageFile.getBytes());
+        String fileName = "";
+        List<String> fileNames = new ArrayList<>();
+        String pathAdd="http://khounkham.com/images/batery/";
+        if(imageFile == null){
+            log.warn("************* file name is null ****************");
+            machineReq.setImage("http://khounkham.com/images/image.jpg");
+        }else {
+            Arrays.asList(imageFile).stream().forEach(file -> {
+                fileNames.add(mediaUploadService.uploadMedia(file));
+            });
+            log.info("Uploaded the files successfully: "+ fileNames );
+            fileName = StringUtils.join(fileNames, ',');
+            machineReq.setImage(pathAdd+fileName);
         }
-
         result = MACHINE_SERVICE.saveMachineWithTools(machineReq);
         return new ResponseEntity<>(result, HttpStatus.OK);
     } catch (Exception e) {
@@ -296,22 +292,7 @@ public ResponseEntity<MachineReportResposne> saveMachine(
     }
 }
 
-
-
-//    @CrossOrigin(origins = "*")
-//    @PostMapping("/updateMachine.service")
-//    public MachineReportResposne updateMachine(@RequestBody MachineReq machineRPReq){
-//        MachineReportResposne result = new MachineReportResposne();
-//        try {
-//            result = MACHINE_SERVICE.updateMachine(machineRPReq);
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            result.setStatus("01");
-//            result.setMessage("Error !!");
-//            return result;
-//        }
-//        return result;
-//    }
+@CrossOrigin(origins = "*")
 @PostMapping("/updateMachine.service")
 public ResponseEntity<MachineReportResposne> updateMachine(
         @RequestParam("keyId") Integer keyId,
@@ -353,16 +334,29 @@ public ResponseEntity<MachineReportResposne> updateMachine(
         );
         machineReq.setTools(tools);
     }
-
-    if (imageFile != null && !imageFile.isEmpty()) {
-        machineReq.setImageBytes(imageFile.getBytes());
+    // อัปโหลดไฟล์และเก็บเป็น URL
+//    String pathAdd = "http://khounkham.com/images/machine/";
+//    if (imageFile != null && !imageFile.isEmpty()) {
+//        String uploadedFileName = mediaUploadService.uploadMedia(imageFile);
+//        machineReq.setImage(pathAdd + uploadedFileName);
+//    } else {
+//        machineReq.setImage("http://khounkham.com/images/image.jpg");
+//    }
+    String fileName = "";
+    List<String> fileNames = new ArrayList<>();
+    String pathAdd="http://khounkham.com/images/batery/";
+    if(imageFile == null){
+        log.warn("************* file name is null ****************");
+        machineReq.setImage("http://khounkham.com/images/image.jpg");
+    }else {
+        Arrays.asList(imageFile).stream().forEach(file -> {
+            fileNames.add(mediaUploadService.uploadMedia(file));
+        });
+        log.info("Uploaded the files successfully: "+ fileNames );
+        fileName = StringUtils.join(fileNames, ',');
+        machineReq.setImage(pathAdd+fileName);
     }
-
     MachineReportResposne result = MACHINE_SERVICE.updateMachine(machineReq);
     return new ResponseEntity<>(result, HttpStatus.OK);
 }
-
-
-
-
 }

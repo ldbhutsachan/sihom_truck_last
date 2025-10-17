@@ -21,8 +21,7 @@ public class MachineReq {
     private Integer time_oil_fix;
     private Integer time_oil_fix_mo;
 
-    // สำหรับ image
-    private byte[] imageBytes; // จะส่งจาก form-data เป็น file
+    private  String image;
 
     // สำหรับ tools
     private List<ToolReq> tools;

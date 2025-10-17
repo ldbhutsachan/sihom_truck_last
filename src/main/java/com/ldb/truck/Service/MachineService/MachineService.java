@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -242,6 +243,7 @@ public class MachineService {
 
                  machine.setTotalFixMo(resp.getTotalFixMo());
                  machine.setTotalFixMoOil(resp.getTotalFixMoOil());
+                 machine.setImage(resp.getImage());
 
                  // ✅ เพิ่มตรงนี้เพื่อ map tools ด้วย
                  machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
@@ -281,7 +283,7 @@ public class MachineService {
              }
             if (dataRsp != null && !dataRsp.isEmpty()) {
                 response.setStatus("00");
-                response.setMessage("OK");
+                response.setMessage("successfully");
                 response.setData(dataRsp);
             } else {
                 response.setStatus("01");
@@ -453,7 +455,6 @@ public class MachineService {
                 response.setData(null);
                 return response;
             }
-
             // 1. Insert เครื่องจักร
             int result = machineInterface.saveMachine(machineReq);
 
@@ -481,35 +482,9 @@ public class MachineService {
             response.setStatus("01");
             response.setMessage("Error while saving data");
         }
-
         return response;
     }
 
-
-
-//    public MachineReportResposne updateMachine(MachineReq machineReq) {
-//        MachineReportResposne response = new MachineReportResposne();
-//        try {
-//            int result = machineInterface.updateMachine(machineReq);
-//            if (result > 0) {
-//                response.setStatus("00");
-//                response.setMessage("Data Update successfully");
-//                response.setData(null); // You can return saved ID or object if needed
-//            } else {
-//                response.setStatus("01");
-//                response.setMessage("Failed to Update data");
-//                response.setData(null);
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace(); // Consider logging this instead
-//            response.setStatus("05");
-//            response.setMessage("An error occurred while Updating data");
-//            response.setData(null);
-//        }
-//
-//        return response;
-//    }
 @Transactional
 public MachineReportResposne updateMachine(MachineReq machineReq) {
     MachineReportResposne response = new MachineReportResposne();
