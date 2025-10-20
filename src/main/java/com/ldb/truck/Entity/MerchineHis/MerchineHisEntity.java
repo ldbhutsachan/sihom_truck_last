@@ -39,4 +39,7 @@ public class MerchineHisEntity {
 
         @Column(name = "status")
         private Integer status; // status int(11)
+
+        @Column(name ="status2")
+        private Integer status2;
 }

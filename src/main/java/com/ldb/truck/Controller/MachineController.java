@@ -230,6 +230,8 @@ private final  MachineService MACHINE_SERVICE;
 public ResponseEntity<MachineReportResposne> saveMachine(
         @RequestParam("mchNo") String mchNo,
         @RequestParam("mchName") String mchName,
+        @RequestParam("price") String price,
+        @RequestParam("currency") String currency,
         @RequestParam("createBy") String createBy,
         @RequestParam("status") String status,
         @RequestParam(value = "borNo", required = false) String borNo,
@@ -248,6 +250,8 @@ public ResponseEntity<MachineReportResposne> saveMachine(
         MachineReq machineReq = new MachineReq();
         machineReq.setMchNo(mchNo);
         machineReq.setMchName(mchName);
+        machineReq.setPrice(price);
+        machineReq.setCurrency(currency);
         machineReq.setCreateBy(createBy);
         machineReq.setStatus(status);
         machineReq.setBorNo(borNo);
@@ -298,6 +302,8 @@ public ResponseEntity<MachineReportResposne> updateMachine(
         @RequestParam("keyId") Integer keyId,
         @RequestParam("mchNo") String mchNo,
         @RequestParam("mchName") String mchName,
+        @RequestParam("price") String price,
+        @RequestParam("currency") String currency,
         @RequestParam("createBy") String createBy,
         @RequestParam("status") String status,
         @RequestParam(value = "borNo", required = false) String borNo,
@@ -316,6 +322,8 @@ public ResponseEntity<MachineReportResposne> updateMachine(
     machineReq.setKeyId(keyId);
     machineReq.setMchNo(mchNo);
     machineReq.setMchName(mchName);
+    machineReq.setPrice(price);
+    machineReq.setCurrency(currency);
     machineReq.setCreateBy(createBy);
     machineReq.setStatus(status);
     machineReq.setBorNo(borNo);
@@ -334,28 +342,32 @@ public ResponseEntity<MachineReportResposne> updateMachine(
         );
         machineReq.setTools(tools);
     }
-    // อัปโหลดไฟล์และเก็บเป็น URL
-//    String pathAdd = "http://khounkham.com/images/machine/";
-//    if (imageFile != null && !imageFile.isEmpty()) {
-//        String uploadedFileName = mediaUploadService.uploadMedia(imageFile);
-//        machineReq.setImage(pathAdd + uploadedFileName);
-//    } else {
-//        machineReq.setImage("http://khounkham.com/images/image.jpg");
-//    }
     String fileName = "";
     List<String> fileNames = new ArrayList<>();
     String pathAdd="http://khounkham.com/images/batery/";
-    if(imageFile == null){
-        log.warn("************* file name is null ****************");
-        machineReq.setImage("http://khounkham.com/images/image.jpg");
-    }else {
-        Arrays.asList(imageFile).stream().forEach(file -> {
+//    if(imageFile == null){
+//        log.warn("************* file name is null ****************");
+//        machineReq.setImage("http://khounkham.com/images/image.jpg");
+//    }else {
+//        Arrays.asList(imageFile).stream().forEach(file -> {
+//            fileNames.add(mediaUploadService.uploadMedia(file));
+//        });
+//        log.info("Uploaded the files successfully: "+ fileNames );
+//        fileName = StringUtils.join(fileNames, ',');
+//        machineReq.setImage(pathAdd+fileName);
+//    }
+    if (imageFile != null && !imageFile.isEmpty()) {
+        Arrays.asList(imageFile).forEach(file -> {
             fileNames.add(mediaUploadService.uploadMedia(file));
         });
-        log.info("Uploaded the files successfully: "+ fileNames );
+        log.info("Uploaded the files successfully: " + fileNames);
         fileName = StringUtils.join(fileNames, ',');
-        machineReq.setImage(pathAdd+fileName);
+        machineReq.setImage(pathAdd + fileName);
+    } else {
+        log.warn("No image uploaded — keeping the old image");
+        machineReq.setImage(null);
     }
+
     MachineReportResposne result = MACHINE_SERVICE.updateMachine(machineReq);
     return new ResponseEntity<>(result, HttpStatus.OK);
 }
