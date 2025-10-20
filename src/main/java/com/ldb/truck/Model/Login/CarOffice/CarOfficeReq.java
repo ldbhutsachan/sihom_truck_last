@@ -71,5 +71,6 @@ public class CarOfficeReq {
     //add new
     private String startdate_kongnam;
     private String enddate_kongnam;
+    private String borNo;
 //    private String lean;
 }

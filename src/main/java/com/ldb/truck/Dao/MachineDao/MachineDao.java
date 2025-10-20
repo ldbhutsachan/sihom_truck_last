@@ -14,10 +14,8 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -458,7 +456,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
 
     // ✅ สร้าง SQL หลัก
     sb.append("SELECT \n")
-            .append("a.key_id, a.mch_no, a.create_date, a.create_by, d.USER_LOGIN AS USER_LOGIN, a.time_total, a.txn_date, a.status,\n")
+            .append("a.key_id, a.mch_no,a.status, a.status2, a.create_date, a.create_by, d.USER_LOGIN AS USER_LOGIN, a.time_total, a.txn_date, a.status,\n")
             .append("b.mch_name, b.mch_branch_name, b.mch_model, b.mch_product_year,\n")
             .append("c.key_id borNo, c.b_name borName\n")
             .append("FROM tb_machine_his a\n")
@@ -493,6 +491,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                 tr.setStatus(rs.getInt("status"));
                 tr.setBorNo(rs.getString("borNo"));
                 tr.setBorName(rs.getString("borName"));
+                tr.setStatus2(rs.getInt("status2"));
                 return tr;
             }
         });
@@ -638,141 +637,265 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         return null;
     }
 
-    @Override
-    public List<Machine> getMachine(MachineRPReq machineRPReq,String role, String borNo) {
-        StringBuilder  sb = new StringBuilder();
-        String merNo = machineRPReq.getMerNo();
-        try {
-            String conMchNo = null;
-            String conAdmin = null;
-            String conOrder = "\n  order by a.key_id desc";
-
-            if (merNo == null || merNo.isEmpty()) {
-                conMchNo = "";
-            } else {
-                conMchNo = "\n AND a.mch_no ='"+merNo+"'  ";
-            }
-            //******ກວດສິດການ query  serch by borNo
-//            if(!role.equals("PADMIN")){
-//                conAdmin = "\n AND a.borNo='"+borNo+"' ";
-//            }else {
-//                conAdmin= "";
+//    @Override
+//    public List<Machine> getMachine(MachineRPReq machineRPReq,String role, String borNo) {
+//        StringBuilder  sb = new StringBuilder();
+//        String merNo = machineRPReq.getMerNo();
+//        try {
+//            String conMchNo = null;
+//            String conAdmin = null;
+//            String conOrder = "\n  order by a.key_id desc";
+//
+//            if (merNo == null || merNo.isEmpty()) {
+//                conMchNo = "";
+//            } else {
+//                conMchNo = "\n AND a.mch_no ='"+merNo+"'  ";
 //            }
-            //******ກວດສິດການ query  serch by borNo
-            String reqBorNo = machineRPReq.getBorNo();
+//            //******ກວດສິດການ query  serch by borNo
+////            if(!role.equals("PADMIN")){
+////                conAdmin = "\n AND a.borNo='"+borNo+"' ";
+////            }else {
+////                conAdmin= "";
+////            }
+//            //******ກວດສິດການ query  serch by borNo
+//            String reqBorNo = machineRPReq.getBorNo();
+//
+//            if (reqBorNo != null && !reqBorNo.isEmpty()) {
+//                // ถ้ามีค่า borNo จาก client ให้ใช้ค่านั้นกรองเสมอ
+//                conAdmin = "\n AND a.borNo='" + reqBorNo + "' ";
+//            } else if (!role.equals("PADMIN")) {
+//                // ถ้าไม่มีค่า borNo จาก client และไม่ใช่ admin ให้กรองตาม borNo ของ user
+//                conAdmin = "\n AND a.borNo='" + borNo + "' ";
+//            } else {
+//                // ถ้าเป็น admin และไม่มีค่า borNo จาก client ให้ดึงทั้งหมด
+//                conAdmin = "";
+//            }
+//
+//            sb.append("SELECT a.drillrod_pq3,a.drillrod_hq3,a.core_barrelhq3_1_5m,a.backReamer,a.caphq,a.drillbit_hq3,a.water_pump,a.pipewrench24,a.pipewrench36,a.pipewrench48,a.monkey_wrench_hq3,a.rodpuller,a.adapter3in1_hq,a.lifting_plug_hq,a.circuit_breaker,a.led_light,a.fuel,\n" +
+//                    "    a.key_id,\n" +
+//                    "    a.mch_no,\n" +
+//                    "    a.mch_name,\n" +
+//                    "    a.mch_branch_name,\n" +
+//                    "    a.mch_model,\n" +
+//                    "    a.mch_product_year,\n" +
+//                    "    a.create_date,\n" +
+//                    "    a.create_by,\n" +
+//                    "    c.USER_LOGIN,\n" +
+//                    "    c.ROLE,\n" +
+//                    "    a.status,\n" +
+//                    "    a.borNo,\n" +
+//                    "    b.b_name AS borname,\n" +
+//                    "    b.location borlocationnaem,\n" +
+//                    "    a.time_fix,\n" +
+//                    "    a.time_fix_monitor,\n" +
+//                    "    a.time_oil_fix,\n" +
+//                    "    a.time_oil_fix_mo,\n" +
+//                    "    \n" +
+//                    "    -- Use COALESCE to return 0 if the sum is null\n" +
+//                    "    (a.time_fix - \n" +
+//                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
+//                    "               FROM tb_machine_his ss \n" +
+//                    "               WHERE ss.status=1 and ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n" +
+//                    "\n" +
+//                    "    (a.time_oil_fix - \n" +
+//                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
+//                    "               FROM tb_machine_his ss \n" +
+//                    "               WHERE ss.status=1 and ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n" +
+//                    "\n" +
+//                    "FROM \n" +
+//                    "    tb_bors b \n" +
+//                    "INNER JOIN \n" +
+//                    "    tb_machine a ON b.key_id = a.borNo\n" +
+//                    "LEFT JOIN \n" +
+//                    "    LOGIN c ON a.create_by = c.KEY_ID  \n" +
+//                    "WHERE \n" +
+//                    "    1 = 1 ");
+//
+//            sb.append(conMchNo);
+//            sb.append(conAdmin);
+//            sb.append(conOrder);
+//
+//            String sql = sb.toString();
+//            log.info("sql:"+sql);
+//            return JdbcTemplate.query(sql, new RowMapper<Machine>() {
+//                @Override
+//                public Machine mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                    Machine tr = new Machine();
+//                    tr.setKeyId(rs.getInt("key_id"));
+//                    tr.setMchNo(rs.getString("mch_no"));
+//                    tr.setMchName(rs.getString("mch_name"));
+//                    tr.setMchBranchName(rs.getString("mch_branch_name"));
+//                    tr.setMchModel(rs.getString("mch_model"));
+//                    tr.setMchProductYear(rs.getString("mch_product_year"));
+//                    tr.setCreateDate(rs.getTimestamp("create_date").toLocalDateTime());
+//                    tr.setCreateBy(rs.getString("create_by"));
+//                    tr.setUserLogin(rs.getString("USER_LOGIN"));
+//                    tr.setRole(rs.getString("ROLE"));
+//                    tr.setStatus(rs.getString("status"));
+//                    tr.setBorNo(rs.getString("borNo"));
+//                    tr.setBorName(rs.getString("borname"));
+//                    tr.setBorLocationName(rs.getString("borlocationnaem"));
+//
+//
+//                    tr.setTime_fix(rs.getInt("time_fix"));
+//                    tr.setTime_fix_monitor(rs.getInt("time_fix_monitor"));
+//
+//                    tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
+//                    tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
+//
+//                    tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
+//                    tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
+//
+//
+//                    tr.setDrillrod_pq3(rs.getString("drillrod_hq3"));
+//                    tr.setCore_barrelhq3_1_5m(rs.getString("core_barrelhq3_1_5m"));
+//                    tr.setBackReamer(rs.getString("backReamer"));
+//                    tr.setCaphq(rs.getString("caphq"));
+//                    tr.setDrillbit_hq3(rs.getString("drillbit_hq3"));
+//                    tr.setWater_pump(rs.getString("water_pump"));
+//                    tr.setPipewrench24(rs.getString("pipewrench24"));
+//                    tr.setPipewrench36(rs.getString("pipewrench36"));
+//                    tr.setPipewrench48(rs.getString("pipewrench48"));
+//                    tr.setMonkey_wrench_hq3(rs.getString("monkey_wrench_hq3"));
+//                    tr.setRodpuller(rs.getString("rodpuller"));
+//                    tr.setAdapter3in1_hq(rs.getString("adapter3in1_hq"));
+//                    tr.setLifting_plug_hq(rs.getString("lifting_plug_hq"));
+//                    tr.setCircuit_breaker(rs.getString("circuit_breaker"));
+//                    tr.setLed_light(rs.getString("led_light"));
+//                    tr.setFuel(rs.getString("fuel"));
+//                    return tr;
+//                }
+//            });
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
-            if (reqBorNo != null && !reqBorNo.isEmpty()) {
-                // ถ้ามีค่า borNo จาก client ให้ใช้ค่านั้นกรองเสมอ
-                conAdmin = "\n AND a.borNo='" + reqBorNo + "' ";
-            } else if (!role.equals("PADMIN")) {
-                // ถ้าไม่มีค่า borNo จาก client และไม่ใช่ admin ให้กรองตาม borNo ของ user
-                conAdmin = "\n AND a.borNo='" + borNo + "' ";
-            } else {
-                // ถ้าเป็น admin และไม่มีค่า borNo จาก client ให้ดึงทั้งหมด
-                conAdmin = "";
-            }
+@Override
+public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String borNo) {
+    StringBuilder sb = new StringBuilder();
+    String merNo = machineRPReq.getMerNo();
 
-            sb.append("SELECT a.drillrod_pq3,a.drillrod_hq3,a.core_barrelhq3_1_5m,a.backReamer,a.caphq,a.drillbit_hq3,a.water_pump,a.pipewrench24,a.pipewrench36,a.pipewrench48,a.monkey_wrench_hq3,a.rodpuller,a.adapter3in1_hq,a.lifting_plug_hq,a.circuit_breaker,a.led_light,a.fuel,\n" +
-                    "    a.key_id,\n" +
-                    "    a.mch_no,\n" +
-                    "    a.mch_name,\n" +
-                    "    a.mch_branch_name,\n" +
-                    "    a.mch_model,\n" +
-                    "    a.mch_product_year,\n" +
-                    "    a.create_date,\n" +
-                    "    a.create_by,\n" +
-                    "    c.USER_LOGIN,\n" +
-                    "    c.ROLE,\n" +
-                    "    a.status,\n" +
-                    "    a.borNo,\n" +
-                    "    b.b_name AS borname,\n" +
-                    "    b.location borlocationnaem,\n" +
-                    "    a.time_fix,\n" +
-                    "    a.time_fix_monitor,\n" +
-                    "    a.time_oil_fix,\n" +
-                    "    a.time_oil_fix_mo,\n" +
-                    "    \n" +
-                    "    -- Use COALESCE to return 0 if the sum is null\n" +
-                    "    (a.time_fix - \n" +
-                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
-                    "               FROM tb_machine_his ss \n" +
-                    "               WHERE ss.status=1 and ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n" +
-                    "\n" +
-                    "    (a.time_oil_fix - \n" +
-                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
-                    "               FROM tb_machine_his ss \n" +
-                    "               WHERE ss.status2=1 and ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n" +
-                    "\n" +
-                    "FROM \n" +
-                    "    tb_bors b \n" +
-                    "INNER JOIN \n" +
-                    "    tb_machine a ON b.key_id = a.borNo\n" +
-                    "LEFT JOIN \n" +
-                    "    LOGIN c ON a.create_by = c.KEY_ID  \n" +
-                    "WHERE \n" +
-                    "    1 = 1 ");
+    try {
+        String conMchNo;
+        String conAdmin;
+        String conOrder = "\nORDER BY a.key_id DESC";
 
-            sb.append(conMchNo);
-            sb.append(conAdmin);
-            sb.append(conOrder);
-
-            String sql = sb.toString();
-            log.info("sql:"+sql);
-            return JdbcTemplate.query(sql, new RowMapper<Machine>() {
-                @Override
-                public Machine mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    Machine tr = new Machine();
-                    tr.setKeyId(rs.getInt("key_id"));
-                    tr.setMchNo(rs.getString("mch_no"));
-                    tr.setMchName(rs.getString("mch_name"));
-                    tr.setMchBranchName(rs.getString("mch_branch_name"));
-                    tr.setMchModel(rs.getString("mch_model"));
-                    tr.setMchProductYear(rs.getString("mch_product_year"));
-                    tr.setCreateDate(rs.getTimestamp("create_date").toLocalDateTime());
-                    tr.setCreateBy(rs.getString("create_by"));
-                    tr.setUserLogin(rs.getString("USER_LOGIN"));
-                    tr.setRole(rs.getString("ROLE"));
-                    tr.setStatus(rs.getString("status"));
-                    tr.setBorNo(rs.getString("borNo"));
-                    tr.setBorName(rs.getString("borname"));
-                    tr.setBorLocationName(rs.getString("borlocationnaem"));
-
-
-                    tr.setTime_fix(rs.getInt("time_fix"));
-                    tr.setTime_fix_monitor(rs.getInt("time_fix_monitor"));
-
-                    tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
-                    tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
-
-                    tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
-                    tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
-
-
-                    tr.setDrillrod_pq3(rs.getString("drillrod_hq3"));
-                    tr.setCore_barrelhq3_1_5m(rs.getString("core_barrelhq3_1_5m"));
-                    tr.setBackReamer(rs.getString("backReamer"));
-                    tr.setCaphq(rs.getString("caphq"));
-                    tr.setDrillbit_hq3(rs.getString("drillbit_hq3"));
-                    tr.setWater_pump(rs.getString("water_pump"));
-                    tr.setPipewrench24(rs.getString("pipewrench24"));
-                    tr.setPipewrench36(rs.getString("pipewrench36"));
-                    tr.setPipewrench48(rs.getString("pipewrench48"));
-                    tr.setMonkey_wrench_hq3(rs.getString("monkey_wrench_hq3"));
-                    tr.setRodpuller(rs.getString("rodpuller"));
-                    tr.setAdapter3in1_hq(rs.getString("adapter3in1_hq"));
-                    tr.setLifting_plug_hq(rs.getString("lifting_plug_hq"));
-                    tr.setCircuit_breaker(rs.getString("circuit_breaker"));
-                    tr.setLed_light(rs.getString("led_light"));
-                    tr.setFuel(rs.getString("fuel"));
-                    return tr;
-                }
-            });
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        // ✅ เงื่อนไขตาม merNo
+        if (merNo == null || merNo.isEmpty()) {
+            conMchNo = "";
+        } else {
+            conMchNo = "\nAND a.mch_no = '" + merNo + "' ";
         }
-        return null;
+
+        // ✅ เงื่อนไขตาม borNo หรือ role
+        String reqBorNo = machineRPReq.getBorNo();
+        if (reqBorNo != null && !reqBorNo.isEmpty()) {
+            conAdmin = "\nAND a.borNo='" + reqBorNo + "' ";
+        } else if (!"PADMIN".equals(role)) {
+            conAdmin = "\nAND a.borNo='" + borNo + "' ";
+        } else {
+            conAdmin = "";
+        }
+
+        // ✅ SQL หลัก
+        sb.append("SELECT a.key_id,\n")
+                .append("    a.mch_no,\n")
+                .append("    a.mch_name,\n")
+                .append("    a.mch_branch_name,\n")
+                .append("    a.mch_model,\n")
+                .append("    a.mch_product_year,\n")
+                .append("    a.create_date,\n")
+                .append("    a.create_by,\n")
+                .append("    c.USER_LOGIN,\n")
+                .append("    c.ROLE,\n")
+                .append("    a.status,\n")
+                .append("    a.borNo,\n")
+                .append("    b.b_name AS borname,\n")
+                .append("    b.location AS borlocationnaem,\n")
+                .append("    a.time_fix,\n")
+                .append("    a.time_fix_monitor,\n")
+                .append("    a.time_oil_fix,\n")
+                .append("    a.time_oil_fix_mo,\n")
+                .append("    a.image,\n")
+                .append("    (a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
+                .append("    (a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
+                .append("FROM tb_bors b\n")
+                .append("INNER JOIN tb_machine a ON b.key_id = a.borNo\n")
+                .append("LEFT JOIN LOGIN c ON a.create_by = c.KEY_ID\n")
+                .append("WHERE 1 = 1 ");
+
+        sb.append(conMchNo);
+        sb.append(conAdmin);
+        sb.append(conOrder);
+
+        String sql = sb.toString();
+        log.info("SQL Query => {}", sql);
+
+        // ✅ ดึงข้อมูลจาก tb_machine
+        List<Machine> machines = JdbcTemplate.query(sql, new RowMapper<Machine>() {
+            @Override
+            public Machine mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Machine tr = new Machine();
+                tr.setKeyId(rs.getInt("key_id"));
+                tr.setMchNo(rs.getString("mch_no"));
+                tr.setMchName(rs.getString("mch_name"));
+                tr.setMchBranchName(rs.getString("mch_branch_name"));
+                tr.setMchModel(rs.getString("mch_model"));
+                tr.setMchProductYear(rs.getString("mch_product_year"));
+                tr.setCreateDate(rs.getTimestamp("create_date").toLocalDateTime());
+                tr.setCreateBy(rs.getString("create_by"));
+                tr.setUserLogin(rs.getString("USER_LOGIN"));
+                tr.setRole(rs.getString("ROLE"));
+                tr.setStatus(rs.getString("status"));
+                tr.setBorNo(rs.getString("borNo"));
+                tr.setBorName(rs.getString("borname"));
+                tr.setBorLocationName(rs.getString("borlocationnaem"));
+                tr.setTime_fix(rs.getInt("time_fix"));
+                tr.setTime_fix_monitor(rs.getInt("time_fix_monitor"));
+                tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
+                tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
+                tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
+                tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
+                tr.setImage(rs.getString("image"));
+                return tr;
+            }
+        });
+
+
+        // ✅ ดึง tools ทั้งหมด
+        String sqlTools = "SELECT id, mch_no, tool_name, qty FROM tb_machine_tool";
+        List<Map<String, Object>> tools = JdbcTemplate.queryForList(sqlTools);
+
+        // ✅ จับคู่ tools เข้ากับ machine แต่ละตัว
+        for (Machine machine : machines) {
+            String mchNo = machine.getMchNo();
+
+            List<Machine.Tool> machineTools = tools.stream()
+                    .filter(t -> mchNo != null && mchNo.equals(String.valueOf(t.get("mch_no")).trim()))
+                    .map(t -> new Machine.Tool(
+                            String.valueOf(t.get("tool_name")),
+                            Integer.parseInt(String.valueOf(t.get("qty"))),
+                            Integer.parseInt(String.valueOf(t.get("id"))),
+                            String.valueOf(t.get("mch_no"))
+                    ))
+                    .collect(Collectors.toList());
+
+            machine.setTools(machineTools != null ? machineTools : new ArrayList<>());
+            log.info("Machine {} has {} tools", mchNo, machineTools.size());
+        }
+
+        return machines;
+
+    } catch (Exception e) {
+        log.error("❌ Error in getMachine(): {}", e.getMessage(), e);
+        return Collections.emptyList();
     }
+}
+
+
 
     @Override
     public List<MachineDetails> getReportMachineDetails(MachineRPReq machineRPReq,String role ,String borNo) {
@@ -947,30 +1070,14 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     @Override
     public int saveMachine(MachineReq machineReq) {
         try {
+            String imageUrl = machineReq.getImage(); // ใช้ URL แทน byte[]
+
             String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-                    "create_date, create_by, status, borNo,time_fix,time_fix_monitor,time_oil_fix,time_oil_fix_mo," +
-                    "    drillrod_pq3,\n" +
-                    "    drillrod_hq3,\n" +
-                    "    core_barrelhq3_1_5m,\n" +
-                    "    backReamer,\n" +
-                    "    caphq,\n" +
-                    "    drillbit_hq3,\n" +
-                    "    water_pump,\n" +
-                    "    pipewrench24,\n" +
-                    "    pipewrench36,\n" +
-                    "    pipewrench48,\n" +
-                    "    monkey_wrench_hq3,\n" +
-                    "    rodpuller,\n" +
-                    "    adapter3in1_hq,\n" +
-                    "    lifting_plug_hq,\n" +
-                    "    circuit_breaker,\n" +
-                    "    led_light,\n" +
-                    "     fuel) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
-                   // machineReq.getKeyId(),
                     machineReq.getMchNo(),
                     machineReq.getMchName(),
                     machineReq.getMchBranchName(),
@@ -980,31 +1087,11 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                     machineReq.getCreateBy(),
                     machineReq.getStatus(),
                     machineReq.getBorNo(),
-
                     machineReq.getTime_fix(),
                     machineReq.getTime_fix_monitor(),
                     machineReq.getTime_oil_fix(),
                     machineReq.getTime_oil_fix_mo(),
-
-                    machineReq.getDrillrod_pq3(),
-                    machineReq.getDrillrod_hq3(),
-                    machineReq.getCore_barrelhq3_1_5m(),
-                    machineReq.getBackReamer(),
-                    machineReq.getCaphq(),
-                    machineReq.getDrillbit_hq3(),
-                    machineReq.getWater_pump(),
-                    machineReq.getPipewrench24(),
-                    machineReq.getPipewrench36(),
-                    machineReq.getPipewrench48(),
-                    machineReq.getMonkey_wrench_hq3(),
-                    machineReq.getRodpuller(),
-                    machineReq.getAdapter3in1_hq(),
-                    machineReq.getLifting_plug_hq(),
-                    machineReq.getCircuit_breaker(),
-                    machineReq.getLed_light(),
-                    machineReq.getFuel()
-
-
+                    imageUrl // <-- URL image2
             );
 
         } catch (Exception e) {
@@ -1013,84 +1100,55 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         return 0;
     }
 
-    @Override
-    public int updateMachine(MachineReq machineReq) {
-        try {
-            String sql = "UPDATE tb_machine SET " +
-                    "mch_no = ?, " +
-                    "mch_name = ?, " +
-                    "mch_branch_name = ?, " +
-                    "mch_model = ?, " +
-                    "mch_product_year = ?, " +
-                    "update_date = ?, " +
-                    "update_by = ?, " +
-                    "status = ?, " +
-                    "borNo = ? , " +
-                    "time_fix=?," +
-                    "time_fix_monitor=?," +
-                    "time_oil_fix=?," +
-                    "time_oil_fix_mo=?, " +
-                    "drillrod_pq3=?,\n" +
-                    "     drillrod_hq3=?,\n" +
-                    "    core_barrelhq3_1_5m=?,\n" +
-                    "    backReamer=?,\n" +
-                    "    caphq=?,\n" +
-                    "    drillbit_hq3=?,\n" +
-                    "    water_pump=?,\n" +
-                    "    pipewrench24=?,\n" +
-                    "    pipewrench36=?,\n" +
-                    "    pipewrench48=?,\n" +
-                    "    monkey_wrench_hq3=?,\n" +
-                    "    rodpuller=?,\n" +
-                    "    adapter3in1_hq=?,\n" +
-                    "    lifting_plug_hq=?,\n" +
-                    "    circuit_breaker=?,\n" +
-                    "    led_light=?,\n" +
-                    "     fuel=? " +
-                    "WHERE key_id = ?";
+@Override
+public int updateMachine(MachineReq machineReq) {
+    try {
+        // สร้าง SQL พื้นฐาน
+        StringBuilder sql = new StringBuilder("UPDATE tb_machine SET " +
+                "mch_no = ?, " +
+                "mch_name = ?, " +
+                "mch_branch_name = ?, " +
+                "mch_model = ?, " +
+                "mch_product_year = ?, " +
+                "update_date = ?, " +
+                "update_by = ?, " +
+                "status = ?, " +
+                "borNo = ?, " +
+                "time_fix = ?, " +
+                "time_fix_monitor = ?, " +
+                "time_oil_fix = ?, " +
+                "image = ?, " +
+                "time_oil_fix_mo = ? " +
+                "WHERE key_id = ?"
+        );
 
-            return JdbcTemplate.update(sql,
-                    machineReq.getMchNo(),
-                    machineReq.getMchName(),
-                    machineReq.getMchBranchName(),
-                    machineReq.getMchModel(),
-                    machineReq.getMchProductYear(),
-                   new Date(),
-                    machineReq.getCreateBy(),
-                    machineReq.getStatus(),
-                    machineReq.getBorNo(),
+        List<Object> params = new ArrayList<>();
+        params.add(machineReq.getMchNo());
+        params.add(machineReq.getMchName());
+        params.add(machineReq.getMchBranchName());
+        params.add(machineReq.getMchModel());
+        params.add(machineReq.getMchProductYear());
+        params.add(new Date()); // update_date
+        params.add(machineReq.getCreateBy());
+        params.add(machineReq.getStatus());
+        params.add(machineReq.getBorNo());
+        params.add(machineReq.getTime_fix());
+        params.add(machineReq.getTime_fix_monitor());
+        params.add(machineReq.getTime_oil_fix());
+        params.add(machineReq.getImage());   // image
+        params.add(machineReq.getTime_oil_fix_mo());
+        params.add(machineReq.getKeyId());    // key_id
 
-                    machineReq.getTime_fix(),
-                    machineReq.getTime_fix_monitor(),
-                    machineReq.getTime_oil_fix(),
-                    machineReq.getTime_oil_fix_mo(),
+        return JdbcTemplate.update(sql.toString(), params.toArray());
 
-                    machineReq.getDrillrod_pq3(),
-                    machineReq.getDrillrod_hq3(),
-                    machineReq.getCore_barrelhq3_1_5m(),
-                    machineReq.getBackReamer(),
-                    machineReq.getCaphq(),
-                    machineReq.getDrillbit_hq3(),
-                    machineReq.getWater_pump(),
-                    machineReq.getPipewrench24(),
-                    machineReq.getPipewrench36(),
-                    machineReq.getPipewrench48(),
-                    machineReq.getMonkey_wrench_hq3(),
-                    machineReq.getRodpuller(),
-                    machineReq.getAdapter3in1_hq(),
-                    machineReq.getLifting_plug_hq(),
-                    machineReq.getCircuit_breaker(),
-                    machineReq.getLed_light(),
-                    machineReq.getFuel(),
-
-                    machineReq.getKeyId()
-            );
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    } catch (Exception e) {
+        e.printStackTrace();
         return 0;
     }
+}
+
+
+
 
 
 

@@ -1,9 +1,6 @@
 package com.ldb.truck.Dao.VicicleHeaderDao;
 
-import com.ldb.truck.Model.Login.CarOffice.CarOfficeModel;
-import com.ldb.truck.Model.Login.CarOffice.CarOfficeReq;
-import com.ldb.truck.Model.Login.CarOffice.CarPaidModel;
-import com.ldb.truck.Model.Login.CarOffice.PaidCarDaoReq;
+import com.ldb.truck.Model.Login.CarOffice.*;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportHeaderReq;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeader;
@@ -18,6 +15,7 @@ public interface VicicleHeaderDao {
     public List<VicicleHeader> listVicicleHeader (VicicleHeaderReq vicicleHeaderReq);
     public List<VicicleHeader> listVicicleHeaderByID (VicicleHeaderReq vicicleHeaderReq);
     public List<CarOfficeModel> listCarOfficeDAOs (CarOfficeReq carOfficeReq);
+    public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq);
     public List<CarPaidModel> listCarDaoPaid (CarOfficeReq carOfficeReq);
     public List<CarOfficeModel> listLodDaoOfficeDAOs (CarOfficeReq carOfficeReq);
     public List<CarOfficeModel> listCarOfficeDAOsDetailById (CarOfficeReq carOfficeReq);

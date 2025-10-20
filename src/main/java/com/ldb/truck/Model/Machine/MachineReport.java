@@ -1,4 +1,5 @@
 package com.ldb.truck.Model.Machine;
+
 import lombok.Data;
 import java.math.BigDecimal;
 
@@ -7,11 +8,10 @@ public class MachineReport {
     private Integer mchId;
     private String mchNo;
     private String mchName;
-
     private String mchBranchName;
     private String mchModel;
     private String mchProductYear;
-    private String requestDate; // formatted as 'YYYY-MM-DD'
+    private String requestDate; // 'YYYY-MM-DD'
     private String borNo;
     private String borName;
     private Integer itemId;
@@ -21,6 +21,4 @@ public class MachineReport {
     private Integer qty;
     private BigDecimal price;
     private BigDecimal total;
-
-
 }

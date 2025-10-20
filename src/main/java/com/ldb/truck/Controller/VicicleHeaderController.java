@@ -1,9 +1,6 @@
 package com.ldb.truck.Controller;
 import com.ldb.truck.Dao.upload.MediaUploadService;
-import com.ldb.truck.Model.Login.CarOffice.CarOfficeReq;
-import com.ldb.truck.Model.Login.CarOffice.CarOfficeRes;
-import com.ldb.truck.Model.Login.CarOffice.CarPaidRes;
-import com.ldb.truck.Model.Login.CarOffice.PaidCarDaoReq;
+import com.ldb.truck.Model.Login.CarOffice.*;
 import com.ldb.truck.Model.Login.Dept_Must_Receive.DeptMustReceivedRes;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.VicicleHeader.VicicleHeaderReq;
@@ -118,21 +115,36 @@ public class VicicleHeaderController {
         }
         return result;
     }
-    // List Car office
+    // List Car office - all columns
     @CrossOrigin(origins = "*")
     @PostMapping("/listCarOffice.service")
-    public CarOfficeRes listCarsOffice(@RequestBody  CarOfficeReq carOfficeReq){
+    public CarOfficeRes listCarsOfficeFull(@RequestBody CarOfficeReq carOfficeReq) {
         CarOfficeRes result = new CarOfficeRes();
         try {
-            result = vicicleHeaderService.listCarOfficeService(carOfficeReq);
-        }catch (Exception e){
+            result = vicicleHeaderService.listCarOfficeService(carOfficeReq); // full data
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
-            result.setMessage("exeption");
-            return result;
+            result.setMessage("exception");
         }
         return result;
     }
+
+    // List Bor Car - less columns
+    @CrossOrigin(origins = "*")
+    @PostMapping("/listCarOfBor.service")
+    public CarBorRes listCarsOfficeBor(@RequestBody CarBorReq CarBorReq) {
+        CarBorRes result = new CarBorRes();
+        try {
+            result = vicicleHeaderService.listCarOfficeBorService(CarBorReq); // full data
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exception");
+        }
+        return result;
+    }
+
     // list lod t jaiy kha dao history
     @CrossOrigin(origins = "*")
     @PostMapping("/listCarThatPaid.service")
@@ -829,7 +841,8 @@ public Messages saveVicicleHeader(
             @RequestParam("leanGiaNextday") String  leanGiaNextday,
             //add new
             @RequestParam("startdate_kongnam") String  startdate_kongnam,
-            @RequestParam("enddate_kongnam") String  enddate_kongnam
+            @RequestParam("enddate_kongnam") String  enddate_kongnam,
+            @RequestParam("borNo") String  borNo
     ){
         log.info("===================================save header==================================================");
         Date date = new Date();
@@ -890,6 +903,7 @@ public Messages saveVicicleHeader(
             //add new
             data.setStartdate_kongnam(startdate_kongnam);
             data.setEnddate_kongnam(enddate_kongnam);
+            data.setBorNo(borNo);
 
             log.error("******file lenght"+files);
             log.error(data);

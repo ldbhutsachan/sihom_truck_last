@@ -2771,13 +2771,20 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             //51 ຫົວເຈາະ
             //*****check addmin
             if(role.equals("PADMIN")){
-                conQuery = "select '51' req_id,a.mch_name req_name,b.key_id bor_id ,a.mch_no,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
+                conQuery = "select '51' req_id,a.mch_name req_name,b.key_id bor_id ,a.mch_no,b.key_id bor_no ,'51' type,b.b_name as location  from tb_machine a inner join \n" +
                         "tb_bors b  on b.key_id=a.borNo where  1=1";
             }else {
                 //51 ຫົວເຈາະ
-                conQuery = "select '51' req_id,a.mch_name req_name,b.key_id bor_id ,a.mch_no,b.key_id bor_no ,'51' type,b.location  from tb_machine a inner join \n" +
+                conQuery = "select '51' req_id,a.mch_name req_name,b.key_id bor_id ,a.mch_no,b.key_id bor_no ,'51' type,b.b_name as location  from tb_machine a inner join \n" +
                         "tb_bors b  on b.key_id=a.borNo where a.borNo='"+borNo+"' and 1=1";
             }
+        }
+        else if(reqTypeId.equals("53")) {
+            //53 ກັບລົດ
+            conQuery = "SELECT '53' AS req_id, a.license_plate AS req_name, a.KEY_ID AS bor_id, a.borNo AS bor_no, '53' AS type, a.borName  AS location, a.KEY_ID AS mch_no " +
+                    "FROM V_OFFIE_CAR_STATUS a " +
+                    "WHERE a.borNo = '" + borNo + "'";
+
         }
         else {
             conReqTypeId  = "\n AND req_id='"+reqTypeId+"'";

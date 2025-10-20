@@ -158,6 +158,8 @@ public class RequestTxnEntity {
 
     @Column(name = "reject_name", length = 200)
     private String reject_name;
+    @Column(name ="license_plate", length = 200)
+    private String license_plate;
 
 
 
