@@ -514,6 +514,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         entity.setTime_total(machineHisReq.getTimeClose());
         entity.setTxnDate(machineHisReq.getTxnDate());
         entity.setStatus(1); // Assuming '1' means active or a specific status
+        entity.setStatus2(1);
 
         try {
             MERCHIN_HIS_REPOSITORY.save(entity);
@@ -535,6 +536,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
             entity.setTime_total(machineHisReq.getTimeClose());
             entity.setTxnDate(machineHisReq.getTxnDate());
             entity.setStatus(machineHisReq.getStatus()); // Assuming status is part of MachineHisReq
+            entity.setStatus2(machineHisReq.getStatus2());
             try {
                 MERCHIN_HIS_REPOSITORY.save(entity); // Save the updated entity
                 return 1; // Return 0 for success
@@ -803,7 +805,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         // ✅ SQL หลัก
         sb.append("SELECT a.key_id,\n")
                 .append("    a.mch_no,\n")
-                .append("    a.mch_name,\n")
+                .append("    a.mch_name, a.price,a.currency,\n")
                 .append("    a.mch_branch_name,\n")
                 .append("    a.mch_model,\n")
                 .append("    a.mch_product_year,\n")
@@ -820,8 +822,9 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 .append("    a.time_oil_fix,\n")
                 .append("    a.time_oil_fix_mo,\n")
                 .append("    a.image,\n")
-                .append("    (a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
-                .append("    (a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
+                .append("(a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
+                .append("(a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
+
                 .append("FROM tb_bors b\n")
                 .append("INNER JOIN tb_machine a ON b.key_id = a.borNo\n")
                 .append("LEFT JOIN LOGIN c ON a.create_by = c.KEY_ID\n")
@@ -842,6 +845,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setKeyId(rs.getInt("key_id"));
                 tr.setMchNo(rs.getString("mch_no"));
                 tr.setMchName(rs.getString("mch_name"));
+                tr.setPrice(rs.getString("price"));
+                tr.setCurrency(rs.getString("currency"));
                 tr.setMchBranchName(rs.getString("mch_branch_name"));
                 tr.setMchModel(rs.getString("mch_model"));
                 tr.setMchProductYear(rs.getString("mch_product_year"));
@@ -879,7 +884,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                             String.valueOf(t.get("tool_name")),
                             Integer.parseInt(String.valueOf(t.get("qty"))),
                             Integer.parseInt(String.valueOf(t.get("id"))),
-                            String.valueOf(t.get("mch_no"))
+                            String.valueOf(t.get("mch_no")),
+                            String.valueOf(t.get("unit"))
                     ))
                     .collect(Collectors.toList());
 
