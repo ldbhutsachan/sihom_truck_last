@@ -110,63 +110,45 @@ public class MachineService {
         return response;
     }
 
-//    public MachineResponse enableMachineHis(MachineHisReq machineHisReq,String userName){
-//        MachineResponse response = new MachineResponse();
-//        try {
-//            int check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
-//            log.info("check:"+check);
-//            if(check == 1  ){
-//                response.setStatus("00");
-//                response.setMessage("OK");
-//                response.setData(null);
-//                return response;
-//            }
-//            else if(check == 2){
-//                response.setStatus("00");
-//                response.setMessage("You're data is Error!!!!");
-//                response.setData(null);
-//                return response;
-//            }
-//            response.setStatus("00");
-//            response.setMessage("Can't update Data !!!!");
-//            response.setData(null);
-//            return response;
-//
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            response.setStatus("00");
-//            response.setMessage("Error Can't update Data !!!!");
-//            response.setData(null);
-//            //return response;
-//        }
-//
-//        return response;
-//    }
-
-    public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String userName) {
+    public MachineResponse enableMachineHis(MachineHisReq machineHisReq,String userName){
         MachineResponse response = new MachineResponse();
         try {
-            int updatedRows = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
-            log.info("Updated rows: " + updatedRows);
-
-            if (updatedRows > 0) {
+            int check = 0;
+            if(machineHisReq.getType().equals("1")){
+                 check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
+            }else if(machineHisReq.getType().equals("2")){
+                 check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(machineHisReq.getMchNo());
+            }else {
+                check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(machineHisReq.getMchNo());
+            }
+            log.info("check:"+check);
+            if(check == 1  ){
                 response.setStatus("00");
                 response.setMessage("OK");
-            } else {
-                response.setStatus("01");
-                response.setMessage("No data found to update (mch_no not matched)");
+                response.setData(null);
+                return response;
             }
+            else if(check == 2){
+                response.setStatus("00");
+                response.setMessage("You're data is Error!!!!");
+                response.setData(null);
+                return response;
+            }
+            response.setStatus("00");
+            response.setMessage("Can't update Data !!!!");
+            response.setData(null);
+            return response;
 
-        } catch (Exception e) {
+        }catch (Exception e){
             e.printStackTrace();
-            response.setStatus("EE");
-            response.setMessage("Error: Can't update Data!");
+            response.setStatus("00");
+            response.setMessage("Error Can't update Data !!!!");
+            response.setData(null);
+            //return response;
         }
 
-        response.setData(null);
         return response;
     }
-
     public MachineHisResponse getMachineHis(MachineHisReq machineHisReq,String borNo){
         MachineHisResponse response = new MachineHisResponse();
         try {

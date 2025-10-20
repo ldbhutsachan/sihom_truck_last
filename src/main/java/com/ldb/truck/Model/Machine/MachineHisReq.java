@@ -23,4 +23,6 @@ public class MachineHisReq {
     private Integer status; // status int(11)
 
     private String borNo;
+
+    private String type;
 }
