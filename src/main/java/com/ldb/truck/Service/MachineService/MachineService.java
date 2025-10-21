@@ -110,45 +110,87 @@ public class MachineService {
         return response;
     }
 
-    public MachineResponse enableMachineHis(MachineHisReq machineHisReq,String userName){
-        MachineResponse response = new MachineResponse();
-        try {
-            int check = 0;
-            if(machineHisReq.getType().equals("1")){
-                 check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
-            }else if(machineHisReq.getType().equals("2")){
-                 check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(machineHisReq.getMchNo());
-            }else {
-                check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(machineHisReq.getMchNo());
-            }
-            log.info("check:"+check);
-            if(check == 1  ){
-                response.setStatus("00");
-                response.setMessage("OK");
-                response.setData(null);
-                return response;
-            }
-            else if(check == 2){
-                response.setStatus("00");
-                response.setMessage("You're data is Error!!!!");
-                response.setData(null);
-                return response;
-            }
-            response.setStatus("00");
-            response.setMessage("Can't update Data !!!!");
-            response.setData(null);
-            return response;
+//    public MachineResponse enableMachineHis(MachineHisReq machineHisReq,String userName){
+//        MachineResponse response = new MachineResponse();
+//        try {
+//            int check = 0;
+//            if(machineHisReq.getType().equals("1")){
+//                 check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
+//            }else if(machineHisReq.getType().equals("2")){
+//                 check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(machineHisReq.getMchNo());
+//            }else {
+//                check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(machineHisReq.getMchNo());
+//            }
+//            log.info("check:"+check);
+//            if(check == 1  ){
+//                response.setStatus("00");
+//                response.setMessage("OK");
+//                response.setData(null);
+//                return response;
+//            }
+//            else if(check == 2){
+//                response.setStatus("00");
+//                response.setMessage("You're data!!!!");
+//                response.setData(null);
+//                return response;
+//            }
+//            response.setStatus("00");
+//            response.setMessage("update Data success !!!!");
+//            response.setData(null);
+//            return response;
+//
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            response.setStatus("00");
+//            response.setMessage("Error Can't update Data !!!!");
+//            response.setData(null);
+//            //return response;
+//        }
+//
+//        return response;
+//    }
+public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String userName) {
+    MachineResponse response = new MachineResponse();
 
-        }catch (Exception e){
-            e.printStackTrace();
-            response.setStatus("00");
-            response.setMessage("Error Can't update Data !!!!");
-            response.setData(null);
-            //return response;
+    try {
+        int check;
+        String type = machineHisReq.getType();
+        String mchNo = machineHisReq.getMchNo();
+
+        if ("1".equals(type)) {
+            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(mchNo);
+        } else if ("2".equals(type)) {
+            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(mchNo);
+        } else {
+            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(mchNo);
         }
 
-        return response;
+        log.info("check: {}", check);
+
+        switch (check) {
+            case 1:
+                response.setStatus("00");
+                response.setMessage("Update completed successfully.");
+                break;
+            case 2:
+                response.setStatus("01");
+                response.setMessage("Machine already closed or no data to update.");
+                break;
+            default:
+                response.setStatus("00");
+                response.setMessage("Update data success!");
+        }
+
+    } catch (Exception e) {
+        log.error("Error updating machine history", e);
+        response.setStatus("99");
+        response.setMessage("Error: Can't update data!");
     }
+
+    response.setData(null);
+    return response;
+}
+
     public MachineHisResponse getMachineHis(MachineHisReq machineHisReq,String borNo){
         MachineHisResponse response = new MachineHisResponse();
         try {
@@ -207,6 +249,8 @@ public class MachineService {
                  machine.setKeyId(resp.getKeyId());
                  machine.setMchNo(resp.getMchNo());
                  machine.setMchName(resp.getMchName());
+                 machine.setPrice(resp.getPrice());
+                 machine.setCurrency(resp.getCurrency());
                  machine.setMchBranchName(resp.getMchBranchName());
                  machine.setMchModel(resp.getMchModel());
                  machine.setMchProductYear(resp.getMchProductYear());
@@ -433,7 +477,7 @@ public class MachineService {
             List<Machine> getMer = machineInterface.getMachineByMerchantNo(machineReq);
             if (getMer != null && !getMer.isEmpty()) {
                 response.setStatus("EE");
-                response.setMessage("เครื่องจักรนี้มีอยู่แล้ว");
+                response.setMessage("This machine already exist in DB");
                 response.setData(null);
                 return response;
             }
@@ -443,16 +487,18 @@ public class MachineService {
             // 2. Insert tools
             if (result > 0 && machineReq.getTools() != null) {
                 for (MachineReq.ToolReq tool : machineReq.getTools()) {
-                    String sqlTool = "INSERT INTO tb_machine_tool (mch_no, tool_name, qty, status, update_date, updated_by) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)";
+                    String sqlTool = "INSERT INTO tb_machine_tool (mch_no, tool_name, qty, status, update_date, updated_by,unit) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?)";
                     jdbcTemplate.update(sqlTool,
                             machineReq.getMchNo(),
                             tool.getToolName(),
                             tool.getQty(),
                             "ok",
                             new java.sql.Timestamp(System.currentTimeMillis()),
-                            machineReq.getCreateBy()
+                            machineReq.getCreateBy(),
+                            tool.getUnit() != null ? tool.getUnit() : ""
                     );
+
                 }
             }
 
@@ -482,8 +528,8 @@ public MachineReportResposne updateMachine(MachineReq machineReq) {
 
             // Insert tools ใหม่
             String insertSql = "INSERT INTO tb_machine_tool " +
-                    "(mch_no, tool_name, qty, status, update_date, updated_by) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+                    "(mch_no, tool_name, qty, status, update_date, updated_by,unit) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
             for (MachineReq.ToolReq tool : machineReq.getTools()) {
                 jdbcTemplate.update(insertSql,
                         machineReq.getMchNo(),
@@ -491,7 +537,8 @@ public MachineReportResposne updateMachine(MachineReq machineReq) {
                         tool.getQty(),
                         "ok",
                         new Timestamp(System.currentTimeMillis()),
-                        machineReq.getCreateBy()
+                        machineReq.getCreateBy(),
+                        tool.getUnit() != null ? tool.getUnit() : ""
                 );
             }
         }

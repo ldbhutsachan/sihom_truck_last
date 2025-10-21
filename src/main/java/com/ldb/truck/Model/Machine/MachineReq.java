@@ -22,6 +22,9 @@ public class MachineReq {
     private Integer time_oil_fix_mo;
 
     private  String image;
+    //add new
+    private String price;
+    private String currency;
 
     // สำหรับ tools
     private List<ToolReq> tools;
@@ -30,5 +33,7 @@ public class MachineReq {
     public static class ToolReq {
         private String toolName;
         private Integer qty;
+        //add new
+        private String unit;
     }
 }

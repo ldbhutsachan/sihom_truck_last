@@ -21,6 +21,7 @@ public class MachineHisReq {
     private Date txnDate; // txn_date date
 
     private Integer status; // status int(11)
+    private Integer status2;
 
     private String borNo;
 

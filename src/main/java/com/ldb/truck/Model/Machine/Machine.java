@@ -15,6 +15,8 @@ public class Machine {
     private Integer keyId;
     private String mchNo;
     private String mchName;
+    private String price;
+    private String currency;
     private String mchBranchName;
     private String mchModel;
     private String mchProductYear;
@@ -52,5 +54,6 @@ public class Machine {
         private int qty;
         private int id;
         private String mch_no;
+        private String unit;
     }
 }

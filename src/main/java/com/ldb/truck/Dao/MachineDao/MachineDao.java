@@ -514,6 +514,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         entity.setTime_total(machineHisReq.getTimeClose());
         entity.setTxnDate(machineHisReq.getTxnDate());
         entity.setStatus(1); // Assuming '1' means active or a specific status
+        entity.setStatus2(1);
 
         try {
             MERCHIN_HIS_REPOSITORY.save(entity);
@@ -535,6 +536,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
             entity.setTime_total(machineHisReq.getTimeClose());
             entity.setTxnDate(machineHisReq.getTxnDate());
             entity.setStatus(machineHisReq.getStatus()); // Assuming status is part of MachineHisReq
+            entity.setStatus2(machineHisReq.getStatus2());
             try {
                 MERCHIN_HIS_REPOSITORY.save(entity); // Save the updated entity
                 return 1; // Return 0 for success
@@ -803,7 +805,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         // ✅ SQL หลัก
         sb.append("SELECT a.key_id,\n")
                 .append("    a.mch_no,\n")
-                .append("    a.mch_name,\n")
+                .append("    a.mch_name, a.price,a.currency,\n")
                 .append("    a.mch_branch_name,\n")
                 .append("    a.mch_model,\n")
                 .append("    a.mch_product_year,\n")
@@ -820,8 +822,9 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 .append("    a.time_oil_fix,\n")
                 .append("    a.time_oil_fix_mo,\n")
                 .append("    a.image,\n")
-                .append("    (a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
-                .append("    (a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
+                .append("(a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
+                .append("(a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
+
                 .append("FROM tb_bors b\n")
                 .append("INNER JOIN tb_machine a ON b.key_id = a.borNo\n")
                 .append("LEFT JOIN LOGIN c ON a.create_by = c.KEY_ID\n")
@@ -842,6 +845,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setKeyId(rs.getInt("key_id"));
                 tr.setMchNo(rs.getString("mch_no"));
                 tr.setMchName(rs.getString("mch_name"));
+                tr.setPrice(rs.getString("price"));
+                tr.setCurrency(rs.getString("currency"));
                 tr.setMchBranchName(rs.getString("mch_branch_name"));
                 tr.setMchModel(rs.getString("mch_model"));
                 tr.setMchProductYear(rs.getString("mch_product_year"));
@@ -866,7 +871,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
 
 
         // ✅ ดึง tools ทั้งหมด
-        String sqlTools = "SELECT id, mch_no, tool_name, qty FROM tb_machine_tool";
+        String sqlTools = "SELECT id, mch_no, tool_name, qty, unit FROM tb_machine_tool";
         List<Map<String, Object>> tools = JdbcTemplate.queryForList(sqlTools);
 
         // ✅ จับคู่ tools เข้ากับ machine แต่ละตัว
@@ -879,7 +884,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                             String.valueOf(t.get("tool_name")),
                             Integer.parseInt(String.valueOf(t.get("qty"))),
                             Integer.parseInt(String.valueOf(t.get("id"))),
-                            String.valueOf(t.get("mch_no"))
+                            String.valueOf(t.get("mch_no")),
+                            String.valueOf(t.get("unit"))
                     ))
                     .collect(Collectors.toList());
 
@@ -1074,8 +1080,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
 
             String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image" +
-                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image,price, currency" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
                     machineReq.getMchNo(),
@@ -1091,7 +1097,9 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                     machineReq.getTime_fix_monitor(),
                     machineReq.getTime_oil_fix(),
                     machineReq.getTime_oil_fix_mo(),
-                    imageUrl // <-- URL image2
+                    imageUrl, // <-- URL image2
+                    machineReq.getPrice(),
+                    machineReq.getCurrency()
             );
 
         } catch (Exception e) {
@@ -1100,60 +1108,76 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         return 0;
     }
 
-@Override
-public int updateMachine(MachineReq machineReq) {
-    try {
-        // สร้าง SQL พื้นฐาน
-        StringBuilder sql = new StringBuilder("UPDATE tb_machine SET " +
-                "mch_no = ?, " +
-                "mch_name = ?, " +
-                "mch_branch_name = ?, " +
-                "mch_model = ?, " +
-                "mch_product_year = ?, " +
-                "update_date = ?, " +
-                "update_by = ?, " +
-                "status = ?, " +
-                "borNo = ?, " +
-                "time_fix = ?, " +
-                "time_fix_monitor = ?, " +
-                "time_oil_fix = ?, " +
-                "image = ?, " +
-                "time_oil_fix_mo = ? " +
-                "WHERE key_id = ?"
-        );
+    @Override
+    public int updateMachine(MachineReq machineReq) {
+        try {
+            StringBuilder sql = new StringBuilder("UPDATE tb_machine SET ");
+            List<Object> params = new ArrayList<>();
 
-        List<Object> params = new ArrayList<>();
-        params.add(machineReq.getMchNo());
-        params.add(machineReq.getMchName());
-        params.add(machineReq.getMchBranchName());
-        params.add(machineReq.getMchModel());
-        params.add(machineReq.getMchProductYear());
-        params.add(new Date()); // update_date
-        params.add(machineReq.getCreateBy());
-        params.add(machineReq.getStatus());
-        params.add(machineReq.getBorNo());
-        params.add(machineReq.getTime_fix());
-        params.add(machineReq.getTime_fix_monitor());
-        params.add(machineReq.getTime_oil_fix());
-        params.add(machineReq.getImage());   // image
-        params.add(machineReq.getTime_oil_fix_mo());
-        params.add(machineReq.getKeyId());    // key_id
+            sql.append("mch_no = ?, ");
+            params.add(machineReq.getMchNo());
 
-        return JdbcTemplate.update(sql.toString(), params.toArray());
+            sql.append("mch_name = ?, ");
+            params.add(machineReq.getMchName());
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        return 0;
+            sql.append("price = ?, ");
+            params.add(machineReq.getPrice());
+
+            sql.append("currency = ?, ");
+            params.add(machineReq.getCurrency());
+
+            sql.append("mch_branch_name = ?, ");
+            params.add(machineReq.getMchBranchName());
+
+            sql.append("mch_model = ?, ");
+            params.add(machineReq.getMchModel());
+
+            sql.append("mch_product_year = ?, ");
+            params.add(machineReq.getMchProductYear());
+
+            sql.append("update_date = ?, ");
+            params.add(new Date());
+
+            sql.append("update_by = ?, ");
+            params.add(machineReq.getCreateBy());
+
+            sql.append("status = ?, ");
+            params.add(machineReq.getStatus());
+
+            sql.append("borNo = ?, ");
+            params.add(machineReq.getBorNo());
+
+            sql.append("time_fix = ?, ");
+            params.add(machineReq.getTime_fix());
+
+            sql.append("time_fix_monitor = ?, ");
+            params.add(machineReq.getTime_fix_monitor());
+
+            sql.append("time_oil_fix = ?, ");
+            params.add(machineReq.getTime_oil_fix());
+
+            // ✅ เพิ่ม image เฉพาะกรณีที่มีการอัปโหลดไฟล์ใหม่
+            if (machineReq.getImage() != null && !machineReq.getImage().isEmpty()) {
+                sql.append("image = ?, ");
+                params.add(machineReq.getImage());
+            }
+
+            sql.append("time_oil_fix_mo = ? ");
+            params.add(machineReq.getTime_oil_fix_mo());
+
+            sql.append("WHERE key_id = ?");
+            params.add(machineReq.getKeyId());
+
+            int result = JdbcTemplate.update(sql.toString(), params.toArray());
+            log.info("✅ SQL ที่รันจริง: {}", sql);
+            log.info("✅ จำนวนแถวที่อัปเดต: {}", result);
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
-}
-
-
-
-
-
-
-
-
-
 
 }
+
