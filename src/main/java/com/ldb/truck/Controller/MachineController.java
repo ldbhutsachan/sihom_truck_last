@@ -3,6 +3,8 @@ package com.ldb.truck.Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
+import com.ldb.truck.Model.Borcar.BorCarResponse;
+import com.ldb.truck.Model.Borcar.BorcarReq;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Machine.*;
 import com.ldb.truck.Service.MachineService.MachineService;
@@ -207,6 +209,32 @@ private final  MachineService MACHINE_SERVICE;
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getReportBorCar.service")
+    public ResponseEntity<?> getReportBorCar(@RequestBody BorcarReq borcarReq) {
+        BorCarResponse response = new BorCarResponse();
+
+        // ตรวจสอบ token
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(borcarReq.getToken());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String role = userProfiles.get(0).getRole();
+//        String borNo = userProfiles.get(0).getBorNo();
+
+        try {
+            response = MACHINE_SERVICE.getReportBorCar(borcarReq, role);
+        } catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
     @CrossOrigin(origins = "*")
     @PostMapping("/getReportMachineSum.service")
     public ResponseEntity<?> getReportMachineSum(@RequestBody MachineRPReq machineRPReq){
