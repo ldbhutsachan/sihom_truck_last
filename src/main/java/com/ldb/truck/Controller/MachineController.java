@@ -12,6 +12,7 @@ import com.ldb.truck.Service.MediaUploadServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -271,7 +272,9 @@ public ResponseEntity<MachineReportResposne> saveMachine(
         @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
         @RequestParam(value = "mchBranchName", required = false) String mchBranchName,
         @RequestParam(value = "mchModel", required = false) String mchModel,
-        @RequestParam(value = "mchProductYear", required = false) String mchProductYear
+        @RequestParam(value = "mchProductYear", required = false) String mchProductYear,
+//        @RequestParam(value = "date_in", required = false) String date_in // for insert like text
+         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date_in  // for insert date_in in local Datetime
 ) {
     MachineReportResposne result = new MachineReportResposne();
     try {
@@ -290,6 +293,7 @@ public ResponseEntity<MachineReportResposne> saveMachine(
         machineReq.setMchBranchName(mchBranchName);
         machineReq.setMchModel(mchModel);
         machineReq.setMchProductYear(mchProductYear);
+        machineReq.setDate_in(date_in);
 
         // แปลง JSON string ของ tools เป็น List<ToolReq>
         if (toolsJson != null && !toolsJson.isEmpty()) {
@@ -343,7 +347,14 @@ public ResponseEntity<MachineReportResposne> updateMachine(
         @RequestParam(value = "mchModel", required = false) String mchModel,
         @RequestParam(value = "mchProductYear", required = false) String mchProductYear,
         @RequestParam(value = "tools", required = false) String toolsJson,
-        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+
+//        @RequestParam(value = "date_in", required = false) String date_in // for insert date_in like text
+        @RequestParam(value = "date_in", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                LocalDate date_in
+
+
 ) throws Exception {
 
     MachineReq machineReq = new MachineReq();
@@ -362,6 +373,7 @@ public ResponseEntity<MachineReportResposne> updateMachine(
     machineReq.setMchBranchName(mchBranchName);
     machineReq.setMchModel(mchModel);
     machineReq.setMchProductYear(mchProductYear);
+    machineReq.setDate_in(date_in);
 
     if (toolsJson != null && !toolsJson.isEmpty()) {
         ObjectMapper mapper = new ObjectMapper();

@@ -1,6 +1,8 @@
 package com.ldb.truck.Model.Machine;
 
 import lombok.Data;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -25,6 +27,8 @@ public class MachineReq {
     //add new
     private String price;
     private String currency;
+//    private String date_in;
+    private LocalDate date_in;
 
     // สำหรับ tools
     private List<ToolReq> tools;

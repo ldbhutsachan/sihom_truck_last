@@ -421,19 +421,27 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq) {
 }
 
 //query car bor
-public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq) {
+public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq, String role, String borNoClient, String borNoProfile) {
     StringBuilder SQL = new StringBuilder();
-    SQL.append("SELECT a.KEY_ID, a.img, a.borNo, a.borName, a.license_plate, a.Dao FROM V_OFFIE_CAR_STATUS a ")
-            .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
-            .append("WHERE c.BRANCH='").append(CarBorReq.getBranch()).append("' ");
 
-    if (CarBorReq.getBorNo() != null && !CarBorReq.getBorNo().trim().isEmpty()) {
-        SQL.append("AND a.borNo = '").append(CarBorReq.getBorNo()).append("' ");
+    SQL.append("SELECT a.KEY_ID, a.img, a.borNo, a.borName, a.license_plate, a.dao ")
+            .append("FROM V_OFFIE_CAR_STATUS a WHERE 1=1 ");
+
+    if ("PADMIN".equalsIgnoreCase(role)) {
+        if (borNoClient != null && !borNoClient.trim().isEmpty()) {
+            // filter ตาม borNo จาก client
+            SQL.append("AND a.borNo = '").append(borNoClient).append("' ");
+        } else {
+            // ถ้า client ไม่ส่ง borNo → query ทุก borNo ที่ไม่ null
+            SQL.append("AND a.borNo IS NOT NULL ");
+        }
     } else {
-        SQL.append("AND a.borNo IS NULL ");
+        // สำหรับ user ปกติ → query ตาม borNo ของ profile
+        SQL.append("AND a.borNo = '").append(borNoProfile).append("' ");
     }
 
-    SQL.append("ORDER BY arange ASC");
+    SQL.append("ORDER BY a.arange ASC");
+    log.info("query: " + SQL);
 
     return EBankJdbcTemplate.query(SQL.toString(), (rs, rowNum) -> {
         CarBorModel tr = new CarBorModel();
@@ -442,10 +450,14 @@ public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq) {
         tr.setBorNo(rs.getString("borNo"));
         tr.setBorName(rs.getString("borName"));
         tr.setLicense_plate(rs.getString("license_plate"));
-        tr.setDao(rs.getString("Dao"));
+        tr.setDao(rs.getString("dao"));
         return tr;
     });
 }
+
+
+
+
 
 
 

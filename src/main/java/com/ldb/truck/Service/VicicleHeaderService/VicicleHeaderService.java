@@ -203,31 +203,33 @@ public class VicicleHeaderService  {
     }
 
     //car bor service
-    public CarBorRes listCarOfficeBorService (@RequestBody CarBorReq CarBorReq){
+    public CarBorRes listCarOfficeBorService(CarBorReq CarBorReq){
         log.info("toKen=======================:"+CarBorReq.getToKen());
+
         //============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(CarBorReq.getToKen());
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //add more
-        String borNo = userIn.get(0).getBorNo();
+        String borNoProfile = userIn.get(0).getBorNo(); // borNo จาก profile
+        String role = userIn.get(0).getRole();
 
-        //===================set data to userId===============================
+        String borNoClient = CarBorReq.getBorNo(); // borNo จาก body
+
+        //===================set data to CarBorReq===============================
         CarBorReq.setUserId(userId);
         CarBorReq.setBranch(userBranchNo);
-        //add more
-        CarBorReq.setBorNo(borNo);
+        // ไม่ต้อง set BorNo ที่ profile ลงไป เพื่อให้ borNoClient ใช้ได้สำหรับ PADMIN
         //====================================================================
+
         List<CarBorModel> CarBorModel = new ArrayList<>();
         CarBorRes result = new CarBorRes();
         try {
-            CarBorModel = vicicleHeaderDao.listCarBorDao(CarBorReq);
+            CarBorModel = vicicleHeaderDao.listCarBorDao(CarBorReq, role, borNoClient, borNoProfile);
             if(CarBorModel.size() < 1 ){
                 result.setMessage("have No List of Car yet");
                 result.setStatus("01");
                 return result;
             }else {
-
                 result.setMessage("Success");
                 result.setStatus("00");
                 result.setData(CarBorModel);
@@ -240,6 +242,7 @@ public class VicicleHeaderService  {
             return result;
         }
     }
+
 
     // list lod dao that paid
     public CarPaidRes listCarDaoPaidService (@RequestBody CarOfficeReq carOfficeReq){

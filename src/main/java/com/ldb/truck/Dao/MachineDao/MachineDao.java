@@ -686,7 +686,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 .append("    a.time_fix_monitor,\n")
                 .append("    a.time_oil_fix,\n")
                 .append("    a.time_oil_fix_mo,\n")
-                .append("    a.image,\n")
+                .append("    a.image, a.date_in,\n")
                 .append("(a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
                 .append("(a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
 
@@ -730,6 +730,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
                 tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
                 tr.setImage(rs.getString("image"));
+                tr.setDate_in(rs.getString("date_in"));
                 return tr;
             }
         });
@@ -1026,8 +1027,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
 
             String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image,price, currency" +
-                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image,price, currency, date_in" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
                     machineReq.getMchNo(),
@@ -1045,7 +1046,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                     machineReq.getTime_oil_fix_mo(),
                     imageUrl, // <-- URL image2
                     machineReq.getPrice(),
-                    machineReq.getCurrency()
+                    machineReq.getCurrency(),
+                    machineReq.getDate_in()
             );
 
         } catch (Exception e) {
@@ -1053,6 +1055,54 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         }
         return 0;
     }
+//@Override
+//public int saveMachine(MachineReq machineReq) {
+//    try {
+//        String imageUrl = machineReq.getImage(); // ใช้ URL แทน byte[]
+//        StringBuilder sql = new StringBuilder("INSERT INTO tb_machine (" +
+//                "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
+//                "create_date, create_by, status, borNo, time_fix, time_fix_monitor, " +
+//                "time_oil_fix, time_oil_fix_mo, image, price, currency, date_in) VALUES (");
+//
+//        // ถ้ามี date_in → แปลงเป็น DATE, ถ้าไม่มี → NULL
+//        if (machineReq.getDate_in() != null && !machineReq.getDate_in().isEmpty()) {
+//            sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'))");
+//        } else {
+//            sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)");
+//        }
+//
+//        List<Object> params = new ArrayList<>(Arrays.asList(
+//                machineReq.getMchNo(),
+//                machineReq.getMchName(),
+//                machineReq.getMchBranchName(),
+//                machineReq.getMchModel(),
+//                machineReq.getMchProductYear(),
+//                new Date(),
+//                machineReq.getCreateBy(),
+//                machineReq.getStatus(),
+//                machineReq.getBorNo(),
+//                machineReq.getTime_fix(),
+//                machineReq.getTime_fix_monitor(),
+//                machineReq.getTime_oil_fix(),
+//                machineReq.getTime_oil_fix_mo(),
+//                imageUrl,
+//                machineReq.getPrice(),
+//                machineReq.getCurrency()
+//        ));
+//
+//        // ถ้ามี date_in → เพิ่มลงใน parameter
+//        if (machineReq.getDate_in() != null && !machineReq.getDate_in().isEmpty()) {
+//            params.add(machineReq.getDate_in());
+//        }
+//
+//        return JdbcTemplate.update(sql.toString(), params.toArray());
+//
+//    } catch (Exception e) {
+//        e.printStackTrace();
+//    }
+//    return 0;
+//}
+
 
     @Override
     public int updateMachine(MachineReq machineReq) {
@@ -1107,6 +1157,11 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 sql.append("image = ?, ");
                 params.add(machineReq.getImage());
             }
+            // ✅ date_in เฉพาะถ้ามี
+            if (machineReq.getDate_in() != null) {
+                sql.append("date_in = ?, ");
+                params.add(machineReq.getDate_in());
+            }
 
             sql.append("time_oil_fix_mo = ? ");
             params.add(machineReq.getTime_oil_fix_mo());
@@ -1115,8 +1170,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             params.add(machineReq.getKeyId());
 
             int result = JdbcTemplate.update(sql.toString(), params.toArray());
-            log.info("✅ SQL ที่รันจริง: {}", sql);
-            log.info("✅ จำนวนแถวที่อัปเดต: {}", result);
+            log.info("SQL : {}", sql);
+            log.info("ຈຳນວນແຖວທີ່ອັບເດັບ: {}", result);
             return result;
 
         } catch (Exception e) {

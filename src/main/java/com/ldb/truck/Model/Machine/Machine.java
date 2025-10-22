@@ -37,6 +37,7 @@ public class Machine {
     private Integer totalFixMoOil;
 
     private  String image;
+    private String date_in;
 
     private String status_mo;
     private String status_oil_mo;
