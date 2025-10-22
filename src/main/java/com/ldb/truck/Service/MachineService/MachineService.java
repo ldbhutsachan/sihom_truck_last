@@ -1,6 +1,10 @@
 package com.ldb.truck.Service.MachineService;
 
 import com.ldb.truck.Dao.MachineDao.MachineInterface;
+import com.ldb.truck.Model.Borcar.BorCarModel;
+import com.ldb.truck.Model.Borcar.BorCarResponse;
+import com.ldb.truck.Model.Borcar.Borcar;
+import com.ldb.truck.Model.Borcar.BorcarReq;
 import com.ldb.truck.Model.Login.Pay.PrintBillPayment;
 import com.ldb.truck.Model.Login.Payment.GenerateInvoiceID;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
@@ -109,46 +113,6 @@ public class MachineService {
 
         return response;
     }
-
-//    public MachineResponse enableMachineHis(MachineHisReq machineHisReq,String userName){
-//        MachineResponse response = new MachineResponse();
-//        try {
-//            int check = 0;
-//            if(machineHisReq.getType().equals("1")){
-//                 check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(machineHisReq.getMchNo());
-//            }else if(machineHisReq.getType().equals("2")){
-//                 check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(machineHisReq.getMchNo());
-//            }else {
-//                check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(machineHisReq.getMchNo());
-//            }
-//            log.info("check:"+check);
-//            if(check == 1  ){
-//                response.setStatus("00");
-//                response.setMessage("OK");
-//                response.setData(null);
-//                return response;
-//            }
-//            else if(check == 2){
-//                response.setStatus("00");
-//                response.setMessage("You're data!!!!");
-//                response.setData(null);
-//                return response;
-//            }
-//            response.setStatus("00");
-//            response.setMessage("update Data success !!!!");
-//            response.setData(null);
-//            return response;
-//
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            response.setStatus("00");
-//            response.setMessage("Error Can't update Data !!!!");
-//            response.setData(null);
-//            //return response;
-//        }
-//
-//        return response;
-//    }
 public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String userName) {
     MachineResponse response = new MachineResponse();
 
@@ -270,6 +234,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setTotalFixMo(resp.getTotalFixMo());
                  machine.setTotalFixMoOil(resp.getTotalFixMoOil());
                  machine.setImage(resp.getImage());
+                 machine.setDate_in(resp.getDate_in());
 
                  // ✅ เพิ่มตรงนี้เพื่อ map tools ด้วย
                  machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
@@ -349,7 +314,6 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
     }
 
     public MachineReportSumResposne getSumReportMachine(MachineRPReq machineRPReq,String role,String borNo) {
-
         MachineReportSumResposne response = new MachineReportSumResposne();
         GroupHeaderReport groupHeader = new GroupHeaderReport();
         List<MachineSumRptModel> dataList = new ArrayList<>();
@@ -444,6 +408,103 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         }
         return response;
     }
+
+    // getReportBorCarService
+    public BorCarResponse getReportBorCar(BorcarReq borcarReq, String role) {
+        BorCarResponse response = new BorCarResponse();
+        List<BorCarModel> dataList = new ArrayList<>();
+
+        try {
+            List<Borcar> data = machineInterface.getReportBorCar(borcarReq, role);
+
+            if (!data.isEmpty()) {
+                // ✅ ใช้ Map เพื่อรวมข้อมูลตาม car_id
+                Map<Integer, BorCarModel> groupedData = new LinkedHashMap<>();
+
+                for (Borcar b : data) {
+                    int carId = Integer.parseInt(b.getCar_id());
+                    BorCarModel model = groupedData.get(carId);
+
+                    // ถ้ายังไม่มีข้อมูลรถคันนี้ -> สร้างใหม่
+                    if (model == null) {
+                        model = new BorCarModel();
+                        model.setCar_id(carId);
+                        model.setCar_number(b.getCar_number());
+                        model.setBor_no(b.getBor_no());
+                        model.setBor_name(b.getBor_name());
+                        model.setGroupList(new ArrayList<>());
+                        groupedData.put(carId, model);
+                    }
+
+                    //  เพิ่มข้อมูลใน groupList
+                    BorCarModel.GroupList group = new BorCarModel.GroupList();
+//                    group.setLicense_plate_end(b.getLicense_plate_end());
+//                    group.setLicense_plate_start(b.getLicense_plate_start());
+                    group.setSaveby_name(b.getSaveby_name());
+                    group.setSavedate(b.getSavedate());
+                    group.setBill_no(b.getBill_no());
+                    group.setItem_id(b.getItem_id());
+                    group.setItem_name(b.getItem_name());
+                    group.setUnit(b.getUnit());
+                    group.setPrice(b.getPrice());
+                    group.setCurrency(b.getCurrency());
+                    group.setQty(b.getQty());
+                    group.setTotal(b.getTotal());
+//                    group.setBor_no(b.getBor_no());
+//                    group.setBor_name(b.getBor_name());
+                    group.setApproveby(b.getApproveby());
+                    group.setApprovedate(b.getApprovedate());
+                    model.getGroupList().add(group);
+                }
+
+                //  แปลง Map → List
+                dataList.addAll(groupedData.values());
+                //  คำนวณยอดรวมตามสกุลเงิน
+                for (BorCarModel car : dataList) {
+                    double sumLak = 0.0;
+                    double sumUsd = 0.0;
+                    double sumThb = 0.0;
+
+                    for (BorCarModel.GroupList g : car.getGroupList()) {
+                        double total = 0.0;
+                        try {
+                            total = Double.parseDouble(g.getTotal());
+                        } catch (NumberFormatException e) {
+                            total = 0.0;
+                        }
+
+                        if ("LAK".equalsIgnoreCase(g.getCurrency())) {
+                            sumLak += total;
+                        } else if ("USD".equalsIgnoreCase(g.getCurrency())) {
+                            sumUsd += total;
+                        } else if ("THB".equalsIgnoreCase(g.getCurrency())) {
+                            sumThb += total;
+                        }
+                    }
+
+                    car.setSumlak(sumLak);
+                    car.setSumusd(sumUsd);
+                    car.setSumthb(sumThb);
+                }
+                response.setStatus("00");
+                response.setMessage("fetch success");
+                response.setData(dataList);
+            } else {
+                response.setStatus("04");
+                response.setMessage("no data found");
+                response.setData(new ArrayList<>());
+            }
+        } catch (Exception e) {
+            log.error("❌ Error in getReportBorCar", e);
+            response.setStatus("05");
+            response.setMessage("internal error: " + e.getMessage());
+            response.setData(null);
+        }
+
+        return response;
+    }
+
+
     public MachineReportResposne getReportMachineSum(MachineRPReq machineRPReq,String role,String borNo) {
         MachineReportResposne response = new MachineReportResposne();
 

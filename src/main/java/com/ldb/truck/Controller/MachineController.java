@@ -3,6 +3,8 @@ package com.ldb.truck.Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
+import com.ldb.truck.Model.Borcar.BorCarResponse;
+import com.ldb.truck.Model.Borcar.BorcarReq;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Machine.*;
 import com.ldb.truck.Service.MachineService.MachineService;
@@ -10,6 +12,7 @@ import com.ldb.truck.Service.MediaUploadServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +22,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -207,6 +210,32 @@ private final  MachineService MACHINE_SERVICE;
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getReportBorCar.service")
+    public ResponseEntity<?> getReportBorCar(@RequestBody BorcarReq borcarReq) {
+        BorCarResponse response = new BorCarResponse();
+
+        // ตรวจสอบ token
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(borcarReq.getToken());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String role = userProfiles.get(0).getRole();
+//        String borNo = userProfiles.get(0).getBorNo();
+
+        try {
+            response = MACHINE_SERVICE.getReportBorCar(borcarReq, role);
+        } catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Data Error !!");
+        }
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
     @CrossOrigin(origins = "*")
     @PostMapping("/getReportMachineSum.service")
     public ResponseEntity<?> getReportMachineSum(@RequestBody MachineRPReq machineRPReq){
@@ -243,7 +272,9 @@ public ResponseEntity<MachineReportResposne> saveMachine(
         @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
         @RequestParam(value = "mchBranchName", required = false) String mchBranchName,
         @RequestParam(value = "mchModel", required = false) String mchModel,
-        @RequestParam(value = "mchProductYear", required = false) String mchProductYear
+        @RequestParam(value = "mchProductYear", required = false) String mchProductYear,
+//        @RequestParam(value = "date_in", required = false) String date_in // for insert like text
+         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date_in  // for insert date_in in local Datetime
 ) {
     MachineReportResposne result = new MachineReportResposne();
     try {
@@ -262,6 +293,7 @@ public ResponseEntity<MachineReportResposne> saveMachine(
         machineReq.setMchBranchName(mchBranchName);
         machineReq.setMchModel(mchModel);
         machineReq.setMchProductYear(mchProductYear);
+        machineReq.setDate_in(date_in);
 
         // แปลง JSON string ของ tools เป็น List<ToolReq>
         if (toolsJson != null && !toolsJson.isEmpty()) {
@@ -315,7 +347,14 @@ public ResponseEntity<MachineReportResposne> updateMachine(
         @RequestParam(value = "mchModel", required = false) String mchModel,
         @RequestParam(value = "mchProductYear", required = false) String mchProductYear,
         @RequestParam(value = "tools", required = false) String toolsJson,
-        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+
+//        @RequestParam(value = "date_in", required = false) String date_in // for insert date_in like text
+        @RequestParam(value = "date_in", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                LocalDate date_in
+
+
 ) throws Exception {
 
     MachineReq machineReq = new MachineReq();
@@ -334,6 +373,7 @@ public ResponseEntity<MachineReportResposne> updateMachine(
     machineReq.setMchBranchName(mchBranchName);
     machineReq.setMchModel(mchModel);
     machineReq.setMchProductYear(mchProductYear);
+    machineReq.setDate_in(date_in);
 
     if (toolsJson != null && !toolsJson.isEmpty()) {
         ObjectMapper mapper = new ObjectMapper();

@@ -2,6 +2,8 @@ package com.ldb.truck.Dao.MachineDao;
 
 import com.ldb.truck.Entity.MerchineHis.MerchineHisEntity;
 import com.ldb.truck.Entity.RequestItem.RequestItemEbtity;
+import com.ldb.truck.Model.Borcar.Borcar;
+import com.ldb.truck.Model.Borcar.BorcarReq;
 import com.ldb.truck.Model.Machine.*;
 import com.ldb.truck.Repository.MachineHis.MerchinHisRepository;
 import com.ldb.truck.Repository.RequestItemRepository;
@@ -245,9 +247,9 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
     StringBuilder sb = new StringBuilder();
 
     try {
-        // Base SQL
+        // Base SQL with COALESCE for numeric fields
         sb.append("SELECT \n" +
-                "    MIN(d.detail_id) AS key_id,\n" +
+                "    COALESCE(MIN(d.detail_id), 0) AS key_id,\n" +
                 "    MIN(d.using_date) AS create_date,\n" +
                 "    MIN(d.saveby_name) AS create_by,\n" +
                 "    0 AS time_total,\n" +
@@ -261,88 +263,94 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
                 "    SUM(d.qty) AS qty,\n" +
                 "    AVG(d.price) AS price,\n" +
                 "    SUM(d.price * d.qty) AS total,\n" +
-                "    CASE WHEN d.using_status IS NULL THEN 'wait' ELSE 'ok' END AS using_status,\n" +
+                "    CASE WHEN d.using_status IS NULL OR d.using_status = '' THEN 'wait' ELSE d.using_status END AS using_status,\n" +
                 "    MIN(b.mch_no) AS mch_no,\n" +
                 "    MIN(b.mch_name) AS mch_name,\n" +
                 "    MIN(b.mch_branch_name) AS mch_branch_name,\n" +
                 "    MIN(b.mch_model) AS mch_model,\n" +
-                "    MIN(b.mch_product_year) AS mch_product_year,\n" +
+                "    COALESCE(MIN(b.mch_product_year), 0) AS mch_product_year,\n" +
                 "    MIN(d.bor_no) AS bor_no,\n" +
                 "    MIN(d.bor_name) AS bor_name\n" +
                 "FROM tb_machine b\n" +
                 "INNER JOIN tb_bors c ON b.borNo = c.key_id\n" +
                 "INNER JOIN v_request_item_fix d ON d.jukNo = b.mch_no\n" +
-                "WHERE 1=1  and d.status ='ok'");
+                "WHERE 1=1 AND d.status ='ok'");
 
         // Dynamic conditions
         if (req.getItemId() != null && !req.getItemId().isEmpty()) {
-            sb.append(" AND d.item_id = '" + req.getItemId() + "' ");
+            sb.append(" AND d.item_id = '").append(req.getItemId()).append("' ");
         }
 
         if (req.getBillNo() != null && !req.getBillNo().isEmpty()) {
-            sb.append(" AND d.bill_no = '" + req.getBillNo() + "' ");
+            sb.append(" AND d.bill_no = '").append(req.getBillNo()).append("' ");
         }
 
         if (borNo != null && !borNo.isEmpty()) {
-            sb.append(" AND d.bor_no = '" + borNo + "' ");
+            sb.append(" AND d.bor_no = '").append(borNo).append("' ");
         }
 
         if (req.getStatus() != null && !req.getStatus().isEmpty()) {
-            sb.append(" AND d.using_status = '" + req.getStatus() + "' ");
+            // แปลง client status เป็น string ใน DB
+            if ("1".equals(req.getStatus())) { // wait
+                sb.append(" AND (d.using_status IS NULL OR d.using_status = '') ");
+            } else if ("2".equals(req.getStatus())) { // using
+                sb.append(" AND d.using_status = 'ok' ");
+            }
         } else {
-            sb.append(" AND d.using_status IS NULL ");
+            sb.append(" AND (d.using_status IS NULL OR d.using_status = '') ");
         }
 
         if (req.getStartDate() != null && !req.getStartDate().isEmpty()) {
-            sb.append(" AND DATE_FORMAT(d.using_date, '%Y-%m-%d') >= '" + req.getStartDate() + "' ");
+            sb.append(" AND DATE_FORMAT(d.using_date, '%Y-%m-%d') >= '").append(req.getStartDate()).append("' ");
         }
 
         if (req.getEndDate() != null && !req.getEndDate().isEmpty()) {
-            sb.append(" AND DATE_FORMAT(d.using_date, '%Y-%m-%d') <= '" + req.getEndDate() + "' ");
+            sb.append(" AND DATE_FORMAT(d.using_date, '%Y-%m-%d') <= '").append(req.getEndDate()).append("' ");
         }
 
         // Group by for aggregation
         sb.append(" GROUP BY d.bill_no, d.item_id, d.item_name, d.unit, d.currency, d.using_status ");
 
-        // Order by (ใช้ MIN ของ create_date แทน savedate)
+        // Order by
         sb.append(" ORDER BY MIN(d.using_date) DESC ");
 
         String sql = sb.toString();
         log.info("Generated SQL: " + sql);
 
         // Execute query
-        return JdbcTemplate.query(sql, new RowMapper<MachineStockDetails>() {
-            @Override
-            public MachineStockDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
-                MachineStockDetails tr = new MachineStockDetails();
-                tr.setKeyId(rs.getInt("key_id"));
-                tr.setCreateDate(rs.getTimestamp("create_date"));
-                tr.setCreateBy(rs.getString("create_by"));
-                tr.setTimeTotal(rs.getInt("time_total"));
-                tr.setTxnDate(rs.getDate("txn_date"));
-                tr.setStatus(rs.getInt("status"));
+        return JdbcTemplate.query(sql, (rs, rowNum) -> {
+            MachineStockDetails tr = new MachineStockDetails();
 
-                tr.setBillNo(rs.getString("bill_no"));
-                tr.setItemId(rs.getString("item_id"));
-                tr.setItemName(rs.getString("item_name"));
-                tr.setUnit(rs.getString("unit"));
-                tr.setCurrency(rs.getString("currency"));
-                tr.setQty(rs.getInt("qty"));
-                tr.setPrice(rs.getDouble("price"));
-                tr.setTotal(rs.getDouble("total"));
-                tr.setUsingStatus(rs.getString("using_status"));
+            // ใช้ helper function แปลงค่าปลอดภัย
+            tr.setKeyId(getIntSafe(rs, "key_id"));
+            tr.setTimeTotal(getIntSafe(rs, "time_total"));
+            tr.setStatus(getIntSafe(rs, "status"));
+            tr.setMchProductYear(getIntSafe(rs, "mch_product_year"));
+            tr.setQty(getIntSafe(rs, "qty"));
+            tr.setPrice(getDoubleSafe(rs, "price"));
+            tr.setTotal(getDoubleSafe(rs, "total"));
 
-                tr.setMchNo(rs.getString("mch_no"));
-                tr.setMchName(rs.getString("mch_name"));
-                tr.setMchBranchName(rs.getString("mch_branch_name"));
-                tr.setMchModel(rs.getString("mch_model"));
-                tr.setMchProductYear(rs.getInt("mch_product_year"));
+            // Mapping fields อื่น
+            tr.setCreateDate(rs.getTimestamp("create_date"));
+            tr.setCreateBy(rs.getString("create_by"));
+            tr.setTxnDate(rs.getDate("txn_date"));
 
-                tr.setBorNo(rs.getString("bor_no"));
-                tr.setBorName(rs.getString("bor_name"));
+            tr.setBillNo(rs.getString("bill_no"));
+            tr.setItemId(rs.getString("item_id"));
+            tr.setItemName(rs.getString("item_name"));
+            tr.setUnit(rs.getString("unit"));
+            tr.setCurrency(rs.getString("currency"));
+            tr.setUsingStatus(rs.getString("using_status"));
 
-                return tr;
-            }
+            tr.setMchNo(rs.getString("mch_no"));
+            tr.setMchName(rs.getString("mch_name"));
+            tr.setMchBranchName(rs.getString("mch_branch_name"));
+            tr.setMchModel(rs.getString("mch_model"));
+
+            tr.setBorNo(rs.getString("bor_no"));
+            tr.setBorName(rs.getString("bor_name"));
+
+            return tr;
         });
 
     } catch (Exception e) {
@@ -351,6 +359,31 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
 
     return null;
 }
+
+    // Helper function แปลง Integer safely
+    private int getIntSafe(ResultSet rs, String column) throws SQLException {
+        Object obj = rs.getObject(column);
+        if (obj == null) return 0;
+        if (obj instanceof Number) return ((Number) obj).intValue();
+        try {
+            return Integer.parseInt(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    // Helper function แปลง Double safely
+    private double getDoubleSafe(ResultSet rs, String column) throws SQLException {
+        Object obj = rs.getObject(column);
+        if (obj == null) return 0.0;
+        if (obj instanceof Number) return ((Number) obj).doubleValue();
+        try {
+            return Double.parseDouble(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
 
 
 //    @Override
@@ -638,143 +671,6 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         }
         return null;
     }
-
-//    @Override
-//    public List<Machine> getMachine(MachineRPReq machineRPReq,String role, String borNo) {
-//        StringBuilder  sb = new StringBuilder();
-//        String merNo = machineRPReq.getMerNo();
-//        try {
-//            String conMchNo = null;
-//            String conAdmin = null;
-//            String conOrder = "\n  order by a.key_id desc";
-//
-//            if (merNo == null || merNo.isEmpty()) {
-//                conMchNo = "";
-//            } else {
-//                conMchNo = "\n AND a.mch_no ='"+merNo+"'  ";
-//            }
-//            //******ກວດສິດການ query  serch by borNo
-////            if(!role.equals("PADMIN")){
-////                conAdmin = "\n AND a.borNo='"+borNo+"' ";
-////            }else {
-////                conAdmin= "";
-////            }
-//            //******ກວດສິດການ query  serch by borNo
-//            String reqBorNo = machineRPReq.getBorNo();
-//
-//            if (reqBorNo != null && !reqBorNo.isEmpty()) {
-//                // ถ้ามีค่า borNo จาก client ให้ใช้ค่านั้นกรองเสมอ
-//                conAdmin = "\n AND a.borNo='" + reqBorNo + "' ";
-//            } else if (!role.equals("PADMIN")) {
-//                // ถ้าไม่มีค่า borNo จาก client และไม่ใช่ admin ให้กรองตาม borNo ของ user
-//                conAdmin = "\n AND a.borNo='" + borNo + "' ";
-//            } else {
-//                // ถ้าเป็น admin และไม่มีค่า borNo จาก client ให้ดึงทั้งหมด
-//                conAdmin = "";
-//            }
-//
-//            sb.append("SELECT a.drillrod_pq3,a.drillrod_hq3,a.core_barrelhq3_1_5m,a.backReamer,a.caphq,a.drillbit_hq3,a.water_pump,a.pipewrench24,a.pipewrench36,a.pipewrench48,a.monkey_wrench_hq3,a.rodpuller,a.adapter3in1_hq,a.lifting_plug_hq,a.circuit_breaker,a.led_light,a.fuel,\n" +
-//                    "    a.key_id,\n" +
-//                    "    a.mch_no,\n" +
-//                    "    a.mch_name,\n" +
-//                    "    a.mch_branch_name,\n" +
-//                    "    a.mch_model,\n" +
-//                    "    a.mch_product_year,\n" +
-//                    "    a.create_date,\n" +
-//                    "    a.create_by,\n" +
-//                    "    c.USER_LOGIN,\n" +
-//                    "    c.ROLE,\n" +
-//                    "    a.status,\n" +
-//                    "    a.borNo,\n" +
-//                    "    b.b_name AS borname,\n" +
-//                    "    b.location borlocationnaem,\n" +
-//                    "    a.time_fix,\n" +
-//                    "    a.time_fix_monitor,\n" +
-//                    "    a.time_oil_fix,\n" +
-//                    "    a.time_oil_fix_mo,\n" +
-//                    "    \n" +
-//                    "    -- Use COALESCE to return 0 if the sum is null\n" +
-//                    "    (a.time_fix - \n" +
-//                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
-//                    "               FROM tb_machine_his ss \n" +
-//                    "               WHERE ss.status=1 and ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n" +
-//                    "\n" +
-//                    "    (a.time_oil_fix - \n" +
-//                    "     COALESCE((SELECT SUM(ss.time_total) \n" +
-//                    "               FROM tb_machine_his ss \n" +
-//                    "               WHERE ss.status=1 and ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n" +
-//                    "\n" +
-//                    "FROM \n" +
-//                    "    tb_bors b \n" +
-//                    "INNER JOIN \n" +
-//                    "    tb_machine a ON b.key_id = a.borNo\n" +
-//                    "LEFT JOIN \n" +
-//                    "    LOGIN c ON a.create_by = c.KEY_ID  \n" +
-//                    "WHERE \n" +
-//                    "    1 = 1 ");
-//
-//            sb.append(conMchNo);
-//            sb.append(conAdmin);
-//            sb.append(conOrder);
-//
-//            String sql = sb.toString();
-//            log.info("sql:"+sql);
-//            return JdbcTemplate.query(sql, new RowMapper<Machine>() {
-//                @Override
-//                public Machine mapRow(ResultSet rs, int rowNum) throws SQLException {
-//                    Machine tr = new Machine();
-//                    tr.setKeyId(rs.getInt("key_id"));
-//                    tr.setMchNo(rs.getString("mch_no"));
-//                    tr.setMchName(rs.getString("mch_name"));
-//                    tr.setMchBranchName(rs.getString("mch_branch_name"));
-//                    tr.setMchModel(rs.getString("mch_model"));
-//                    tr.setMchProductYear(rs.getString("mch_product_year"));
-//                    tr.setCreateDate(rs.getTimestamp("create_date").toLocalDateTime());
-//                    tr.setCreateBy(rs.getString("create_by"));
-//                    tr.setUserLogin(rs.getString("USER_LOGIN"));
-//                    tr.setRole(rs.getString("ROLE"));
-//                    tr.setStatus(rs.getString("status"));
-//                    tr.setBorNo(rs.getString("borNo"));
-//                    tr.setBorName(rs.getString("borname"));
-//                    tr.setBorLocationName(rs.getString("borlocationnaem"));
-//
-//
-//                    tr.setTime_fix(rs.getInt("time_fix"));
-//                    tr.setTime_fix_monitor(rs.getInt("time_fix_monitor"));
-//
-//                    tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
-//                    tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
-//
-//                    tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
-//                    tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
-//
-//
-//                    tr.setDrillrod_pq3(rs.getString("drillrod_hq3"));
-//                    tr.setCore_barrelhq3_1_5m(rs.getString("core_barrelhq3_1_5m"));
-//                    tr.setBackReamer(rs.getString("backReamer"));
-//                    tr.setCaphq(rs.getString("caphq"));
-//                    tr.setDrillbit_hq3(rs.getString("drillbit_hq3"));
-//                    tr.setWater_pump(rs.getString("water_pump"));
-//                    tr.setPipewrench24(rs.getString("pipewrench24"));
-//                    tr.setPipewrench36(rs.getString("pipewrench36"));
-//                    tr.setPipewrench48(rs.getString("pipewrench48"));
-//                    tr.setMonkey_wrench_hq3(rs.getString("monkey_wrench_hq3"));
-//                    tr.setRodpuller(rs.getString("rodpuller"));
-//                    tr.setAdapter3in1_hq(rs.getString("adapter3in1_hq"));
-//                    tr.setLifting_plug_hq(rs.getString("lifting_plug_hq"));
-//                    tr.setCircuit_breaker(rs.getString("circuit_breaker"));
-//                    tr.setLed_light(rs.getString("led_light"));
-//                    tr.setFuel(rs.getString("fuel"));
-//                    return tr;
-//                }
-//            });
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-
 @Override
 public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String borNo) {
     StringBuilder sb = new StringBuilder();
@@ -821,7 +717,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 .append("    a.time_fix_monitor,\n")
                 .append("    a.time_oil_fix,\n")
                 .append("    a.time_oil_fix_mo,\n")
-                .append("    a.image,\n")
+                .append("    a.image, a.date_in,\n")
                 .append("(a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
                 .append("(a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
 
@@ -865,11 +761,10 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
                 tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
                 tr.setImage(rs.getString("image"));
+                tr.setDate_in(rs.getString("date_in"));
                 return tr;
             }
         });
-
-
         // ✅ ดึง tools ทั้งหมด
         String sqlTools = "SELECT id, mch_no, tool_name, qty, unit FROM tb_machine_tool";
         List<Map<String, Object>> tools = JdbcTemplate.queryForList(sqlTools);
@@ -901,7 +796,90 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
     }
 }
 
+//for borCar report
+    @Override
+    public List<Borcar> getReportBorCar(BorcarReq req, String role) {
+        StringBuilder sb = new StringBuilder();
+        List<Object> params = new ArrayList<>();
 
+        sb.append(" SELECT \n" +
+                "  co.KEY_ID as car_id, \n" +
+                "  co.license_plate as car_number, \n" +
+                "  co.license_plate_end, \n" +
+                "  co.license_plate_start,\n" +
+                "  d.saveby_name,\n" +
+                "  d.savedate,\n" +
+                "  d.approveby,\n" +
+                "  d.approvedate,\n" +
+                "  d.detail_id AS key_id,\n" +
+                "  d.bor_no, \n" +
+                "  d.bor_name,\n" +
+                "  d.bill_no, \n" +
+                "  d.item_id, \n" +
+                "  d.item_name, \n" +
+                "  d.unit,\n" +
+                "  d.currency, \n" +
+                "  d.qty, \n" +
+                "  d.price, \n" +
+                "  d.price * d.qty AS total\n" +
+                "FROM CARS_OFFICE co\n" +
+                "LEFT JOIN v_request_item_fix d ON d.car_id = co.KEY_ID" +
+                " WHERE 1=1 ");
+
+        // ✅ Filter by date
+        if (req.getStartDate() != null && !req.getStartDate().isEmpty()
+                && req.getEndDate() != null && !req.getEndDate().isEmpty()) {
+            sb.append(" AND DATE(d.savedate) >= ? AND DATE(d.savedate) <= ? ");
+            params.add(req.getStartDate());
+            params.add(req.getEndDate());
+        }
+
+        // ✅ Filter by BorNo
+        if (req.getBorNo() != null && !req.getBorNo().isEmpty()) {
+            sb.append(" AND d.bor_no = ? ");
+            params.add(req.getBorNo());
+        }
+
+        // ✅ Filter by car_id
+        if (req.getCar_id() != null && !req.getCar_id().isEmpty()) {
+            sb.append(" AND car_id = ? ");
+            params.add(req.getCar_id());
+        }
+
+        sb.append(" ORDER BY d.savedate DESC ");
+
+        String sql = sb.toString();
+        log.info("SQL: {}", sql);
+
+        try {
+            return JdbcTemplate.query(sql, params.toArray(), (rs, rowNum) -> {
+                Borcar tr = new Borcar();
+                tr.setKey_id(rs.getInt("key_id"));
+                tr.setCar_id(rs.getString("car_id"));
+                tr.setBor_no(rs.getString("bor_no"));
+                tr.setBor_name(rs.getString("bor_name"));
+                tr.setCar_number(rs.getString("car_number"));
+                tr.setBill_no(rs.getString("bill_no"));
+                tr.setItem_id(rs.getString("item_id"));
+                tr.setItem_name(rs.getString("item_name"));
+                tr.setQty(rs.getString("qty"));
+                tr.setUnit(rs.getString("unit"));
+                tr.setCurrency(rs.getString("currency"));
+                tr.setPrice(rs.getString("price"));
+                tr.setTotal(rs.getString("total"));
+//                tr.setLicense_plate_end(rs.getString("license_plate_end"));
+//                tr.setLicense_plate_start(rs.getString("license_plate_start"));
+                tr.setSaveby_name(rs.getString("saveby_name"));
+                tr.setSavedate(rs.getString("savedate"));
+                tr.setApproveby(rs.getString("approveby"));
+                tr.setApprovedate(rs.getString("approvedate"));
+                return tr;
+            });
+        } catch (Exception e) {
+            log.error("❌ error in getReportBorCar", e);
+            return new ArrayList<>();
+        }
+    }
 
     @Override
     public List<MachineDetails> getReportMachineDetails(MachineRPReq machineRPReq,String role ,String borNo) {
@@ -1080,8 +1058,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
 
             String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image,price, currency" +
-                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image,price, currency, date_in" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
                     machineReq.getMchNo(),
@@ -1099,7 +1077,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                     machineReq.getTime_oil_fix_mo(),
                     imageUrl, // <-- URL image2
                     machineReq.getPrice(),
-                    machineReq.getCurrency()
+                    machineReq.getCurrency(),
+                    machineReq.getDate_in()
             );
 
         } catch (Exception e) {
@@ -1107,6 +1086,54 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         }
         return 0;
     }
+//@Override
+//public int saveMachine(MachineReq machineReq) {
+//    try {
+//        String imageUrl = machineReq.getImage(); // ใช้ URL แทน byte[]
+//        StringBuilder sql = new StringBuilder("INSERT INTO tb_machine (" +
+//                "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
+//                "create_date, create_by, status, borNo, time_fix, time_fix_monitor, " +
+//                "time_oil_fix, time_oil_fix_mo, image, price, currency, date_in) VALUES (");
+//
+//        // ถ้ามี date_in → แปลงเป็น DATE, ถ้าไม่มี → NULL
+//        if (machineReq.getDate_in() != null && !machineReq.getDate_in().isEmpty()) {
+//            sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'))");
+//        } else {
+//            sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)");
+//        }
+//
+//        List<Object> params = new ArrayList<>(Arrays.asList(
+//                machineReq.getMchNo(),
+//                machineReq.getMchName(),
+//                machineReq.getMchBranchName(),
+//                machineReq.getMchModel(),
+//                machineReq.getMchProductYear(),
+//                new Date(),
+//                machineReq.getCreateBy(),
+//                machineReq.getStatus(),
+//                machineReq.getBorNo(),
+//                machineReq.getTime_fix(),
+//                machineReq.getTime_fix_monitor(),
+//                machineReq.getTime_oil_fix(),
+//                machineReq.getTime_oil_fix_mo(),
+//                imageUrl,
+//                machineReq.getPrice(),
+//                machineReq.getCurrency()
+//        ));
+//
+//        // ถ้ามี date_in → เพิ่มลงใน parameter
+//        if (machineReq.getDate_in() != null && !machineReq.getDate_in().isEmpty()) {
+//            params.add(machineReq.getDate_in());
+//        }
+//
+//        return JdbcTemplate.update(sql.toString(), params.toArray());
+//
+//    } catch (Exception e) {
+//        e.printStackTrace();
+//    }
+//    return 0;
+//}
+
 
     @Override
     public int updateMachine(MachineReq machineReq) {
@@ -1161,6 +1188,11 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 sql.append("image = ?, ");
                 params.add(machineReq.getImage());
             }
+            // ✅ date_in เฉพาะถ้ามี
+            if (machineReq.getDate_in() != null) {
+                sql.append("date_in = ?, ");
+                params.add(machineReq.getDate_in());
+            }
 
             sql.append("time_oil_fix_mo = ? ");
             params.add(machineReq.getTime_oil_fix_mo());
@@ -1169,8 +1201,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             params.add(machineReq.getKeyId());
 
             int result = JdbcTemplate.update(sql.toString(), params.toArray());
-            log.info("✅ SQL ที่รันจริง: {}", sql);
-            log.info("✅ จำนวนแถวที่อัปเดต: {}", result);
+            log.info("SQL : {}", sql);
+            log.info("ຈຳນວນແຖວທີ່ອັບເດັບ: {}", result);
             return result;
 
         } catch (Exception e) {

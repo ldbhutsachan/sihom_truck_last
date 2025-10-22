@@ -1,11 +1,14 @@
 package com.ldb.truck.Dao.MachineDao;
 
+import com.ldb.truck.Model.Borcar.Borcar;
+import com.ldb.truck.Model.Borcar.BorcarReq;
 import com.ldb.truck.Model.Machine.*;
 
 import java.util.List;
 
 public interface MachineInterface {
   public List<MachineStockDetails> getSumReportMachine(MachineRPReq machineRPReq,String role,String borNo);
+  public List<Borcar>getReportBorCar(BorcarReq borcarReq, String role);
   public int acceptItem(AceptItemReq req,String userName);
 
   public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req,String borNo);

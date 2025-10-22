@@ -290,27 +290,35 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
 //            throw new RuntimeException("Error retrieving car office data", e);
 //        }
 //    }
-public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq) {
+public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String role, String branch, String bor_no) {
     try {
         StringBuilder SQL = new StringBuilder();
         SQL.append("SELECT * FROM V_OFFIE_CAR_STATUS a ")
                 .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
-                .append("WHERE c.BRANCH = '").append(carOfficeReq.getBranch()).append("' ");
+                .append("WHERE 1 = 1 "); // เริ่มต้นด้วย 1=1 เพื่อให้ต่อ AND ง่าย
 
-        // ✅ ตรวจสอบค่า borNo
-        log.info("borNo from request: " + carOfficeReq.getBorNo());
-
-        if (carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()) {
-            SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
-            log.info("Query condition: BRANCH + BOR_NO");
+        // ตรวจสอบ borNo ตาม role
+        if ("PADMIN".equalsIgnoreCase(role) || "USERSTOCK".equalsIgnoreCase(role)) {
+            if (carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()) {
+                SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
+                log.info("Query condition: BRANCH + BOR_NO");
+            } else if (bor_no != null &&  !bor_no.isEmpty()) {
+                SQL.append(" AND a.borNo ='").append(bor_no).append(" '");
+            } else {
+                SQL.append("AND a.borNo IS NOT NULL AND TRIM(a.borNo) <> '' ");
+                log.info("Query condition: BRANCH + BOR_NO IS NOT NULL");
+            }
         } else {
+            SQL.append("AND c.BRANCH = '").append(branch).append("' ");
             SQL.append("AND a.borNo IS NULL ");
-            log.info("Query condition: BRANCH + BOR_NO IS NULL");
+            log.info("Query condition: BOR_NO IS NULL for PADMIN");
         }
 
+// สุดท้ายเรียงลำดับ
         SQL.append("ORDER BY arange ASC");
 
         log.info("Final SQL: " + SQL.toString());
+
 
         return EBankJdbcTemplate.query(SQL.toString(), new RowMapper<CarOfficeModel>() {
             @SneakyThrows
@@ -421,19 +429,27 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq) {
 }
 
 //query car bor
-public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq) {
+public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq, String role, String borNoClient, String borNoProfile) {
     StringBuilder SQL = new StringBuilder();
-    SQL.append("SELECT a.KEY_ID, a.img, a.borNo, a.borName, a.license_plate, a.Dao FROM V_OFFIE_CAR_STATUS a ")
-            .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
-            .append("WHERE c.BRANCH='").append(CarBorReq.getBranch()).append("' ");
 
-    if (CarBorReq.getBorNo() != null && !CarBorReq.getBorNo().trim().isEmpty()) {
-        SQL.append("AND a.borNo = '").append(CarBorReq.getBorNo()).append("' ");
+    SQL.append("SELECT a.KEY_ID, a.img, a.borNo, a.borName, a.license_plate, a.dao ")
+            .append("FROM V_OFFIE_CAR_STATUS a WHERE 1=1 ");
+
+    if ("PADMIN".equalsIgnoreCase(role)) {
+        if (borNoClient != null && !borNoClient.trim().isEmpty()) {
+            // filter ตาม borNo จาก client
+            SQL.append("AND a.borNo = '").append(borNoClient).append("' ");
+        } else {
+            // ถ้า client ไม่ส่ง borNo → query ทุก borNo ที่ไม่ null
+            SQL.append("AND a.borNo IS NOT NULL ");
+        }
     } else {
-        SQL.append("AND a.borNo IS NULL ");
+        // สำหรับ user ปกติ → query ตาม borNo ของ profile
+        SQL.append("AND a.borNo = '").append(borNoProfile).append("' ");
     }
 
-    SQL.append("ORDER BY arange ASC");
+    SQL.append("ORDER BY a.arange ASC");
+    log.info("query: " + SQL);
 
     return EBankJdbcTemplate.query(SQL.toString(), (rs, rowNum) -> {
         CarBorModel tr = new CarBorModel();
@@ -442,10 +458,14 @@ public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq) {
         tr.setBorNo(rs.getString("borNo"));
         tr.setBorName(rs.getString("borName"));
         tr.setLicense_plate(rs.getString("license_plate"));
-        tr.setDao(rs.getString("Dao"));
+        tr.setDao(rs.getString("dao"));
         return tr;
     });
 }
+
+
+
+
 
 
 
