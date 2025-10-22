@@ -159,15 +159,10 @@ public class VicicleHeaderService  {
         log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
         //================================================================
         String userId = userIn.get(0).getUserId();
-        String userBranchNo = userIn.get(0).getBranchNo();
+        String branch = userIn.get(0).getBranchNo();
         //add more
-        String borNo = userIn.get(0).getBorNo();
-
-        //===================set data to userId===============================
-        carOfficeReq.setUserId(userId);
-        carOfficeReq.setBranch(userBranchNo);
-        //add more
-        carOfficeReq.setBorNo(borNo);
+        String role = userIn.get(0).getRole();
+        String bor_no = userIn.get(0).getBorNo();
         //====================================================================
         List<CarOfficeModel> CarOfficeModel = new ArrayList<>();
         CarOfficeRes result = new CarOfficeRes();
@@ -182,7 +177,7 @@ public class VicicleHeaderService  {
 ////            phoneNumbers.add("8562092607633");
 ////            phoneNumbers.add("8562092607634");
 ////            phoneNumbers.add("8562092607635");
-            CarOfficeModel = vicicleHeaderDao.listCarOfficeDAOs(carOfficeReq);
+            CarOfficeModel = vicicleHeaderDao.listCarOfficeDAOs(carOfficeReq, role, branch, bor_no );
             if(CarOfficeModel.size() < 1 ){
                 result.setMessage("have No List of Car yet");
                 result.setStatus("01");

@@ -290,27 +290,35 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
 //            throw new RuntimeException("Error retrieving car office data", e);
 //        }
 //    }
-public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq) {
+public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String role, String branch, String bor_no) {
     try {
         StringBuilder SQL = new StringBuilder();
         SQL.append("SELECT * FROM V_OFFIE_CAR_STATUS a ")
                 .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
-                .append("WHERE c.BRANCH = '").append(carOfficeReq.getBranch()).append("' ");
+                .append("WHERE 1 = 1 "); // เริ่มต้นด้วย 1=1 เพื่อให้ต่อ AND ง่าย
 
-        // ✅ ตรวจสอบค่า borNo
-        log.info("borNo from request: " + carOfficeReq.getBorNo());
-
-        if (carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()) {
-            SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
-            log.info("Query condition: BRANCH + BOR_NO");
+        // ตรวจสอบ borNo ตาม role
+        if ("PADMIN".equalsIgnoreCase(role) || "USERSTOCK".equalsIgnoreCase(role)) {
+            if (carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()) {
+                SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
+                log.info("Query condition: BRANCH + BOR_NO");
+            } else if (bor_no != null &&  !bor_no.isEmpty()) {
+                SQL.append(" AND a.borNo ='").append(bor_no).append(" '");
+            } else {
+                SQL.append("AND a.borNo IS NOT NULL AND TRIM(a.borNo) <> '' ");
+                log.info("Query condition: BRANCH + BOR_NO IS NOT NULL");
+            }
         } else {
+            SQL.append("AND c.BRANCH = '").append(branch).append("' ");
             SQL.append("AND a.borNo IS NULL ");
-            log.info("Query condition: BRANCH + BOR_NO IS NULL");
+            log.info("Query condition: BOR_NO IS NULL for PADMIN");
         }
 
+// สุดท้ายเรียงลำดับ
         SQL.append("ORDER BY arange ASC");
 
         log.info("Final SQL: " + SQL.toString());
+
 
         return EBankJdbcTemplate.query(SQL.toString(), new RowMapper<CarOfficeModel>() {
             @SneakyThrows

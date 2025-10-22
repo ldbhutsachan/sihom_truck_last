@@ -247,9 +247,9 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
     StringBuilder sb = new StringBuilder();
 
     try {
-        // Base SQL
+        // Base SQL with COALESCE for numeric fields
         sb.append("SELECT \n" +
-                "    MIN(d.detail_id) AS key_id,\n" +
+                "    COALESCE(MIN(d.detail_id), 0) AS key_id,\n" +
                 "    MIN(d.using_date) AS create_date,\n" +
                 "    MIN(d.saveby_name) AS create_by,\n" +
                 "    0 AS time_total,\n" +
@@ -263,88 +263,94 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
                 "    SUM(d.qty) AS qty,\n" +
                 "    AVG(d.price) AS price,\n" +
                 "    SUM(d.price * d.qty) AS total,\n" +
-                "    CASE WHEN d.using_status IS NULL THEN 'wait' ELSE 'ok' END AS using_status,\n" +
+                "    CASE WHEN d.using_status IS NULL OR d.using_status = '' THEN 'wait' ELSE d.using_status END AS using_status,\n" +
                 "    MIN(b.mch_no) AS mch_no,\n" +
                 "    MIN(b.mch_name) AS mch_name,\n" +
                 "    MIN(b.mch_branch_name) AS mch_branch_name,\n" +
                 "    MIN(b.mch_model) AS mch_model,\n" +
-                "    MIN(b.mch_product_year) AS mch_product_year,\n" +
+                "    COALESCE(MIN(b.mch_product_year), 0) AS mch_product_year,\n" +
                 "    MIN(d.bor_no) AS bor_no,\n" +
                 "    MIN(d.bor_name) AS bor_name\n" +
                 "FROM tb_machine b\n" +
                 "INNER JOIN tb_bors c ON b.borNo = c.key_id\n" +
                 "INNER JOIN v_request_item_fix d ON d.jukNo = b.mch_no\n" +
-                "WHERE 1=1  and d.status ='ok'");
+                "WHERE 1=1 AND d.status ='ok'");
 
         // Dynamic conditions
         if (req.getItemId() != null && !req.getItemId().isEmpty()) {
-            sb.append(" AND d.item_id = '" + req.getItemId() + "' ");
+            sb.append(" AND d.item_id = '").append(req.getItemId()).append("' ");
         }
 
         if (req.getBillNo() != null && !req.getBillNo().isEmpty()) {
-            sb.append(" AND d.bill_no = '" + req.getBillNo() + "' ");
+            sb.append(" AND d.bill_no = '").append(req.getBillNo()).append("' ");
         }
 
         if (borNo != null && !borNo.isEmpty()) {
-            sb.append(" AND d.bor_no = '" + borNo + "' ");
+            sb.append(" AND d.bor_no = '").append(borNo).append("' ");
         }
 
         if (req.getStatus() != null && !req.getStatus().isEmpty()) {
-            sb.append(" AND d.using_status = '" + req.getStatus() + "' ");
+            // แปลง client status เป็น string ใน DB
+            if ("1".equals(req.getStatus())) { // wait
+                sb.append(" AND (d.using_status IS NULL OR d.using_status = '') ");
+            } else if ("2".equals(req.getStatus())) { // using
+                sb.append(" AND d.using_status = 'ok' ");
+            }
         } else {
-            sb.append(" AND d.using_status IS NULL ");
+            sb.append(" AND (d.using_status IS NULL OR d.using_status = '') ");
         }
 
         if (req.getStartDate() != null && !req.getStartDate().isEmpty()) {
-            sb.append(" AND DATE_FORMAT(d.using_date, '%Y-%m-%d') >= '" + req.getStartDate() + "' ");
+            sb.append(" AND DATE_FORMAT(d.using_date, '%Y-%m-%d') >= '").append(req.getStartDate()).append("' ");
         }
 
         if (req.getEndDate() != null && !req.getEndDate().isEmpty()) {
-            sb.append(" AND DATE_FORMAT(d.using_date, '%Y-%m-%d') <= '" + req.getEndDate() + "' ");
+            sb.append(" AND DATE_FORMAT(d.using_date, '%Y-%m-%d') <= '").append(req.getEndDate()).append("' ");
         }
 
         // Group by for aggregation
         sb.append(" GROUP BY d.bill_no, d.item_id, d.item_name, d.unit, d.currency, d.using_status ");
 
-        // Order by (ใช้ MIN ของ create_date แทน savedate)
+        // Order by
         sb.append(" ORDER BY MIN(d.using_date) DESC ");
 
         String sql = sb.toString();
         log.info("Generated SQL: " + sql);
 
         // Execute query
-        return JdbcTemplate.query(sql, new RowMapper<MachineStockDetails>() {
-            @Override
-            public MachineStockDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
-                MachineStockDetails tr = new MachineStockDetails();
-                tr.setKeyId(rs.getInt("key_id"));
-                tr.setCreateDate(rs.getTimestamp("create_date"));
-                tr.setCreateBy(rs.getString("create_by"));
-                tr.setTimeTotal(rs.getInt("time_total"));
-                tr.setTxnDate(rs.getDate("txn_date"));
-                tr.setStatus(rs.getInt("status"));
+        return JdbcTemplate.query(sql, (rs, rowNum) -> {
+            MachineStockDetails tr = new MachineStockDetails();
 
-                tr.setBillNo(rs.getString("bill_no"));
-                tr.setItemId(rs.getString("item_id"));
-                tr.setItemName(rs.getString("item_name"));
-                tr.setUnit(rs.getString("unit"));
-                tr.setCurrency(rs.getString("currency"));
-                tr.setQty(rs.getInt("qty"));
-                tr.setPrice(rs.getDouble("price"));
-                tr.setTotal(rs.getDouble("total"));
-                tr.setUsingStatus(rs.getString("using_status"));
+            // ใช้ helper function แปลงค่าปลอดภัย
+            tr.setKeyId(getIntSafe(rs, "key_id"));
+            tr.setTimeTotal(getIntSafe(rs, "time_total"));
+            tr.setStatus(getIntSafe(rs, "status"));
+            tr.setMchProductYear(getIntSafe(rs, "mch_product_year"));
+            tr.setQty(getIntSafe(rs, "qty"));
+            tr.setPrice(getDoubleSafe(rs, "price"));
+            tr.setTotal(getDoubleSafe(rs, "total"));
 
-                tr.setMchNo(rs.getString("mch_no"));
-                tr.setMchName(rs.getString("mch_name"));
-                tr.setMchBranchName(rs.getString("mch_branch_name"));
-                tr.setMchModel(rs.getString("mch_model"));
-                tr.setMchProductYear(rs.getInt("mch_product_year"));
+            // Mapping fields อื่น
+            tr.setCreateDate(rs.getTimestamp("create_date"));
+            tr.setCreateBy(rs.getString("create_by"));
+            tr.setTxnDate(rs.getDate("txn_date"));
 
-                tr.setBorNo(rs.getString("bor_no"));
-                tr.setBorName(rs.getString("bor_name"));
+            tr.setBillNo(rs.getString("bill_no"));
+            tr.setItemId(rs.getString("item_id"));
+            tr.setItemName(rs.getString("item_name"));
+            tr.setUnit(rs.getString("unit"));
+            tr.setCurrency(rs.getString("currency"));
+            tr.setUsingStatus(rs.getString("using_status"));
 
-                return tr;
-            }
+            tr.setMchNo(rs.getString("mch_no"));
+            tr.setMchName(rs.getString("mch_name"));
+            tr.setMchBranchName(rs.getString("mch_branch_name"));
+            tr.setMchModel(rs.getString("mch_model"));
+
+            tr.setBorNo(rs.getString("bor_no"));
+            tr.setBorName(rs.getString("bor_name"));
+
+            return tr;
         });
 
     } catch (Exception e) {
@@ -353,6 +359,31 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
 
     return null;
 }
+
+    // Helper function แปลง Integer safely
+    private int getIntSafe(ResultSet rs, String column) throws SQLException {
+        Object obj = rs.getObject(column);
+        if (obj == null) return 0;
+        if (obj instanceof Number) return ((Number) obj).intValue();
+        try {
+            return Integer.parseInt(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    // Helper function แปลง Double safely
+    private double getDoubleSafe(ResultSet rs, String column) throws SQLException {
+        Object obj = rs.getObject(column);
+        if (obj == null) return 0.0;
+        if (obj instanceof Number) return ((Number) obj).doubleValue();
+        try {
+            return Double.parseDouble(obj.toString().trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
 
 
 //    @Override
