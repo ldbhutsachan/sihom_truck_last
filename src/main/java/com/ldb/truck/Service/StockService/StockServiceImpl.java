@@ -2047,15 +2047,28 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
 
         // ===== approve items
         int updatedRows = 0;
+//        for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+//            updatedRows = requestItemRepository.approveRequestItem(
+//                    stockItemDetailsReq.getUserId(),
+//                    new Date(),
+//                    stockItemDetailsReq.getStatus(),
+//                    item.getItemId(),
+//                    stockItemDetailsReq.getBillNo()
+//            );
+//        }
         for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
             updatedRows = requestItemRepository.approveRequestItem(
-                    stockItemDetailsReq.getUserId(),
-                    new Date(),
-                    stockItemDetailsReq.getStatus(),
-                    item.getItemId(),
-                    stockItemDetailsReq.getBillNo()
+                    stockItemDetailsReq.getUserId(), // approveBy
+                    new Date(),                      // approveDate
+                    stockItemDetailsReq.getStatus(), // status
+                    "ok",                            // usingStatus
+                    new Date(),                      // usingDate
+                    stockItemDetailsReq.getUserId(), // usingBy (คนเดียวกับ approveBy)
+                    item.getItemId(),                // itemId
+                    stockItemDetailsReq.getBillNo()  // billNo
             );
         }
+
 
         if (updatedRows > 0) {
             response.setStatus("00");
