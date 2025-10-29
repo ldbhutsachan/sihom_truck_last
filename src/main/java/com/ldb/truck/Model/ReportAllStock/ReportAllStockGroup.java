@@ -4,35 +4,36 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.List;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReportAllStockInOut {
+public class ReportAllStockGroup {
 
     private String itemId;
     private String image;
     private String itemName;
-//    private String price;
-    private double price;
-    private String currency;
     private String unit;
-    private String size;
+    private double price;
+    private double outprice;
+    private String currency;
 
     private int raisedAmt;
     private int inAmt;
     private int outAmt;
     private int closingAmt;
 
-    private String dateIn;
-    private String dateOut;
-
     private String borkey;
     private String borname;
-
+    private String firstDateOut;
+    private String lastDateOut;
     private String houseNo;
     private String houseName;
 
+//    private String houseNo;
+//    private String houseName;
 
+    private List<ReportAllStockInOut> groupList; // รายการย่อยในแต่ละกลุ่ม
 }
