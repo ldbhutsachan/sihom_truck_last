@@ -332,26 +332,60 @@ public class ItemController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "*")
-    @PostMapping("/getItemList.service")
-    public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
-        DataResponse response  = new DataResponse();
-        try {
-            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
-            if (userProfiles.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
-            String userId = userProfiles.get(0).getUserId();
-            String role = userProfiles.get(0).getRole();
-            String branchno = userProfiles.get(0).getBranchNo();
-            String borNo = userProfiles.get(0).getBorNo();
-            response = itemService.getItemList(brandReq,userId,role,branchno,borNo);
-        }catch (Exception e){
-            response.setStatus("EE");
-            response.setMessage("Data Error !!");
+//    @CrossOrigin(origins = "*")
+//    @PostMapping("/getItemList.service")
+//    public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
+//        DataResponse response  = new DataResponse();
+//        try {
+//            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
+//            if (userProfiles.isEmpty()) {
+//                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+//            }
+//            String userId = userProfiles.get(0).getUserId();
+//            String role = userProfiles.get(0).getRole();
+//            String branchno = userProfiles.get(0).getBranchNo();
+//            String borNo = userProfiles.get(0).getBorNo();
+//            response = itemService.getItemList(brandReq,userId,role,branchno,borNo);
+//        }catch (Exception e){
+//            response.setStatus("EE");
+//            response.setMessage("Data Error !!");
+//        }
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
+@CrossOrigin(origins = "*")
+@PostMapping("/getItemList.service")
+public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
+    DataResponse response  = new DataResponse();
+    try {
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        String userId = userProfiles.get(0).getUserId();
+        String role = userProfiles.get(0).getRole();
+        String branchno = userProfiles.get(0).getBranchNo();
+
+        // ✅ ใช้ borNo จาก client ถ้ามี
+        String borNo = brandReq.getBorNo();
+        log.info("borNo from client: " + borNo);
+
+        // ✅ ถ้า client ไม่ส่งมา (null หรือ "") ให้ fallback เป็นของ userProfiles
+        if (borNo == null || borNo.trim().isEmpty()) {
+            borNo = userProfiles.get(0).getBorNo();
+            log.info("borNo fallback from user profile: " + borNo);
+        }
+
+        response = itemService.getItemList(brandReq, userId, role, branchno, borNo);
+
+    } catch (Exception e) {
+        response.setStatus("EE");
+        response.setMessage("Data Error !!");
+        e.printStackTrace();
     }
+    return new ResponseEntity<>(response, HttpStatus.OK);
+}
+
 
     @CrossOrigin(origins = "*")
     @PostMapping("/insertItem.service")

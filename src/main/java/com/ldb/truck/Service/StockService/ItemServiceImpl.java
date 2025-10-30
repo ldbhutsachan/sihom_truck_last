@@ -1,5 +1,6 @@
 package com.ldb.truck.Service.StockService;
 
+import com.ldb.truck.Dao.ItemList.ItemListModel;
 import com.ldb.truck.Entity.Item.ItemEntity;
 import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
@@ -15,6 +16,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 @Slf4j
@@ -79,32 +81,86 @@ public class ItemServiceImpl {
         }
         return response;
 }
-public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,String role,String branchNo,String borNo){
-        log.info("role:"+role);
-        log.info("userName:"+userName);
-        log.info("branchNo:"+branchNo);
-        DataResponse response = new DataResponse();
-        try {
-            if("PADMIN".equals(role)){
-                response.setDataResponse(viewItemEntityRepository.getAllViewItemsAdmin());
-            }else {
-                response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo,borNo));
-            }
+//public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,String role,String branchNo,String borNo){
+//        log.info("role:"+role);
+//        log.info("userName:"+userName);
+//        log.info("branchNo:"+branchNo);
+//        DataResponse response = new DataResponse();
+//        try {
+//            if("PADMIN".equals(role)){
+//                response.setDataResponse(viewItemEntityRepository.getAllViewItemsAdmin());
+//            }else {
+//                response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo,borNo));
+//            }
+//
+//            if(response.getDataResponse() != null){
+//                response.setStatus("00");
+//                response.setMessage("Success");
+//            }else {
+//                response.setStatus("05");
+//                response.setMessage("Data not Found !!");
+//            }
+//        }catch (Exception e){
+//            response.setStatus("EE");
+//            response.setMessage("Error Data !!");
+//        }
+//        return response;
+//}
+public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
+    log.info("role:" + role);
+    log.info("userName:" + userName);
+    log.info("branchNo:" + branchNo);
+    log.info("borNo:" + borNo);
 
-            if(response.getDataResponse() != null){
-                response.setStatus("00");
-                response.setMessage("Success");
-            }else {
-                response.setStatus("05");
-                response.setMessage("Data not Found !!");
+    DataResponse response = new DataResponse();
+
+    try {
+        List<viewItemEntity> items;
+
+        if ("PADMIN".equals(role)) {
+            if (viewItemEntity.getBorNo() != null && !viewItemEntity.getBorNo().trim().isEmpty()) {
+                items = viewItemEntityRepository.getAllViewItemsBorNo(viewItemEntity.getBorNo());
+            } else {
+                items = viewItemEntityRepository.getAllViewItemsAdmin();
             }
-        }catch (Exception e){
-            response.setStatus("EE");
-            response.setMessage("Error Data !!");
+        } else {
+            items = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo, borNo);
         }
-        return response;
+
+        List<ItemListModel> resultList = items.stream()
+                .map(item -> new ItemListModel(
+                        item.getItemId(),
+                        item.getItem_name(), // ✅ ใช้ camelCase
+                        item.getPrice(),
+                        item.getInqty(),
+                        item.getImage(),
+                        item.getBorNo(),
+                        item.getBorName(),
+                        item.getItemtype_Name(),
+                        item.getQty(),
+                        item.getUnit(),
+                        item.getSize(),
+                        item.getKhid(),
+                        item.getKhno(),
+                        item.getKhname()
+                ))
+                .collect(Collectors.toList());
+
+
+        response.setDataResponse(resultList);
+        response.setStatus("00");
+        response.setMessage("Success");
+
+    } catch (Exception e) {
+        response.setStatus("EE");
+        response.setMessage("Error Data !!");
+        e.printStackTrace();
+    }
+
+    return response;
 }
-public DataResponse saveItem(ItemEntity viewItemEntity){
+
+    public DataResponse saveItem(ItemEntity viewItemEntity){
         log.info("show alert:"+viewItemEntity.getAlertqty());
         DataResponse response = new DataResponse();
         try {

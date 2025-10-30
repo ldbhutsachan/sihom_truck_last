@@ -153,10 +153,10 @@ public class VicicleHeaderService  {
         log.info("toKen=======================:"+carOfficeReq.getToKen());
         //============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+//        log.info("show=================UserNo:"+userIn.get(0).getUserId());
+//        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+//        log.info("show=================Role:"+userIn.get(0).getRole());
+//        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
         //================================================================
         String userId = userIn.get(0).getUserId();
         String branch = userIn.get(0).getBranchNo();

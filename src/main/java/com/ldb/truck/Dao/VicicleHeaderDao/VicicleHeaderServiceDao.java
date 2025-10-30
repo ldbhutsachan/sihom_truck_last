@@ -295,15 +295,15 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
         StringBuilder SQL = new StringBuilder();
         SQL.append("SELECT * FROM V_OFFIE_CAR_STATUS a ")
                 .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
-                .append("WHERE 1 = 1 "); // เริ่มต้นด้วย 1=1 เพื่อให้ต่อ AND ง่าย
+                .append("WHERE 1 = 1 ");
 
         // ตรวจสอบ borNo ตาม role
         if ("PADMIN".equalsIgnoreCase(role) || "USERSTOCK".equalsIgnoreCase(role)) {
             if (carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()) {
                 SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
                 log.info("Query condition: BRANCH + BOR_NO");
-            } else if (bor_no != null &&  !bor_no.isEmpty()) {
-                SQL.append(" AND a.borNo ='").append(bor_no).append(" '");
+            } else if (bor_no != null && !bor_no.isEmpty()) {
+                SQL.append(" AND a.borNo = '").append(bor_no).append("'");
             } else {
                 SQL.append("AND a.borNo IS NOT NULL AND TRIM(a.borNo) <> '' ");
                 log.info("Query condition: BRANCH + BOR_NO IS NOT NULL");
@@ -311,14 +311,13 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
         } else {
             SQL.append("AND c.BRANCH = '").append(branch).append("' ");
             SQL.append("AND a.borNo IS NULL ");
-            log.info("Query condition: BOR_NO IS NULL for PADMIN");
+            log.info("Query condition: BOR_NO IS NULL for non-PADMIN");
         }
 
-// สุดท้ายเรียงลำดับ
+        // สุดท้ายเรียงลำดับ
         SQL.append("ORDER BY arange ASC");
 
         log.info("Final SQL: " + SQL.toString());
-
 
         return EBankJdbcTemplate.query(SQL.toString(), new RowMapper<CarOfficeModel>() {
             @SneakyThrows
@@ -326,6 +325,7 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
             public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
                 CarOfficeModel tr = new CarOfficeModel();
 
+                // ==================== Map fields ====================
                 tr.setKEY_ID(rs.getString("KEY_ID"));
                 tr.setImg(rs.getString("img"));
                 tr.setLicense_plate(rs.getString("license_plate"));
@@ -390,9 +390,11 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
                 tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
                 tr.setBorNo(rs.getString("borNo"));
                 tr.setBorName(rs.getString("borName"));
+                // =======================================================
 
-                // ✅ ส่ง SMS แจ้งเตือนตามเงื่อนไข
-                String phoneNumber = "8562092661111"; // Replace with actual number
+                // =================== ส่ง SMS (comment ไว้) ===================
+                /*
+                String phoneNumber = "8562092661111";
                 String carInfo = "Car Brand: " + tr.getCar_brand() + ", License Plate: " + tr.getLicense_plate();
 
                 if ("E".equals(rs.getString("technic_check_STATUS"))) {
@@ -401,22 +403,10 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
                 } else if ("E".equals(rs.getString("LICENSE_STATUS"))) {
                     sendSmsReminder(phoneNumber, carInfo,
                             "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ໃບທະບຽນລົດໃກ້ຈະໝົດອາຍຸ.");
-                } else if ("E".equals(rs.getString("insurance_Lao_STATUS"))) {
-                    sendSmsReminder(phoneNumber, carInfo,
-                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ປະກັນໄພລາວໃກ້ຈະໝົດອາຍຸ.");
-                } else if ("E".equals(rs.getString("insurance_thai_STATUS"))) {
-                    sendSmsReminder(phoneNumber, carInfo,
-                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ປະກັນໄພໄທໃກ້ຈະໝົດອາຍຸ.");
-                } else if ("E".equals(rs.getString("insurance_viet_STATUS"))) {
-                    sendSmsReminder(phoneNumber, carInfo,
-                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ປະກັນໄພຫວຽດໃກ້ຈະໝົດອາຍຸ.");
-                } else if ("E".equals(rs.getString("LEAN_ENGINE_DATE_NEXT_STATUS"))) {
-                    sendSmsReminder(phoneNumber, carInfo,
-                            "ລົດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ໃກ້ຈະຄົບກຳນົດປ່ຽນນ້ຳມັນເຄື່ອງ.");
-                } else if ("E".equals(rs.getString("TUNGSIT_STATUS"))) {
-                    sendSmsReminder(phoneNumber, carInfo,
-                            "ເລກຕັງຊິດ " + tr.getCar_brand() + " ທະບຽນ " + tr.getLicense_plate() + " ໃກ້ຈະໝົດອາຍຸ.");
                 }
+                // ... เงื่อนไขอื่นๆ ...
+                */
+                // ============================================================
 
                 return tr;
             }
