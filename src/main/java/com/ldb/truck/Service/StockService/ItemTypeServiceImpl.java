@@ -7,33 +7,43 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ItemTypeServiceImpl {
     @Autowired
     ItemTypeRepository repository;
-    public DataResponse getItemType(ItemTypeEntity itemTypeEntity){
-        DataResponse response= new DataResponse();
+    public DataResponse getItemType(ItemTypeEntity itemTypeEntity, String role) {
+        DataResponse response = new DataResponse();
         try {
-            if(!"".equals(itemTypeEntity.getItemtypeid())){
-                response.setDataResponse(repository.getItemTypeById(itemTypeEntity.getItemtypeid()));
-            }else {
-                response.setDataResponse(repository.getItemTypeAll());
-            }
-            if(response.getDataResponse() != null){
-                response.setStatus("00");
-                response.setMessage("Success");
-            }else {
-                response.setStatus("05");
-                response.setMessage("Data Not Found !!!");
+            List<ItemTypeEntity> dataList;
+
+            if (itemTypeEntity.getItemtypeid() != null) {
+                // ค้นหาโดย id
+                dataList = repository.getItemTypeById(itemTypeEntity.getItemtypeid());
+            } else {
+                // ตรวจ role เหมือน saveItemType
+                if ("SUPERBANSI".equalsIgnoreCase(role)) {
+                    // เฉพาะ bansi_use = "1"
+                    dataList = repository.getItemTypeByBansiUse("1");
+                } else {
+                    // bansi_use = "" หรือ null หรือ != "1"
+                    dataList = repository.getItemTypeByNonBansiUse();
+                }
             }
 
-        }catch (Exception e){
+            response.setDataResponse(dataList);
+            response.setStatus("00");
+            response.setMessage("Success");
+        } catch (Exception e) {
+            e.printStackTrace();
             response.setStatus("EE");
             response.setMessage("Error Data !!");
-
         }
         return response;
     }
+
+
 
     public DataResponse saveItemType(ItemTypeEntity itemTypeEntity){
         DataResponse response= new DataResponse();
@@ -55,46 +65,49 @@ public class ItemTypeServiceImpl {
         return response;
     }
 
-    public DataResponse updateItemType(ItemTypeEntity itemTypeEntity){
-        DataResponse response= new DataResponse();
+    public DataResponse updateItemType(ItemTypeEntity itemTypeEntity) {
+        DataResponse response = new DataResponse();
         try {
-            String itemType_Name = itemTypeEntity.getItemTypeName();
-            String itemTypeid = itemTypeEntity.getItemtypeid();
-            response.setDataResponse(repository.updateItemType(itemType_Name,itemTypeid));
-            if(response.getDataResponse() != null){
+            Long itemTypeid = itemTypeEntity.getItemtypeid();
+            String itemTypeName = itemTypeEntity.getItemTypeName();
+            int updated = repository.updateItemType(itemTypeName, itemTypeid);
+            response.setDataResponse(updated);
+            if(updated > 0){
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
-                response.setMessage("Can't Save Data!!!");
+                response.setMessage("No record updated!");
             }
-
-        }catch (Exception e){
+        } catch (Exception e){
+            e.printStackTrace();
             response.setStatus("EE");
             response.setMessage("Error Data !!");
-
         }
         return response;
     }
     public DataResponse delItemType(ItemTypeEntity itemTypeEntity){
-        DataResponse response= new DataResponse();
+        DataResponse response = new DataResponse();
         try {
-            String itemType_Name = itemTypeEntity.getItemTypeName();
-            String itemTypeid = itemTypeEntity.getItemtypeid();
-            response.setDataResponse(repository.delItemType(itemTypeid));
-            if(response.getDataResponse() != null){
+            Long itemTypeid = itemTypeEntity.getItemtypeid();
+            int deleted = repository.delItemType(itemTypeid);
+
+            response.setDataResponse(deleted);
+
+            if(deleted > 0){
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
-                response.setMessage("Can't del Data!!!");
+                response.setMessage("Can't delete Data!!!");
             }
 
-        }catch (Exception e){
+        } catch (Exception e){
+            e.printStackTrace();
             response.setStatus("EE");
             response.setMessage("Error Data !!");
-
         }
         return response;
     }
+
 }
