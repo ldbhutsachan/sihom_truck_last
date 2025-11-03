@@ -3,18 +3,29 @@ package com.ldb.truck.Service.Bansi;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.Bansi.BansiEntity;
 import com.ldb.truck.Entity.Bansi.PayTypeEntity;
-import com.ldb.truck.Model.Bansi.PayTypeReq;
-import com.ldb.truck.Model.Bansi.ProjectPaymentModel;
-import com.ldb.truck.Model.Bansi.ProjectShowReq;
+import com.ldb.truck.Entity.Bansi.PaymentDetailListEntity;
+import com.ldb.truck.Entity.Bansi.PaymentRequestEntity;
+import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Repository.Bansi.BansiRepository;
 import com.ldb.truck.Repository.Bansi.PayTypeRepository;
+import com.ldb.truck.Repository.Bansi.PaymentRequestListRepository;
+import com.ldb.truck.Repository.Bansi.PaymentRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BansiService {
@@ -23,7 +34,10 @@ public class BansiService {
     private BansiRepository bansiRepository;  // ✅ ใช้ entity type จริง
     @Autowired
     private PayTypeRepository payTypeRepository;
-
+    @Autowired
+    private PaymentRequestRepository paymentRequestRepository;
+    @Autowired
+    private PaymentRequestListRepository paymentRequestListRepository;
 
     @Autowired
     private ProfileDao profileDao;
@@ -236,49 +250,261 @@ public class BansiService {
     }
 
     //show payment_type
-    public DataResponse showOnePayType(PayTypeReq payTypeReq) {
+    public DataResponse showPayType(PayTypeReq request) {
         DataResponse response = new DataResponse();
-
         try {
-            // ✅ ตรวจสอบ token
-            List<Profile> userProfiles = profileDao.getProfileInfoByToken(payTypeReq.getToKen());
-            if (userProfiles.isEmpty()) {
+            // ตรวจสอบสิทธิ์
+            List<Profile> profiles = profileDao.getProfileInfoByToken(request.getToKen());
+            if (profiles.isEmpty()) {
                 response.setStatus("05");
                 response.setMessage("Unauthorized");
                 return response;
             }
 
-            String role = userProfiles.get(0).getRole();
+            String role = profiles.get(0).getRole();
 
-            // ✅ ถ้าไม่ใช่ SUPERBANSI
+            // ตรวจ role
             if (!"SUPERBANSI".equalsIgnoreCase(role)) {
-                response.setStatus("99");
-                response.setMessage("You don't have permission to fetch data");
+                response.setStatus("01");
+                response.setMessage("Access Denied");
                 return response;
             }
 
-            // ✅ ถ้าเป็น SUPERBANSI
-            List<PayTypeEntity> data;
-            if (payTypeReq.getReq_id() != null) {
-                // แสดงเฉพาะ req_id ที่ส่งมา
-                data = payTypeRepository.findByReqId(payTypeReq.getReq_id());
-            } else {
-                // แสดงทั้งหมด
-                data = payTypeRepository.findAll();
+            // ดึงข้อมูลจาก DB
+            List<Object[]> rawList = payTypeRepository.findPayTypeByReqId(request.getReq_id());
+            List<PaymentModel> result = new ArrayList<>();
+
+            for (Object[] row : rawList) {
+                PaymentModel model = new PaymentModel();
+                model.setPid(((Number) row[0]).longValue());
+                model.setPay_type((String) row[1]);
+                model.setDate_create((row[2] != null) ? ((java.sql.Timestamp) row[2]).toLocalDateTime() : null);
+                model.setSmall_project((String) row[3]);
+                model.setBig_project((String) row[4]);
+                model.setBig_project_id(((Number) row[5]).longValue());
+                result.add(model);
             }
+
             response.setStatus("00");
             response.setMessage("Success");
-            response.setDataResponse(data);
+            response.setDataResponse(result);
 
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("EE");
-            response.setMessage("Error while fetching data");
+            response.setMessage("Error fetching data");
         }
-
         return response;
     }
 
+    // generate bill_no
+    public String generateBillNo() {
+        String lastBillNo = paymentRequestRepository.findLastBillNo();
+
+        String prefix = "PAY-";
+        int number = 1; // ค่าเริ่มต้น
+
+        if (lastBillNo != null && !lastBillNo.isEmpty()) {
+            try {
+                String[] parts = lastBillNo.split("-");
+                number = Integer.parseInt(parts[1]) + 1; // เพิ่มจากล่าสุด
+            } catch (Exception e) {
+                number = 1; // กรณี format ผิด
+            }
+        }
+
+        // format ให้เป็น zero-padded 4 หลัก (PAY-0001, PAY-0010, ...)
+        // สำหรับเลข > 9999 ก็ยังสามารถเพิ่มได้ (PAY-10001)
+        String formattedNumber = String.format("%04d", number);
+
+        return prefix + formattedNumber;
+    }
+
+    // generate nextBillno ຖ້າລະຫັດບຶນມາຮອດຊ້ຳກັນ
+    @Transactional
+    public synchronized String generateNextBillNo() {
+        String lastBillNo = paymentRequestRepository.findLastBillNo();
+        String prefix = "PAY-";
+        int number = 1;
+
+        if (lastBillNo != null && !lastBillNo.isEmpty()) {
+            try {
+                String[] parts = lastBillNo.split("-");
+                number = Integer.parseInt(parts[1]) + 1;
+            } catch (Exception e) {
+                number = 1;
+            }
+        }
+
+        return prefix + String.format("%04d", number);
+    }
+
+
+
+
+    // insert payment Detail
+    public PaymentRequestEntity insertPaymentDetail(PaymentRequestDto req) throws Exception {
+        PaymentRequestEntity entity = new PaymentRequestEntity();
+
+        // check token
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToKen());
+        if (userProfiles.isEmpty()) {
+            throw new Exception("❌ Unauthorized: Invalid token");
+        }
+        Profile user = userProfiles.get(0);
+        String role = user.getRole();
+
+        if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+            throw new Exception("No right to insert (role: " + role + ")");
+        }
+
+        // set user_id from token
+        entity.setUserId(Long.valueOf(user.getUserId()));
+        entity.setPayTypeId(req.getPay_typeid());
+        entity.setSupplierId(req.getSupplierid());
+        entity.setTitle(req.getTitle());
+        entity.setCurrency(req.getCurrency());
+        entity.setExchangeRate(req.getExchange_rate());
+
+        // ✅ Generate billNo อัตโนมัติ
+        entity.setBillNo(generateNextBillNo());
+
+        // adjust Date
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date parsedDate = sdf.parse(req.getDate());
+        entity.setDate(sdf.format(parsedDate));
+
+        entity.setReferenceNumber(req.getReference_number());
+        entity.setReference(req.getReference());
+        entity.setRemark(req.getRemark());
+        entity.setInternalRemark(req.getInternal_remark());
+        entity.setTag(req.getTag());
+        entity.setDatertimeDate(req.getDatermine_date());
+
+        // Upload file
+        MultipartFile file = req.getFile();
+        if (file != null && !file.isEmpty()) {
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get("uploads/payment/");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            String fileUrl = "http://khounkham.com/uploads/payment/" + fileName;
+            entity.setFile(fileUrl);
+        }
+
+        // save main data
+        PaymentRequestEntity saved = paymentRequestRepository.save(entity);
+
+        // save list data
+        if (req.getTools() != null) {
+            for (PaymentRequestDto.ToolDto t : req.getTools()) {
+                PaymentDetailListEntity list = new PaymentDetailListEntity();
+                list.setKeyId(saved.getKeyId());
+                list.setBillNo(saved.getBillNo());
+                list.setListName(t.getList_name());
+                list.setQty(t.getQty());
+                list.setUnit(t.getUnit());
+                list.setPrice(t.getPrice());
+                list.setReduce(t.getReduce());
+                list.setReduceStatus(t.getReduce_status());
+                list.setTax(t.getTax());
+                list.setTaxStatus(t.getTax_status());
+                paymentRequestListRepository.save(list);
+            }
+        }
+        return saved;
+    }
+
+    //update
+    @Transactional
+    public PaymentRequestEntity updatePaymentDetailByBillNo(String billNo, PaymentRequestDto req) throws Exception {
+        // หา entity จาก billNo
+        PaymentRequestEntity entity = paymentRequestRepository.findByBillNo(billNo);
+        if (entity == null) {
+            throw new Exception("❌ PaymentRequest not found with billNo: " + billNo);
+        }
+
+        // check token
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToKen());
+        if (userProfiles.isEmpty()) {
+            throw new Exception("❌ Unauthorized: Invalid token");
+        }
+        Profile user = userProfiles.get(0);
+        String role = user.getRole();
+
+        if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+            throw new Exception("No right to update (role: " + role + ")");
+        }
+
+        // **billNo ไม่เปลี่ยน**
+        // entity.setBillNo(...) // ❌
+
+        // update fields อื่น ๆ
+        entity.setPayTypeId(req.getPay_typeid() != null ? req.getPay_typeid() : entity.getPayTypeId());
+        entity.setSupplierId(req.getSupplierid() != null ? req.getSupplierid() : entity.getSupplierId());
+        entity.setTitle(req.getTitle() != null ? req.getTitle() : entity.getTitle());
+        entity.setCurrency(req.getCurrency() != null ? req.getCurrency() : entity.getCurrency());
+        entity.setExchangeRate(req.getExchange_rate() != null ? req.getExchange_rate() : entity.getExchangeRate());
+        entity.setReferenceNumber(req.getReference_number() != null ? req.getReference_number() : entity.getReferenceNumber());
+        entity.setReference(req.getReference() != null ? req.getReference() : entity.getReference());
+        entity.setRemark(req.getRemark() != null ? req.getRemark() : entity.getRemark());
+        entity.setInternalRemark(req.getInternal_remark() != null ? req.getInternal_remark() : entity.getInternalRemark());
+        entity.setTag(req.getTag() != null ? req.getTag() : entity.getTag());
+        entity.setDatertimeDate(req.getDatermine_date() != null ? req.getDatermine_date() : entity.getDatertimeDate());
+
+        if (req.getDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedDate = sdf.parse(req.getDate());
+            entity.setDate(sdf.format(parsedDate));
+        }
+
+        // Upload file
+        MultipartFile file = req.getFile();
+        if (file != null && !file.isEmpty()) {
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get("uploads/payment/");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            String fileUrl = "http://khounkham.com/uploads/payment/" + fileName;
+            entity.setFile(fileUrl);
+        }
+
+        // save main data
+        PaymentRequestEntity saved = paymentRequestRepository.save(entity);
+
+        // update tools list
+        if (req.getTools() != null) {
+            // delete old items
+            paymentRequestListRepository.deleteAll(
+                    paymentRequestListRepository.findAll()
+                            .stream()
+                            .filter(item -> billNo.equals(item.getBillNo()))
+                            .collect(Collectors.toList())
+            );
+
+            // save new items
+            for (PaymentRequestDto.ToolDto t : req.getTools()) {
+                PaymentDetailListEntity list = new PaymentDetailListEntity();
+                list.setKeyId(saved.getKeyId());
+                list.setBillNo(saved.getBillNo());
+                list.setListName(t.getList_name());
+                list.setQty(t.getQty());
+                list.setUnit(t.getUnit());
+                list.setPrice(t.getPrice());
+                list.setReduce(t.getReduce());
+                list.setReduceStatus(t.getReduce_status());
+                list.setTax(t.getTax());
+                list.setTaxStatus(t.getTax_status());
+                paymentRequestListRepository.save(list);
+            }
+        }
+
+        return saved;
+    }
 
 
 }

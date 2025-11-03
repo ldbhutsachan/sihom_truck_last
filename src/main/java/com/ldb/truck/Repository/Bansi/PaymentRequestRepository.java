@@ -1,0 +1,19 @@
+package com.ldb.truck.Repository.Bansi;
+
+import com.ldb.truck.Entity.Bansi.PaymentRequestEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+
+@Repository
+public interface PaymentRequestRepository extends JpaRepository<PaymentRequestEntity, Long> {
+
+    // หา last billNo สำหรับ generate ต่อ
+    @Query(value = "SELECT p.bill_No FROM tb_accounting p ORDER BY p.key_id DESC LIMIT 1", nativeQuery = true)
+    String findLastBillNo();
+
+    // ✅ หา entity ด้วย billNo
+    PaymentRequestEntity findByBillNo(String billNo);
+}
+
