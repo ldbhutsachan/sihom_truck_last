@@ -1,5 +1,6 @@
 package com.ldb.truck.Service.Bansi;
 
+import com.ldb.truck.Dao.Bansi.PaymentDetailDao;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.Bansi.BansiEntity;
 import com.ldb.truck.Entity.Bansi.PayTypeEntity;
@@ -8,16 +9,12 @@ import com.ldb.truck.Entity.Bansi.PaymentRequestEntity;
 import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
-import com.ldb.truck.Repository.Bansi.BansiRepository;
-import com.ldb.truck.Repository.Bansi.PayTypeRepository;
-import com.ldb.truck.Repository.Bansi.PaymentRequestListRepository;
-import com.ldb.truck.Repository.Bansi.PaymentRequestRepository;
+import com.ldb.truck.Repository.Bansi.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +38,8 @@ public class BansiService {
 
     @Autowired
     private ProfileDao profileDao;
+    @Autowired
+    private PaymentDetailDao paymentDetailDao;;
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
         DataResponse response = new DataResponse();
@@ -385,12 +384,12 @@ public class BansiService {
         MultipartFile file = req.getFile();
         if (file != null && !file.isEmpty()) {
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get("uploads/payment/");
+            Path uploadPath = Paths.get("images/batery/");
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
             Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-            String fileUrl = "http://khounkham.com/uploads/payment/" + fileName;
+            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
             entity.setFile(fileUrl);
         }
 
@@ -469,7 +468,17 @@ public class BansiService {
                 Files.createDirectories(uploadPath);
             }
             Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-            String fileUrl = "http://khounkham.com/uploads/payment/" + fileName;
+            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
+            entity.setFile(fileUrl);
+        }
+        if (file != null && !file.isEmpty()) {
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get("images/batery/");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
             entity.setFile(fileUrl);
         }
 
@@ -505,6 +514,37 @@ public class BansiService {
 
         return saved;
     }
+
+    // showing paymentDetail
+    public PaymentDetailRes getPaymentDetails(PaymentDetailReq req) {
+        PaymentDetailRes result = new PaymentDetailRes();
+
+        // 🔹 ตรวจสอบ token และ role
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToKen());
+        if (userProfiles.isEmpty()) {
+            result.setStatus("01");
+            result.setMessage("Token invalid");
+            result.setData(new ArrayList<>());
+            return result;
+        }
+
+        boolean isSuperBansi = "SUPERBANSI".equalsIgnoreCase(userProfiles.get(0).getRole());
+        if (!isSuperBansi) {
+            result.setStatus("02");
+            result.setMessage("No permission");
+            result.setData(new ArrayList<>());
+            return result;
+        }
+
+        // 🔹 เรียก DAO ตัวเดียวที่รวมทุก filter
+        List<PaymentDetailModel> data = paymentDetailDao.findPaymentDetails(req.getItemTypeid(), req.getReq_id(), req.getPid());
+
+        result.setStatus("00");
+        result.setMessage("Success");
+        result.setData(data);
+        return result;
+    }
+
 
 
 }

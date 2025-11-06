@@ -2725,24 +2725,46 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
     }
 
     //****
-    public DataResponse getRequestItemType(){
+//    public DataResponse getRequestItemType(){
+//        DataResponse response = new DataResponse();
+//        try {
+//            response.setDataResponse(requestItemTypeRepository.findAll());
+//            if(response.getDataResponse() != null){
+//                response.setStatus("00");
+//                response.setMessage("success");
+//            }else {
+//                response.setStatus("00");
+//                response.setMessage("Data not Found !!");
+//            }
+//
+//        }catch (Exception e){
+//            response.setStatus("EE");
+//            response.setMessage("Error Data !!");
+//        }
+//        return response;
+//    }
+    public DataResponse getRequestItemType() {
         DataResponse response = new DataResponse();
         try {
-            response.setDataResponse(requestItemTypeRepository.findAll());
-            if(response.getDataResponse() != null){
+            List<requestItemTypeEntity> data = requestItemTypeRepository.findAllWhereBansiIsNull();
+            response.setDataResponse(data);
+
+            if (data != null && !data.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("success");
-            }else {
+            } else {
                 response.setStatus("00");
                 response.setMessage("Data not Found !!");
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setStatus("EE");
             response.setMessage("Error Data !!");
         }
         return response;
     }
+
+
 
     @Autowired
     requestItemTypeBorNameEntityRepository requestItemTypeBorNameEntityRepository;

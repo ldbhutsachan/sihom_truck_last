@@ -5,9 +5,7 @@ import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Bansi.BansiEntity;
 import com.ldb.truck.Entity.Bansi.PayTypeEntity;
 import com.ldb.truck.Entity.Bansi.PaymentRequestEntity;
-import com.ldb.truck.Model.Bansi.PayTypeReq;
-import com.ldb.truck.Model.Bansi.PaymentRequestDto;
-import com.ldb.truck.Model.Bansi.ProjectShowReq;
+import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Service.Bansi.BansiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -61,6 +60,7 @@ public class BansiController {
     }
 
     //update payment_tpye
+    @CrossOrigin(origins = "*")
     @PostMapping("/updatePayType.service")
     public ResponseEntity<Map<String, String>> updatePayType(@RequestBody PayTypeEntity payTypeEntity) {
         Map<String, String> response = bansiService.updatePayType(payTypeEntity);
@@ -76,6 +76,7 @@ public class BansiController {
     }
 
     //generate bill_no api
+    @CrossOrigin(origins = "*")
     @GetMapping("/generateBillNo.service")
     public ResponseEntity<Map<String, String>> generateBillNoApi() {
         Map<String, String> response = new HashMap<>();
@@ -92,6 +93,7 @@ public class BansiController {
 
 
     //insert paymentDetail
+    @CrossOrigin(origins = "*")
     @PostMapping("/insertPaymentDetail")
     public ResponseEntity<?> insertPaymentRequest(
             @RequestParam("toKen") String token,
@@ -149,6 +151,7 @@ public class BansiController {
     }
 
     //updated paymentDetail
+    @CrossOrigin(origins = "*")
     @PostMapping("/updatePaymentDetail")
     public ResponseEntity<?> updatePaymentRequest(
             @RequestParam("billNo") String billNo,  // เปลี่ยนจาก keyId
@@ -205,6 +208,12 @@ public class BansiController {
         }
     }
 
+    //show PaymentDetail
+    @CrossOrigin(origins = "*")
+    @PostMapping("/listPaymentDetail")
+    public PaymentDetailRes listPaymentDetail(@RequestBody PaymentDetailReq req) {
+        return bansiService.getPaymentDetails(req);
+    }
 
 
 
