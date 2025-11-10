@@ -2,10 +2,8 @@ package com.ldb.truck.Service.Bansi;
 
 import com.ldb.truck.Dao.Bansi.PaymentDetailDao;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
-import com.ldb.truck.Entity.Bansi.BansiEntity;
-import com.ldb.truck.Entity.Bansi.PayTypeEntity;
-import com.ldb.truck.Entity.Bansi.PaymentDetailListEntity;
-import com.ldb.truck.Entity.Bansi.PaymentRequestEntity;
+import com.ldb.truck.Dao.upload.MediaUploadService;
+import com.ldb.truck.Entity.Bansi.*;
 import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
@@ -23,8 +21,10 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class BansiService {
 
     @Autowired
@@ -40,6 +40,10 @@ public class BansiService {
     private ProfileDao profileDao;
     @Autowired
     private PaymentDetailDao paymentDetailDao;;
+    @Autowired
+    private MediaUploadService mediaUploadService;
+    @Autowired
+    private SignatureRepository signatureRepository;
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
         DataResponse response = new DataResponse();
@@ -365,7 +369,7 @@ public class BansiService {
         entity.setCurrency(req.getCurrency());
         entity.setExchangeRate(req.getExchange_rate());
 
-        // ✅ Generate billNo อัตโนมัติ
+        // Generate billNo auto
         entity.setBillNo(generateNextBillNo());
 
         // adjust Date
@@ -381,17 +385,36 @@ public class BansiService {
         entity.setDatertimeDate(req.getDatermine_date());
 
         // Upload file
+//        MultipartFile file = req.getFile();
+//        if (file != null && !file.isEmpty()) {
+//            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+//            Path uploadPath = Paths.get("images/batery/");
+//            if (!Files.exists(uploadPath)) {
+//                Files.createDirectories(uploadPath);
+//            }
+//            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+//            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
+//            entity.setFile(fileUrl);
+//        }
         MultipartFile file = req.getFile();
         if (file != null && !file.isEmpty()) {
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get("images/batery/");
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
+            // ✅ ใช้ service เดิมเพื่อให้ path เหมือนกับ saveMachine()
+            String uploadedFileName = mediaUploadService.uploadMedia(file);
+
+            // ✅ สร้าง URL สำหรับบันทึกใน DB
+            String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+
+            // ✅ เซตค่าให้ entity
             entity.setFile(fileUrl);
+
+            // ✅ log ตรวจสอบได้
+            log.info("Uploaded file successfully: {}", fileUrl);
+        } else {
+            // ✅ กรณีไม่มีไฟล์ (optional)
+            log.warn("No file uploaded for payment detail.");
+            entity.setFile("http://khounkham.com/images/image.jpg");
         }
+
 
         // save main data
         PaymentRequestEntity saved = paymentRequestRepository.save(entity);
@@ -458,30 +481,16 @@ public class BansiService {
             Date parsedDate = sdf.parse(req.getDate());
             entity.setDate(sdf.format(parsedDate));
         }
-
-        // Upload file
+        //  Upload file (ใช้ service เดิม)
         MultipartFile file = req.getFile();
         if (file != null && !file.isEmpty()) {
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get("uploads/payment/");
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
+            String uploadedFileName = mediaUploadService.uploadMedia(file);
+            String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
             entity.setFile(fileUrl);
+            log.info("✅ Updated file uploaded: {}", fileUrl);
+        } else {
+            log.info("ℹ️ No new file uploaded. Keep old file: {}", entity.getFile());
         }
-        if (file != null && !file.isEmpty()) {
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get("images/batery/");
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
-            entity.setFile(fileUrl);
-        }
-
         // save main data
         PaymentRequestEntity saved = paymentRequestRepository.save(entity);
 
@@ -544,6 +553,76 @@ public class BansiService {
         result.setData(data);
         return result;
     }
+    //save signature
+    public DataResponse saveSignature(SignatureEntity signatureEntity) {
+        DataResponse response = new DataResponse();
+        try {
+            // บันทึกลง DB
+            SignatureEntity saved = signatureRepository.save(signatureEntity);
+
+            // set response
+            response.setDataResponse(saved); // ข้อมูลที่บันทึกแล้ว
+            response.setStatus("00");
+            response.setMessage("Insert signature successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Store Data is Error !!");
+        }
+        return response;
+    }
+    //update
+    public DataResponse updateSignature(SignatureEntity signatureEntity) {
+        DataResponse response = new DataResponse();
+        try {
+            // ตรวจสอบว่ามีข้อมูลอยู่ใน DB
+            SignatureEntity existing = signatureRepository.findById(signatureEntity.getSid()).orElse(null);
+
+            if (existing == null) {
+                response.setStatus("EE");
+                response.setMessage("Signature not found with id: " + signatureEntity.getSid());
+                return response;
+            }
+
+            // อัปเดต userName เสมอ
+            existing.setUserName(signatureEntity.getUserName());
+
+            // อัปเดต signature **เฉพาะถ้ามีค่าใหม่ส่งมาจาก client**
+            if (signatureEntity.getSignature() != null) {
+                existing.setSignature(signatureEntity.getSignature());
+            }
+
+            // บันทึกลง DB
+            SignatureEntity updated = signatureRepository.save(existing);
+
+            response.setDataResponse(updated);
+            response.setStatus("00");
+            response.setMessage("Update signature successfully");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Update Data is Error !!");
+        }
+        return response;
+    }
+
+    //show signature
+    public DataResponse getAllSignatures() {
+        DataResponse response = new DataResponse();
+        try {
+            List<SignatureEntity> list = signatureRepository.findAll();
+            response.setDataResponse(list);
+            response.setStatus("00");
+            response.setMessage("Fetch all signatures successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Fetch Data Error !!");
+        }
+        return response;
+    }
+
 
 
 

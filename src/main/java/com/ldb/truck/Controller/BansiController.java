@@ -5,6 +5,7 @@ import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Bansi.BansiEntity;
 import com.ldb.truck.Entity.Bansi.PayTypeEntity;
 import com.ldb.truck.Entity.Bansi.PaymentRequestEntity;
+import com.ldb.truck.Entity.Bansi.SignatureEntity;
 import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Service.Bansi.BansiService;
@@ -15,6 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -214,6 +219,81 @@ public class BansiController {
     public PaymentDetailRes listPaymentDetail(@RequestBody PaymentDetailReq req) {
         return bansiService.getPaymentDetails(req);
     }
+
+    //insert signature
+    @CrossOrigin(origins = "*")
+    @PostMapping("/saveSignature.service")
+    public ResponseEntity<DataResponse> saveSignature(
+            @RequestParam("userName") String userName,
+            @RequestParam("file") MultipartFile file) {
+
+        DataResponse response = new DataResponse();
+        try {
+            String fileName = mediaUploadService.uploadMedia(file);
+            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
+
+            SignatureEntity signatureEntity = new SignatureEntity();
+            signatureEntity.setUserName(userName);
+            signatureEntity.setSignature(fileUrl);
+
+            response = bansiService.saveSignature(signatureEntity);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Store Data is Error !!");
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    //update signature
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateSignature.service")
+    public ResponseEntity<DataResponse> updateSignature(
+            @RequestParam("sId") Long sId,
+            @RequestParam("userName") String userName,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+
+        DataResponse response = new DataResponse();
+        try {
+            // เตรียม entity สำหรับส่งไป Service
+            SignatureEntity signatureEntity = new SignatureEntity();
+            signatureEntity.setSid(sId);
+            signatureEntity.setUserName(userName);
+
+            // ถ้ามีไฟล์ใหม่ ส่งไป Service เพื่ออัปเดต
+            if (file != null && !file.isEmpty()) {
+                String fileName = mediaUploadService.uploadMedia(file);
+                String fileUrl = "http://khounkham.com/images/batery/" + fileName;
+                signatureEntity.setSignature(fileUrl);
+            }
+
+            response = bansiService.updateSignature(signatureEntity);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Update Data is Error !!");
+        }
+        return ResponseEntity.ok(response);
+    }
+//show
+    @CrossOrigin(origins = "*")
+    @GetMapping("/getAllSignatures.service")
+    public ResponseEntity<DataResponse> getAllSignatures() {
+    DataResponse response = new DataResponse();
+    try {
+        response = bansiService.getAllSignatures();
+    } catch (Exception e) {
+        e.printStackTrace();
+        response.setStatus("EE");
+        response.setMessage("Fetch Data Error !!");
+    }
+    return ResponseEntity.ok(response);
+    }
+
+
+
 
 
 
