@@ -305,12 +305,12 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
             } else if (bor_no != null && !bor_no.isEmpty()) {
                 SQL.append(" AND a.borNo = '").append(bor_no).append("'");
             } else {
-                SQL.append("AND a.borNo IS NOT NULL AND TRIM(a.borNo) <> '' ");
+                SQL.append("AND a.borNo IS NOT NULL AND TRIM(a.borNo) <> '' AND a.borNo REGEXP '^[0-9]+$' ");
                 log.info("Query condition: BRANCH + BOR_NO IS NOT NULL");
             }
         } else {
             SQL.append("AND c.BRANCH = '").append(branch).append("' ");
-            SQL.append("AND a.borNo IS NULL ");
+//            SQL.append("AND a.borNo IS NULL AND TRIM(a.borNo) = '' AND a.borNo NOT REGEXP '^[0-9]+$' ");
             log.info("Query condition: BOR_NO IS NULL for non-PADMIN");
         }
 
@@ -431,7 +431,8 @@ public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq, String role, String 
             SQL.append("AND a.borNo = '").append(borNoClient).append("' ");
         } else {
             // ถ้า client ไม่ส่ง borNo → query ทุก borNo ที่ไม่ null
-            SQL.append("AND a.borNo IS NOT NULL ");
+            SQL.append("AND a.borNo IS NOT NULL AND TRIM(a.borNo) <> ''\n" +
+                    "  AND a.borNo REGEXP '^[0-9]+$' ");
         }
     } else {
         // สำหรับ user ปกติ → query ตาม borNo ของ profile
