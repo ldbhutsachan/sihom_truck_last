@@ -11,5 +11,5 @@ public class PaymentModel {
     private LocalDateTime date_create;
     private String small_project;
     private String big_project;
-    private Long big_project_id;
+    private Long small_project_id;
 }

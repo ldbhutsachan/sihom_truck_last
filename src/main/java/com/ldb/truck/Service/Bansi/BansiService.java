@@ -284,7 +284,7 @@ public class BansiService {
                 model.setDate_create((row[2] != null) ? ((java.sql.Timestamp) row[2]).toLocalDateTime() : null);
                 model.setSmall_project((String) row[3]);
                 model.setBig_project((String) row[4]);
-                model.setBig_project_id(((Number) row[5]).longValue());
+                model.setSmall_project_id(((Number) row[5]).longValue());
                 result.add(model);
             }
 

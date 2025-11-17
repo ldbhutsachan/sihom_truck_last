@@ -765,6 +765,8 @@ public class StockServiceImpl {
 
             String sql = sb.toString();
             log.info("sql:"+sql);
+            System.out.println("SQL QUERY => " + sql);
+
             return EBankJdbcTemplate.query(sql, new RowMapper<V_order_item_details>() {
                 @Override
                 public V_order_item_details mapRow(ResultSet rs, int rowNum) throws SQLException {
