@@ -2,13 +2,11 @@ package com.ldb.truck.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.upload.MediaUploadService;
-import com.ldb.truck.Entity.Bansi.BansiEntity;
-import com.ldb.truck.Entity.Bansi.PayTypeEntity;
-import com.ldb.truck.Entity.Bansi.PaymentRequestEntity;
-import com.ldb.truck.Entity.Bansi.SignatureEntity;
+import com.ldb.truck.Entity.Bansi.*;
 import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Service.Bansi.BansiService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -16,15 +14,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("${base_url}")
 public class BansiController {
@@ -291,6 +294,79 @@ public class BansiController {
     }
     return ResponseEntity.ok(response);
     }
+
+    //saveInterviewee
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/saveInterviewee.service", consumes = "multipart/form-data")
+    public DataResponse saveInterviewee(
+            @RequestParam("interviewee") String interviewee,
+            @RequestParam("position") String position,
+            @RequestParam("experience") String experience,
+            @RequestParam("age") Integer age,
+            @RequestParam("tel") String tel,
+            @RequestParam(value = "tel1", required = false) String tel1,
+            @RequestParam("toKen") String toKen,
+            @RequestParam(value = "interview_date", required = false) String interviewDateStr,
+            @RequestParam(value = "interview_time", required = false) String interviewTimeStr,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "interviewer1", required = false) String interviewer1,
+            @RequestParam(value = "interviewer2", required = false) String interviewer2,
+            @RequestParam(value = "interviewer3", required = false) String interviewer3,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile,
+            @RequestPart(value = "profile", required = false) MultipartFile profileFile
+    ) {
+
+        // ✅ เขียน log ตรงนี้เช็คค่าที่ส่งมา
+        log.info("✅ interviewDateStr: {}", interviewDateStr);
+        log.info("✅ interviewTimeStr: {}", interviewTimeStr);
+
+        IntervieweeEntity entity = new IntervieweeEntity();
+        entity.setInterviewee(interviewee);
+        entity.setPosition(position);
+        entity.setExperience(experience);
+        entity.setAge(age);
+        entity.setTel(tel);
+        entity.setTel1(tel1);
+        entity.setToKen(toKen);
+        entity.setInterviewDate(interviewDateStr);
+        entity.setInterviewTime(interviewTimeStr);
+
+        entity.setStatus(status);
+        entity.setInterviewer1(interviewer1);
+        entity.setInterviewer2(interviewer2);
+        entity.setInterviewer3(interviewer3);
+
+        return bansiService.saveInterviewee(entity, imageFile, profileFile);
+    }
+
+
+    //
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/updateInterviewee.service", consumes = "multipart/form-data")
+    public DataResponse updateInterviewee(
+            @RequestParam("keyId") Integer keyId,
+            @RequestParam("interviewee") String interviewee,
+            @RequestParam("position") String position,
+            @RequestParam("experience") String experience,
+            @RequestParam("age") Integer age,
+            @RequestParam("tel") String tel,
+            @RequestParam(value = "tel1", required = false) String tel1,
+            @RequestParam("toKen") String toKen,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "interview_date", required = false) String interviewDateStr,
+            @RequestParam(value = "interview_time", required = false) String interviewTimeStr,
+            @RequestParam(value = "interviewer1", required = false) String interviewer1,
+            @RequestParam(value = "interviewer2", required = false) String interviewer2,
+            @RequestParam(value = "interviewer3", required = false) String interviewer3,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile,
+            @RequestPart(value = "profile", required = false) MultipartFile profileFile
+    ) {
+        return bansiService.updateInterviewee(
+                keyId, interviewee, position, experience, age, tel, tel1, toKen,
+                interviewDateStr, interviewTimeStr,status, interviewer1, interviewer2, interviewer3, imageFile, profileFile
+        );
+    }
+
 
 
 

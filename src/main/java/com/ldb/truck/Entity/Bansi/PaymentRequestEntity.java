@@ -2,6 +2,7 @@ package com.ldb.truck.Entity.Bansi;
 
 import lombok.Data;
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -58,6 +59,9 @@ public class PaymentRequestEntity {
 
     @Column(name = "file")
     private String file;
+
+    @Column(name ="date_create")
+    private LocalDate dateCreate;
 
     @Transient
     private String toKen; //สำหรับ token จาก client

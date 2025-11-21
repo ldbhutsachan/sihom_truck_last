@@ -18,7 +18,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,8 @@ public class BansiService {
     private PayTypeRepository payTypeRepository;
     @Autowired
     private PaymentRequestRepository paymentRequestRepository;
+    @Autowired
+    private IntervieweeRepository intervieweeRepository;
     @Autowired
     private PaymentRequestListRepository paymentRequestListRepository;
 
@@ -383,19 +387,8 @@ public class BansiService {
         entity.setInternalRemark(req.getInternal_remark());
         entity.setTag(req.getTag());
         entity.setDatertimeDate(req.getDatermine_date());
+        entity.setDateCreate(LocalDate.now());
 
-        // Upload file
-//        MultipartFile file = req.getFile();
-//        if (file != null && !file.isEmpty()) {
-//            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-//            Path uploadPath = Paths.get("images/batery/");
-//            if (!Files.exists(uploadPath)) {
-//                Files.createDirectories(uploadPath);
-//            }
-//            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-//            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
-//            entity.setFile(fileUrl);
-//        }
         MultipartFile file = req.getFile();
         if (file != null && !file.isEmpty()) {
             // ✅ ใช้ service เดิมเพื่อให้ path เหมือนกับ saveMachine()
@@ -414,8 +407,6 @@ public class BansiService {
             log.warn("No file uploaded for payment detail.");
             entity.setFile("http://khounkham.com/images/image.jpg");
         }
-
-
         // save main data
         PaymentRequestEntity saved = paymentRequestRepository.save(entity);
 
@@ -620,6 +611,135 @@ public class BansiService {
             response.setStatus("EE");
             response.setMessage("Fetch Data Error !!");
         }
+        return response;
+    }
+
+    // insert interviewee
+    public DataResponse saveInterviewee(IntervieweeEntity intervieweeEntity,
+                                        MultipartFile imageFile,
+                                        MultipartFile profileFile) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // ===== 1. ตรวจสอบ token =====
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(intervieweeEntity.getToKen());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("EE");
+                response.setMessage("Token invalid");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            intervieweeEntity.setUserId(Integer.valueOf(user.getUserId()));
+
+            // ===== 2. Set default date/time =====
+            if (intervieweeEntity.getDateCreate() == null)
+                intervieweeEntity.setDateCreate(LocalDate.now());
+
+
+            // ===== 3. Save image file =====
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String uploadedFileName = mediaUploadService.uploadMedia(imageFile);
+                String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
+                intervieweeEntity.setImage(fileUrl);
+                log.info("✅ Image uploaded: {}", fileUrl);
+            } else {
+                log.info("ℹ️ No new image uploaded. Keep old image: {}", intervieweeEntity.getImage());
+            }
+
+            // ===== 4. Save profile file =====
+            if (profileFile != null && !profileFile.isEmpty()) {
+                String uploadedFileName = mediaUploadService.uploadMedia(profileFile);
+                String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
+                intervieweeEntity.setProfile(fileUrl);
+                log.info("✅ Profile uploaded: {}", fileUrl);
+            } else {
+                log.info("ℹ️ No new profile uploaded. Keep old profile: {}", intervieweeEntity.getProfile());
+            }
+
+            // ===== 5. Save data to DB =====
+            IntervieweeEntity saved = intervieweeRepository.save(intervieweeEntity);
+
+            response.setStatus("OK");
+            response.setMessage("Store data success");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error saving data");
+        }
+
+        return response;
+    }
+
+    //update interviewee
+    public DataResponse updateInterviewee(Integer keyId, String interviewee, String position, String experience,
+                                          Integer age, String tel, String tel1, String toKen,
+                                          String interviewDateStr, String interviewTimeStr, String status,
+                                          String interviewer1, String interviewer2, String interviewer3,
+                                          MultipartFile imageFile, MultipartFile profileFile) {
+        DataResponse response = new DataResponse();
+        try {
+            // ===== ตรวจสอบ token =====
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(toKen);
+            if (userProfiles.isEmpty()) {
+                response.setStatus("EE");
+                response.setMessage("Token invalid");
+                return response;
+            }
+
+            // ===== โหลด entity จาก DB =====
+            Optional<IntervieweeEntity> optionalEntity = intervieweeRepository.findById(keyId);
+            if (optionalEntity.isEmpty()) {
+                response.setStatus("EE");
+                response.setMessage("Interviewee not found");
+                return response;
+            }
+
+            IntervieweeEntity entity = optionalEntity.get();
+
+            // ===== อัปเดต fields =====
+            entity.setInterviewee(interviewee);
+            entity.setPosition(position);
+            entity.setExperience(experience);
+            entity.setAge(age);
+            entity.setTel(tel);
+            entity.setTel1(tel1);
+            entity.setInterviewTime(interviewTimeStr);
+            entity.setInterviewTime(interviewTimeStr);
+            entity.setStatus(status);
+            entity.setInterviewer1(interviewer1);
+            entity.setInterviewer2(interviewer2);
+            entity.setInterviewer3(interviewer3);
+
+            // ===== อัปเดต image ถ้ามี =====
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String uploadedFileName = mediaUploadService.uploadMedia(imageFile);
+                String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
+                entity.setImage(fileUrl);
+                log.info("✅ Image updated: {}", fileUrl);
+            }
+
+            // ===== อัปเดต profile ถ้ามี =====
+            if (profileFile != null && !profileFile.isEmpty()) {
+                String uploadedFileName = mediaUploadService.uploadMedia(profileFile);
+                String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
+                entity.setProfile(fileUrl);
+                log.info("✅ Profile updated: {}", fileUrl);
+            }
+
+            // ===== save =====
+            intervieweeRepository.save(entity);
+
+            response.setStatus("OK");
+            response.setMessage("Update success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error updating data");
+        }
+
         return response;
     }
 
