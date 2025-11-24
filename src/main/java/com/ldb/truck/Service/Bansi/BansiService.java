@@ -64,6 +64,8 @@ public class BansiService {
             // ตัวอย่าง: ถ้า role SUPERBANSI ให้ bansi = "1"
             if("SUPERBANSI".equalsIgnoreCase(role)){
                 bansiEntity.setBansi("1");
+            } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+                bansiEntity.setBansi("2");
             } else {
                 bansiEntity.setBansi("");
             }
@@ -88,7 +90,6 @@ public class BansiService {
                 response.setMessage("reqId is required for update");
                 return response;
             }
-
             // ตรวจ token
             List<Profile> userProfiles = profileDao.getProfileInfoByToken(bansiEntity.getToKen());
             if (userProfiles.isEmpty()) {
@@ -112,6 +113,8 @@ public class BansiService {
             String role = userProfiles.get(0).getRole();
             if ("SUPERBANSI".equalsIgnoreCase(role)) {
                 existing.setBansi("1");
+            } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+                existing.setBansi("2");
             } else {
                 existing.setBansi(bansiEntity.getBansi());
             }
@@ -141,7 +144,9 @@ public class BansiService {
 
             String role = profiles.get(0).getRole();
 
-            if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+            if (!"SUPERBANSI".equalsIgnoreCase(role)
+                    && !"SUPERACCOUNT".equalsIgnoreCase(role)
+                    && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
                 response.setStatus("01");
                 response.setMessage("Access Denied");
                 return response;
@@ -188,11 +193,14 @@ public class BansiService {
             String role = userProfiles.get(0).getRole();
 
             // ถ้า role ไม่ใช่ SUPERBANSI ให้ return 01
-            if(!"SUPERBANSI".equalsIgnoreCase(role)){
+            if (!"SUPERBANSI".equalsIgnoreCase(role)
+                    && !"SUPERACCOUNT".equalsIgnoreCase(role)
+                    && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
                 response.setStatus("01");
                 response.setMessage("No right to save");
                 return response;
             }
+
 
             // กำหนด date_create อัตโนมัติเป็น LocalDateTime.now()
             payTypeEntity.setDateCreate(LocalDateTime.now());
@@ -223,7 +231,9 @@ public class BansiService {
             }
 
             String role = userProfiles.get(0).getRole();
-            if (!"SUPERBANSI".equals(role)) {
+            if (!"SUPERBANSI".equalsIgnoreCase(role)
+                    && !"SUPERACCOUNT".equalsIgnoreCase(role)
+                    && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
                 result.put("status", "06");
                 result.put("message", "No right to update");
                 return result;
@@ -271,7 +281,14 @@ public class BansiService {
             String role = profiles.get(0).getRole();
 
             // ตรวจ role
-            if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+//            if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+//                response.setStatus("01");
+//                response.setMessage("Access Denied");
+//                return response;
+//            }
+            if (!"SUPERBANSI".equalsIgnoreCase(role)
+                    && !"SUPERACCOUNT".equalsIgnoreCase(role)
+                    && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
                 response.setStatus("01");
                 response.setMessage("Access Denied");
                 return response;
@@ -361,9 +378,15 @@ public class BansiService {
         Profile user = userProfiles.get(0);
         String role = user.getRole();
 
-        if (!"SUPERBANSI".equalsIgnoreCase(role)) {
-            throw new Exception("No right to insert (role: " + role + ")");
+//        if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+//            throw new Exception("No right to insert (role: " + role + ")");
+//        }
+        if (!"SUPERBANSI".equalsIgnoreCase(role)
+                && !"SUPERACCOUNT".equalsIgnoreCase(role)
+                && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
+            throw new Exception("No right to update (role: " + role + ")");
         }
+
 
         // set user_id from token
         entity.setUserId(Long.valueOf(user.getUserId()));
@@ -447,12 +470,18 @@ public class BansiService {
         Profile user = userProfiles.get(0);
         String role = user.getRole();
 
-        if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+//        if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+//            throw new Exception("No right to update (role: " + role + ")");
+//        }
+        if (!"SUPERBANSI".equalsIgnoreCase(role)
+                && !"SUPERACCOUNT".equalsIgnoreCase(role)
+                && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             throw new Exception("No right to update (role: " + role + ")");
         }
 
+
         // **billNo ไม่เปลี่ยน**
-        // entity.setBillNo(...) // ❌
+        // entity.setBillNo(...) //
 
         // update fields อื่น ๆ
         entity.setPayTypeId(req.getPay_typeid() != null ? req.getPay_typeid() : entity.getPayTypeId());
@@ -519,7 +548,7 @@ public class BansiService {
     public PaymentDetailRes getPaymentDetails(PaymentDetailReq req) {
         PaymentDetailRes result = new PaymentDetailRes();
 
-        // 🔹 ตรวจสอบ token และ role
+        // ตรวจสอบ token
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToKen());
         if (userProfiles.isEmpty()) {
             result.setStatus("01");
@@ -528,22 +557,40 @@ public class BansiService {
             return result;
         }
 
-        boolean isSuperBansi = "SUPERBANSI".equalsIgnoreCase(userProfiles.get(0).getRole());
-        if (!isSuperBansi) {
+        Profile profile = userProfiles.get(0);
+        String role = profile.getRole();
+        if (role != null) {
+            role = role.trim(); // ลบช่องว่าง
+        }
+        log.info("User role: '{}'", role);
+
+        boolean isAllowed =
+                "SUPERBANSI".equalsIgnoreCase(role) ||
+                        "SUPERACCOUNT".equalsIgnoreCase(role) ||
+                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role);
+
+        if (!isAllowed) {
             result.setStatus("02");
             result.setMessage("No permission");
             result.setData(new ArrayList<>());
             return result;
         }
 
-        // 🔹 เรียก DAO ตัวเดียวที่รวมทุก filter
-        List<PaymentDetailModel> data = paymentDetailDao.findPaymentDetails(req.getItemTypeid(), req.getReq_id(), req.getPid());
+
+        // เรียก DAO พร้อม role + userId
+        List<PaymentDetailModel> data = paymentDetailDao.findPaymentDetails(
+                req.getItemTypeid(),
+                req.getReq_id(),
+                req.getPid(),
+                role
+        );
 
         result.setStatus("00");
         result.setMessage("Success");
         result.setData(data);
         return result;
     }
+
     //save signature
     public DataResponse saveSignature(SignatureEntity signatureEntity) {
         DataResponse response = new DataResponse();
@@ -631,8 +678,12 @@ public class BansiService {
             }
 
             Profile user = userProfiles.get(0);
-            intervieweeEntity.setUserId(Integer.valueOf(user.getUserId()));
+            String role = user.getRole();
+            if(!"HR".equalsIgnoreCase(role)) {
+                throw new Exception("No right to save (role: " + role + ")");
+            }
 
+            intervieweeEntity.setUserId(Integer.valueOf(user.getUserId()));
             // ===== 2. Set default date/time =====
             if (intervieweeEntity.getDateCreate() == null)
                 intervieweeEntity.setDateCreate(LocalDate.now());
@@ -643,9 +694,9 @@ public class BansiService {
                 String uploadedFileName = mediaUploadService.uploadMedia(imageFile);
                 String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
                 intervieweeEntity.setImage(fileUrl);
-                log.info("✅ Image uploaded: {}", fileUrl);
+                log.info(" Image uploaded: {}", fileUrl);
             } else {
-                log.info("ℹ️ No new image uploaded. Keep old image: {}", intervieweeEntity.getImage());
+                log.info("ℹ No new image uploaded. Keep old image: {}", intervieweeEntity.getImage());
             }
 
             // ===== 4. Save profile file =====
@@ -653,9 +704,9 @@ public class BansiService {
                 String uploadedFileName = mediaUploadService.uploadMedia(profileFile);
                 String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
                 intervieweeEntity.setProfile(fileUrl);
-                log.info("✅ Profile uploaded: {}", fileUrl);
+                log.info(" Profile uploaded: {}", fileUrl);
             } else {
-                log.info("ℹ️ No new profile uploaded. Keep old profile: {}", intervieweeEntity.getProfile());
+                log.info("ℹ No new profile uploaded. Keep old profile: {}", intervieweeEntity.getProfile());
             }
 
             // ===== 5. Save data to DB =====
@@ -669,7 +720,6 @@ public class BansiService {
             response.setStatus("EE");
             response.setMessage("Error saving data");
         }
-
         return response;
     }
 
@@ -718,7 +768,7 @@ public class BansiService {
                 String uploadedFileName = mediaUploadService.uploadMedia(imageFile);
                 String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
                 entity.setImage(fileUrl);
-                log.info("✅ Image updated: {}", fileUrl);
+                log.info(" Image updated: {}", fileUrl);
             }
 
             // ===== อัปเดต profile ถ้ามี =====
@@ -726,7 +776,7 @@ public class BansiService {
                 String uploadedFileName = mediaUploadService.uploadMedia(profileFile);
                 String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
                 entity.setProfile(fileUrl);
-                log.info("✅ Profile updated: {}", fileUrl);
+                log.info(" Profile updated: {}", fileUrl);
             }
 
             // ===== save =====
@@ -741,6 +791,39 @@ public class BansiService {
         }
 
         return response;
+    }
+
+    //showing interviewee service
+    public IntervieweeRes getInterviewee(IntervieweeReq req){
+        IntervieweeRes result = new IntervieweeRes();
+
+        // 🔹 check token
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToKen());
+        if(userProfiles.isEmpty()){
+            result.setStatus("01");
+            result.setMessage("User does not exist");
+            return result;
+        }
+
+        //  check role
+        boolean isHR = "HR".equalsIgnoreCase(userProfiles.get(0).getRole());
+        if(!isHR){
+            result.setStatus("02");
+            result.setMessage("This User has no permission");
+            return result;
+        }
+
+        // get data
+        List<IntervieweeModel> data = paymentDetailDao.findInterviewees(
+                req.getStatus(),
+                req.getStartDate(),
+                req.getEndDate()
+        );
+        result.setStatus("00");
+        result.setMessage("Success fetching Interviewee Data");
+        result.setData(data);
+
+        return result;
     }
 
 

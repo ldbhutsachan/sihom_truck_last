@@ -367,7 +367,12 @@ public class BansiController {
         );
     }
 
-
+    //show interviewee controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getInterviewee.service")
+    public IntervieweeRes getInterviewee(@RequestBody IntervieweeReq req){
+        return bansiService.getInterviewee(req);
+    }
 
 
 

@@ -8,6 +8,7 @@ import java.util.List;
 public class PaymentDetailModel {
     private Long keyId;
     private String billNo;
+    private String bansi;
     private String title;
     private String currency;
     private Double exchangeRate;
