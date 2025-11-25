@@ -11,26 +11,30 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
-public interface ItemTypeRepository extends CrudRepository<ItemTypeEntity,Long> {
+public interface ItemTypeRepository extends CrudRepository<ItemTypeEntity, Long> {
 
-    @Transactional
+    @Query(value = "SELECT * FROM item_type WHERE itemtypeid = :itemtypeid ORDER BY itemtypeid DESC", nativeQuery = true)
+    List<ItemTypeEntity> getItemTypeById(@Param("itemtypeid") Long itemtypeid);
+
+//    @Query(value = "SELECT * FROM item_type ORDER BY itemtypeid DESC", nativeQuery = true)
+//    List<ItemTypeEntity> getItemTypeAll();
+    @Query(value = "SELECT * FROM item_type WHERE bansi_use = '1' ORDER BY itemtypeid DESC", nativeQuery = true)
+    List<ItemTypeEntity> getItemTypeByBansiUse(@Param("bansiUse") String bansiUse);
+
+    @Query(value = "SELECT * FROM item_type WHERE bansi_use IS NULL OR bansi_use = '' OR bansi_use != '1' ORDER BY itemtypeid DESC", nativeQuery = true)
+    List<ItemTypeEntity> getItemTypeByNonBansiUse();
+
+
     @Modifying
-    @Query(value = "SELECT * FROM item_type WHERE itemtypeid =:itemtypeid order by itemtypeid desc ", nativeQuery = true)
-    public List<ItemTypeEntity> getItemTypeById(@Param("itemtypeid") String itemtypeid);
-
     @Transactional
-    @Modifying
-    @Query(value = "SELECT * FROM item_type order by itemtypeid desc ", nativeQuery = true)
-    public List<ItemTypeEntity> getItemTypeAll();
+    @Query(value = "UPDATE item_type SET itemtype_Name = :itemtype_Name WHERE itemtypeid = :itemtypeid", nativeQuery = true)
+    int updateItemType(@Param("itemtype_Name") String itemtype_Name,
+                       @Param("itemtypeid") Long itemtypeid);
 
+    @Modifying
     @Transactional
-    @Modifying
-    @Query(value = "update  item_type set itemtype_Name=:itemtype_Name where itemtypeid=:itemtypeid  ", nativeQuery = true)
-    int updateItemType(@Param("itemtype_Name") String itemtype_Name, @Param("itemtypeid") String itemtypeid);
-
-    @Transactional
-    @Modifying
-    @Query(value = "delete from   item_type  where itemtypeid=:itemtypeid", nativeQuery = true)
-    int delItemType(@Param("itemtypeid") String itemtypeid);
-
+    @Query(value = "DELETE FROM item_type WHERE itemtypeid = :itemtypeid", nativeQuery = true)
+    int delItemType(@Param("itemtypeid") Long itemtypeid);
 }
+
+

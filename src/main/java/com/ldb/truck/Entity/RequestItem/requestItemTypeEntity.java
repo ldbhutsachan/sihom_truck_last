@@ -16,4 +16,5 @@ public class requestItemTypeEntity
 
     @Column(name = "req_name")
     private String reqName;
+
 }

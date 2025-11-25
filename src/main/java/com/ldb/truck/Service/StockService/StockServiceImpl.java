@@ -765,6 +765,8 @@ public class StockServiceImpl {
 
             String sql = sb.toString();
             log.info("sql:"+sql);
+            System.out.println("SQL QUERY => " + sql);
+
             return EBankJdbcTemplate.query(sql, new RowMapper<V_order_item_details>() {
                 @Override
                 public V_order_item_details mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -2047,15 +2049,28 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
 
         // ===== approve items
         int updatedRows = 0;
+//        for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+//            updatedRows = requestItemRepository.approveRequestItem(
+//                    stockItemDetailsReq.getUserId(),
+//                    new Date(),
+//                    stockItemDetailsReq.getStatus(),
+//                    item.getItemId(),
+//                    stockItemDetailsReq.getBillNo()
+//            );
+//        }
         for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
             updatedRows = requestItemRepository.approveRequestItem(
-                    stockItemDetailsReq.getUserId(),
-                    new Date(),
-                    stockItemDetailsReq.getStatus(),
-                    item.getItemId(),
-                    stockItemDetailsReq.getBillNo()
+                    stockItemDetailsReq.getUserId(), // approveBy
+                    new Date(),                      // approveDate
+                    stockItemDetailsReq.getStatus(), // status
+                    "ok",                            // usingStatus
+                    new Date(),                      // usingDate
+                    stockItemDetailsReq.getUserId(), // usingBy (คนเดียวกับ approveBy)
+                    item.getItemId(),                // itemId
+                    stockItemDetailsReq.getBillNo()  // billNo
             );
         }
+
 
         if (updatedRows > 0) {
             response.setStatus("00");
@@ -2712,24 +2727,46 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
     }
 
     //****
-    public DataResponse getRequestItemType(){
+//    public DataResponse getRequestItemType(){
+//        DataResponse response = new DataResponse();
+//        try {
+//            response.setDataResponse(requestItemTypeRepository.findAll());
+//            if(response.getDataResponse() != null){
+//                response.setStatus("00");
+//                response.setMessage("success");
+//            }else {
+//                response.setStatus("00");
+//                response.setMessage("Data not Found !!");
+//            }
+//
+//        }catch (Exception e){
+//            response.setStatus("EE");
+//            response.setMessage("Error Data !!");
+//        }
+//        return response;
+//    }
+    public DataResponse getRequestItemType() {
         DataResponse response = new DataResponse();
         try {
-            response.setDataResponse(requestItemTypeRepository.findAll());
-            if(response.getDataResponse() != null){
+            List<requestItemTypeEntity> data = requestItemTypeRepository.findAllWhereBansiIsNull();
+            response.setDataResponse(data);
+
+            if (data != null && !data.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("success");
-            }else {
+            } else {
                 response.setStatus("00");
                 response.setMessage("Data not Found !!");
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setStatus("EE");
             response.setMessage("Error Data !!");
         }
         return response;
     }
+
+
 
     @Autowired
     requestItemTypeBorNameEntityRepository requestItemTypeBorNameEntityRepository;

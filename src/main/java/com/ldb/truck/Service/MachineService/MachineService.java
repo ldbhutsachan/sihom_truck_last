@@ -322,9 +322,11 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         double sumTotalLak =0.0;
         try {
             List<MachineStockDetails> data = machineInterface.getSumReportMachine(machineRPReq, role, borNo);
-            if(data.size()> 1){
+//            if(data.size()> 1){
+            if (data != null && data.size() > 0) {
 
-                 sumTotalLak = Optional.ofNullable(data)
+
+                sumTotalLak = Optional.ofNullable(data)
                         .orElse(Collections.emptyList())
                         .stream()
                         .filter(p -> "LAK".equals(p.getCcy()))
@@ -381,6 +383,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                                 item.setItemName(p.getItemName());
                                 item.setCcy(p.getCcy());
                                 item.setQty(p.getQty());
+                                item.setUnit(p.getUnit());
                                 item.setPrice(p.getPrice());
                                 item.setTotal(p.getTotal());
                                 return item;

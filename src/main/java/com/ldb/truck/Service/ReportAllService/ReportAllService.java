@@ -7,10 +7,7 @@ import com.ldb.truck.Model.Login.ForShowTotalOil.ForShowTotalOilPaid;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.*;
 import com.ldb.truck.Model.Login.Report.Bialieng.sumfooterOilPaid;
-import com.ldb.truck.Model.ReportAllStock.ReportAllStock;
-import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOut;
-import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOutRes;
-import com.ldb.truck.Model.ReportAllStock.ReportAllStockRes;
+import com.ldb.truck.Model.ReportAllStock.*;
 import com.ldb.truck.Model.ReportInoutItem.ReportInoutItemGroup;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelReq;
 import com.ldb.truck.Model.ReportItemInOutModel.ReportItemInOutModelResponse;
@@ -21,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -266,18 +264,119 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
     return result;
 }
 
-    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo,String borNoss) {
+//    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo,String borNoss) {
+//
+//        ReportAllStockInOutRes response = new ReportAllStockInOutRes();
+//        try {
+//           // ReportInoutItemGroup groupFooter = new ReportInoutItemGroup();
+//            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo,borNoss);
+//
+//            if (!rsListData.isEmpty()) {
+//                response.setStatus("00");
+//                response.setMessage("Success");
+//                response.setData(rsListData);
+//                ///response.setGroupFooter(groupFooter);
+//            } else {
+//                response.setStatus("00");
+//                response.setMessage("Data Not Found !!");
+//            }
+//
+//        } catch (Exception e) {
+//            log.error("Error in getReportDetailDailyStock", e);
+//            response.setStatus("EE");
+//            response.setMessage("Error Data !!!");
+//        }
+//
+//        return response;
+//    }
+
+    public ReportAllStockInOutRes getReportDetailDailyStock(
+            ReportItemInOutModelReq stockRequest, String role, String borNo, String borNoss) {
 
         ReportAllStockInOutRes response = new ReportAllStockInOutRes();
         try {
-           // ReportInoutItemGroup groupFooter = new ReportInoutItemGroup();
-            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo,borNoss);
+            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo, borNoss);
 
             if (!rsListData.isEmpty()) {
+
+                // จัดกลุ่มตาม itemId
+                Map<String, List<ReportAllStockInOut>> groupedMap =
+                        rsListData.stream().collect(Collectors.groupingBy(ReportAllStockInOut::getItemId));
+
+                List<ReportAllStockGroup> groupedList = new ArrayList<>();
+
+                for (Map.Entry<String, List<ReportAllStockInOut>> entry : groupedMap.entrySet()) {
+                    List<ReportAllStockInOut> groupItems = entry.getValue();
+
+                    // คำนวณยอดรวมในกลุ่ม
+                    int totalIn = groupItems.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
+                    int totalOut = groupItems.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
+                    int totalClosing = groupItems.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
+                    int totalRaised = groupItems.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
+                    double outPrice = groupItems.stream().mapToDouble(item -> item.getPrice() * item.getOutAmt()).sum();
+
+                    // ดึงข้อมูลพื้นฐานจากรายการแรก
+                    ReportAllStockInOut first = groupItems.get(0);
+
+                    // ดึงรายการที่ dateOut มากที่สุด
+                    ReportAllStockInOut last = groupItems.stream()
+                            .max(Comparator.comparing(ReportAllStockInOut::getDateOut))
+                            .orElse(first);
+
+                    ReportAllStockGroup group = new ReportAllStockGroup();
+                    group.setItemId(first.getItemId());
+                    group.setImage(first.getImage());
+                    group.setItemName(first.getItemName());
+                    group.setUnit(first.getUnit());
+                    group.setPrice(first.getPrice());
+                    group.setOutprice(outPrice);
+                    group.setCurrency(first.getCurrency());
+                    group.setRaisedAmt(totalRaised);
+                    group.setInAmt(totalIn);
+                    group.setOutAmt(totalOut);
+                    group.setClosingAmt(totalClosing);
+                    group.setBorkey(first.getBorkey());
+                    group.setBorname(first.getBorname());
+                    group.setHouseNo(first.getHouseNo());
+                    group.setHouseName(first.getHouseName());
+                    group.setGroupList(groupItems);
+                    // ✅ ตั้งค่า dateOut ของกลุ่ม
+                    group.setFirstDateOut(first.getDateOut());
+                    group.setLastDateOut(last.getDateOut());
+
+                    groupedList.add(group);
+                }
+
+                // ✅ คำนวณ sumReport ทั้งหมดจาก groupedList
+                SumReportAll sumReport = new SumReportAll();
+                sumReport.setTotalRaised(groupedList.stream().mapToInt(ReportAllStockGroup::getRaisedAmt).sum());
+                sumReport.setTotalIn(groupedList.stream().mapToInt(ReportAllStockGroup::getInAmt).sum());
+                sumReport.setTotalOut(groupedList.stream().mapToInt(ReportAllStockGroup::getOutAmt).sum());
+                sumReport.setTotalClosing(groupedList.stream().mapToInt(ReportAllStockGroup::getClosingAmt).sum());
+
+// แยกตาม currency
+                sumReport.setTotalOutPriceUSD(groupedList.stream()
+                        .filter(g -> "USD".equalsIgnoreCase(g.getCurrency()))
+                        .mapToDouble(ReportAllStockGroup::getOutprice)
+                        .sum());
+
+                sumReport.setTotalOutPriceLAK(groupedList.stream()
+                        .filter(g -> "LAK".equalsIgnoreCase(g.getCurrency()))
+                        .mapToDouble(ReportAllStockGroup::getOutprice)
+                        .sum());
+
+                sumReport.setTotalOutPriceTHB(groupedList.stream()
+                        .filter(g -> "THB".equalsIgnoreCase(g.getCurrency()))
+                        .mapToDouble(ReportAllStockGroup::getOutprice)
+                        .sum());
+
+
+                // เซ็ต response
                 response.setStatus("00");
                 response.setMessage("Success");
-                response.setData(rsListData);
-                ///response.setGroupFooter(groupFooter);
+                response.setData(groupedList);
+                response.setSumReport(sumReport); // ✅ ใส่ sumReport
+
             } else {
                 response.setStatus("00");
                 response.setMessage("Data Not Found !!");
@@ -291,6 +390,9 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
 
         return response;
     }
+
+
+
     public ReportItemInOutModelResponse getTxnStock(ReportItemInOutModelReq stockRequest){
 //update
         ReportItemInOutModelResponse resposne = new ReportItemInOutModelResponse();

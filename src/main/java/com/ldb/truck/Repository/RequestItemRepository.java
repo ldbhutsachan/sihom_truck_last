@@ -56,18 +56,40 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
             @Param("note") String note,
             @Param("detailId") Integer detailId);
 
-    @Modifying
-    @Transactional//request_item_details
-    @Query(value = "UPDATE request_item_details SET approveby = :approveBy, " +
-            "approvedate =:approveDate, status = :status  " +
-            "WHERE FIND_IN_SET(item_id, :itemId) and bill_no=:billNo ", nativeQuery = true)
-    int approveRequestItem(
-            @Param("approveBy") String approveBy,
-            @Param("approveDate") Date approveDate,
-            @Param("status") String status,
-          //  @Param("beforeQty") Integer beforeQty,
+//    @Modifying
+//    @Transactional//request_item_details
+//    @Query(value = "UPDATE request_item_details SET approveby = :approveBy, " +
+//            "approvedate =:approveDate, status = :status  " +
+//            "WHERE FIND_IN_SET(item_id, :itemId) and bill_no=:billNo ", nativeQuery = true)
+//    int approveRequestItem(
+//            @Param("approveBy") String approveBy,
+//            @Param("approveDate") Date approveDate,
+//            @Param("status") String status,
+//          //  @Param("beforeQty") Integer beforeQty,
+//            @Param("itemId") Long itemId,
+//            @Param("billNo") String billNo); // Use String instead of List<Long>
+@Modifying
+@Transactional
+@Query(value = "UPDATE request_item_details " +
+        "SET approveby = :approveBy, " +
+        "approvedate = :approveDate, " +
+        "status = :status, " +
+        "using_status = :usingStatus, " +
+        "using_date = :usingDate, " +
+        "using_by = :usingBy " +
+        "WHERE item_id = :itemId AND bill_no = :billNo", nativeQuery = true)
+int approveRequestItem(
+        @Param("approveBy") String approveBy,
+        @Param("approveDate") Date approveDate,
+        @Param("status") String status,
+        @Param("usingStatus") String usingStatus,
+        @Param("usingDate") Date usingDate,
+        @Param("usingBy") String usingBy,
+        @Param("itemId") Long itemId,
+        @Param("billNo") String billNo
+);
 
-            @Param("itemId") Long itemId,@Param("billNo") String billNo); // Use String instead of List<Long>
+
 
     @Modifying
     @Transactional//request_item_details

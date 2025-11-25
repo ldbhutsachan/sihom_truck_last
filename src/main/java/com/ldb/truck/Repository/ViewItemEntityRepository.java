@@ -33,6 +33,11 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     List<viewItemEntity> getAllViewItemsAdmin();
 
     @Transactional
+    @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo ORDER BY item_name ASC", nativeQuery = true)
+    List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo);
+
+
+    @Transactional
     @Query(value = "SELECT * FROM v_items WHERE item_id =:item_id ORDER BY item_name asc", nativeQuery = true)
     viewItemEntity getItemByItemId(@Param("item_id") Integer item_id);
 }

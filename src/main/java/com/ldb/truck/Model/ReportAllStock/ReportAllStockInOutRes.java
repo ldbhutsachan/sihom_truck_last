@@ -12,9 +12,17 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+//public class ReportAllStockInOutRes {
+//    private String status;
+//    private String message;
+//    public List<ReportAllStockInOut> data;
+//   // ReportInoutItemGroup groupFooter;
+//}
+
+//vee
 public class ReportAllStockInOutRes {
     private String status;
     private String message;
-    public List<ReportAllStockInOut> data;
-   // ReportInoutItemGroup groupFooter;
+    private List<ReportAllStockGroup> data;
+    private SumReportAll sumReport;
 }

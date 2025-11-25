@@ -817,7 +817,8 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
 
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append("select * from v_sum_order_item_sum where 1=1 \n ");
+//            sb.append("select * from v_sum_order_item_sum where stockOut  1=1 \n ");
+            sb.append("SELECT * FROM v_sum_order_item_sum WHERE stockOut > 0 AND stockOut IS NOT NULL AND 1=1 \n");
             sb.append(startDateCon);
             sb.append(conItem);
             sb.append(conItemBoNo);
@@ -828,26 +829,23 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 @Override
                 public ReportAllStockInOut mapRow(ResultSet rs, int rowNum) throws SQLException {
                     ReportAllStockInOut tr = new ReportAllStockInOut();
-
                     tr.setItemId(rs.getString("item_id"));
                     tr.setImage(rs.getString("image"));
                     tr.setItemName(rs.getString("item_name"));
                     tr.setUnit(rs.getString("unit"));
                     tr.setSize(rs.getString("size"));
-
                     tr.setRaisedAmt(rs.getInt("closingBalance"));
                     tr.setInAmt(rs.getInt("stockIn"));
                     tr.setOutAmt(rs.getInt("stockOut"));
                     tr.setClosingAmt(rs.getInt("opening_balance"));
-
                     tr.setDateIn(rs.getString("dateIn"));
                     tr.setDateOut(rs.getString("dateOut"));
-
                     tr.setBorkey(rs.getString("borkey"));
                     tr.setBorname(rs.getString("b_name"));
-
                     tr.setHouseNo(rs.getString("houseNo"));
                     tr.setHouseName(rs.getString("houseName"));
+                    tr.setPrice(rs.getDouble("price"));
+                    tr.setCurrency(rs.getString("currency"));
 
                    return tr;
                 }
