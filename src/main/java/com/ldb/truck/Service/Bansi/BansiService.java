@@ -863,7 +863,6 @@ public class BansiService {
             return result;
         }
 
-        // เรียก DAO
         List<AccountingReportModel> data = paymentDetailDao.reportAccounting(
                 req.getBig_project_id(),
                 req.getSmall_project_id(),

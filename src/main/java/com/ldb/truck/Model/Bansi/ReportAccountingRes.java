@@ -3,14 +3,6 @@ package com.ldb.truck.Model.Bansi;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
-
-//@Data
-//public class ReportAccountingRes {
-//    private String status;
-//    private String message;
-//    private List<AccountingReportModel> data;
-//}
 @Data
 public class ReportAccountingRes {
     private String status;
