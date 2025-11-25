@@ -72,7 +72,7 @@ public class MachineDao implements MachineInterface {
                     .append(" b.mch_name, b.mch_branch_name, b.mch_model, b.mch_product_year, \n")
                     .append(" d.bor_no, d.bor_name, \n")
                     .append(" d.bill_no, d.item_id, d.item_name, d.unit, \n")
-                    .append(" d.currency, d.qty, d.price, d.price*d.qty AS total, \n")
+                    .append(" d.currency, d.qty,d.unit, d.price, d.price*d.qty AS total, \n")
                     .append(" CASE WHEN d.using_status IS NULL THEN 'wait' ELSE d.using_status END AS using_status \n")
                     .append("FROM tb_machine b \n")
                     .append("INNER JOIN tb_bors c ON b.borNo = c.key_id \n")
@@ -107,6 +107,7 @@ public class MachineDao implements MachineInterface {
                 tr.setItemName(rs.getString("item_name"));
                 tr.setCcy(rs.getString("currency"));
                 tr.setQty(rs.getInt("qty"));
+                tr.setUnit(rs.getString("unit"));
                 tr.setPrice(rs.getDouble("price"));
                 tr.setTotal(rs.getDouble("total"));
                 return tr;

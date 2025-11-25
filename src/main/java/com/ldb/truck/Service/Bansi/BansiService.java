@@ -692,7 +692,7 @@ public class BansiService {
             // ===== 3. Save image file =====
             if (imageFile != null && !imageFile.isEmpty()) {
                 String uploadedFileName = mediaUploadService.uploadMedia(imageFile);
-                String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
+                String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
                 intervieweeEntity.setImage(fileUrl);
                 log.info(" Image uploaded: {}", fileUrl);
             } else {
@@ -702,7 +702,7 @@ public class BansiService {
             // ===== 4. Save profile file =====
             if (profileFile != null && !profileFile.isEmpty()) {
                 String uploadedFileName = mediaUploadService.uploadMedia(profileFile);
-                String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
+                String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
                 intervieweeEntity.setProfile(fileUrl);
                 log.info(" Profile uploaded: {}", fileUrl);
             } else {
@@ -728,7 +728,7 @@ public class BansiService {
                                           Integer age, String tel, String tel1, String toKen,
                                           String interviewDateStr, String interviewTimeStr, String status,
                                           String interviewer1, String interviewer2, String interviewer3,
-                                          MultipartFile imageFile, MultipartFile profileFile) {
+                                          MultipartFile imageFile, MultipartFile profileFile, String salary, String currency) {
         DataResponse response = new DataResponse();
         try {
             // ===== ตรวจสอบ token =====
@@ -762,11 +762,13 @@ public class BansiService {
             entity.setInterviewer1(interviewer1);
             entity.setInterviewer2(interviewer2);
             entity.setInterviewer3(interviewer3);
+            entity.setSalary(salary);
+            entity.setCurrency(currency);
 
             // ===== อัปเดต image ถ้ามี =====
             if (imageFile != null && !imageFile.isEmpty()) {
                 String uploadedFileName = mediaUploadService.uploadMedia(imageFile);
-                String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
+                String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
                 entity.setImage(fileUrl);
                 log.info(" Image updated: {}", fileUrl);
             }
@@ -774,7 +776,7 @@ public class BansiService {
             // ===== อัปเดต profile ถ้ามี =====
             if (profileFile != null && !profileFile.isEmpty()) {
                 String uploadedFileName = mediaUploadService.uploadMedia(profileFile);
-                String fileUrl = "http://khounkham.com/images/interview/" + uploadedFileName;
+                String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
                 entity.setProfile(fileUrl);
                 log.info(" Profile updated: {}", fileUrl);
             }
@@ -826,7 +828,72 @@ public class BansiService {
         return result;
     }
 
+    //show ReportAccounting service
+    public ReportAccountingRes reportAccounting(AccountingReportReq req){
+        ReportAccountingRes result = new ReportAccountingRes();
 
+        // ตรวจสอบ token
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToKen());
+        if (userProfiles.isEmpty()) {
+            result.setStatus("01");
+            result.setMessage("Token invalid");
+            result.setData(new ArrayList<>());
+            result.setSumUsd(0);
+            result.setSumLak(0);
+            result.setSumThb(0);
+            return result;
+        }
+
+        Profile profile = userProfiles.get(0);
+        String role = profile.getRole();
+        if (role != null) role = role.trim();
+
+        boolean isAllowed =
+                "SUPERBANSI".equalsIgnoreCase(role) ||
+                        "SUPERACCOUNT".equalsIgnoreCase(role) ||
+                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role);
+
+        if (!isAllowed) {
+            result.setStatus("02");
+            result.setMessage("No permission");
+            result.setData(new ArrayList<>());
+            result.setSumUsd(0);
+            result.setSumLak(0);
+            result.setSumThb(0);
+            return result;
+        }
+
+        // เรียก DAO
+        List<AccountingReportModel> data = paymentDetailDao.reportAccounting(
+                req.getBig_project_id(),
+                req.getSmall_project_id(),
+                req.getPay_type_id(),
+                req.getType_of_pay(),
+                req.getStartDate(),
+                req.getEndDate(),
+                role
+        );
+
+        // คำนวณ sum
+        double sumUsd = 0, sumLak = 0, sumThb = 0;
+        for (AccountingReportModel m : data) {
+            if (m.getCurrency() == null) continue;
+            switch (m.getCurrency().toUpperCase()) {
+                case "USD": sumUsd += m.getPrice(); break;
+                case "LAK": sumLak += m.getPrice(); break;
+                case "THB": sumThb += m.getPrice(); break;
+            }
+        }
+
+        result.setStatus("00");
+        result.setMessage("Success");
+        result.setData(data);
+        result.setSumUsd(sumUsd);
+        result.setSumLak(sumLak);
+        result.setSumThb(sumThb);
+
+        return result;
+    }
 
 
 }

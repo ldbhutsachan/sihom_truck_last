@@ -6,6 +6,8 @@ import lombok.Data;
 public class IntervieweeModel {
     private String interviewee;
     private String position;
+    private String salary;
+    private String currency;
     private String experience;
     private Integer age;
     private String tel;

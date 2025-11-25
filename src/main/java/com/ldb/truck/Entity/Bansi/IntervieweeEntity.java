@@ -64,6 +64,12 @@ public class IntervieweeEntity {
     @Column(name = "interview_time")
     private String interviewTime;
 
+    @Column(name="salary")
+    private String salary;
+
+    @Column(name="currency")
+    private String currency;
+
 
     @Transient
     private String toKen; //สำหรับ token จาก client

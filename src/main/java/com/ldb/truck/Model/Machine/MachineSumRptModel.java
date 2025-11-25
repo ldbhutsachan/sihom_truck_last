@@ -25,6 +25,7 @@ public class MachineSumRptModel {
         private String itemName;
         private String ccy;
         private Integer qty;
+        private String unit;
         private Double price;
         private Double total;
     }

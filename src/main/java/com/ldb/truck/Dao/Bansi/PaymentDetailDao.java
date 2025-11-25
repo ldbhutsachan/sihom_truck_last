@@ -1,16 +1,17 @@
 package com.ldb.truck.Dao.Bansi;
 
-import com.ldb.truck.Model.Bansi.IntervieweeModel;
-import com.ldb.truck.Model.Bansi.PaymentDetailListModel;
-import com.ldb.truck.Model.Bansi.PaymentDetailModel;
+import com.ldb.truck.Model.Bansi.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Repository
@@ -119,11 +120,10 @@ public class PaymentDetailDao {
             return item;
         }, billNo);
     }
-
     // query interviewee
     public List<IntervieweeModel> findInterviewees(String status, String startDate, String endDate) {
 
-        String sql = "SELECT i.interviewee, i.position, i.experience, i.age, i.tel, i.tel1, i.status, " +
+        String sql = "SELECT i.interviewee, i.position, i.salary, i.currency, i.experience, i.age, i.tel, i.tel1, i.status, " +
                 "i.interview_date, i.interview_time, i.interviewer1, i.interviewer2, i.interviewer3, " +
                 "i.image AS intervieweeImage, i.profile AS cv, i.date_create, l.USER_LOGIN AS createBy " +
                 "FROM tb_interviewer i " +
@@ -161,6 +161,8 @@ public class PaymentDetailDao {
 
             model.setInterviewee(rs.getString("interviewee"));
             model.setPosition(rs.getString("position"));
+            model.setSalary(rs.getString("salary"));
+            model.setCurrency(rs.getString("currency"));
             model.setExperience(rs.getString("experience"));
             model.setAge(rs.getInt("age"));
             model.setTel(rs.getString("tel"));
@@ -215,5 +217,184 @@ public class PaymentDetailDao {
         }, params.toArray());
 
     }
+
+    //ReportAccounting Dao
+//    public List<AccountingReportModel> reportAccounting(String big_project_id, String small_project_id, String pay_type_id ,String type_of_pay, String startDate, String endDate, String role) {
+//
+//        String sql = "SELECT * FROM v_accounting_report";
+//
+//        List<Object> params = new ArrayList<>();
+//        List<String> conditions = new ArrayList<>();
+//
+//        if (big_project_id != null && !big_project_id.isEmpty()) {
+//            conditions.add("big_project_id = ?");
+//            params.add(big_project_id);
+//        }
+//        if (small_project_id != null && !small_project_id.isEmpty()) {
+//            conditions.add("small_project_id = ?");
+//            params.add(small_project_id);
+//        }
+//        if (pay_type_id != null && !pay_type_id.isEmpty()) {
+//            conditions.add("pay_type_id = ?");
+//            params.add(pay_type_id);
+//        }
+//        if (type_of_pay != null && !type_of_pay.isEmpty()) {
+//            conditions.add("type_of = ?");
+//            params.add(type_of_pay);
+//        }
+//        // Filter by type_of
+//        if (type_of_pay != null && !type_of_pay.isEmpty()) {
+//            conditions.add("type_of = ?");
+//            params.add(type_of_pay);
+//        }
+//
+//        // Filter date range
+//        if (startDate != null && !startDate.isEmpty()
+//                && endDate != null && !endDate.isEmpty()) {
+//            conditions.add("DATE(date) BETWEEN ? AND ?");
+//            params.add(startDate);
+//            params.add(endDate);
+//        }
+//
+//        // Filter by role (SUPERACCOUNT + SUPERBANSI เท่านั้น)
+//        if ("SUPERACCOUNT".equalsIgnoreCase(role) || "SUPERBANSI".equalsIgnoreCase(role)) {
+//            conditions.add("role = ?");
+//            params.add(role.toUpperCase());
+//        }
+//        // FOR_DOCUMENT_ADMIN เห็นทั้งหมด → ไม่ต้อง filter
+//
+//        if (!conditions.isEmpty()) {
+//            sql += " WHERE " + String.join(" AND ", conditions);
+//        }
+//
+//        sql += " ORDER BY date ASC";
+//
+//        log.info("SQL = {}, params = {}", sql, params);
+//
+//        return jdbcTemplate.query(sql, params.toArray(), (rs, rowNum) -> {
+//            AccountingReportModel model = new AccountingReportModel();
+//
+//            model.setKeyId(rs.getInt("key_id"));
+//            model.setBansiId(rs.getInt("Bansi_id"));
+//            model.setDate_create(rs.getDate("date_create"));
+//            model.setBigProjectId(rs.getInt("big_project_id"));
+//            model.setBigProject(rs.getString("big_project"));
+//            model.setSmallProjectId(rs.getInt("small_project_id"));
+//            model.setSmallProject(rs.getString("small_project"));
+//            model.setPayTypeId(rs.getInt("pay_type_id"));
+//            model.setPayType(rs.getString("pay_type"));
+//            model.setTypeOf(rs.getString("type_of"));
+//            model.setSupplierName(rs.getString("supplier_name"));
+//            model.setBunsiName(rs.getString("BunsiName"));
+//            model.setTitle(rs.getString("title"));
+//            model.setExchangeRate(rs.getString("exchange_rate"));
+//            model.setDate(rs.getDate("date"));
+//            model.setDatermineDate(rs.getDate("datermine_date"));
+//            model.setReferenceNumber(rs.getString("reference_number"));
+//            model.setReference(rs.getString("reference"));
+//            model.setRemark(rs.getString("remark"));
+//            model.setInternalRemark(rs.getString("internal_remark"));
+//            model.setTag(rs.getString("tag"));
+//            model.setFile(rs.getString("file"));
+//            model.setBillNo(rs.getString("bill_No"));
+//            model.setCurrency(rs.getString("currency"));
+//            model.setPrice(rs.getDouble("price"));
+//
+//            // NEW — role
+//            model.setRole(rs.getString("role"));
+//
+//            return model;
+//        });
+//    }
+
+    public List<AccountingReportModel> reportAccounting(
+            String big_project_id,
+            String small_project_id,
+            String pay_type_id,
+            String type_of_pay,
+            String startDate,
+            String endDate,
+            String role
+    ) {
+        String sql = "SELECT * FROM v_accounting_report";
+
+        List<Object> params = new ArrayList<>();
+        List<String> conditions = new ArrayList<>();
+
+        // Map field → value
+        Map<String, String> filters = Map.of(
+                "big_project_id", big_project_id,
+                "small_project_id", small_project_id,
+                "pay_type_id", pay_type_id,
+                "type_of", type_of_pay
+        );
+
+        // loop ตรวจสอบค่า
+        filters.forEach((field, value) -> {
+            if (value != null && !value.isEmpty()) {
+                conditions.add(field + " = ?");
+                params.add(value);
+            }
+        });
+
+        // Filter date range
+        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
+            conditions.add("DATE(date) BETWEEN ? AND ?");
+            params.add(startDate);
+            params.add(endDate);
+        }
+
+        // Filter role (SUPERACCOUNT + SUPERBANSI)
+        if ("SUPERACCOUNT".equalsIgnoreCase(role) || "SUPERBANSI".equalsIgnoreCase(role)) {
+            conditions.add("role = ?");
+            params.add(role.toUpperCase());
+        }
+
+        if (!conditions.isEmpty()) {
+            sql += " WHERE " + String.join(" AND ", conditions);
+        }
+
+        sql += " ORDER BY date ASC";
+
+        log.info("SQL = {}, params = {}", sql, params);
+
+        return jdbcTemplate.query(sql, params.toArray(), (rs, rowNum) -> {
+            AccountingReportModel model = new AccountingReportModel();
+
+            model.setKeyId(rs.getInt("key_id"));
+            model.setBansiId(rs.getInt("Bansi_id"));
+            model.setDate_create(rs.getDate("date_create"));
+            model.setBigProjectId(rs.getInt("big_project_id"));
+            model.setBigProject(rs.getString("big_project"));
+            model.setSmallProjectId(rs.getInt("small_project_id"));
+            model.setSmallProject(rs.getString("small_project"));
+            model.setPayTypeId(rs.getInt("pay_type_id"));
+            model.setPayType(rs.getString("pay_type"));
+            model.setTypeOf(rs.getString("type_of"));
+            model.setSupplierName(rs.getString("supplier_name"));
+            model.setBunsiName(rs.getString("BunsiName"));
+            model.setTitle(rs.getString("title"));
+            model.setExchangeRate(rs.getString("exchange_rate"));
+            model.setDate(rs.getDate("date"));
+            model.setDatermineDate(rs.getDate("datermine_date"));
+            model.setReferenceNumber(rs.getString("reference_number"));
+            model.setReference(rs.getString("reference"));
+            model.setRemark(rs.getString("remark"));
+            model.setInternalRemark(rs.getString("internal_remark"));
+            model.setTag(rs.getString("tag"));
+            model.setFile(rs.getString("file"));
+            model.setBillNo(rs.getString("bill_No"));
+            model.setCurrency(rs.getString("currency"));
+            model.setPrice(rs.getDouble("price"));
+            model.setRole(rs.getString("role"));
+
+            return model;
+        });
+    }
+
+
+
+
+
 
 }

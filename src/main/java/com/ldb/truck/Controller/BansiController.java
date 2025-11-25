@@ -313,7 +313,9 @@ public class BansiController {
             @RequestParam(value = "interviewer2", required = false) String interviewer2,
             @RequestParam(value = "interviewer3", required = false) String interviewer3,
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
-            @RequestPart(value = "profile", required = false) MultipartFile profileFile
+            @RequestPart(value = "profile", required = false) MultipartFile profileFile,
+            @RequestParam(value = "salary", required = false) String salary,
+            @RequestParam(value = "currency", required = false) String currency
     ) {
 
         // ✅ เขียน log ตรงนี้เช็คค่าที่ส่งมา
@@ -335,6 +337,8 @@ public class BansiController {
         entity.setInterviewer1(interviewer1);
         entity.setInterviewer2(interviewer2);
         entity.setInterviewer3(interviewer3);
+        entity.setSalary(salary);
+        entity.setCurrency(currency);
 
         return bansiService.saveInterviewee(entity, imageFile, profileFile);
     }
@@ -359,11 +363,13 @@ public class BansiController {
             @RequestParam(value = "interviewer2", required = false) String interviewer2,
             @RequestParam(value = "interviewer3", required = false) String interviewer3,
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
-            @RequestPart(value = "profile", required = false) MultipartFile profileFile
+            @RequestPart(value = "profile", required = false) MultipartFile profileFile,
+            @RequestParam(value = "salary", required = false) String salary,
+            @RequestParam(value = "currency", required = false) String currency
     ) {
         return bansiService.updateInterviewee(
                 keyId, interviewee, position, experience, age, tel, tel1, toKen,
-                interviewDateStr, interviewTimeStr,status, interviewer1, interviewer2, interviewer3, imageFile, profileFile
+                interviewDateStr, interviewTimeStr,status, interviewer1, interviewer2, interviewer3, imageFile, profileFile, salary, currency
         );
     }
 
@@ -373,6 +379,14 @@ public class BansiController {
     public IntervieweeRes getInterviewee(@RequestBody IntervieweeReq req){
         return bansiService.getInterviewee(req);
     }
+
+    //show reportAccounting controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/reportAccounting.service")
+    public ReportAccountingRes reportAccounting(@RequestBody AccountingReportReq req){
+        return bansiService.reportAccounting(req);
+    }
+
 
 
 

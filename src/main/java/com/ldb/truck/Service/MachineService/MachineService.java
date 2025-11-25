@@ -383,6 +383,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                                 item.setItemName(p.getItemName());
                                 item.setCcy(p.getCcy());
                                 item.setQty(p.getQty());
+                                item.setUnit(p.getUnit());
                                 item.setPrice(p.getPrice());
                                 item.setTotal(p.getTotal());
                                 return item;
