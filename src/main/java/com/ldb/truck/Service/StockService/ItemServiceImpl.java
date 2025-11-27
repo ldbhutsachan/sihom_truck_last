@@ -81,31 +81,6 @@ public class ItemServiceImpl {
         }
         return response;
 }
-//public DataResponse getItemList(viewItemEntity viewItemEntity,String userName,String role,String branchNo,String borNo){
-//        log.info("role:"+role);
-//        log.info("userName:"+userName);
-//        log.info("branchNo:"+branchNo);
-//        DataResponse response = new DataResponse();
-//        try {
-//            if("PADMIN".equals(role)){
-//                response.setDataResponse(viewItemEntityRepository.getAllViewItemsAdmin());
-//            }else {
-//                response.setDataResponse(viewItemEntityRepository.getAllViewItemsBranchNo(branchNo,borNo));
-//            }
-//
-//            if(response.getDataResponse() != null){
-//                response.setStatus("00");
-//                response.setMessage("Success");
-//            }else {
-//                response.setStatus("05");
-//                response.setMessage("Data not Found !!");
-//            }
-//        }catch (Exception e){
-//            response.setStatus("EE");
-//            response.setMessage("Error Data !!");
-//        }
-//        return response;
-//}
 public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
     log.info("role:" + role);
     log.info("userName:" + userName);

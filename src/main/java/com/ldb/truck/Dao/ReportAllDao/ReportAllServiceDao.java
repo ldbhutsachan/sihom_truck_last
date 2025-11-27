@@ -817,8 +817,8 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
 
         try {
             StringBuilder sb = new StringBuilder();
-//            sb.append("select * from v_sum_order_item_sum where stockOut  1=1 \n ");
-            sb.append("SELECT * FROM v_sum_order_item_sum WHERE stockOut > 0 AND stockOut IS NOT NULL AND 1=1 \n");
+//            sb.append("SELECT * FROM v_sum_order_item_sum WHERE stockOut > 0 AND stockOut IS NOT NULL AND 1=1 \n");
+            sb.append("SELECT * FROM v_sum_order_item_sum WHERE 1=1 \n");
             sb.append(startDateCon);
             sb.append(conItem);
             sb.append(conItemBoNo);

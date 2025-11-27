@@ -63,6 +63,9 @@ public class PaymentRequestEntity {
     @Column(name ="date_create")
     private LocalDate dateCreate;
 
+    @Column(name ="data_type")
+    private String dataType;
+
     @Transient
     private String toKen; //สำหรับ token จาก client
 }

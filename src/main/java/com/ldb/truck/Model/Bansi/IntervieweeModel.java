@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class IntervieweeModel {
+    private Integer key_id;
     private String interviewee;
     private String position;
     private String salary;

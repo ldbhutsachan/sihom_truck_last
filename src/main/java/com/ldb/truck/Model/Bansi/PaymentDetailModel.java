@@ -8,6 +8,7 @@ import java.util.List;
 public class PaymentDetailModel {
     private Long keyId;
     private String billNo;
+    private String date_create;
     private String bansi;
     private String title;
     private String currency;
@@ -27,6 +28,7 @@ public class PaymentDetailModel {
     private Long   itemTypeid;
     private String bigProject;
     private String supplier_name;
+    private String data_type;
     private String user;
     // add field for list
     private List<PaymentDetailListModel> listItems;

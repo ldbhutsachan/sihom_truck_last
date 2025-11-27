@@ -17,7 +17,7 @@ public interface PayTypeRepository extends JpaRepository<PayTypeEntity, Long> {
                     "p.date_create, " +
                     "r.req_name AS small_project, " +
                     "i.itemtype_Name AS big_project, " +
-                    "p.req_id as small_project_id " +
+                    "p.req_id as small_project_id, p.type_pay as type_of_pay " +
                     "FROM pay_type p " +
                     "INNER JOIN request_item_type r ON p.req_id = r.req_id " +
                     "INNER JOIN item_type i ON r.item_typeid = i.itemTypeid " +

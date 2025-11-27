@@ -22,8 +22,8 @@ public class PaymentDetailDao {
 
     // 🔹 ดึงข้อมูลหลักจาก tb_accounting (filter ตามตัวเลือก)
     public List<PaymentDetailModel> findPaymentDetails(Long itemTypeid, Long req_id, Long pid, String role) {
-        String sql = "SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, a.date, a.datermine_date, " +
-                "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, " +
+        String sql = "SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, a.date, a.datermine_date, a.date_create, a.data_type, " +
+                "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, " +
                 "pt.pid as payId, pt.type_name, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role " +
                 "FROM tb_accounting a " +
                 "INNER JOIN pay_type pt ON a.pay_typeid = pt.pid " +
@@ -73,6 +73,7 @@ public class PaymentDetailDao {
         PaymentDetailModel model = new PaymentDetailModel();
         model.setKeyId(rs.getLong("key_id"));
         model.setBillNo(rs.getString("bill_No"));
+        model.setDate_create(rs.getString("date_create"));
         model.setBansi(rs.getString("bansi"));
         model.setTitle(rs.getString("title"));
         model.setCurrency(rs.getString("currency"));
@@ -91,6 +92,8 @@ public class PaymentDetailDao {
         model.setSmallProject(rs.getString("req_name"));
         model.setItemTypeid(rs.getLong("itemTypeid"));
         model.setBigProject(rs.getString("itemtype_Name"));
+        model.setSupplier_name(rs.getString("supplier_name"));
+        model.setData_type(rs.getString("data_type"));
         model.setUser(rs.getString("USER_LOGIN"));
 
         //  เติม listItems จาก tb_accounting_list
@@ -123,7 +126,7 @@ public class PaymentDetailDao {
     // query interviewee
     public List<IntervieweeModel> findInterviewees(String status, String startDate, String endDate) {
 
-        String sql = "SELECT i.interviewee, i.position, i.salary, i.currency, i.experience, i.age, i.tel, i.tel1, i.status, " +
+        String sql = "SELECT i.key_id, i.interviewee, i.position, i.salary, i.currency, i.experience, i.age, i.tel, i.tel1, i.status, " +
                 "i.interview_date, i.interview_time, i.interviewer1, i.interviewer2, i.interviewer3, " +
                 "i.image AS intervieweeImage, i.profile AS cv, i.date_create, l.USER_LOGIN AS createBy " +
                 "FROM tb_interviewer i " +
@@ -159,6 +162,7 @@ public class PaymentDetailDao {
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             IntervieweeModel model = new IntervieweeModel();
 
+            model.setKey_id(rs.getInt("key_id"));
             model.setInterviewee(rs.getString("interviewee"));
             model.setPosition(rs.getString("position"));
             model.setSalary(rs.getString("salary"));

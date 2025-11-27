@@ -63,9 +63,9 @@ public class BansiService {
 
             // ตัวอย่าง: ถ้า role SUPERBANSI ให้ bansi = "1"
             if("SUPERBANSI".equalsIgnoreCase(role)){
-                bansiEntity.setBansi("1");
+                bansiEntity.setBansi("bansi");
             } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
-                bansiEntity.setBansi("2");
+                bansiEntity.setBansi("accounting");
             } else {
                 bansiEntity.setBansi("");
             }
@@ -306,6 +306,7 @@ public class BansiService {
                 model.setSmall_project((String) row[3]);
                 model.setBig_project((String) row[4]);
                 model.setSmall_project_id(((Number) row[5]).longValue());
+                model.setType_of_pay((String) row[6]);
                 result.add(model);
             }
 
@@ -386,8 +387,13 @@ public class BansiService {
                 && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             throw new Exception("No right to update (role: " + role + ")");
         }
-
-
+        if ("SUPERBANSI".equalsIgnoreCase(role)) {
+            entity.setDataType("bansi");
+        } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+            entity.setDataType("accounting");
+        } else {
+            entity.setDataType("admin");
+        }
         // set user_id from token
         entity.setUserId(Long.valueOf(user.getUserId()));
         entity.setPayTypeId(req.getPay_typeid());
@@ -479,7 +485,13 @@ public class BansiService {
             throw new Exception("No right to update (role: " + role + ")");
         }
 
-
+        if ("SUPERBANSI".equalsIgnoreCase(role)) {
+            entity.setDataType("bansi");
+        } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+            entity.setDataType("accounting");
+        } else {
+            entity.setDataType("admin");
+        }
         // **billNo ไม่เปลี่ยน**
         // entity.setBillNo(...) //
 
@@ -568,15 +580,12 @@ public class BansiService {
                 "SUPERBANSI".equalsIgnoreCase(role) ||
                         "SUPERACCOUNT".equalsIgnoreCase(role) ||
                         "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role);
-
         if (!isAllowed) {
             result.setStatus("02");
             result.setMessage("No permission");
             result.setData(new ArrayList<>());
             return result;
         }
-
-
         // เรียก DAO พร้อม role + userId
         List<PaymentDetailModel> data = paymentDetailDao.findPaymentDetails(
                 req.getItemTypeid(),
@@ -584,7 +593,6 @@ public class BansiService {
                 req.getPid(),
                 role
         );
-
         result.setStatus("00");
         result.setMessage("Success");
         result.setData(data);
@@ -838,12 +846,8 @@ public class BansiService {
             result.setStatus("01");
             result.setMessage("Token invalid");
             result.setData(new ArrayList<>());
-            result.setSumUsd(0);
-            result.setSumLak(0);
-            result.setSumThb(0);
             return result;
         }
-
         Profile profile = userProfiles.get(0);
         String role = profile.getRole();
         if (role != null) role = role.trim();
@@ -857,12 +861,9 @@ public class BansiService {
             result.setStatus("02");
             result.setMessage("No permission");
             result.setData(new ArrayList<>());
-            result.setSumUsd(0);
-            result.setSumLak(0);
-            result.setSumThb(0);
             return result;
         }
-
+        // ดึงข้อมูลจาก DAO
         List<AccountingReportModel> data = paymentDetailDao.reportAccounting(
                 req.getBig_project_id(),
                 req.getSmall_project_id(),
@@ -872,27 +873,57 @@ public class BansiService {
                 req.getEndDate(),
                 role
         );
+        // --------------------------------------------------------------------
+        // SUM RECEIVE
+        // --------------------------------------------------------------------
+        double sumReceiveUsd = 0, sumReceiveLak = 0, sumReceiveThb = 0;
 
-        // คำนวณ sum
-        double sumUsd = 0, sumLak = 0, sumThb = 0;
+        // --------------------------------------------------------------------
+        // SUM PAY
+        // --------------------------------------------------------------------
+        double sumPayUsd = 0, sumPayLak = 0, sumPayThb = 0;
+
         for (AccountingReportModel m : data) {
+
             if (m.getCurrency() == null) continue;
-            switch (m.getCurrency().toUpperCase()) {
-                case "USD": sumUsd += m.getPrice(); break;
-                case "LAK": sumLak += m.getPrice(); break;
-                case "THB": sumThb += m.getPrice(); break;
+
+            String currency = m.getCurrency().toUpperCase();
+            double price = m.getPrice();
+            String type = (m.getTypeOf() == null) ? "" : m.getTypeOf().toUpperCase();
+            // ---- SUM RECEIVE ----
+            if (type.equals("RECEIVE")) {
+                switch (currency) {
+                    case "USD": sumReceiveUsd += price; break;
+                    case "LAK": sumReceiveLak += price; break;
+                    case "THB": sumReceiveThb += price; break;
+                }
+            }
+
+            // ---- SUM PAY ----
+            else if (type.equals("PAY")) {
+                switch (currency) {
+                    case "USD": sumPayUsd += price; break;
+                    case "LAK": sumPayLak += price; break;
+                    case "THB": sumPayThb += price; break;
+                }
             }
         }
 
         result.setStatus("00");
         result.setMessage("Success");
         result.setData(data);
-        result.setSumUsd(sumUsd);
-        result.setSumLak(sumLak);
-        result.setSumThb(sumThb);
+        // SUM RECEIVE
+        result.setSumReceiveUsd(sumReceiveUsd);
+        result.setSumReceiveLak(sumReceiveLak);
+        result.setSumReceiveThb(sumReceiveThb);
+        // SUM PAY
+        result.setSumPayUsd(sumPayUsd);
+        result.setSumPayLak(sumPayLak);
+        result.setSumPayThb(sumPayThb);
 
         return result;
     }
+
 
 
 }

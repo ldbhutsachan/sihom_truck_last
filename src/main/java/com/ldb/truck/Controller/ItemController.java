@@ -375,26 +375,6 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-//    @CrossOrigin(origins = "*")
-//    @PostMapping("/getItemList.service")
-//    public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
-//        DataResponse response  = new DataResponse();
-//        try {
-//            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
-//            if (userProfiles.isEmpty()) {
-//                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-//            }
-//            String userId = userProfiles.get(0).getUserId();
-//            String role = userProfiles.get(0).getRole();
-//            String branchno = userProfiles.get(0).getBranchNo();
-//            String borNo = userProfiles.get(0).getBorNo();
-//            response = itemService.getItemList(brandReq,userId,role,branchno,borNo);
-//        }catch (Exception e){
-//            response.setStatus("EE");
-//            response.setMessage("Data Error !!");
-//        }
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
 @CrossOrigin(origins = "*")
 @PostMapping("/getItemList.service")
 public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){

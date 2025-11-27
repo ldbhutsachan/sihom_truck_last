@@ -12,4 +12,5 @@ public class PaymentModel {
     private String small_project;
     private String big_project;
     private Long small_project_id;
+    private String type_of_pay;
 }
