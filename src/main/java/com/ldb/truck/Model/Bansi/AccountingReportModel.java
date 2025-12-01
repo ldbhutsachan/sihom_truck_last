@@ -56,5 +56,7 @@ public class AccountingReportModel {
 
     private Double price;
 
+    private Double usd_price;
+
     private String role;
 }

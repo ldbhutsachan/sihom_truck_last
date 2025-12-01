@@ -11,9 +11,13 @@ public class ReportAccountingRes {
     private double sumReceiveUsd;
     private double sumReceiveLak;
     private double sumReceiveThb;
+    private double sumReceiveUsdDefual;
+
     private double sumPayUsd;
     private double sumPayLak;
     private double sumPayThb;
+    private double sumPayUsdDefual;
+
 
 }
 

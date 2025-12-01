@@ -379,9 +379,6 @@ public class BansiService {
         Profile user = userProfiles.get(0);
         String role = user.getRole();
 
-//        if (!"SUPERBANSI".equalsIgnoreCase(role)) {
-//            throw new Exception("No right to insert (role: " + role + ")");
-//        }
         if (!"SUPERBANSI".equalsIgnoreCase(role)
                 && !"SUPERACCOUNT".equalsIgnoreCase(role)
                 && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
@@ -417,6 +414,7 @@ public class BansiService {
         entity.setTag(req.getTag());
         entity.setDatertimeDate(req.getDatermine_date());
         entity.setDateCreate(LocalDate.now());
+        entity.setBillStatus("wait");
 
         MultipartFile file = req.getFile();
         if (file != null && !file.isEmpty()) {
@@ -453,6 +451,7 @@ public class BansiService {
                 list.setReduceStatus(t.getReduce_status());
                 list.setTax(t.getTax());
                 list.setTaxStatus(t.getTax_status());
+                list.setUsdPrice(t.getUsdPrice());
                 paymentRequestListRepository.save(list);
             }
         }
@@ -467,7 +466,6 @@ public class BansiService {
         if (entity == null) {
             throw new Exception("❌ PaymentRequest not found with billNo: " + billNo);
         }
-
         // check token
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToKen());
         if (userProfiles.isEmpty()) {
@@ -475,16 +473,11 @@ public class BansiService {
         }
         Profile user = userProfiles.get(0);
         String role = user.getRole();
-
-//        if (!"SUPERBANSI".equalsIgnoreCase(role)) {
-//            throw new Exception("No right to update (role: " + role + ")");
-//        }
         if (!"SUPERBANSI".equalsIgnoreCase(role)
                 && !"SUPERACCOUNT".equalsIgnoreCase(role)
                 && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             throw new Exception("No right to update (role: " + role + ")");
         }
-
         if ("SUPERBANSI".equalsIgnoreCase(role)) {
             entity.setDataType("bansi");
         } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
@@ -507,6 +500,7 @@ public class BansiService {
         entity.setInternalRemark(req.getInternal_remark() != null ? req.getInternal_remark() : entity.getInternalRemark());
         entity.setTag(req.getTag() != null ? req.getTag() : entity.getTag());
         entity.setDatertimeDate(req.getDatermine_date() != null ? req.getDatermine_date() : entity.getDatertimeDate());
+        entity.setBillStatus(req.getBill_status() !=null ? req.getBill_status() : entity.getBillStatus());
 
         if (req.getDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -549,13 +543,13 @@ public class BansiService {
                 list.setReduceStatus(t.getReduce_status());
                 list.setTax(t.getTax());
                 list.setTaxStatus(t.getTax_status());
+                list.setUsdPrice(t.getUsdPrice());
                 paymentRequestListRepository.save(list);
             }
         }
 
         return saved;
     }
-
     // showing paymentDetail
     public PaymentDetailRes getPaymentDetails(PaymentDetailReq req) {
         PaymentDetailRes result = new PaymentDetailRes();
@@ -579,7 +573,8 @@ public class BansiService {
         boolean isAllowed =
                 "SUPERBANSI".equalsIgnoreCase(role) ||
                         "SUPERACCOUNT".equalsIgnoreCase(role) ||
-                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role);
+                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)||
+                        "BANSIAPPROVE".equalsIgnoreCase(role);
         if (!isAllowed) {
             result.setStatus("02");
             result.setMessage("No permission");
@@ -598,6 +593,68 @@ public class BansiService {
         result.setData(data);
         return result;
     }
+
+    // approve billNo of Bansi
+    @Transactional
+    public PaymentRequestEntity approveBillNo(String billNo, String token, String billStatus) throws Exception {
+        // หา entity จาก billNo
+        PaymentRequestEntity entity = paymentRequestRepository.findByBillNo(billNo);
+        if (entity == null) {
+            throw new Exception("❌ PaymentRequest not found with billNo: " + billNo);
+        }
+
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(token);
+        if (userProfiles == null || userProfiles.isEmpty()) {
+            throw new Exception("❌ Token invalid");
+        }
+        Profile user = userProfiles.get(0);
+        String role = user.getRole();
+        String approveBy = user.getUserName();
+        String status = entity.getBillStatus();
+        LocalDateTime now = LocalDateTime.now();
+
+        // กรณี client ส่ง "return"
+        if ("return".equalsIgnoreCase(billStatus)) {
+            entity.setBillStatus("wait");
+            entity.setReturnBy(approveBy);
+            entity.setReturnDate(now);
+            return paymentRequestRepository.save(entity);
+        }
+
+        if (!"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
+            if ("wait".equals(status) && !"bansiapprove".equalsIgnoreCase(role)) {
+                throw new Exception("this user can't approve this bill: 'wait'");
+            } else if ("wait-account".equals(status) && !"superaccount".equalsIgnoreCase(role)) {
+                throw new Exception("this user can't approve this bill: 'wait-account'");
+            } else if ("wait_admin".equals(status) && !"adminapprove".equalsIgnoreCase(role)) {
+                throw new Exception("this user can't approve this bill: 'wait_admin'");
+            }
+        }
+
+        // อนุมัติขั้นต่อไป
+        if ("wait".equals(status) || "".equals(status)) {
+            entity.setBasiApproveDate(now);
+            entity.setBansiApproveBy(approveBy);
+            entity.setBillStatus("wait-account");
+        } else if ("wait-account".equals(status)) {
+            entity.setAccountApproveDate(now);
+            entity.setAccountApproveBy(approveBy);
+            entity.setBillStatus("wait_admin");
+        } else if ("wait_admin".equals(status)) {
+            entity.setFinalApproveDate(now);
+            entity.setFinalApproveBy(approveBy);
+            entity.setBillStatus("ok");
+        } else if ("ok".equals(status)) {
+            throw new Exception("this bill has done approving (status = ok).");
+        } else {
+            throw new Exception("the bill_status is incorrect : " + status);
+        }
+
+        return paymentRequestRepository.save(entity);
+    }
+
+
+
 
     //save signature
     public DataResponse saveSignature(SignatureEntity signatureEntity) {
@@ -883,12 +940,19 @@ public class BansiService {
         // --------------------------------------------------------------------
         double sumPayUsd = 0, sumPayLak = 0, sumPayThb = 0;
 
+        // New variables for USD equivalent
+        double sumReceiveUsdEquivalent = 0;
+        double sumPayUsdEquivalent = 0;
+
         for (AccountingReportModel m : data) {
 
             if (m.getCurrency() == null) continue;
 
             String currency = m.getCurrency().toUpperCase();
-            double price = m.getPrice();
+            Double price = m.getPrice();
+            if (price == null) price = 0.0;  // ถ้า null ให้เป็น 0
+            Double defaulUSD = m.getUsd_price();
+            if (defaulUSD == null) defaulUSD = 0.0;  // ถ้า null ให้เป็น 0
             String type = (m.getTypeOf() == null) ? "" : m.getTypeOf().toUpperCase();
             // ---- SUM RECEIVE ----
             if (type.equals("RECEIVE")) {
@@ -897,6 +961,8 @@ public class BansiService {
                     case "LAK": sumReceiveLak += price; break;
                     case "THB": sumReceiveThb += price; break;
                 }
+                sumReceiveUsdEquivalent += defaulUSD; // Sum USD equivalent for RECEIVE
+
             }
 
             // ---- SUM PAY ----
@@ -906,6 +972,7 @@ public class BansiService {
                     case "LAK": sumPayLak += price; break;
                     case "THB": sumPayThb += price; break;
                 }
+                sumPayUsdEquivalent += defaulUSD; // Sum USD equivalent for PAY
             }
         }
 
@@ -916,11 +983,12 @@ public class BansiService {
         result.setSumReceiveUsd(sumReceiveUsd);
         result.setSumReceiveLak(sumReceiveLak);
         result.setSumReceiveThb(sumReceiveThb);
+        result.setSumReceiveUsdDefual(sumReceiveUsdEquivalent);
         // SUM PAY
         result.setSumPayUsd(sumPayUsd);
         result.setSumPayLak(sumPayLak);
         result.setSumPayThb(sumPayThb);
-
+        result.setSumPayUsdDefual(sumPayUsdEquivalent);
         return result;
     }
 

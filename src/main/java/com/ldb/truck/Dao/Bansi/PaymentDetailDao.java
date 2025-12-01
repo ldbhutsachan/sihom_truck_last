@@ -23,14 +23,17 @@ public class PaymentDetailDao {
     // 🔹 ดึงข้อมูลหลักจาก tb_accounting (filter ตามตัวเลือก)
     public List<PaymentDetailModel> findPaymentDetails(Long itemTypeid, Long req_id, Long pid, String role) {
         String sql = "SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, a.date, a.datermine_date, a.date_create, a.data_type, " +
-                "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, " +
-                "pt.pid as payId, pt.type_name, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role " +
+                "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, a.supplierid, a.bill_status, " +
+                "pt.pid as payId, pt.type_name, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role, " +
+                "a.basi_approve_date, a.bansi_approveby, a.account_approve_date, a.account_approveby, a.final_approve_date, a.final_approveby, " +
+                "a.returnby, a.return_date " +  // ← ใส่ space หลัง a.return_date
                 "FROM tb_accounting a " +
                 "INNER JOIN pay_type pt ON a.pay_typeid = pt.pid " +
                 "LEFT JOIN LOGIN l ON a.user_id = l.KEY_ID " +
                 "LEFT JOIN supplier s ON a.supplierid = s.supplierid " +
                 "LEFT JOIN request_item_type rt ON pt.req_id = rt.req_id " +
                 "LEFT JOIN item_type it ON rt.item_typeid = it.itemTypeid ";
+
 
         List<Object> params = new ArrayList<>();
         List<String> conditions = new ArrayList<>();
@@ -49,10 +52,21 @@ public class PaymentDetailDao {
         }
 
         // 🔹 Filter role: ดูทุกคนที่มี role เท่ากับ role ของผู้ใช้
-        if ("SUPERACCOUNT".equalsIgnoreCase(role) || "SUPERBANSI".equalsIgnoreCase(role)) {
-            conditions.add("l.role = ?");
-            params.add(role.toUpperCase()); // role ต้อง match กับ column l.role
+//        if ("SUPERACCOUNT".equalsIgnoreCase(role) || "SUPERBANSI".equalsIgnoreCase(role)) {
+//            conditions.add("l.role = ?");
+//            params.add(role.toUpperCase()); // role ต้อง match กับ column l.role
+//        }
+        if ("BANSIAPPROVE".equalsIgnoreCase(role)) {
+            conditions.add("a.bill_status = ?");
+            params.add("wait");
         }
+
+        if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+            conditions.add("a.bill_status = ?");
+            params.add("basi-approve");
+        }
+
+
         // PADMIN เห็นทุกอย่าง → ไม่ต้อง filter
 
         if (!conditions.isEmpty()) {
@@ -73,8 +87,9 @@ public class PaymentDetailDao {
         PaymentDetailModel model = new PaymentDetailModel();
         model.setKeyId(rs.getLong("key_id"));
         model.setBillNo(rs.getString("bill_No"));
+        model.setBill_status(rs.getString("bill_status"));
         model.setDate_create(rs.getString("date_create"));
-        model.setBansi(rs.getString("bansi"));
+//        model.setBansi(rs.getString("bansi"));
         model.setTitle(rs.getString("title"));
         model.setCurrency(rs.getString("currency"));
         model.setExchangeRate(rs.getDouble("exchange_rate"));
@@ -92,9 +107,18 @@ public class PaymentDetailDao {
         model.setSmallProject(rs.getString("req_name"));
         model.setItemTypeid(rs.getLong("itemTypeid"));
         model.setBigProject(rs.getString("itemtype_Name"));
+        model.setSupplierid(rs.getString("supplierid"));
         model.setSupplier_name(rs.getString("supplier_name"));
         model.setData_type(rs.getString("data_type"));
         model.setUser(rs.getString("USER_LOGIN"));
+        model.setBansi_approveby(rs.getString("bansi_approveby"));
+        model.setBasi_approve_date(rs.getString("basi_approve_date"));
+        model.setAccount_approveby(rs.getString("account_approveby"));
+        model.setAccount_approve_date(rs.getString("account_approve_date"));
+        model.setFinal_approveby(rs.getString("account_approveby"));
+        model.setFinal_approve_date(rs.getString("final_approve_date"));
+        model.setReturnby(rs.getString("returnby"));
+        model.setReturn_date(rs.getString("return_date"));
 
         //  เติม listItems จาก tb_accounting_list
         model.setListItems(findListItemsByBillNo(model.getBillNo()));
@@ -104,7 +128,7 @@ public class PaymentDetailDao {
 
     //  ดึงข้อมูล list item ตาม billNo
     public List<PaymentDetailListModel> findListItemsByBillNo(String billNo) {
-        String sql = "SELECT id, key_id, bill_No, list_name, qty, unit, price, reduce, reduce_status, tax, tax_status " +
+        String sql = "SELECT id, key_id, bill_No, list_name, qty, unit, price, usd_price, reduce, reduce_status, tax, tax_status " +
                 "FROM tb_accounting_list WHERE bill_No = ?";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
@@ -116,6 +140,7 @@ public class PaymentDetailDao {
             item.setQty(rs.getDouble("qty"));
             item.setUnit(rs.getString("unit"));
             item.setPrice(rs.getDouble("price"));
+            item.setUsd_price(rs.getDouble("usd_price"));
             item.setReduce(rs.getDouble("reduce"));
             item.setReduceStatus(rs.getString("reduce_status"));
             item.setTax(rs.getDouble("tax"));
@@ -302,6 +327,7 @@ public class PaymentDetailDao {
             model.setBillNo(rs.getString("bill_No"));
             model.setCurrency(rs.getString("currency"));
             model.setPrice(rs.getDouble("price"));
+            model.setUsd_price(rs.getDouble("usd_price"));
             model.setRole(rs.getString("role"));
 
             return model;

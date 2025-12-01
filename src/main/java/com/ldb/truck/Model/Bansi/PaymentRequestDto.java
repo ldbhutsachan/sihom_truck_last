@@ -24,6 +24,7 @@ public class PaymentRequestDto {
     private String tag;
 //    private String file;
     private String datermine_date;
+    private String bill_status;
     private MultipartFile file;
 
     private List<ToolDto> tools;
@@ -38,5 +39,6 @@ public class PaymentRequestDto {
         private String reduce_status;
         private Integer tax;
         private String tax_status;
+        private Float usdPrice;
     }
 }

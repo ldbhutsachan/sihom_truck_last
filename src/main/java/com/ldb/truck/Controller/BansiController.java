@@ -177,6 +177,7 @@ public class BansiController {
             @RequestParam(value = "tag", required = false) String tag,
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
+            @RequestParam(value = "bill_status", required = false) String bill_status,
             @RequestParam(value = "file", required = false) MultipartFile file
     ) {
         try {
@@ -196,6 +197,7 @@ public class BansiController {
             dto.setInternal_remark(internalRemark);
             dto.setTag(tag);
             dto.setDatermine_date(datermine_date);
+            dto.setBill_status(bill_status);
             dto.setFile(file);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
@@ -222,6 +224,45 @@ public class BansiController {
     public PaymentDetailRes listPaymentDetail(@RequestBody PaymentDetailReq req) {
         return bansiService.getPaymentDetails(req);
     }
+    //approve billNo
+    @CrossOrigin(origins = "*")
+    @PostMapping("/approveBill.service")
+    public ResponseEntity<DataResponse> approveBill(
+            @RequestBody Map<String, String> requestBody  // รับ JSON เป็น Map
+    ) {
+        DataResponse response = new DataResponse();
+
+        try {
+            String billNo = requestBody.get("billNo");
+            String token = requestBody.get("toKen");
+            String billStatus = requestBody.get("billStatus");
+
+            // สมมติ bansiService.approveBillNo ใช้ billNo + token
+            PaymentRequestEntity result = bansiService.approveBillNo(billNo, token, billStatus);
+
+            response.setStatus("OK");
+            response.setMessage("Approve success");
+            response.setDataResponse(new HashMap<String, Object>() {{
+                put("billNo", billNo);
+                put("new_bill_status", result.getBillStatus());
+                put("approve_by", result.getFinalApproveBy() != null
+                        ? result.getFinalApproveBy()
+                        : result.getAccountApproveBy() != null
+                        ? result.getAccountApproveBy()
+                        : result.getBansiApproveBy());
+            }});
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+
 
     //insert signature
     @CrossOrigin(origins = "*")
