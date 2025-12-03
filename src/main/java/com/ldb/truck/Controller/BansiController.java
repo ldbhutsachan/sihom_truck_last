@@ -22,10 +22,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -224,33 +221,45 @@ public class BansiController {
     public PaymentDetailRes listPaymentDetail(@RequestBody PaymentDetailReq req) {
         return bansiService.getPaymentDetails(req);
     }
+
     //approve billNo
     @CrossOrigin(origins = "*")
     @PostMapping("/approveBill.service")
     public ResponseEntity<DataResponse> approveBill(
-            @RequestBody Map<String, String> requestBody  // รับ JSON เป็น Map
+            @RequestBody Map<String, Object> requestBody
     ) {
         DataResponse response = new DataResponse();
 
         try {
-            String billNo = requestBody.get("billNo");
-            String token = requestBody.get("toKen");
-            String billStatus = requestBody.get("billStatus");
+            String token = (String) requestBody.get("toKen");
+            String billStatus = (String) requestBody.get("billStatus");
 
-            // สมมติ bansiService.approveBillNo ใช้ billNo + token
-            PaymentRequestEntity result = bansiService.approveBillNo(billNo, token, billStatus);
+            // billNo เป็น List
+            List<String> billNos = (List<String>) requestBody.get("billNo");
+
+            if (billNos == null || billNos.isEmpty()) {
+                throw new Exception("billNo list is empty");
+            }
+
+            List<Map<String, Object>> resultList = new ArrayList<>();
+
+            for (String billNo : billNos) {
+                PaymentRequestEntity result = bansiService.approveBillNo(billNo, token, billStatus);
+
+                resultList.add(new HashMap<String, Object>() {{
+                    put("billNo", billNo);
+                    put("new_bill_status", result.getBillStatus());
+                    put("approve_by",
+                            result.getFinalApproveBy() != null ? result.getFinalApproveBy()
+                                    : result.getAccountApproveBy() != null ? result.getAccountApproveBy()
+                                    : result.getBansiApproveBy()
+                    );
+                }});
+            }
 
             response.setStatus("OK");
-            response.setMessage("Approve success");
-            response.setDataResponse(new HashMap<String, Object>() {{
-                put("billNo", billNo);
-                put("new_bill_status", result.getBillStatus());
-                put("approve_by", result.getFinalApproveBy() != null
-                        ? result.getFinalApproveBy()
-                        : result.getAccountApproveBy() != null
-                        ? result.getAccountApproveBy()
-                        : result.getBansiApproveBy());
-            }});
+            response.setMessage("Approve success: " + billNos.size() + " item(s)");
+            response.setDataResponse(resultList);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -261,6 +270,7 @@ public class BansiController {
 
         return ResponseEntity.ok(response);
     }
+
 
 
 
