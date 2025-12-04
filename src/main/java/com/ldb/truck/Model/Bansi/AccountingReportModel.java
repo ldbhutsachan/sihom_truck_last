@@ -52,6 +52,8 @@ public class AccountingReportModel {
 
     private String billNo;
 
+    private String bill_status;
+
     private String currency;
 
     private Double price;

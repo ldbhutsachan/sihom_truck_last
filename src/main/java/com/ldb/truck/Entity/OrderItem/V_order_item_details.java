@@ -134,4 +134,7 @@ public class V_order_item_details {
     @Column(name="remark")
     private String remark;
 
+    @Column(name = "place_buy")
+    private String placeBuy;
+
 }

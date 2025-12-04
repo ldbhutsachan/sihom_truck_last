@@ -309,6 +309,8 @@ public class StockProductController {
         data.setRemark(stockItemDetailsReq.getRemark());
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());
+        //new
+        data.setPlaceBuy(stockItemDetailsReq.getPlaceBuy());
         try {
              response = stockService.auth(data,userId,userName);
         }catch (Exception e){

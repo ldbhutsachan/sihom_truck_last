@@ -257,7 +257,7 @@ public class PaymentDetailDao {
             String endDate,
             String role
     ) {
-        String sql = "SELECT * FROM v_accounting_report";
+        String sql = "SELECT * FROM v_accounting_report where bill_status='ok'";
 
         List<Object> params = new ArrayList<>();
         List<String> conditions = new ArrayList<>();
@@ -325,6 +325,7 @@ public class PaymentDetailDao {
             model.setTag(rs.getString("tag"));
             model.setFile(rs.getString("file"));
             model.setBillNo(rs.getString("bill_No"));
+            model.setBill_status(rs.getString("bill_status"));
             model.setCurrency(rs.getString("currency"));
             model.setPrice(rs.getDouble("price"));
             model.setUsd_price(rs.getDouble("usd_price"));

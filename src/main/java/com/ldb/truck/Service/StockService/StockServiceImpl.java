@@ -807,6 +807,7 @@ public class StockServiceImpl {
                     tr.setBorkey(rs.getString("borkey"));
                     tr.setBorame(rs.getString("borname"));
                     tr.setRemark(rs.getString("remark"));
+                    tr.setPlaceBuy(rs.getString("place_buy"));
                     return tr;
                 }
             });
@@ -985,7 +986,7 @@ public class StockServiceImpl {
                     updated = checkStatusWait(request.getStatus(), request, userId);
                 } else if ("auth".equals(status)) {
                     log.info("status:" + request.getStatus());
-                    updated = checkStatusAuth(request.getStatus(), request, userId);
+                    updated = checkStatusAuth(request.getStatus(), request.getPlaceBuy(), request, userId);
                 } else if ("reject".equals(status)) {
                     log.info("status:" + request.getStatus());
                     updated = checkStatusReject(request.getStatus(), request, userId);
@@ -1059,7 +1060,7 @@ public class StockServiceImpl {
 
     }
     //================auth
-    public int checkStatusAuth(String status,StockItemAuthReq request, String userId){
+    public int checkStatusAuth(String status, String placeBuy,StockItemAuthReq request, String userId){
         log.info("====start service ====");
         //****let start other service
         List<OrderItemReportEntity> items = authConvert(request, userId);
@@ -1072,21 +1073,24 @@ public class StockServiceImpl {
                 "price = ?," +
                 "status= 'auth' , " +
                 "currency= ?, " +
-                "exchange_rate= ? " +
+                "exchange_rate= ?," +
+                "place_buy=? " +
                 "WHERE item_id = ? and bill_no=?  ";
         for (OrderItemReportEntity item : items) {
             log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
             updated = EBankJdbcTemplate.update(
                     sql,
-                    userId,
-                    new Date(),
-                    item.getQty(),
-                    item.getPrice(),
-                    item.getCurrency(),
-                    item.getExchangeRate(),
-                    item.getDetailId(),
-                    item.getBillNo()
+                    userId,                // approveby
+                    new Date(),            // approvedate
+                    item.getQty(),         // qty
+                    item.getPrice(),       // price
+                    item.getCurrency(),    // currency
+                    item.getExchangeRate(),// exchange_rate
+                    placeBuy,              // ✔ place_buy ใช้ค่าจาก parameter โดยตรง
+                    item.getDetailId(),    // item_id
+                    item.getBillNo()       // bill_no
             );
+
             log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
         }
         return 1;
@@ -2813,7 +2817,7 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             }else {
                 //51 ຫົວເຈາະ
                 conQuery = "select '51' req_id,a.mch_name req_name,b.key_id bor_id ,a.mch_no,b.key_id bor_no ,'51' type,b.b_name as location  from tb_machine a inner join \n" +
-                        "tb_bors b  on b.key_id=a.borNo where a.borNo='"+borNo+"' and 1=1";
+                        "tb_bors b  on b.key_id=a.borNo where a.status='A' and a.borNo='"+borNo+"' and 1=1";
             }
         }
         else if(reqTypeId.equals("53")) {
