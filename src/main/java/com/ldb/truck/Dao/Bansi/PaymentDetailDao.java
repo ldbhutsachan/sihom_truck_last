@@ -257,10 +257,13 @@ public class PaymentDetailDao {
             String endDate,
             String role
     ) {
-        String sql = "SELECT * FROM v_accounting_report where bill_status='ok'";
+        String sql = "SELECT * FROM v_accounting_report";
 
         List<Object> params = new ArrayList<>();
         List<String> conditions = new ArrayList<>();
+
+        // always force bill_status = ok
+        conditions.add("bill_status = 'ok'");
 
         // Map field → value
         Map<String, String> filters = Map.of(
