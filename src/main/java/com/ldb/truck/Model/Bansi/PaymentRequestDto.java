@@ -26,6 +26,7 @@ public class PaymentRequestDto {
     private String datermine_date;
     private String bill_status;
     private MultipartFile file;
+    private Long b_id;
 
     private List<ToolDto> tools;
 

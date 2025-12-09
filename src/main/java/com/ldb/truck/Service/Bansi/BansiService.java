@@ -48,6 +48,8 @@ public class BansiService {
     private MediaUploadService mediaUploadService;
     @Autowired
     private SignatureRepository signatureRepository;
+    @Autowired
+    private BankRepository bankRepository;
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
         DataResponse response = new DataResponse();
@@ -415,6 +417,7 @@ public class BansiService {
         entity.setDatertimeDate(req.getDatermine_date());
         entity.setDateCreate(LocalDate.now());
         entity.setBillStatus("wait");
+        entity.setBId(req.getB_id());
 
         MultipartFile file = req.getFile();
         if (file != null && !file.isEmpty()) {
@@ -501,6 +504,7 @@ public class BansiService {
         entity.setTag(req.getTag() != null ? req.getTag() : entity.getTag());
         entity.setDatertimeDate(req.getDatermine_date() != null ? req.getDatermine_date() : entity.getDatertimeDate());
         entity.setBillStatus(req.getBill_status() !=null ? req.getBill_status() : entity.getBillStatus());
+        entity.setBId(req.getB_id() !=null ? req.getB_id() : entity.getBId());
 
         if (req.getDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -991,6 +995,161 @@ public class BansiService {
         result.setSumPayUsdDefual(sumPayUsdEquivalent);
         return result;
     }
+
+    //insertBank
+    public DataResponse saveBankAccount(BankEntity bankEntity){
+        DataResponse response = new DataResponse();
+
+        try {
+            // check token
+            if (bankEntity.getToKen() == null || bankEntity.getToKen().isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Token missing");
+                return response;
+            }
+
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(bankEntity.getToKen());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            String role = user.getRole();
+            String userId = user.getUserId();
+
+            // allowed role list
+            List<String> allowed = Arrays.asList("SUPERBANSI", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(role.toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No right to save");
+                return response;
+            }
+
+            // auto-set fields
+            bankEntity.setDateCreate(LocalDateTime.now());
+            bankEntity.setUserId(userId);
+
+            BankEntity saved = bankRepository.save(bankEntity);
+
+            response.setStatus("00");
+            response.setMessage("Success Save bank-account");
+            response.setDataResponse(saved);
+            return response;
+
+        } catch (Exception e) {
+            log.error("Store bank account error: ", e);
+            response.setStatus("EE");
+            response.setMessage("Store bank account is Error !!");
+            return response;
+        }
+    }
+    //update bankAccount
+    public DataResponse updateBankAccount(BankEntity bankEntity) {
+        DataResponse response = new DataResponse();
+
+        try {
+            // 1) check token
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(bankEntity.getToKen());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            String role = user.getRole();
+            String userId = user.getUserId();
+
+            // 2) check role
+            List<String> allowed = Arrays.asList("SUPERBANSI", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(role.toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No right to update");
+                return response;
+            }
+
+            // 3) check b_id
+            if (bankEntity.getBId() == null) {
+                response.setStatus("06");
+                response.setMessage("Missing b_id");
+                return response;
+            }
+
+            // 4) find record
+            BankEntity existing = bankRepository.findById(bankEntity.getBId())
+                    .orElse(null);
+
+            if (existing == null) {
+                response.setStatus("04");
+                response.setMessage("Bank account not found");
+                return response;
+            }
+
+            // 5) update fields
+            existing.setAccountName(bankEntity.getAccountName());
+            existing.setAccountNo(bankEntity.getAccountNo());
+            existing.setBankName(bankEntity.getBankName());
+            existing.setDateCreate(LocalDateTime.now());
+            existing.setUserId(userId);
+
+            // 6) save
+            BankEntity updated = bankRepository.save(existing);
+
+            response.setStatus("00");
+            response.setMessage("Success Update bank-account");
+            response.setDataResponse(updated);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Update bank account is Error !!");
+        }
+
+        return response;
+    }
+
+    //show bankAccount Service
+    public DataResponse getAllBankAccounts(BankEntity bankEntity) {
+        DataResponse response = new DataResponse();
+
+        try {
+            // 1) check token
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(bankEntity.getToKen());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            String role = user.getRole();
+
+            // 2) check role
+            List<String> allowed = Arrays.asList("SUPERBANSI", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(role.toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No right to update");
+                return response;
+            }
+
+            List<BankEntity> list = bankRepository.findAll();
+
+            response.setStatus("00");
+            response.setMessage("Success showing Data");
+            response.setDataResponse(list);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error retrieving bank accounts");
+        }
+
+        return response;
+    }
+
+
 
 
 

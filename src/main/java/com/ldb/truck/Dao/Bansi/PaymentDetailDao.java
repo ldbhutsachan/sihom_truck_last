@@ -26,13 +26,14 @@ public class PaymentDetailDao {
                 "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, a.supplierid, a.bill_status, " +
                 "pt.pid as payId, pt.type_name, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role, " +
                 "a.basi_approve_date, a.bansi_approveby, a.account_approve_date, a.account_approveby, a.final_approve_date, a.final_approveby, " +
-                "a.returnby, a.return_date " +  // ← ใส่ space หลัง a.return_date
+                "a.returnby, a.return_date,b.account_name, b.account_no, b.bank_name " +  // ← ใส่ space หลัง a.return_date
                 "FROM tb_accounting a " +
                 "INNER JOIN pay_type pt ON a.pay_typeid = pt.pid " +
                 "LEFT JOIN LOGIN l ON a.user_id = l.KEY_ID " +
                 "LEFT JOIN supplier s ON a.supplierid = s.supplierid " +
                 "LEFT JOIN request_item_type rt ON pt.req_id = rt.req_id " +
-                "LEFT JOIN item_type it ON rt.item_typeid = it.itemTypeid ";
+                "LEFT JOIN item_type it ON rt.item_typeid = it.itemTypeid " +
+                "LEFT JOIN tb_bank b ON a.b_id = b.b_id";
 
 
         List<Object> params = new ArrayList<>();
@@ -119,6 +120,9 @@ public class PaymentDetailDao {
         model.setFinal_approve_date(rs.getString("final_approve_date"));
         model.setReturnby(rs.getString("returnby"));
         model.setReturn_date(rs.getString("return_date"));
+        model.setAccount_name(rs.getString("account_name"));
+        model.setAccount_no(rs.getString("account_no"));
+        model.setBank_name(rs.getString("bank_name"));
 
         //  เติม listItems จาก tb_accounting_list
         model.setListItems(findListItemsByBillNo(model.getBillNo()));
@@ -333,6 +337,10 @@ public class PaymentDetailDao {
             model.setPrice(rs.getDouble("price"));
             model.setUsd_price(rs.getDouble("usd_price"));
             model.setRole(rs.getString("role"));
+            model.setBank_account_name(rs.getString("bank_account_name"));
+            model.setBank_account_no(rs.getString("bank_account_no"));
+            model.setBank_name(rs.getString("bank_name"));
+
 
             return model;
         });

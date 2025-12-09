@@ -116,7 +116,8 @@ public class BansiController {
             @RequestParam(value = "tag", required = false) String tag,
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
-            @RequestParam(value = "file", required = false) MultipartFile file
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("b_id") Long bId
     ) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -137,6 +138,7 @@ public class BansiController {
             dto.setTag(tag);
             dto.setDatermine_date(datermine_date);
             dto.setFile(file);
+            dto.setB_id(bId);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
@@ -175,7 +177,8 @@ public class BansiController {
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
             @RequestParam(value = "bill_status", required = false) String bill_status,
-            @RequestParam(value = "file", required = false) MultipartFile file
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("b_id") Long bId
     ) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -196,6 +199,7 @@ public class BansiController {
             dto.setDatermine_date(datermine_date);
             dto.setBill_status(bill_status);
             dto.setFile(file);
+            dto.setB_id(bId);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
@@ -438,8 +442,29 @@ public class BansiController {
         return bansiService.reportAccounting(req);
     }
 
+    //bank Account controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/saveBankAccount.service")
+    public ResponseEntity<DataResponse> saveBankAccount(@RequestBody BankEntity bankEntity){
+        DataResponse response = bansiService.saveBankAccount(bankEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
+    // bank Account Controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateBankAccount.service")
+    public ResponseEntity<DataResponse> updateBankAccount(@RequestBody BankEntity bankEntity) {
+        DataResponse response = bansiService.updateBankAccount(bankEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
+    //show bankAccount controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getBankAccounts.service")
+    public ResponseEntity<DataResponse> getAllBankAccounts(@RequestBody BankEntity bankEntity) {
+        DataResponse response = bansiService.getAllBankAccounts(bankEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 
 

@@ -70,6 +70,9 @@ public class PaymentRequestEntity {
     @Column(name = "bill_status")
     private String billStatus;
 
+    @Column(name ="b_id")
+    private Long bId;
+
     @Transient
     private String toKen; //สำหรับ token จาก client
 

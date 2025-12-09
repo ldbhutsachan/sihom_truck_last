@@ -40,6 +40,9 @@ public class PaymentDetailModel {
     private String final_approveby;
     private String returnby;
     private String return_date;
+    private String account_name;
+    private String account_no;
+    private String bank_name;
     // add field for list
     private List<PaymentDetailListModel> listItems;
 }
