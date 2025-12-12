@@ -116,8 +116,8 @@ public class PaymentDetailDao {
         model.setBasi_approve_date(rs.getString("basi_approve_date"));
         model.setAccount_approveby(rs.getString("account_approveby"));
         model.setAccount_approve_date(rs.getString("account_approve_date"));
-        model.setFinal_approveby(rs.getString("account_approveby"));
-        model.setFinal_approve_date(rs.getString("final_approve_date"));
+//        model.setFinal_approveby(rs.getString("account_approveby"));
+//        model.setFinal_approve_date(rs.getString("final_approve_date"));
         model.setReturnby(rs.getString("returnby"));
         model.setReturn_date(rs.getString("return_date"));
         model.setAccount_name(rs.getString("account_name"));

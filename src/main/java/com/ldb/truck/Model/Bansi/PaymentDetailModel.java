@@ -36,8 +36,8 @@ public class PaymentDetailModel {
     private String bansi_approveby;
     private String account_approve_date;
     private String account_approveby;
-    private String final_approve_date;
-    private String final_approveby;
+//    private String final_approve_date;
+//    private String final_approveby;
     private String returnby;
     private String return_date;
     private String account_name;

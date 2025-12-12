@@ -466,6 +466,47 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    // show finaceData controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getListForFinance.service")
+    public ResponseEntity<DataResponse> getListForFinance(@RequestBody FinanceListEntity financeListEntity) {
+        DataResponse response = bansiService.getListForFinance(financeListEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //generate Finance_Bill api
+    @CrossOrigin(origins = "*")
+    @GetMapping("/generateFinaceBill.service")
+    public ResponseEntity<Map<String, String>> generateFinaceBill() {
+        Map<String, String> response = new HashMap<>();
+        try {
+            String newFinaceBill = bansiService.generateFinaceBill();
+            response.put("Finance_Bill", newFinaceBill);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("error", "Cannot generate Finace_Bill");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    //createFinaceBill
+    @PostMapping("/insertFinance.service")
+    public ResponseEntity<DataResponse> insertFinance(@RequestBody FinanceRequestDto req) {
+
+        DataResponse response = bansiService.insertFinance(req);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    //update pay by Finance
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateFinancePay.service")
+    public ResponseEntity<DataResponse> updateFinancePay(@RequestBody FinanceUpdateDto req) {
+        DataResponse response = bansiService.updateFinancePay(req);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 
 }

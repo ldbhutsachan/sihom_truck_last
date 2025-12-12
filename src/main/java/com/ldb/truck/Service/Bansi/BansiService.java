@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +52,12 @@ public class BansiService {
     private SignatureRepository signatureRepository;
     @Autowired
     private BankRepository bankRepository;
+    @Autowired
+    private FinanceListRepository financeListRepository;
+    @Autowired
+    private FinanceRepository financeRepository;
+    @Autowired
+    private FinanceManageListRepository financeManageListRepository;
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
         DataResponse response = new DataResponse();
@@ -628,10 +636,8 @@ public class BansiService {
         if (!"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             if ("wait".equals(status) && !"bansiapprove".equalsIgnoreCase(role)) {
                 throw new Exception("this user can't approve this bill: 'wait'");
-            } else if ("wait-account".equals(status) && !"superaccount".equalsIgnoreCase(role)) {
-                throw new Exception("this user can't approve this bill: 'wait-account'");
-            } else if ("wait_admin".equals(status) && !"adminapprove".equalsIgnoreCase(role)) {
-                throw new Exception("this user can't approve this bill: 'wait_admin'");
+            } else if ("wait-finance".equals(status) && !"superaccount".equalsIgnoreCase(role)) {
+                throw new Exception("this user can't approve this bill: 'wait-finance'");
             }
         }
 
@@ -639,16 +645,12 @@ public class BansiService {
         if ("wait".equals(status) || "".equals(status)) {
             entity.setBasiApproveDate(now);
             entity.setBansiApproveBy(approveBy);
-            entity.setBillStatus("wait-account");
-        } else if ("wait-account".equals(status)) {
+            entity.setBillStatus("wait-finance");
+        } else if ("wait-finance".equals(status)) {
             entity.setAccountApproveDate(now);
             entity.setAccountApproveBy(approveBy);
-            entity.setBillStatus("wait_admin");
-        } else if ("wait_admin".equals(status)) {
-            entity.setFinalApproveDate(now);
-            entity.setFinalApproveBy(approveBy);
             entity.setBillStatus("ok");
-        } else if ("ok".equals(status)) {
+        }else if ("ok".equals(status)) {
             throw new Exception("this bill has done approving (status = ok).");
         } else {
             throw new Exception("the bill_status is incorrect : " + status);
@@ -1130,7 +1132,7 @@ public class BansiService {
             List<String> allowed = Arrays.asList("SUPERBANSI", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
-                response.setMessage("No right to update");
+                response.setMessage("No right");
                 return response;
             }
 
@@ -1147,6 +1149,297 @@ public class BansiService {
         }
 
         return response;
+    }
+
+
+    //show financeList service
+    public DataResponse getListForFinance(FinanceListEntity financeListEntity){
+        DataResponse response = new DataResponse();
+        try{
+            // 1) check token
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(financeListEntity.getToKen());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            String role = user.getRole();
+
+            // 2) check role
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(role.toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No right to fetch data");
+                return response;
+            }
+
+            // 3) Prepare filter values
+            String supplierId = financeListEntity.getSupplierId() == null
+                    ? null
+                    : String.valueOf(financeListEntity.getSupplierId());
+
+            String payTypeId = financeListEntity.getPayTypeId();
+
+            List<FinanceListEntity> list =
+                    financeListRepository.searchFinance(supplierId, payTypeId);
+
+            response.setStatus("00");
+            response.setMessage("Success showing Finance Data");
+            response.setDataResponse(list);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error retrieving Finance Data");
+        }
+
+        return response;
+    }
+
+    // getFinanceBill service
+    public String generateFinaceBill() {
+        String lastBillNo = financeRepository.findLastFinanceBillNo();
+
+        String prefix = "F-BILL-";
+        int number = 1;
+
+        if (lastBillNo != null && !lastBillNo.isEmpty()) {
+            try {
+                String[] parts = lastBillNo.split("-");
+                number = Integer.parseInt(parts[2]) + 1; // ← ต้องเป็น index 2
+            } catch (Exception e) {
+                number = 1;
+            }
+        }
+
+        return prefix + String.format("%04d", number);
+    }
+
+
+    @Transactional
+    public DataResponse insertFinance(FinanceRequestDto req) {
+        DataResponse response = new DataResponse();
+
+        try {
+            // 1. Validate token
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+
+            // 2. Check role
+            List<String> allowedRoles = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            if (!allowedRoles.contains(user.getRole().toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No permission to insert finance");
+                return response;
+            }
+
+            // 3. Generate financeBill (เช็คให้ไม่ซ้ำ)
+            String financeBill = generateNextFinanceBill();
+            while (existsFinanceBill(financeBill)) {
+                financeBill = generateNextFinanceBill();
+            }
+
+            // 4. Insert into tb_finance
+            FinanceEntity master = new FinanceEntity();
+            master.setFinanceBill(financeBill);
+            master.setSupplierId(req.getSupplierId());
+
+            // แปลง amountMustPay จาก String → BigDecimal
+            BigDecimal amountMustPay = req.getAmountMustPay() != null && !req.getAmountMustPay().isEmpty()
+                    ? new BigDecimal(req.getAmountMustPay())
+                    : BigDecimal.ZERO;
+            master.setAmountMustPay(req.getAmountMustPay());
+            master.setCurrency(req.getCurrency());
+
+            // แปลง pay จาก String → BigDecimal
+            BigDecimal pay = req.getPay() != null && !req.getPay().isEmpty()
+                    ? new BigDecimal(req.getPay())
+                    : BigDecimal.ZERO;
+            master.setPay1(pay);
+            master.setPay2(null);
+            master.setPay3(null);
+            master.setPay4(null);
+            master.setPay5(null);
+
+            // check payStatus
+            master.setPayStatus(amountMustPay.subtract(pay).compareTo(BigDecimal.ZERO) <= 0 ? "DONE" : "IN-PROGRESS");
+
+            // แปลง nextDatePay จาก String → LocalDateTime
+//            if (req.getNextDatePay() != null && !req.getNextDatePay().isEmpty()) {
+//                try {
+//                    if (req.getNextDatePay().length() == 10) {
+//                        master.setNextDatePay(LocalDate.parse(req.getNextDatePay()).atStartOfDay());
+//                    } else {
+//                        master.setNextDatePay(LocalDateTime.parse(req.getNextDatePay()));
+//                    }
+//                } catch (DateTimeParseException ex) {
+//                    throw new IllegalArgumentException(
+//                            "Invalid date format for nextDatePay. Use yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss");
+//                }
+//            }
+//            master.setNextDatePay(req.getNextDatePay());
+            if (req.getNextDatePay() != null && !req.getNextDatePay().isEmpty()) {
+                master.setNextDatePay(req.getNextDatePay());
+            }
+
+            master.setFirstDatePay(LocalDateTime.now());
+            master.setCreateby(user.getUserName());
+
+            FinanceEntity savedFinance = financeRepository.save(master);
+
+            // 5. Insert into tb_finance_managelist
+            if (req.getBillList() != null && !req.getBillList().isEmpty()) {
+                List<FinanceManageListEntity> detailList = new ArrayList<>();
+                for (String billNo : req.getBillList()) {
+                    FinanceManageListEntity d = new FinanceManageListEntity();
+                    d.setFinanceBill(financeBill); // ใช้เลขเดียวกับ master
+                    d.setBillNo(billNo);
+                    detailList.add(d);
+                }
+                financeManageListRepository.saveAll(detailList);
+            }
+
+            response.setStatus("00");
+            response.setMessage("Finance saved successfully");
+            response.setDataResponse(savedFinance);
+            return response;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error saving finance: " + e.getMessage());
+            return response;
+        }
+    }
+
+    // helper: generate next financeBill
+    @Transactional
+    public synchronized String generateNextFinanceBill() {
+        String lastBillNo = financeRepository.findLastFinanceBillNo();
+        String prefix = "F-BILL-";
+        int number = 1;
+
+        if (lastBillNo != null && !lastBillNo.isEmpty()) {
+            try {
+                String[] parts = lastBillNo.split("-");
+                number = Integer.parseInt(parts[2]) + 1; // ปรับ index เป็น 2 เพราะรูปแบบ F-BILL-0001
+            } catch (Exception e) {
+                number = 1;
+            }
+        }
+
+        return prefix + String.format("%04d", number);
+    }
+
+    // helper: check if financeBill exists
+    private boolean existsFinanceBill(String billNo) {
+        return financeRepository.countBill(billNo) > 0;
+    }
+
+
+    //update pay
+    @Transactional
+    public DataResponse updateFinancePay(FinanceUpdateDto req) {
+        DataResponse response = new DataResponse();
+
+        try {
+            // 1. Validate token
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+
+            // 2. Check role
+            List<String> allowedRoles = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            if (!allowedRoles.contains(user.getRole().toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No permission to update finance");
+                return response;
+            }
+
+            // 3. Find Finance by financeBill
+            FinanceEntity finance = financeRepository.findByFinanceBill(req.getFinanceBill());
+            if (finance == null) {
+                response.setStatus("04");
+                response.setMessage("Finance bill not found");
+                return response;
+            }
+
+            // 4. Update pay2–pay5 if pay is provided
+            if (req.getPay() != null && !req.getPay().isEmpty()) {
+                BigDecimal payValue = new BigDecimal(req.getPay());
+
+                if (finance.getPay2() == null || finance.getPay2().compareTo(BigDecimal.ZERO) == 0) {
+                    finance.setPay2(payValue);
+                } else if (finance.getPay3() == null || finance.getPay3().compareTo(BigDecimal.ZERO) == 0) {
+                    finance.setPay3(payValue);
+                } else if (finance.getPay4() == null || finance.getPay4().compareTo(BigDecimal.ZERO) == 0) {
+                    finance.setPay4(payValue);
+                } else if (finance.getPay5() == null || finance.getPay5().compareTo(BigDecimal.ZERO) == 0) {
+                    finance.setPay5(payValue);
+                } else {
+                    response.setStatus("06");
+                    response.setMessage("All payment slots are full");
+                    return response;
+                }
+            }
+
+            // 5. Update next_date_pay if provided
+            if (req.getNextDatePay() != null && !req.getNextDatePay().isEmpty()) {
+                finance.setNextDatePay(req.getNextDatePay());
+            }
+
+
+            // 6. Update currency if provided
+            if (req.getCurrency() != null && !req.getCurrency().isEmpty()) {
+                finance.setCurrency(req.getCurrency());
+            }
+
+            // 7. Update last_date_pay to now
+            finance.setLastDatePay(LocalDateTime.now());
+
+            // 8. Check total payment and set payStatus
+            BigDecimal amountMustPay = finance.getAmountMustPay() != null && !finance.getAmountMustPay().isEmpty()
+                    ? new BigDecimal(finance.getAmountMustPay())
+                    : BigDecimal.ZERO;
+
+            BigDecimal totalPaid =
+                    (finance.getPay1() != null ? finance.getPay1() : BigDecimal.ZERO)
+                            .add(finance.getPay2() != null ? finance.getPay2() : BigDecimal.ZERO)
+                            .add(finance.getPay3() != null ? finance.getPay3() : BigDecimal.ZERO)
+                            .add(finance.getPay4() != null ? finance.getPay4() : BigDecimal.ZERO)
+                            .add(finance.getPay5() != null ? finance.getPay5() : BigDecimal.ZERO);
+
+            if (totalPaid.compareTo(amountMustPay) >= 0) {
+                finance.setPayStatus("DONE");
+            } else {
+                finance.setPayStatus("IN-PROGRESS");
+            }
+
+            // 9. Save finance
+            FinanceEntity updatedFinance = financeRepository.save(finance);
+
+            response.setStatus("00");
+            response.setMessage("Payment updated successfully");
+            response.setDataResponse(updatedFinance);
+            return response;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error updating finance: " + e.getMessage());
+            return response;
+        }
     }
 
 
