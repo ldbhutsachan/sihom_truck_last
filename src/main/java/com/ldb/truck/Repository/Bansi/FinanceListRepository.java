@@ -10,15 +10,26 @@ import java.util.List;
 
 @Repository
 public interface FinanceListRepository extends JpaRepository<FinanceListEntity, Long> {
-
     @Query(value =
             "SELECT * FROM v_accounting_finance " +
                     "WHERE (:supplierId IS NULL OR :supplierId = '' OR supplierid = :supplierId) " +
-                    "AND (:payTypeId IS NULL OR :payTypeId = '' OR pay_type_id = :payTypeId)",
+                    "AND (:payTypeId IS NULL OR :payTypeId = '' OR pay_type_id = :payTypeId) " +
+                    "AND ( " +
+                    "   (:startDate IS NULL OR :startDate = '' " +
+                    "       OR finance_approve_date >= :startDate) " +
+                    "AND (:endDate IS NULL OR :endDate = '' " +
+                    "       OR finance_approve_date < DATE_ADD(:endDate, INTERVAL 1 DAY)) " +
+                    ") " +
+                    "AND (pay_status IS NULL OR pay_status != 'DONE-PAY')" +
+                    "ORDER BY finance_approve_date DESC",
             nativeQuery = true)
     List<FinanceListEntity> searchFinance(
             @Param("supplierId") String supplierId,
-            @Param("payTypeId") String payTypeId
+            @Param("payTypeId") String payTypeId,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
     );
+
+
 }
 

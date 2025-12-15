@@ -39,6 +39,10 @@ public class FinanceListEntity {
     @JsonProperty("bill_status")
     private String billStatus;
 
+    @Column(name = "pay_status")
+    @JsonProperty("pay_status")
+    private String paystatus;
+
     @Column(name = "bank_account_name")
     @JsonProperty("bank_account_name")
     private String bankAccountName;
@@ -67,6 +71,21 @@ public class FinanceListEntity {
     @JsonProperty("usd_price")
     private Double usdPrice;
 
+    @Column(name = "finance_approve_date")
+    @JsonProperty("finance_approve_date")
+    private String  financeApproveDate;
+
+    @Column(name = "date_create")
+    @JsonProperty("date_create")
+    private String dateCreate;
+
     @Transient
     private String toKen; // สำหรับส่ง token จาก client
+
+    @Transient
+    private String startDate;
+
+    @Transient
+    private String endDate;
+
 }

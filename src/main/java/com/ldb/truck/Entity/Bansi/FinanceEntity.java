@@ -75,6 +75,10 @@ public class FinanceEntity {
     @JsonProperty("create_by")
     private String createby;
 
+    @Column(name = "create_date")
+    @JsonProperty("create_date")
+    private LocalDateTime createDate;
+
     @Transient
     private String toKen; //สำหรับ token จาก client
 }

@@ -102,4 +102,7 @@ public class PaymentRequestEntity {
     @Column(name = "return_date")
     private LocalDateTime returnDate;
 
+    @Column(name = "pay_status")
+    private String payStatus;
+
 }

@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -58,6 +59,9 @@ public class BansiService {
     private FinanceRepository financeRepository;
     @Autowired
     private FinanceManageListRepository financeManageListRepository;
+    @Autowired
+    private FinanceViewRepository financeViewRepository;
+
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
         DataResponse response = new DataResponse();
@@ -1182,8 +1186,16 @@ public class BansiService {
 
             String payTypeId = financeListEntity.getPayTypeId();
 
+            String startDate = financeListEntity.getStartDate();
+            String endDate = financeListEntity.getEndDate();
+
             List<FinanceListEntity> list =
-                    financeListRepository.searchFinance(supplierId, payTypeId);
+                    financeListRepository.searchFinance(
+                            supplierId,
+                            payTypeId,
+                            startDate,
+                            endDate
+                    );
 
             response.setStatus("00");
             response.setMessage("Success showing Finance Data");
@@ -1271,25 +1283,21 @@ public class BansiService {
             // check payStatus
             master.setPayStatus(amountMustPay.subtract(pay).compareTo(BigDecimal.ZERO) <= 0 ? "DONE" : "IN-PROGRESS");
 
-            // แปลง nextDatePay จาก String → LocalDateTime
-//            if (req.getNextDatePay() != null && !req.getNextDatePay().isEmpty()) {
-//                try {
-//                    if (req.getNextDatePay().length() == 10) {
-//                        master.setNextDatePay(LocalDate.parse(req.getNextDatePay()).atStartOfDay());
-//                    } else {
-//                        master.setNextDatePay(LocalDateTime.parse(req.getNextDatePay()));
-//                    }
-//                } catch (DateTimeParseException ex) {
-//                    throw new IllegalArgumentException(
-//                            "Invalid date format for nextDatePay. Use yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss");
-//                }
-//            }
-//            master.setNextDatePay(req.getNextDatePay());
             if (req.getNextDatePay() != null && !req.getNextDatePay().isEmpty()) {
                 master.setNextDatePay(req.getNextDatePay());
             }
+            if (req.getFirstDatePay() != null && !req.getFirstDatePay().isEmpty()) {
+                String input = req.getFirstDatePay();
+                if (input.length() == 10) { // yyyy-MM-dd
+                    input += " 00:00:00"; // เติมเวลา
+                }
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime firstDatePay = LocalDateTime.parse(input, formatter);
+                master.setFirstDatePay(firstDatePay);
+            }
 
-            master.setFirstDatePay(LocalDateTime.now());
+
+            master.setCreateDate(LocalDateTime.now());
             master.setCreateby(user.getUserName());
 
             FinanceEntity savedFinance = financeRepository.save(master);
@@ -1302,6 +1310,14 @@ public class BansiService {
                     d.setFinanceBill(financeBill); // ใช้เลขเดียวกับ master
                     d.setBillNo(billNo);
                     detailList.add(d);
+
+                    // update tb_accounting SET pay_status = 'DONE-PAY'
+                    int updated = paymentRequestRepository
+                            .updatePayStatusByBillNo(billNo, "DONE-PAY");
+
+                    if (updated == 0) {
+                        throw new RuntimeException("BillNo not found in tb_accounting: " + billNo);
+                    }
                 }
                 financeManageListRepository.saveAll(detailList);
             }
@@ -1441,6 +1457,124 @@ public class BansiService {
             return response;
         }
     }
+
+    //show FinanceViewService
+    public DataResponse getFinanceViewGrouped(FinanceViewDto financeViewDto) {
+        DataResponse response = new DataResponse();
+
+        try {
+            // 1) ตรวจสอบ token และ role
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(financeViewDto.getToken());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(user.getRole().toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No right to fetch data");
+                return response;
+            }
+
+            // 2) ดึงข้อมูลจาก Repository
+            List<FinanceViewDto> financeList = financeViewRepository.findFinanceByFilter(
+                    financeViewDto.getFinanceBill(),
+                    financeViewDto.getPayStatus(),
+                    financeViewDto.getStartDate(),
+                    financeViewDto.getEndDate()
+            );
+
+
+            // 3) Group by financeBill
+            Map<String, List<FinanceViewDto>> grouped = financeList.stream()
+                    .collect(Collectors.groupingBy(FinanceViewDto::getFinanceBill));
+
+            // 4) สร้าง map สำหรับ response
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Map.Entry<String, List<FinanceViewDto>> entry : grouped.entrySet()) {
+                List<FinanceViewDto> list = entry.getValue();
+                if (list.isEmpty()) continue;
+
+                FinanceViewDto first = list.get(0);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("keyId", first.getKeyId());
+                map.put("supplierId", first.getSupplierId());
+                map.put("supplierName", first.getSupplierName());
+                map.put("financeBill", first.getFinanceBill());
+                map.put("amountMustPay", first.getAmountMustPay());
+                map.put("pay1", first.getPay1());
+                map.put("pay2", first.getPay2());
+                map.put("pay3", first.getPay3());
+                map.put("pay4", first.getPay4());
+                map.put("pay5", first.getPay5());
+                map.put("firstDatePay", first.getFirstDatePay());
+                map.put("lastDatePay", first.getLastDatePay());
+                map.put("nextDatePay", first.getNextDatePay());
+                map.put("payStatus", first.getPayStatus());
+                map.put("currency", first.getCurrency());
+                map.put("createBy", first.getCreateBy());
+                map.put("token", first.getToken());
+
+                // รวม billNo เป็น list
+                List<String> billNos = list.stream()
+                        .map(FinanceViewDto::getBillNo)
+                        .collect(Collectors.toList());
+                map.put("billNos", billNos);
+
+                // คำนวณ paidTotal และ amountNotPayYet
+                double paidTotal = first.getPay1() + first.getPay2() + first.getPay3() + first.getPay4() + first.getPay5();
+                double amountNotPayYet = first.getAmountMustPay() - paidTotal;
+                map.put("paidTotal", paidTotal);
+                map.put("amountNotPayYet", amountNotPayYet);
+
+                // ------------------ CALCULATE notify_status ------------------
+                String notifyStatus = "UNKNOWN";
+                if ("DONE".equalsIgnoreCase(first.getPayStatus())) {
+                    notifyStatus = "DONE";
+                } else if (first.getNextDatePay() != null && !first.getNextDatePay().isEmpty()) {
+                    try {
+                        String dateStr = first.getNextDatePay();
+                        // ถ้า format มีเวลา ให้ตัดเป็น yyyy-MM-dd
+                        if (dateStr.length() > 10) {
+                            dateStr = dateStr.substring(0, 10);
+                        }
+                        LocalDate nextDate = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        LocalDate today = LocalDate.now();
+
+                        if (nextDate.isAfter(today)) {
+                            notifyStatus = "COMING";
+                        } else if (nextDate.isEqual(today)) {
+                            notifyStatus = "EXPIRED";
+                        } else {
+                            notifyStatus = "OVERDUE";
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        notifyStatus = "ERROR";
+                    }
+                }
+                map.put("notify_status", notifyStatus);
+
+                result.add(map);
+            }
+
+            response.setStatus("00");
+            response.setMessage("Success showing Finance Data");
+            response.setDataResponse(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error retrieving Finance Data");
+        }
+
+        return response;
+    }
+
 
 
 

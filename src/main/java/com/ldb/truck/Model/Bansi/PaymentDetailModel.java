@@ -24,6 +24,7 @@ public class PaymentDetailModel {
     private String file;
     private Long   payId;
     private String paytype;
+    private String type_of;
     private Long   req_id;
     private String smallProject;
     private Long   itemTypeid;

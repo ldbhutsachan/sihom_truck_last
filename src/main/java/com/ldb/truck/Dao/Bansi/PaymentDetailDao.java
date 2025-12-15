@@ -24,7 +24,7 @@ public class PaymentDetailDao {
     public List<PaymentDetailModel> findPaymentDetails(Long itemTypeid, Long req_id, Long pid, String role) {
         String sql = "SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, a.date, a.datermine_date, a.date_create, a.data_type, " +
                 "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, a.supplierid, a.bill_status, " +
-                "pt.pid as payId, pt.type_name, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role, " +
+                "pt.pid as payId, pt.type_name,pt.type_pay as type_of, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role, " +
                 "a.basi_approve_date, a.bansi_approveby, a.account_approve_date, a.account_approveby, a.final_approve_date, a.final_approveby, " +
                 "a.returnby, a.return_date,b.account_name, b.account_no, b.bank_name " +  // ← ใส่ space หลัง a.return_date
                 "FROM tb_accounting a " +
@@ -64,7 +64,7 @@ public class PaymentDetailDao {
 
         if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
             conditions.add("a.bill_status = ?");
-            params.add("basi-approve");
+            params.add("wait-account");
         }
 
 
@@ -104,6 +104,7 @@ public class PaymentDetailDao {
         model.setFile(rs.getString("file"));
         model.setPayId(rs.getLong("payId"));
         model.setPaytype(rs.getString("type_name"));
+        model.setType_of(rs.getString("type_of"));
         model.setReq_id(rs.getLong("req_id"));
         model.setSmallProject(rs.getString("req_name"));
         model.setItemTypeid(rs.getLong("itemTypeid"));

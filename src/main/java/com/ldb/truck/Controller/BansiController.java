@@ -508,5 +508,13 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getFinanceView.service")
+    public ResponseEntity<DataResponse> getFinanceViewGrouped(@RequestBody FinanceViewDto financeViewDto) {
+        DataResponse response = bansiService.getFinanceViewGrouped(financeViewDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
 
 }

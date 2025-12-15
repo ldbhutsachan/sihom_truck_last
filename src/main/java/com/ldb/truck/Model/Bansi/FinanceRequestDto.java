@@ -12,6 +12,7 @@ public class FinanceRequestDto {
     private String amountMustPay;
     private String pay;
     private String currency;
+    private String firstDatePay;
     private String nextDatePay;
 
 //    private List<BillListDto> billList;
