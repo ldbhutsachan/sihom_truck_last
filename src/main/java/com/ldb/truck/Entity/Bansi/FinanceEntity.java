@@ -29,35 +29,16 @@ public class FinanceEntity {
 
     @Column(name = "amount_must_pay")
     @JsonProperty("amount_must_pay")
-    private String amountMustPay;
+    private BigDecimal amountMustPay;
 
     @Column(name = "pay1")
     @JsonProperty("pay1")
     private BigDecimal pay1;
 
-    @Column(name = "pay2")
-    @JsonProperty("pay2")
-    private BigDecimal pay2;
-
-    @Column(name = "pay3")
-    @JsonProperty("pay3")
-    private BigDecimal pay3;
-
-    @Column(name = "pay4")
-    @JsonProperty("pay4")
-    private BigDecimal pay4;
-
-    @Column(name = "pay5")
-    @JsonProperty("pay5")
-    private BigDecimal pay5;
-
     @Column(name = "first_date_pay")
     @JsonProperty("first_date_pay")
     private LocalDateTime firstDatePay;
 
-    @Column(name = "last_date_pay")
-    @JsonProperty("last_date_pay")
-    private LocalDateTime lastDatePay;
 
     @Column(name = "next_date_pay")
     @JsonProperty("next_date_pay")

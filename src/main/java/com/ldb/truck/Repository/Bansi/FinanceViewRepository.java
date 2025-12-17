@@ -46,12 +46,6 @@ public class FinanceViewRepository {
             dto.setFinanceBill(rs.getString("finance_bill"));
             dto.setAmountMustPay(rs.getDouble("amount_must_pay"));
             dto.setPay1(rs.getDouble("pay1"));
-            dto.setPay2(rs.getDouble("pay2"));
-            dto.setPay3(rs.getDouble("pay3"));
-            dto.setPay4(rs.getDouble("pay4"));
-            dto.setPay5(rs.getDouble("pay5"));
-            dto.setFirstDatePay(rs.getString("first_date_pay"));
-            dto.setLastDatePay(rs.getString("last_date_pay"));
             dto.setNextDatePay(rs.getString("next_date_pay4"));
             dto.setPayStatus(rs.getString("pay_status"));
             dto.setCurrency(rs.getString("currency"));

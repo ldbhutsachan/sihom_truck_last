@@ -64,7 +64,7 @@ public class PaymentDetailDao {
 
         if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
             conditions.add("a.bill_status = ?");
-            params.add("wait-account");
+            params.add("wait-finance");
         }
 
 

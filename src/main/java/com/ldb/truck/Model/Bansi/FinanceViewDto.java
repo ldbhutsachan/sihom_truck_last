@@ -10,12 +10,6 @@ public class FinanceViewDto {
     private String financeBill;
     private Double amountMustPay;
     private Double pay1;
-    private Double pay2;
-    private Double pay3;
-    private Double pay4;
-    private Double pay5;
-    private String firstDatePay;
-    private String lastDatePay;
     private String nextDatePay;
     private String payStatus;
     private String currency;

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ItemTypeServiceImpl {
@@ -23,13 +24,17 @@ public class ItemTypeServiceImpl {
                 dataList = repository.getItemTypeById(itemTypeEntity.getItemtypeid());
             } else {
                 // ตรวจ role เหมือน saveItemType
-                if ("SUPERBANSI".equalsIgnoreCase(role)) {
-                    // เฉพาะ bansi_use = "1"
+                // สร้าง Set ของ role ที่ต้องใช้ bansi_use = "1"
+                Set<String> bansiRoles = Set.of("SUPERBANSI", "BANSIAPPROVE", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+
+                if (bansiRoles.contains(role.toUpperCase())) {
+                    // เฉพาะ role ในกลุ่มนี้ => bansi_use = "1"
                     dataList = repository.getItemTypeByBansiUse("1");
                 } else {
-                    // bansi_use = "" หรือ null หรือ != "1"
+                    // role อื่นๆ => bansi_use = "" หรือ null หรือ != "1"
                     dataList = repository.getItemTypeByNonBansiUse();
                 }
+
             }
 
             response.setDataResponse(dataList);

@@ -491,6 +491,7 @@ public class BansiController {
     }
 
     //createFinaceBill
+    @CrossOrigin(origins = "*")
     @PostMapping("/insertFinance.service")
     public ResponseEntity<DataResponse> insertFinance(@RequestBody FinanceRequestDto req) {
 
@@ -508,12 +509,22 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    //show  all finaceBill
     @CrossOrigin(origins = "*")
     @PostMapping("/getFinanceView.service")
     public ResponseEntity<DataResponse> getFinanceViewGrouped(@RequestBody FinanceViewDto financeViewDto) {
         DataResponse response = bansiService.getFinanceViewGrouped(financeViewDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    //show detail of finaceBill
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getFinancePayByBill.service")
+    public ResponseEntity<DataResponse> getFinancePayByBill(@RequestBody FinanceHistDto financeHistDto) {
+        DataResponse response = bansiService.getFinancePayByBill(financeHistDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 
 
 
