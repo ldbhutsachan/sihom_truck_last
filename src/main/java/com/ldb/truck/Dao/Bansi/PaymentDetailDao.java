@@ -57,22 +57,22 @@ public class PaymentDetailDao {
 //            conditions.add("l.role = ?");
 //            params.add(role.toUpperCase()); // role ต้อง match กับ column l.role
 //        }
-        if ("BANSIAPPROVE".equalsIgnoreCase(role)) {
-            conditions.add("a.bill_status = ?");
-            params.add("wait");
-        }
-
-        if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
-            conditions.add("a.bill_status = ?");
-            params.add("wait-finance");
-        }
+//        if ("BANSIAPPROVE".equalsIgnoreCase(role)) {
+//            conditions.add("a.bill_status = ?");
+//            params.add("wait");
+//        }
+//
+//        if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+//            conditions.add("a.bill_status = ?");
+//            params.add("wait-finance");
+//        }
 
 
         // PADMIN เห็นทุกอย่าง → ไม่ต้อง filter
 
-        if (!conditions.isEmpty()) {
-            sql += " WHERE " + String.join(" AND ", conditions);
-        }
+//        if (!conditions.isEmpty()) {
+//            sql += " WHERE " + String.join(" AND ", conditions);
+//        }
 
         sql += " ORDER BY a.date DESC";
 
@@ -294,10 +294,10 @@ public class PaymentDetailDao {
         }
 
         // Filter role (SUPERACCOUNT + SUPERBANSI)
-        if ("SUPERACCOUNT".equalsIgnoreCase(role) || "SUPERBANSI".equalsIgnoreCase(role)) {
-            conditions.add("role = ?");
-            params.add(role.toUpperCase());
-        }
+//        if ("SUPERACCOUNT".equalsIgnoreCase(role) || "SUPERBANSI".equalsIgnoreCase(role)) {
+//            conditions.add("role = ?");
+//            params.add(role.toUpperCase());
+//        }
 
         if (!conditions.isEmpty()) {
             sql += " WHERE " + String.join(" AND ", conditions);
