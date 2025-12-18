@@ -60,6 +60,11 @@ public class FinanceEntity {
     @JsonProperty("create_date")
     private LocalDateTime createDate;
 
+    @Column(name = "type_of")
+    @JsonProperty("type_of")
+    private String typeOf;
+
+
     @Transient
     private String toKen; //สำหรับ token จาก client
 }

@@ -8,6 +8,7 @@ public class FinanceViewDto {
     private Long supplierId;
     private String supplierName;
     private String financeBill;
+    private String typeOf;
     private Double amountMustPay;
     private Double pay1;
     private String nextDatePay;

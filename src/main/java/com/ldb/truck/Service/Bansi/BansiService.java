@@ -1192,6 +1192,7 @@ public class BansiService {
                     : String.valueOf(financeListEntity.getSupplierId());
 
             String payTypeId = financeListEntity.getPayTypeId();
+            String typeOf = financeListEntity.getTypeOf();
 
             String startDate = financeListEntity.getStartDate();
             String endDate = financeListEntity.getEndDate();
@@ -1200,6 +1201,7 @@ public class BansiService {
                     financeListRepository.searchFinance(
                             supplierId,
                             payTypeId,
+                            typeOf,
                             startDate,
                             endDate
                     );
@@ -1288,6 +1290,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
         FinanceEntity master = new FinanceEntity();
         master.setFinanceBill(financeBill);
         master.setSupplierId(req.getSupplierId());
+        master.setTypeOf(req.getType_of());
         master.setAmountMustPay(amountMustPay);
         master.setCurrency(req.getCurrency());
         master.setPay1(pay);
@@ -1556,7 +1559,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
             // 2) ดึงข้อมูลจาก Repository
             List<FinanceViewDto> financeList = financeViewRepository.findFinanceByFilter(
-                    financeViewDto.getFinanceBill(),
+                    financeViewDto.getTypeOf(),
                     financeViewDto.getPayStatus(),
                     financeViewDto.getStartDate(),
                     financeViewDto.getEndDate()
@@ -1583,6 +1586,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 map.put("amountMustPay", first.getAmountMustPay());
                 map.put("pay1", first.getPay1());
                 map.put("nextDatePay", first.getNextDatePay());
+                map.put("typeOf",first.getTypeOf());
                 map.put("payStatus", first.getPayStatus());
                 map.put("currency", first.getCurrency());
                 map.put("createBy", first.getCreateBy());

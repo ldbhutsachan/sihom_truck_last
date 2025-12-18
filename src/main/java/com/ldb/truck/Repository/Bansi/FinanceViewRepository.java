@@ -17,13 +17,13 @@ public class FinanceViewRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<FinanceViewDto> findFinanceByFilter(String financeBill, String payStatus, String startDate, String endDate) {
+    public List<FinanceViewDto> findFinanceByFilter(String typeOf, String payStatus, String startDate, String endDate) {
         String sql = "SELECT * FROM v_finance WHERE 1=1"; // 1=1 ทำให้ต่อ condition ง่าย
         List<Object> params = new ArrayList<>();
 
-        if (financeBill != null && !financeBill.isEmpty()) {
-            sql += " AND finance_bill = ?";
-            params.add(financeBill);
+        if (typeOf != null && !typeOf.isEmpty()) {
+            sql += " AND type_of = ?";
+            params.add(typeOf);
         }
         if (payStatus != null && !payStatus.isEmpty()) {
             sql += " AND pay_status = ?";
@@ -44,6 +44,7 @@ public class FinanceViewRepository {
             dto.setSupplierId(rs.getLong("supplier_id"));
             dto.setSupplierName(rs.getString("supplier_name"));
             dto.setFinanceBill(rs.getString("finance_bill"));
+            dto.setTypeOf(rs.getString("type_of"));
             dto.setAmountMustPay(rs.getDouble("amount_must_pay"));
             dto.setPay1(rs.getDouble("pay1"));
             dto.setNextDatePay(rs.getString("next_date_pay4"));

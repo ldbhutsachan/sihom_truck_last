@@ -9,6 +9,7 @@ public class FinanceRequestDto {
     private String toKen;
     private Integer supplierId;
     private String financeBill;
+    private String type_of;
     private String amountMustPay;
     private String pay;
     private String currency;
