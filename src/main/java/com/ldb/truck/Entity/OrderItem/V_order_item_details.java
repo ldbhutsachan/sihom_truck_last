@@ -137,4 +137,13 @@ public class V_order_item_details {
     @Column(name = "place_buy")
     private String placeBuy;
 
+    @Column(name = "shop_name")
+    private String shopName;
+
+    @Column(name = "type_of_order")
+    private String typeOfOrder;
+
+    @Column(name = "date_pay")
+    private String datePay;
+
 }

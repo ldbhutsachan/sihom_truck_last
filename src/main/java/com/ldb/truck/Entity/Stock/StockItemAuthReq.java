@@ -19,5 +19,8 @@ public class StockItemAuthReq {
     String orderStatus;
     String role;
     String placeBuy;
+    String shopeId;
+    String typeOfPay;
+    String datePay;
     List<StockItemAuthModel> detailId;
 }

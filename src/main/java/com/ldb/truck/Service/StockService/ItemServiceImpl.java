@@ -1,11 +1,12 @@
 package com.ldb.truck.Service.StockService;
 
 import com.ldb.truck.Dao.ItemList.ItemListModel;
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.Item.ItemEntity;
 import com.ldb.truck.Entity.Item.viewItemEntity;
-import com.ldb.truck.Entity.OrderItem.OrderItemEntity;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.ItemGroupHeader;
+import com.ldb.truck.Model.ItemSearch.ViewItemInventoryReq;
 import com.ldb.truck.Repository.ItemEntityRepository;
 import com.ldb.truck.Repository.ViewItemEntityRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -25,63 +26,81 @@ public class ItemServiceImpl {
     ViewItemEntityRepository viewItemEntityRepository;
     @Autowired
     ItemEntityRepository itemEntityRepository;
-    public DataResponse getViewItemInventory(viewItemEntity viewItemEntity,String userName,String role,String branchNo,String borNo){
-        log.info("role:"+role);
-        log.info("userName:"+userName);
-        log.info("branchNo:"+branchNo);
-        log.info("borNo:"+borNo);
+
+    @Autowired
+    ProfileDao profileDao;
+
+
+    public DataResponse getViewItemInventory(
+            ViewItemInventoryReq req,
+            String userName,
+            String role,
+            String branchNo,
+            String borNo) {
+
         DecimalFormat numfm = new DecimalFormat("###,###.###");
-        double totalLak = 0;
-        double totalThb = 0;
-        double totalUsd = 0;
+        double totalLak = 0, totalThb = 0, totalUsd = 0;
 
         DataResponse response = new DataResponse();
-        List<viewItemEntity> rspList = new ArrayList<>();
-        ItemGroupHeader groupHeader = new ItemGroupHeader();
+        List<viewItemEntity> rspList;
+
         try {
-            if("USERSTOCK".equals(role) || "USER".equals(role) ||  "AUTH".equals(role)){
-               rspList = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo,borNo);
+            if ("USERSTOCK".equals(role)
+                    || "USER".equals(role)
+                    || "AUTH".equals(role)) {
+
+                rspList = viewItemEntityRepository.searchViewItems(
+                        req.getItemId(),
+                        borNo,
+                        req.getKhId(),
+                        req.getStartDate(),
+                        req.getEndDate()
+                );
+
+            } else {
+                rspList = viewItemEntityRepository.searchViewItems(
+                        req.getItemId(),
+                        req.getBorNo(),
+                        req.getKhId(),
+                        req.getStartDate(),
+                        req.getEndDate()
+                );
             }
-            else if("PADMIN".equals(role)){
-                rspList = viewItemEntityRepository.getAllViewItemsAdmin();
-            }
-            else {
-                rspList = viewItemEntityRepository.getAllViewItemsAdmin();
-            }
-            if(rspList.size() >= 1 ){
-                response.setStatus("00");
-                response.setMessage("Success");
-                int count = rspList.size();
+
+            if (!rspList.isEmpty()) {
                 for (viewItemEntity item : rspList) {
-                    double price = item.getTotalamt(); // Replace with your actual amount field
-                    String currency = item.getCurrency();
-                    if ("LAK".equalsIgnoreCase(currency)) {
-                        totalLak += price;
-                    } else if ("THB".equalsIgnoreCase(currency)) {
-                        totalThb += price;
-                    } else if ("USD".equalsIgnoreCase(currency)) {
-                        totalUsd += price;
+                    if ("LAK".equalsIgnoreCase(item.getCurrency())) {
+                        totalLak += item.getTotalamt();
+                    } else if ("THB".equalsIgnoreCase(item.getCurrency())) {
+                        totalThb += item.getTotalamt();
+                    } else if ("USD".equalsIgnoreCase(item.getCurrency())) {
+                        totalUsd += item.getTotalamt();
                     }
                 }
-                groupHeader.setCalAmt(count);
-                groupHeader.setCalLak(numfm.format(totalLak));
-                groupHeader.setCalThb(numfm.format(totalThb));
-                groupHeader.setCalUsd(numfm.format(totalUsd));
 
-                response.setGroupHeader(groupHeader);
+                ItemGroupHeader header = new ItemGroupHeader();
+                header.setCalAmt(rspList.size());
+                header.setCalLak(numfm.format(totalLak));
+                header.setCalThb(numfm.format(totalThb));
+                header.setCalUsd(numfm.format(totalUsd));
 
+                response.setStatus("00");
+                response.setMessage("Success");
+                response.setGroupHeader(header);
                 response.setDataResponse(rspList);
-            }else {
+            } else {
                 response.setStatus("05");
                 response.setMessage("Data not Found !!");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setStatus("EE");
             response.setMessage("Error Data !!");
         }
         return response;
-}
-public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
+    }
+
+
+    public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
     log.info("role:" + role);
     log.info("userName:" + userName);
     log.info("branchNo:" + branchNo);

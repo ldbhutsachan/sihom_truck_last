@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -43,45 +44,97 @@ public class PlaceStockService {
     }
 
 
-    public DataResponse getPlaceStockHouse(PlaceStockEntityReq placeStockEntity){
-//        USER01	123	USER
-//        USER02	123	AUTH
-//        USER03	123	BUYER
-//        USER04	123	ACCOUNTING
-//        USER05	123	PADMIN
+//    public DataResponse getPlaceStockHouse(PlaceStockEntityReq placeStockEntity){
+////        USER01	123	USER
+////        USER02	123	AUTH
+////        USER03	123	BUYER
+////        USER04	123	ACCOUNTING
+////        USER05	123	PADMIN
+//        String role = placeStockEntity.getRole();
+//        String branchNo = placeStockEntity.getBrandNo();
+//        String userId = placeStockEntity.getUserId();
+//        String borNo = placeStockEntity.getBorNo();
+//        log.info("userId : "+userId);
+//        log.info("role : "+role);
+//        log.info("branchNo : "+branchNo);
+//        log.info("khNo : "+placeStockEntity.getKhNo());
+//        DataResponse response = new DataResponse();
+//        try {
+//            if("PADMIN".equals(role)){
+//                response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesAdminFilterBor());
+//            }
+//            else if("AUTH".equals(role) || "USERSTOCK".equals(role)){
+//                response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesBranchNo(branchNo,borNo));
+//            }
+//            else if("USER".equals(role)){
+//                response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesUserId(userId));
+//            }else {
+//                response.setDataResponse(null);
+//            }
+//
+//            if(response.getDataResponse() != null){
+//                response.setStatus("00");
+//                response.setMessage("Success");
+//            }else {
+//                response.setStatus("05");
+//                response.setMessage("Data not Found !!!");
+//            }
+//        }catch (Exception e){
+//            response.setStatus("EE");
+//            response.setMessage("Error Data !!!");
+//        }
+//        return response;
+//    }
+
+    public DataResponse getPlaceStockHouse(PlaceStockEntityReq placeStockEntity, String borNoForAdmin){
+
         String role = placeStockEntity.getRole();
         String branchNo = placeStockEntity.getBrandNo();
         String userId = placeStockEntity.getUserId();
         String borNo = placeStockEntity.getBorNo();
-        log.info("userId : "+userId);
-        log.info("role : "+role);
-        log.info("branchNo : "+branchNo);
-        log.info("khNo : "+placeStockEntity.getKhNo());
+
         DataResponse response = new DataResponse();
+
         try {
-            if("PADMIN".equals(role)){
-                response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesAdmin());
+            if ("PADMIN".equals(role)) {
+                response.setDataResponse(
+                        placeStockViewEntityRepository
+                                .findAllStockHousesAdminFilterBor(borNoForAdmin)
+                );
             }
-            else if("AUTH".equals(role) || "USERSTOCK".equals(role)){
-                response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesBranchNo(branchNo,borNo));
+            else if ("AUTH".equals(role) || "USERSTOCK".equals(role)) {
+                response.setDataResponse(
+                        placeStockViewEntityRepository
+                                .findAllStockHousesBranchNo(branchNo, borNo)
+                );
             }
-            else if("USER".equals(role)){
-                response.setDataResponse(placeStockViewEntityRepository.findAllStockHousesUserId(userId));
-            }else {
+            else if ("USER".equals(role)) {
+                response.setDataResponse(
+                        placeStockViewEntityRepository
+                                .findAllStockHousesUserId(userId)
+                );
+            }
+            else {
                 response.setDataResponse(null);
             }
 
-            if(response.getDataResponse() != null){
+            if (response.getDataResponse() != null
+                    && response.getDataResponse() instanceof List
+                    && !((List<?>) response.getDataResponse()).isEmpty()) {
+
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
                 response.setMessage("Data not Found !!!");
             }
-        }catch (Exception e){
+
+
+        } catch (Exception e) {
             response.setStatus("EE");
             response.setMessage("Error Data !!!");
         }
+
         return response;
     }
     public DataResponse getPlaceStockHouseByKey(PlaceStockEntityReq placeStockEntity){

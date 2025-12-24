@@ -14,7 +14,8 @@ public interface FinanceListRepository extends JpaRepository<FinanceListEntity, 
             "SELECT * FROM v_accounting_finance " +
                     "WHERE (:supplierId IS NULL OR :supplierId = '' OR supplierid = :supplierId) " +
                     "AND (:payTypeId IS NULL OR :payTypeId = '' OR pay_type_id = :payTypeId) " +
-                    "AND (:typeOf IS NULL OR :typeOf = '' OR type_of = :typeOf) " +
+                    "AND (:typeOf IS NULL OR :typeOf = '' OR type_of = :typeOf)" +
+                    "AND (:currency IS NULL OR :currency = '' OR currency = :currency)  " +
                     "AND (:startDate IS NULL OR :startDate = '' OR finance_approve_date >= :startDate) " +
                     "AND (:endDate IS NULL OR :endDate = '' " +
                     "     OR finance_approve_date < DATE_ADD(:endDate, INTERVAL 1 DAY)) " +
@@ -25,6 +26,7 @@ public interface FinanceListRepository extends JpaRepository<FinanceListEntity, 
             @Param("supplierId") String supplierId,
             @Param("payTypeId") String payTypeId,
             @Param(("typeOf")) String typeOf,
+            @Param("currency") String currency,
             @Param("startDate") String startDate,
             @Param("endDate") String endDate
     );

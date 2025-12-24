@@ -33,8 +33,36 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     List<viewItemEntity> getAllViewItemsAdmin();
 
     @Transactional
+    @Query(value =
+            "SELECT * " +
+                    "FROM v_items " +
+                    "WHERE " +
+                    "(:itemId IS NULL OR :itemId = '' OR item_id = :itemId) " +
+                    "AND (:borNo IS NULL OR :borNo = '' OR bor_no = :borNo) " +
+                    "AND (:khId IS NULL OR :khId = '' OR khid = :khId) " +
+                    "AND ( " +
+                    "     (:startDate IS NULL OR :startDate = '') " +
+                    "     OR make_date >= STR_TO_DATE(:startDate,'%Y-%m-%d') " +
+                    ") " +
+                    "AND ( " +
+                    "     (:endDate IS NULL OR :endDate = '') " +
+                    "     OR make_date <= STR_TO_DATE(:endDate,'%Y-%m-%d') " +
+                    ") " +
+                    "ORDER BY item_name ASC",
+            nativeQuery = true)
+    List<viewItemEntity> searchViewItems(
+            @Param("itemId") String itemId,
+            @Param("borNo") String borNo,
+            @Param("khId") String khId,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
+    );
+
+
+    @Transactional
     @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo ORDER BY item_name ASC", nativeQuery = true)
     List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo);
+
 
 
     @Transactional

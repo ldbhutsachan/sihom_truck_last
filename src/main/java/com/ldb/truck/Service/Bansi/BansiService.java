@@ -1193,6 +1193,7 @@ public class BansiService {
 
             String payTypeId = financeListEntity.getPayTypeId();
             String typeOf = financeListEntity.getTypeOf();
+            String currency = financeListEntity.getCurrency();
 
             String startDate = financeListEntity.getStartDate();
             String endDate = financeListEntity.getEndDate();
@@ -1202,6 +1203,7 @@ public class BansiService {
                             supplierId,
                             payTypeId,
                             typeOf,
+                            currency,
                             startDate,
                             endDate
                     );

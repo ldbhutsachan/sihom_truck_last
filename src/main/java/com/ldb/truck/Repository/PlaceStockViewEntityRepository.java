@@ -17,8 +17,15 @@ public interface PlaceStockViewEntityRepository extends CrudRepository<PlaceStoc
     List<PlaceStockViewEntity> findAllStockHouses();
 
     @Transactional
-    @Query(value = "SELECT * FROM v_stock_house ORDER BY khid DESC", nativeQuery = true)
-    List<PlaceStockViewEntity> findAllStockHousesAdmin();
+    @Query(value =
+            "SELECT * FROM v_stock_house " +
+                    "WHERE (:borNo IS NULL OR :borNo = '' OR bor_no = :borNo) " +
+                    "ORDER BY khid DESC",
+            nativeQuery = true)
+    List<PlaceStockViewEntity> findAllStockHousesAdminFilterBor(
+            @Param("borNo") String borNoForAdmin
+    );
+
 
     @Transactional
     @Query(value = "SELECT * FROM v_stock_house where branch_no=:branchNo and bor_no=:borNo ORDER BY khid DESC", nativeQuery = true)

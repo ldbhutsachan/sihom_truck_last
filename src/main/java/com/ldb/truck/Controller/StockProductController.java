@@ -290,35 +290,53 @@ public class StockProductController {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/approveOrderItemAuth.service")
-    public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stockItemDetailsReq){
-        log.info("===start ====approveOrderItemAuth");
-        DataResponse response  = new DataResponse();
-        List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+    public ResponseEntity<?> approveOrderItemAuth(
+            @RequestBody StockItemAuthReq stockItemDetailsReq) {
+
+        log.info("=== start approveOrderItemAuth ===");
+
+        DataResponse response = new DataResponse();
+
+        List<Profile> userProfiles =
+                profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = userProfiles.get(0).getUserId();
-        String userName = userProfiles.get(0).getUserName();
-        String role = userProfiles.get(0).getRole();
+
+        Profile profile = userProfiles.get(0);
+
         StockItemAuthReq data = new StockItemAuthReq();
-        data.setUserId(userId);
+        data.setUserId(profile.getUserId());
         data.setBillNo(stockItemDetailsReq.getBillNo());
-        data.setRole(role);
+        data.setRole(profile.getRole());
         data.setStatus(stockItemDetailsReq.getStatus());
         data.setOrderStatus(stockItemDetailsReq.getOrderStatus());
         data.setRemark(stockItemDetailsReq.getRemark());
         data.setToKen(stockItemDetailsReq.getToKen());
         data.setDetailId(stockItemDetailsReq.getDetailId());
-        //new
+
+        // new fields
         data.setPlaceBuy(stockItemDetailsReq.getPlaceBuy());
+        data.setShopeId(stockItemDetailsReq.getShopeId());
+        data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
+        data.setDatePay(stockItemDetailsReq.getDatePay());
+
         try {
-             response = stockService.auth(data,userId,userName);
-        }catch (Exception e){
+            response = stockService.auth(
+                    data,
+                    profile.getUserId(),
+                    profile.getUserName()
+            );
+        } catch (Exception e) {
+            log.error("Controller error", e);
             response.setStatus("EE");
             response.setMessage("Data Error Controller !!");
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        return ResponseEntity.ok(response);
     }
+
 
     @CrossOrigin(origins = "*")
     @PostMapping("/authItemToStock.service")
