@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -748,8 +749,6 @@ public class StockServiceImpl {
 
                 borNoCon = "\n AND borkey = '" + borNoFone + "' ";
             }
-            log.info("DEBUG borNo(profile)   = [{}]", borNo);
-            log.info("DEBUG borNo(client)    = [{}]", borNoFone);
 
 
             StringBuilder sb = new StringBuilder();
@@ -808,6 +807,14 @@ public class StockServiceImpl {
                     tr.setShopName(rs.getString("shop_name"));
                     tr.setTypeOfOrder(rs.getString("type_of_order"));
                     tr.setDatePay(rs.getString("date_pay"));
+                    tr.setItemArriveDate(rs.getString("item_arrive_date"));
+
+                    // ===== CALCULATE NEW STATUS =====
+                    String arriveStatus = calculateArriveStatus(
+                            tr.getStatus(),
+                            tr.getItemArriveDate()
+                    );
+                    tr.setItemArriveStatus(arriveStatus);
 
                     return tr;
                 }
@@ -816,6 +823,34 @@ public class StockServiceImpl {
             e.printStackTrace(); // Consider logging this properly
         }
         return null;
+    }
+    private String calculateArriveStatus(String status, String itemArriveDate) {
+
+        // คำนวณเฉพาะ status = wait
+        if (!"wait".equalsIgnoreCase(status)) {
+            return null;
+        }
+
+        if (itemArriveDate == null || itemArriveDate.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            // รูปแบบวันที่: yyyy-MM-dd
+            LocalDate arriveDate = LocalDate.parse(itemArriveDate);
+            LocalDate today = LocalDate.now();
+
+            if (today.isBefore(arriveDate)) {
+                return "COMING";
+            } else if (today.isEqual(arriveDate)) {
+                return "EXPIRED";
+            } else {
+                return "OVERDUE";
+            }
+        } catch (Exception e) {
+            log.warn("Invalid item_arrive_date format: {}", itemArriveDate);
+            return null;
+        }
     }
 
     ///-----
@@ -1050,7 +1085,8 @@ public class StockServiceImpl {
                     "price = ?," +
                     "status= 'wait' , " +
                     "currency= ?, " +
-                    "exchange_rate= ? " +
+                    "exchange_rate= ? ," +
+                    "item_arrive_date= ? " +
                     "WHERE item_id = ? and bill_no=?  ";
             for (OrderItemReportEntity item : items) {
                 log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
@@ -1062,6 +1098,7 @@ public class StockServiceImpl {
                         item.getPrice(),
                         item.getCurrency(),
                         item.getExchangeRate(),
+                        request.getItemArriveDate(),
                         item.getDetailId(),
                         item.getBillNo()
                 );

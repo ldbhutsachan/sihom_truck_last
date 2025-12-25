@@ -22,5 +22,6 @@ public class StockItemAuthReq {
     String shopeId;
     String typeOfPay;
     String datePay;
+    String itemArriveDate;
     List<StockItemAuthModel> detailId;
 }

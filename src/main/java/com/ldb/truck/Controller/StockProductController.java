@@ -321,6 +321,7 @@ public class StockProductController {
         data.setShopeId(stockItemDetailsReq.getShopeId());
         data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
         data.setDatePay(stockItemDetailsReq.getDatePay());
+        data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
 
         try {
             response = stockService.auth(
