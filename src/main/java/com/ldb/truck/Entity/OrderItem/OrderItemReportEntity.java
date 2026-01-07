@@ -101,6 +101,9 @@ public class OrderItemReportEntity {
     @Column(name = "real_price")
     private Float realPrice;
 
+    @Column(name ="place_buy")
+    private String placeBuy;
+
 
 
 }

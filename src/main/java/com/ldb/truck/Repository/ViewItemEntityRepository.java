@@ -24,8 +24,21 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     List<viewItemEntity> getAllViewItemsUserId(@Param("make_by_id") String make_by_id);
 
     @Transactional
-    @Query(value = "SELECT * FROM v_items where branch_no=:branchNo and bor_no=:borNo ORDER BY item_name asc", nativeQuery = true)
-    List<viewItemEntity> getAllViewItemsBranchNo(@Param("branchNo") String branchNo,@Param("borNo") String borNo);
+    @Query(
+            value = "SELECT * FROM v_items " +
+                    "WHERE branch_no = :branchNo " +
+                    "AND bor_no = :borNo " +
+                    "AND (:khid IS NULL OR :khid = '' OR khid = :khid) " +
+                    "ORDER BY item_name ASC",
+            nativeQuery = true
+    )
+    List<viewItemEntity> getAllViewItemsBranchNo(
+            @Param("branchNo") String branchNo,
+            @Param("borNo") String borNo,
+            @Param("khid") String khid
+    );
+
+
 
 
     @Transactional
@@ -33,8 +46,36 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     List<viewItemEntity> getAllViewItemsAdmin();
 
     @Transactional
-    @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo ORDER BY item_name ASC", nativeQuery = true)
-    List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo);
+    @Query(value =
+            "SELECT * " +
+                    "FROM v_items " +
+                    "WHERE " +
+                    "(:itemId IS NULL OR :itemId = '' OR item_id = :itemId) " +
+                    "AND (:borNo IS NULL OR :borNo = '' OR bor_no = :borNo) " +
+                    "AND (:khId IS NULL OR :khId = '' OR khid = :khId) " +
+                    "AND ( " +
+                    "     (:startDate IS NULL OR :startDate = '') " +
+                    "     OR make_date >= STR_TO_DATE(:startDate,'%Y-%m-%d') " +
+                    ") " +
+                    "AND ( " +
+                    "     (:endDate IS NULL OR :endDate = '') " +
+                    "     OR make_date <= STR_TO_DATE(:endDate,'%Y-%m-%d') " +
+                    ") " +
+                    "ORDER BY item_name ASC",
+            nativeQuery = true)
+    List<viewItemEntity> searchViewItems(
+            @Param("itemId") String itemId,
+            @Param("borNo") String borNo,
+            @Param("khId") String khId,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
+    );
+
+
+    @Transactional
+    @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo and khid =:khid ORDER BY item_name ASC", nativeQuery = true)
+    List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo,@Param("khid") String khid);
+
 
 
     @Transactional

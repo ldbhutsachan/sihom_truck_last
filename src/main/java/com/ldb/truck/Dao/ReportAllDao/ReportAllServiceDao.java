@@ -793,9 +793,13 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
         String itemId= stockRequest.getItemId();
+        String houseNo =stockRequest.getHouseNo();
         String borNo= stockRequest.getBorNo();
         String conItem = "";
         String conItemBoNo = "";
+        if (!"all".equals(houseNo)) {
+            conItem += "\n and houseNo = '" + houseNo + "'";
+        }
         if(!"all".equals(itemId)){
             conItem= "\n and item_id ='"+itemId+"'";
         }else {
@@ -807,6 +811,9 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             }else {
                 conItemBoNo =" ";
             }
+            if (!"all".equals(houseNo)) {
+                conItem += "\n and houseNo = '" + houseNo + "'";
+            }
         }else {
             conItemBoNo ="\n and borkey='"+borNoss+"'";
         }
@@ -817,11 +824,12 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
 
         try {
             StringBuilder sb = new StringBuilder();
-//            sb.append("select * from v_sum_order_item_sum where stockOut  1=1 \n ");
-            sb.append("SELECT * FROM v_sum_order_item_sum WHERE stockOut > 0 AND stockOut IS NOT NULL AND 1=1 \n");
+//            sb.append("SELECT * FROM v_sum_order_item_sum WHERE stockOut > 0 AND stockOut IS NOT NULL AND 1=1 \n");
+            sb.append("SELECT * FROM v_sum_order_item_sum WHERE 1=1\n");
             sb.append(startDateCon);
             sb.append(conItem);
             sb.append(conItemBoNo);
+            sb.append(" ORDER BY houseNo DESC");
 
             String query = sb.toString();
             log.info("sql:"+query);

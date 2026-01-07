@@ -10,6 +10,7 @@ import com.ldb.truck.Entity.PlaceStock.PlaceStockEntity;
 import com.ldb.truck.Entity.PlaceStock.PlaceStockEntityReq;
 import com.ldb.truck.Entity.Supplier.SupplierEntity;
 import com.ldb.truck.Model.DataResponse;
+import com.ldb.truck.Model.ItemSearch.ViewItemInventoryReq;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Service.MediaUploadServiceImpl;
 import com.ldb.truck.Service.StockService.*;
@@ -257,14 +258,21 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
             String role = userProfiles.get(0).getRole();
             String branchNo = userProfiles.get(0).getBranchNo();
             String borNo = userProfiles.get(0).getBorNo();
+            String borNoForAdmin = brandReq.getBorNo();
 
             PlaceStockEntityReq reqBody = new PlaceStockEntityReq();
             reqBody.setRole(role);
             reqBody.setUserId(userId);
             reqBody.setKhId(reqBody.getKhId());
             reqBody.setBrandNo(branchNo);
+//            if ("PADMIN".equals(role)) {
+//                reqBody.setBorNo(brandReq.getBorNo());
+//            }
+//            else {
+//                reqBody.setBrandNo(branchNo);
+//            }
             reqBody.setBorNo(borNo);
-            response = placeStockService.getPlaceStockHouse(reqBody);
+            response = placeStockService.getPlaceStockHouse(reqBody,borNoForAdmin);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -356,46 +364,35 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getViewItemInventory.service")
-    public ResponseEntity<?> getViewItemInventory(@RequestBody viewItemEntity brandReq){
-        DataResponse response  = new DataResponse();
+    public ResponseEntity<?> getViewItemInventory(
+            @RequestBody ViewItemInventoryReq req) {
+
+        DataResponse response = new DataResponse();
         try {
-            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
+            List<Profile> userProfiles =
+                    profileDao.getProfileInfoByToken(req.getToKen());
+
             if (userProfiles.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
-            String userId = userProfiles.get(0).getUserId();
-            String role = userProfiles.get(0).getRole();
-            String branchno = userProfiles.get(0).getBranchNo();
-            String borNo = userProfiles.get(0).getBorNo();
-            response = itemService.getViewItemInventory(brandReq,userId,role,branchno,borNo);
-        }catch (Exception e){
+
+            Profile p = userProfiles.get(0);
+            response = itemService.getViewItemInventory(
+                    req,
+                    p.getUserId(),
+                    p.getRole(),
+                    p.getBranchNo(),
+                    p.getBorNo()
+            );
+        } catch (Exception e) {
             response.setStatus("EE");
             response.setMessage("Data Error !!");
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
-//    @CrossOrigin(origins = "*")
-//    @PostMapping("/getItemList.service")
-//    public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
-//        DataResponse response  = new DataResponse();
-//        try {
-//            List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());
-//            if (userProfiles.isEmpty()) {
-//                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-//            }
-//            String userId = userProfiles.get(0).getUserId();
-//            String role = userProfiles.get(0).getRole();
-//            String branchno = userProfiles.get(0).getBranchNo();
-//            String borNo = userProfiles.get(0).getBorNo();
-//            response = itemService.getItemList(brandReq,userId,role,branchno,borNo);
-//        }catch (Exception e){
-//            response.setStatus("EE");
-//            response.setMessage("Data Error !!");
-//        }
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
-@CrossOrigin(origins = "*")
+
+    @CrossOrigin(origins = "*")
 @PostMapping("/getItemList.service")
 public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
     DataResponse response  = new DataResponse();

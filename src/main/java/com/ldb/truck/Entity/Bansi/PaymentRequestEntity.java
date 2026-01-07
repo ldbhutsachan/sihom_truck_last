@@ -3,6 +3,7 @@ package com.ldb.truck.Entity.Bansi;
 import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -63,6 +64,45 @@ public class PaymentRequestEntity {
     @Column(name ="date_create")
     private LocalDate dateCreate;
 
+    @Column(name ="data_type")
+    private String dataType;
+
+    @Column(name = "bill_status")
+    private String billStatus;
+
+    @Column(name ="b_id")
+    private Long bId;
+
     @Transient
     private String toKen; //สำหรับ token จาก client
+
+    // add more for approve billNO
+    @Column(name = "basi_approve_date")
+    private LocalDateTime basiApproveDate;
+
+    @Column(name = "bansi_approveby")
+    private String bansiApproveBy;
+
+    @Column(name = "account_approve_date")
+    private LocalDateTime accountApproveDate;
+
+    @Column(name = "account_approveby")
+    private String accountApproveBy;
+
+    @Column(name = "final_approve_date")
+    private LocalDateTime finalApproveDate;
+
+
+    @Column(name = "final_approveby")
+    private String finalApproveBy;
+
+    @Column(name = "returnby")
+    private String returnBy;
+
+    @Column(name = "return_date")
+    private LocalDateTime returnDate;
+
+    @Column(name = "pay_status")
+    private String payStatus;
+
 }

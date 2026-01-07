@@ -25,6 +25,7 @@ public class PayTypeEntity {  // ชื่อ class ควรขึ้นต้�
     @JsonProperty("req_id")
     private Long reqId;
     @Column(name = "type_pay")
+
     @JsonProperty("type_pay")
     private String typePay;
 

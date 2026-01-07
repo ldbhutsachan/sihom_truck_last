@@ -22,10 +22,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -119,7 +116,8 @@ public class BansiController {
             @RequestParam(value = "tag", required = false) String tag,
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
-            @RequestParam(value = "file", required = false) MultipartFile file
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("b_id") Long bId
     ) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -140,6 +138,7 @@ public class BansiController {
             dto.setTag(tag);
             dto.setDatermine_date(datermine_date);
             dto.setFile(file);
+            dto.setB_id(bId);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
@@ -177,7 +176,9 @@ public class BansiController {
             @RequestParam(value = "tag", required = false) String tag,
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
-            @RequestParam(value = "file", required = false) MultipartFile file
+            @RequestParam(value = "bill_status", required = false) String bill_status,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("b_id") Long bId
     ) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -196,7 +197,9 @@ public class BansiController {
             dto.setInternal_remark(internalRemark);
             dto.setTag(tag);
             dto.setDatermine_date(datermine_date);
+            dto.setBill_status(bill_status);
             dto.setFile(file);
+            dto.setB_id(bId);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
@@ -222,6 +225,58 @@ public class BansiController {
     public PaymentDetailRes listPaymentDetail(@RequestBody PaymentDetailReq req) {
         return bansiService.getPaymentDetails(req);
     }
+
+    //approve billNo
+    @CrossOrigin(origins = "*")
+    @PostMapping("/approveBill.service")
+    public ResponseEntity<DataResponse> approveBill(
+            @RequestBody Map<String, Object> requestBody
+    ) {
+        DataResponse response = new DataResponse();
+
+        try {
+            String token = (String) requestBody.get("toKen");
+            String billStatus = (String) requestBody.get("billStatus");
+
+            // billNo เป็น List
+            List<String> billNos = (List<String>) requestBody.get("billNo");
+
+            if (billNos == null || billNos.isEmpty()) {
+                throw new Exception("billNo list is empty");
+            }
+
+            List<Map<String, Object>> resultList = new ArrayList<>();
+
+            for (String billNo : billNos) {
+                PaymentRequestEntity result = bansiService.approveBillNo(billNo, token, billStatus);
+
+                resultList.add(new HashMap<String, Object>() {{
+                    put("billNo", billNo);
+                    put("new_bill_status", result.getBillStatus());
+                    put("approve_by",
+                            result.getFinalApproveBy() != null ? result.getFinalApproveBy()
+                                    : result.getAccountApproveBy() != null ? result.getAccountApproveBy()
+                                    : result.getBansiApproveBy()
+                    );
+                }});
+            }
+
+            response.setStatus("OK");
+            response.setMessage("Approve success: " + billNos.size() + " item(s)");
+            response.setDataResponse(resultList);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
 
     //insert signature
     @CrossOrigin(origins = "*")
@@ -387,7 +442,88 @@ public class BansiController {
         return bansiService.reportAccounting(req);
     }
 
+    //bank Account controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/saveBankAccount.service")
+    public ResponseEntity<DataResponse> saveBankAccount(@RequestBody BankEntity bankEntity){
+        DataResponse response = bansiService.saveBankAccount(bankEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
+    // bank Account Controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateBankAccount.service")
+    public ResponseEntity<DataResponse> updateBankAccount(@RequestBody BankEntity bankEntity) {
+        DataResponse response = bansiService.updateBankAccount(bankEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //show bankAccount controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getBankAccounts.service")
+    public ResponseEntity<DataResponse> getAllBankAccounts(@RequestBody BankEntity bankEntity) {
+        DataResponse response = bansiService.getAllBankAccounts(bankEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // show finaceData controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getListForFinance.service")
+    public ResponseEntity<DataResponse> getListForFinance(@RequestBody FinanceListEntity financeListEntity) {
+        DataResponse response = bansiService.getListForFinance(financeListEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //generate Finance_Bill api
+    @CrossOrigin(origins = "*")
+    @GetMapping("/generateFinaceBill.service")
+    public ResponseEntity<Map<String, String>> generateFinaceBill() {
+        Map<String, String> response = new HashMap<>();
+        try {
+            String newFinaceBill = bansiService.generateFinaceBill();
+            response.put("Finance_Bill", newFinaceBill);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("error", "Cannot generate Finace_Bill");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    //createFinaceBill
+    @CrossOrigin(origins = "*")
+    @PostMapping("/insertFinance.service")
+    public ResponseEntity<DataResponse> insertFinance(@RequestBody FinanceRequestDto req) {
+
+        DataResponse response = bansiService.insertFinance(req);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    //update pay by Finance
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateFinancePay.service")
+    public ResponseEntity<DataResponse> updateFinancePay(@RequestBody FinanceUpdateDto req) {
+        DataResponse response = bansiService.updateFinancePay(req);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //show  all finaceBill
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getFinanceView.service")
+    public ResponseEntity<DataResponse> getFinanceViewGrouped(@RequestBody FinanceViewDto financeViewDto) {
+        DataResponse response = bansiService.getFinanceViewGrouped(financeViewDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //show detail of finaceBill
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getFinancePayByBill.service")
+    public ResponseEntity<DataResponse> getFinancePayByBill(@RequestBody FinanceHistDto financeHistDto) {
+        DataResponse response = bansiService.getFinancePayByBill(financeHistDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 
 

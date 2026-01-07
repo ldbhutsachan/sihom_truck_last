@@ -10,6 +10,7 @@ public class PaymentDetailListModel {
     private Double qty;
     private String unit;
     private Double price;
+    private Double usd_price;
     private Double reduce;
     private String reduceStatus;
     private Double tax;

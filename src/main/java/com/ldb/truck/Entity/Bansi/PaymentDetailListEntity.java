@@ -43,4 +43,7 @@ public class PaymentDetailListEntity {
     @Column(name = "tax_status")
     private String taxStatus;
 
+    @Column(name = "usd_price")
+    private Float usdPrice;
+
 }

@@ -52,9 +52,17 @@ public class AccountingReportModel {
 
     private String billNo;
 
+    private String bill_status;
+
     private String currency;
 
     private Double price;
 
+    private Double usd_price;
+
     private String role;
+
+    private String bank_account_name;
+    private String bank_account_no;
+    private String bank_name;
 }
