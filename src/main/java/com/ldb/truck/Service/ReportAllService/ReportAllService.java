@@ -17,10 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -300,8 +297,16 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
             if (!rsListData.isEmpty()) {
 
                 // จัดกลุ่มตาม itemId
+//                Map<String, List<ReportAllStockInOut>> groupedMap =
+//                        rsListData.stream().collect(Collectors.groupingBy(ReportAllStockInOut::getItemId));
                 Map<String, List<ReportAllStockInOut>> groupedMap =
-                        rsListData.stream().collect(Collectors.groupingBy(ReportAllStockInOut::getItemId));
+                        rsListData.stream()
+                                .collect(Collectors.groupingBy(
+                                        ReportAllStockInOut::getItemId,
+                                        LinkedHashMap::new,
+                                        Collectors.toList()
+                                ));
+
 
                 List<ReportAllStockGroup> groupedList = new ArrayList<>();
 

@@ -24,8 +24,21 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     List<viewItemEntity> getAllViewItemsUserId(@Param("make_by_id") String make_by_id);
 
     @Transactional
-    @Query(value = "SELECT * FROM v_items where branch_no=:branchNo and bor_no=:borNo ORDER BY item_name asc", nativeQuery = true)
-    List<viewItemEntity> getAllViewItemsBranchNo(@Param("branchNo") String branchNo,@Param("borNo") String borNo);
+    @Query(
+            value = "SELECT * FROM v_items " +
+                    "WHERE branch_no = :branchNo " +
+                    "AND bor_no = :borNo " +
+                    "AND (:khid IS NULL OR :khid = '' OR khid = :khid) " +
+                    "ORDER BY item_name ASC",
+            nativeQuery = true
+    )
+    List<viewItemEntity> getAllViewItemsBranchNo(
+            @Param("branchNo") String branchNo,
+            @Param("borNo") String borNo,
+            @Param("khid") String khid
+    );
+
+
 
 
     @Transactional
@@ -60,8 +73,8 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
 
 
     @Transactional
-    @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo ORDER BY item_name ASC", nativeQuery = true)
-    List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo);
+    @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo and khid =:khid ORDER BY item_name ASC", nativeQuery = true)
+    List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo,@Param("khid") String khid);
 
 
 

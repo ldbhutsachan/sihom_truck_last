@@ -13,6 +13,7 @@ public class ReportItemInOutModelReq {
     String startDate;
     String endDate;
     String itemId;
+    String houseNo;
     String borNo;
     String toKen;
 }

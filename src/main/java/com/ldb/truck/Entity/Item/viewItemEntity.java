@@ -121,6 +121,7 @@ public class viewItemEntity {
     @Column(name = "token", nullable = false)
     private String toKen;
 
+
     @Column(name = "bor_no", nullable = false)
     private String borNo;
 

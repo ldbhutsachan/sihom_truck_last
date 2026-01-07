@@ -107,18 +107,19 @@ public class ItemServiceImpl {
     log.info("borNo:" + borNo);
 
     DataResponse response = new DataResponse();
+    String khid = viewItemEntity.getKhid();
 
     try {
         List<viewItemEntity> items;
 
         if ("PADMIN".equals(role)) {
             if (viewItemEntity.getBorNo() != null && !viewItemEntity.getBorNo().trim().isEmpty()) {
-                items = viewItemEntityRepository.getAllViewItemsBorNo(viewItemEntity.getBorNo());
+                items = viewItemEntityRepository.getAllViewItemsBorNo(viewItemEntity.getBorNo(), khid);
             } else {
                 items = viewItemEntityRepository.getAllViewItemsAdmin();
             }
         } else {
-            items = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo, borNo);
+            items = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo, borNo, khid);
         }
 
         List<ItemListModel> resultList = items.stream()
