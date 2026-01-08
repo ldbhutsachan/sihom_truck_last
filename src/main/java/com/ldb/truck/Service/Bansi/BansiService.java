@@ -606,6 +606,8 @@ public class BansiService {
         }
         // เรียก DAO พร้อม role + userId
         List<PaymentDetailModel> data = paymentDetailDao.findPaymentDetails(
+                req.getStartDate(),
+                req.getEndDate(),
                 req.getItemTypeid(),
                 req.getReq_id(),
                 req.getPid(),
@@ -1104,6 +1106,7 @@ public class BansiService {
             existing.setAccountName(bankEntity.getAccountName());
             existing.setAccountNo(bankEntity.getAccountNo());
             existing.setBankName(bankEntity.getBankName());
+            existing.setBankNameLao(bankEntity.getBankNameLao());
             existing.setDateCreate(LocalDateTime.now());
             existing.setUserId(userId);
 

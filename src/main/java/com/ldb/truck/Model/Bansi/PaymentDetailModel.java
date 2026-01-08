@@ -44,6 +44,7 @@ public class PaymentDetailModel {
     private String account_name;
     private String account_no;
     private String bank_name;
+    private String bank_lao_name;
     // add field for list
     private List<PaymentDetailListModel> listItems;
 }

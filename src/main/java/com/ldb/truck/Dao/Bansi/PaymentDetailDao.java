@@ -21,12 +21,12 @@ public class PaymentDetailDao {
     private final JdbcTemplate jdbcTemplate;
 
     // 🔹 ดึงข้อมูลหลักจาก tb_accounting (filter ตามตัวเลือก)
-    public List<PaymentDetailModel> findPaymentDetails(Long itemTypeid, Long req_id, Long pid, String role) {
+    public List<PaymentDetailModel> findPaymentDetails(String startDate, String endDate,Long itemTypeid, Long req_id, Long pid, String role) {
         String sql = "SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, a.date, a.datermine_date, a.date_create, a.data_type, " +
                 "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, a.supplierid, a.bill_status, " +
                 "pt.pid as payId, pt.type_name,pt.type_pay as type_of, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role, " +
                 "a.basi_approve_date, a.bansi_approveby, a.account_approve_date, a.account_approveby, a.final_approve_date, a.final_approveby, " +
-                "a.returnby, a.return_date,b.account_name, b.account_no, b.bank_name " +  // ← ใส่ space หลัง a.return_date
+                "a.returnby, a.return_date,b.account_name, b.account_no, b.bank_name, b.bank_name_lao " +  // ← ใส่ space หลัง a.return_date
                 "FROM tb_accounting a " +
                 "INNER JOIN pay_type pt ON a.pay_typeid = pt.pid " +
                 "LEFT JOIN LOGIN l ON a.user_id = l.KEY_ID " +
@@ -35,9 +35,17 @@ public class PaymentDetailDao {
                 "LEFT JOIN item_type it ON rt.item_typeid = it.itemTypeid " +
                 "LEFT JOIN tb_bank b ON a.b_id = b.b_id";
 
-
         List<Object> params = new ArrayList<>();
         List<String> conditions = new ArrayList<>();
+
+        // 🔹 filter วันที่
+        if (startDate != null && !startDate.isEmpty() &&
+                endDate != null && !endDate.isEmpty()) {
+
+            conditions.add("DATE(a.date_create) BETWEEN ? AND ?");
+            params.add(startDate);
+            params.add(endDate);
+        }
 
         if (itemTypeid != null) {
             conditions.add("it.itemTypeid = ?");
@@ -73,6 +81,10 @@ public class PaymentDetailDao {
 //        if (!conditions.isEmpty()) {
 //            sql += " WHERE " + String.join(" AND ", conditions);
 //        }
+        // 🔹 รวม WHERE
+        if (!conditions.isEmpty()) {
+            sql += " WHERE " + String.join(" AND ", conditions);
+        }
 
         sql += " ORDER BY a.date DESC";
 
@@ -124,6 +136,7 @@ public class PaymentDetailDao {
         model.setAccount_name(rs.getString("account_name"));
         model.setAccount_no(rs.getString("account_no"));
         model.setBank_name(rs.getString("bank_name"));
+        model.setBank_lao_name(rs.getString("bank_name_lao"));
 
         //  เติม listItems จาก tb_accounting_list
         model.setListItems(findListItemsByBillNo(model.getBillNo()));
