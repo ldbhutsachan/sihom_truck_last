@@ -24,6 +24,12 @@ public class SupplierNotPayRepo {
             String supplierId
     ) {
 
+        // ตรวจสอบค่า ถ้า "" ให้เปลี่ยนเป็น null
+        startDate = (startDate == null || startDate.trim().isEmpty()) ? null : startDate;
+        endDate = (endDate == null || endDate.trim().isEmpty()) ? null : endDate;
+        typeOf = (typeOf == null || typeOf.trim().isEmpty()) ? null : typeOf;
+        supplierId = (supplierId == null || supplierId.trim().isEmpty()) ? null : supplierId;
+
         String sql =
                 "SELECT " +
                         " key_id, " +
@@ -43,10 +49,9 @@ public class SupplierNotPayRepo {
                         "WHERE (? IS NULL OR create_date >= ?) " +
                         "AND (? IS NULL OR create_date <= ?) " +
                         "AND (? IS NULL OR type_of = ?) " +
-                        "AND (? IS NULL OR supplier_id = ?)" +
+                        "AND (? IS NULL OR supplier_id = ?) " +
                         "AND pay_status != 'DONE' " +
                         "ORDER BY create_date DESC";
-
 
         return jdbcTemplate.query(
                 sql,
