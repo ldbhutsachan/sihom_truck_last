@@ -525,6 +525,18 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    // show Supplier not Pay
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getSupplierNotPay.service")
+    public ResponseEntity<DataResponse> getSupplierNotPay(
+            @RequestBody SupplierNotPayReq req
+    ) {
+        return ResponseEntity.ok(
+                bansiService.searchSupplierNotPay(req)
+        );
+    }
+
+
 
 
 

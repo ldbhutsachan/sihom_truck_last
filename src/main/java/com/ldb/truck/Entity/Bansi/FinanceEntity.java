@@ -64,6 +64,14 @@ public class FinanceEntity {
     @JsonProperty("type_of")
     private String typeOf;
 
+    @Column(name = "approve_by")
+    @JsonProperty("approve_by")
+    private String approveby;
+
+    @Column(name = "approve_date")
+    @JsonProperty("approve_date")
+    private LocalDateTime approveDate;
+
 
     @Transient
     private String toKen; //สำหรับ token จาก client

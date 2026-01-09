@@ -67,6 +67,8 @@ public class BansiService {
     private FinanceHisRepository financeHisRepository;
     @Autowired
     private FinancePayHisRepo financePayHisRepo;
+    @Autowired
+    private SupplierNotPayRepo supplierNotPayRepo;
 
 
 
@@ -1182,7 +1184,7 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1257,7 +1259,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
     Profile user = profileList.get(0);
 
     // 2. Check role
-    List<String> allowedRoles = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+    List<String> allowedRoles = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
     if (!allowedRoles.contains(user.getRole().toUpperCase())) {
         response.setStatus("01");
         response.setMessage("No permission to insert finance");
@@ -1354,18 +1356,22 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         // ===============================
         // 7. Insert tb_finance_pay (HISTORY)
-        if (req.getBillList() != null && !req.getBillList().isEmpty()) {
+        // ===============================
+        if (!"SUPERBANSI".equalsIgnoreCase(user.getRole())) {
 
-            List<FinanceHisEntity> payHisList = new ArrayList<>();
+            if (req.getBillList() != null && !req.getBillList().isEmpty()) {
+
+                List<FinanceHisEntity> payHisList = new ArrayList<>();
 
                 FinanceHisEntity h = new FinanceHisEntity();
                 h.setFinanceBill(financeBill);
                 h.setPayAmount(pay);
                 h.setDatePay(req.getFirstDatePay());
                 h.setCreateDate(LocalDateTime.now());
-                payHisList.add(h);
 
-            financeHisRepository.saveAll(payHisList);
+                payHisList.add(h);
+                financeHisRepository.saveAll(payHisList);
+            }
         }
 
         response.setStatus("00");
@@ -1497,7 +1503,8 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             } else {
                 finance.setPayStatus("IN-PROGRESS");
             }
-
+            finance.setApproveby(user.getUserName());
+            finance.setApproveDate(LocalDateTime.now());
 
             FinanceEntity updatedFinance = financeRepository.save(finance);
 
@@ -1555,7 +1562,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1677,6 +1684,101 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         return response;  // return response ทั้งกรณี success และ error
     }
+
+    public DataResponse searchSupplierNotPay(SupplierNotPayReq req) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // 1) ตรวจสอบ token
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToken());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+
+            // 2) ตรวจสอบ role
+            String role = user.getRole() == null ? "" : user.getRole().toUpperCase();
+            List<String> allowedRoles = Arrays.asList(
+                    "SUPERACCOUNT",
+                    "FOR_DOCUMENT_ADMIN",
+                    "SUPERBANSI"
+            );
+
+            if (!allowedRoles.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("No right to fetch data");
+                return response;
+            }
+
+            // 3) เรียก repository (flat list)
+            List<SupplierNotPayDto> flatList =
+                    supplierNotPayRepo.findSupplierNotPay(
+                            req.getStartDate(),
+                            req.getEndDate(),
+                            req.getTypeOf(),
+                            req.getSupplierId()
+                    );
+
+            // 4) แปลงเป็น nested structure
+            Map<Long, SupplierNotPayNestedDto> supplierMap = new LinkedHashMap<>();
+
+            for (SupplierNotPayDto row : flatList) {
+                Long supplierId = row.getSupplierId();
+                SupplierNotPayNestedDto supplier = supplierMap.get(supplierId);
+                if (supplier == null) {
+                    supplier = new SupplierNotPayNestedDto();
+                    supplier.setKeyId(row.getKeyId());
+                    supplier.setSupplierId(supplierId);
+                    supplier.setSupplierName(row.getSupplierName());
+                    supplier.setTypeOf(row.getTypeOf());
+                    supplier.setAmountMustPay(row.getAmountMustPay());
+                    supplier.setPay1(row.getPay1());
+                    supplier.setNextDatePay4(row.getNextDatePay4());
+                    supplier.setPayStatus(row.getPayStatus());
+                    supplier.setCurrency(row.getCurrency());
+                    supplier.setCreateBy(row.getCreateBy());
+                    supplier.setCreateDate(row.getCreateDate());
+                    supplierMap.put(supplierId, supplier);
+                }
+
+                // handle financeBill
+                String financeBillStr = row.getFinanceBill();
+                String billNoStr = row.getBillNo();
+
+                Optional<FinanceBillDto> fbOpt = supplier.getFinanceBills().stream()
+                        .filter(fb -> fb.getFinanceBill().equals(financeBillStr))
+                        .findFirst();
+
+                FinanceBillDto financeBillDto;
+                if (fbOpt.isPresent()) {
+                    financeBillDto = fbOpt.get();
+                } else {
+                    financeBillDto = new FinanceBillDto();
+                    financeBillDto.setFinanceBill(financeBillStr);
+                    supplier.getFinanceBills().add(financeBillDto);
+                }
+
+                financeBillDto.getBillNos().add(billNoStr);
+            }
+
+            response.setStatus("00");
+            response.setMessage("Success showing Supplier Not Pay Data");
+            response.setDataResponse(new ArrayList<>(supplierMap.values()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error retrieving Supplier Not Pay Data");
+        }
+
+        return response;
+    }
+
+
 
 
 
