@@ -25,7 +25,7 @@ public class PaymentDetailDao {
         String sql = "SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, a.date, a.datermine_date, a.date_create, a.data_type, " +
                 "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, a.supplierid, a.bill_status, " +
                 "pt.pid as payId, pt.type_name,pt.type_pay as type_of, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role, " +
-                "a.basi_approve_date, a.bansi_approveby, a.account_approve_date, a.account_approveby, a.final_approve_date, a.final_approveby, " +
+                "a.basi_approve_date, a.bansi_approveby, " +
                 "a.returnby, a.return_date,b.account_name, b.account_no, b.bank_name, b.bank_name_lao " +  // ← ใส่ space หลัง a.return_date
                 "FROM tb_accounting a " +
                 "INNER JOIN pay_type pt ON a.pay_typeid = pt.pid " +
@@ -127,10 +127,6 @@ public class PaymentDetailDao {
         model.setUser(rs.getString("USER_LOGIN"));
         model.setBansi_approveby(rs.getString("bansi_approveby"));
         model.setBasi_approve_date(rs.getString("basi_approve_date"));
-        model.setAccount_approveby(rs.getString("account_approveby"));
-        model.setAccount_approve_date(rs.getString("account_approve_date"));
-//        model.setFinal_approveby(rs.getString("account_approveby"));
-//        model.setFinal_approve_date(rs.getString("final_approve_date"));
         model.setReturnby(rs.getString("returnby"));
         model.setReturn_date(rs.getString("return_date"));
         model.setAccount_name(rs.getString("account_name"));
@@ -301,7 +297,7 @@ public class PaymentDetailDao {
 
         // Filter date range
         if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
-            conditions.add("DATE(date) BETWEEN ? AND ?");
+            conditions.add("DATE(basi_approve_date) BETWEEN ? AND ?");
             params.add(startDate);
             params.add(endDate);
         }
@@ -326,6 +322,7 @@ public class PaymentDetailDao {
             model.setKeyId(rs.getInt("key_id"));
             model.setBansiId(rs.getInt("Bansi_id"));
             model.setDate_create(rs.getDate("date_create"));
+            model.setBasi_approve_date(rs.getDate("basi_approve_date"));
             model.setBigProjectId(rs.getInt("big_project_id"));
             model.setBigProject(rs.getString("big_project"));
             model.setSmallProjectId(rs.getInt("small_project_id"));
@@ -337,7 +334,6 @@ public class PaymentDetailDao {
             model.setBunsiName(rs.getString("BunsiName"));
             model.setTitle(rs.getString("title"));
             model.setExchangeRate(rs.getString("exchange_rate"));
-            model.setDate(rs.getDate("date"));
             model.setDatermineDate(rs.getDate("datermine_date"));
             model.setReferenceNumber(rs.getString("reference_number"));
             model.setReference(rs.getString("reference"));

@@ -15,8 +15,8 @@ public class SupplierNotPayDto {
     private String supplierName;      // supplier_name
     private String typeOf;            // type_of
     private BigDecimal amountMustPay; // amount_must_pay
-    private BigDecimal pay1;           // pay1
-    private String nextDatePay4;      // next_date_pay4
+    private BigDecimal paid;           // paid
+    private String nextDatePay;      // next_date_pay
     private String payStatus;         // pay_status
     private String currency;          // currency
     private String createBy;           // create_by

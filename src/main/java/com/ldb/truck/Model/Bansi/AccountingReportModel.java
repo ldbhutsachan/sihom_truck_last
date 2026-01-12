@@ -12,6 +12,8 @@ public class AccountingReportModel {
 
     private Date date_create;
 
+    private Date basi_approve_date;
+
     private Integer bigProjectId;
 
     private String bigProject;
@@ -33,8 +35,6 @@ public class AccountingReportModel {
     private String title;
 
     private String exchangeRate;
-
-    private Date date;
 
     private Date datermineDate;
 

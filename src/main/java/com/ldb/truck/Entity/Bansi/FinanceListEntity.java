@@ -75,9 +75,9 @@ public class FinanceListEntity {
     @JsonProperty("usd_price")
     private Double usdPrice;
 
-    @Column(name = "finance_approve_date")
-    @JsonProperty("finance_approve_date")
-    private String  financeApproveDate;
+    @Column(name = "basi_approve_date")
+    @JsonProperty("basi_approve_date")
+    private String  basiAapproveDate;
 
     @Column(name = "date_create")
     @JsonProperty("date_create")

@@ -651,21 +651,25 @@ public class BansiService {
         if (!"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             if ("wait".equals(status) && !"bansiapprove".equalsIgnoreCase(role)) {
                 throw new Exception("this user can't approve this bill: 'wait'");
-            } else if ("wait-finance".equals(status) && !"superaccount".equalsIgnoreCase(role)) {
-                throw new Exception("this user can't approve this bill: 'wait-finance'");
             }
+//            else if ("wait-finance".equals(status) && !"superaccount".equalsIgnoreCase(role)) {
+//                throw new Exception("this user can't approve this bill: 'wait-finance'");
+//            }
         }
 
         // อนุมัติขั้นต่อไป
         if ("wait".equals(status) || "".equals(status)) {
             entity.setBasiApproveDate(now);
             entity.setBansiApproveBy(approveBy);
-            entity.setBillStatus("wait-finance");
-        } else if ("wait-finance".equals(status)) {
-            entity.setAccountApproveDate(now);
-            entity.setAccountApproveBy(approveBy);
             entity.setBillStatus("ok");
-        }else if ("ok".equals(status)) {
+//            entity.setBillStatus("wait-finance");
+        }
+//        else if ("wait-finance".equals(status)) {
+//            entity.setAccountApproveDate(now);
+//            entity.setAccountApproveBy(approveBy);
+//            entity.setBillStatus("ok");
+//        }
+        else if ("ok".equals(status)) {
             throw new Exception("this bill has done approving (status = ok).");
         } else {
             throw new Exception("the bill_status is incorrect : " + status);
@@ -1690,7 +1694,9 @@ public DataResponse insertFinance(FinanceRequestDto req) {
         DataResponse response = new DataResponse();
 
         try {
-            // 1) ตรวจสอบ token
+            // =========================
+            // 1) Validate token
+            // =========================
             List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToken());
             if (userProfiles.isEmpty()) {
                 response.setStatus("05");
@@ -1700,7 +1706,9 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
             Profile user = userProfiles.get(0);
 
-            // 2) ตรวจสอบ role
+            // =========================
+            // 2) Validate role
+            // =========================
             String role = user.getRole() == null ? "" : user.getRole().toUpperCase();
             List<String> allowedRoles = Arrays.asList(
                     "SUPERACCOUNT",
@@ -1714,7 +1722,9 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 return response;
             }
 
-            // 3) เรียก repository (flat list)
+            // =========================
+            // 3) Get finance bills (flat)
+            // =========================
             List<SupplierNotPayDto> flatList =
                     supplierNotPayRepo.findSupplierNotPay(
                             req.getStartDate(),
@@ -1723,48 +1733,109 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                             req.getSupplierId()
                     );
 
-            // 4) แปลงเป็น nested structure
             Map<Long, SupplierNotPayNestedDto> supplierMap = new LinkedHashMap<>();
 
+            // =========================
+            // 4) Build supplier + financeBills
+            // =========================
             for (SupplierNotPayDto row : flatList) {
+
                 Long supplierId = row.getSupplierId();
                 SupplierNotPayNestedDto supplier = supplierMap.get(supplierId);
+
                 if (supplier == null) {
                     supplier = new SupplierNotPayNestedDto();
                     supplier.setKeyId(row.getKeyId());
                     supplier.setSupplierId(supplierId);
                     supplier.setSupplierName(row.getSupplierName());
-                    supplier.setTypeOf(row.getTypeOf());
-                    supplier.setAmountMustPay(row.getAmountMustPay());
-                    supplier.setPay1(row.getPay1());
-                    supplier.setNextDatePay4(row.getNextDatePay4());
-                    supplier.setPayStatus(row.getPayStatus());
-                    supplier.setCurrency(row.getCurrency());
-                    supplier.setCreateBy(row.getCreateBy());
-                    supplier.setCreateDate(row.getCreateDate());
                     supplierMap.put(supplierId, supplier);
                 }
 
-                // handle financeBill
                 String financeBillStr = row.getFinanceBill();
                 String billNoStr = row.getBillNo();
 
-                Optional<FinanceBillDto> fbOpt = supplier.getFinanceBills().stream()
+                Optional<FinanceBillDto> fbOpt = supplier.getFinanceBills()
+                        .stream()
                         .filter(fb -> fb.getFinanceBill().equals(financeBillStr))
                         .findFirst();
 
                 FinanceBillDto financeBillDto;
+
                 if (fbOpt.isPresent()) {
                     financeBillDto = fbOpt.get();
                 } else {
                     financeBillDto = new FinanceBillDto();
                     financeBillDto.setFinanceBill(financeBillStr);
+                    financeBillDto.setAmountMustPay(row.getAmountMustPay());
+                    financeBillDto.setPaid(row.getPaid());
+                    financeBillDto.setNextDatePay(row.getNextDatePay());
+                    financeBillDto.setPayStatus(row.getPayStatus());
+                    financeBillDto.setCurrency(row.getCurrency());
+                    financeBillDto.setTypeOf(row.getTypeOf());
+
                     supplier.getFinanceBills().add(financeBillDto);
                 }
 
                 financeBillDto.getBillNos().add(billNoStr);
             }
 
+            // =========================
+            // 5) Get SUMMARY from SQL
+            // =========================
+            List<SupplierSummaryRowDto> summaryList =
+                    supplierNotPayRepo.findSupplierSummary(
+                            req.getStartDate(),
+                            req.getEndDate(),
+                            req.getTypeOf(),
+                            req.getSupplierId()
+                    );
+
+            // =========================
+            // 6) Merge SUMMARY → PAY / RECEIVE
+            // =========================
+            for (SupplierSummaryRowDto row : summaryList) {
+
+                SupplierNotPayNestedDto supplier = supplierMap.get(row.getSupplierId());
+                if (supplier == null) {
+                    continue; // safety
+                }
+
+                CurrencySummaryDto summary =
+                        "PAY".equalsIgnoreCase(row.getTypeOf())
+                                ? supplier.getPAY()
+                                : supplier.getRECEIVE();
+
+                BigDecimal mustPay = row.getSumMustPay() == null
+                        ? BigDecimal.ZERO
+                        : row.getSumMustPay();
+
+                BigDecimal pay = row.getSumPay() == null
+                        ? BigDecimal.ZERO
+                        : row.getSumPay();
+
+                if ("LAK".equalsIgnoreCase(row.getCurrency())) {
+                    summary.setSumMustPayLAK(mustPay);
+                    summary.setSumPayLAK(pay);
+                } else if ("THB".equalsIgnoreCase(row.getCurrency())) {
+                    summary.setSumMustPayTHB(mustPay);
+                    summary.setSumPayTHB(pay);
+                } else if ("USD".equalsIgnoreCase(row.getCurrency())) {
+                    summary.setSumMustPayUSD(mustPay);
+                    summary.setSumPayUSD(pay);
+                }
+            }
+
+            // =========================
+            // 7) Calculate next pay
+            // =========================
+            for (SupplierNotPayNestedDto s : supplierMap.values()) {
+                s.getPAY().calculateNextPay();
+                s.getRECEIVE().calculateNextPay();
+            }
+
+            // =========================
+            // 8) Response
+            // =========================
             response.setStatus("00");
             response.setMessage("Success showing Supplier Not Pay Data");
             response.setDataResponse(new ArrayList<>(supplierMap.values()));
@@ -1777,6 +1848,8 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         return response;
     }
+
+
 
 
 
