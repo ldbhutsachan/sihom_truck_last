@@ -89,4 +89,10 @@ public class RequestItemEbtity {
 
     @Column(name = "using_by", length = 200)
     private String usingBy;
+
+    @Column(name = "start_date", length = 200)
+    private String startDate;
+
+    @Column(name = "end_date", length = 200)
+    private String endDate;
 }

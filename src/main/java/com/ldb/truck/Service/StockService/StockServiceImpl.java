@@ -601,8 +601,8 @@ public class StockServiceImpl {
 //        }
 //        return response;
 //    }
-    public V_OrderItemDetailsRes getOrderItemReport(String conReq,String branchNo,
-                                                     String userId,String role,String status,String startDate,String endDate,String borNo,String borNoFone){
+    public V_OrderItemDetailsRes getOrderItemReport(String conReq,String branchNo, String userId,String role,String status,
+                                                    String startDate,String endDate,String borNo,String borNoFone, String userMission){
           //  DecimalFormat numfm = new DecimalFormat("###,###.###");
        V_OrderItemDetailsRes response = new V_OrderItemDetailsRes();
         List<V_OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
@@ -610,7 +610,7 @@ public class StockServiceImpl {
         try {
 
             listData = getDataReportDetails ( conReq, branchNo,
-                     userId, role, status, startDate, endDate,borNo,borNoFone);
+                     userId, role, status, startDate, endDate,borNo,borNoFone, userMission);
 
             List<String> billNoList = listData.stream()
                     .map(V_order_item_details::getBillNo)
@@ -707,13 +707,15 @@ public class StockServiceImpl {
     public List<V_order_item_details> getDataReportDetails(String conReq, String branchNo,
                                                            String userId, String role,
                                                            String status, String startDate,
-                                                           String endDate, String borNo,String borNoFone) {
+                                                           String endDate, String borNo,String borNoFone,String userMission) {
         try {
             String borNoCon = "";
             String conDate= "";
             String conUserId= "";
             String conBranch  = "";
             String conStatus = "";
+            String itemSize = "";
+
             if(conReq.equals("1")){
                 conBranch = "\n AND branchno ='"+branchNo+"' ";
             }else if (conReq.equals("2")){
@@ -749,6 +751,11 @@ public class StockServiceImpl {
 
                 borNoCon = "\n AND borkey = '" + borNoFone + "' ";
             }
+            if ("APPROVEOID".equalsIgnoreCase(userMission)) {
+                itemSize = "\n AND size = 'nammun'";
+            } else if ("APPROVEINOUT".equalsIgnoreCase(userMission)) {
+                itemSize = "\n AND size != 'nammun'";
+            }
 
 
             StringBuilder sb = new StringBuilder();
@@ -758,6 +765,7 @@ public class StockServiceImpl {
             sb.append(conUserId);
             sb.append(conDate);
             sb.append(borNoCon);
+            sb.append(itemSize);
 
             String sql = sb.toString();
             log.info("sql:"+sql);
@@ -2193,21 +2201,22 @@ public DataResponse checkKeyOrder(){
 
     //save request item when have insert data
 
-    public RequestItemDetailsRes getRequestItem(String billNo, String role, String userName, String status,String branchNo, String borNo){
+    public RequestItemDetailsRes getRequestItem(String billNo, String role, String userName, String status,String branchNo, String borNo, String userMission,String startDate, String endDate){
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         RequestItemDetailsRes response = new RequestItemDetailsRes();
         List<RequestItemHeader> groupStockItemHeaders = new ArrayList<>();
         List<RequestTxnEntity> listData = new ArrayList<>();
         RequestItemHeader groupHeader = new RequestItemHeader();
         String stat = status;
+        String uMission = userMission;
         try {
             //if status all show all
             if(stat.equals("all")){
                 //if PADMIN =PADMIN show all
                 if("PADMIN".equals(role)) {
-                    listData = requestTxnRepository.getStockByBillNoAdminAll();
+                    listData = requestTxnRepository.getStockByBillNoAdminAll(uMission, startDate,endDate);
                 }else {
-                    listData = requestTxnRepository.getStockByBranch(branchNo,borNo);
+                    listData = requestTxnRepository.getStockByBranch(branchNo,borNo, startDate,endDate);
                 }
             }
             else {

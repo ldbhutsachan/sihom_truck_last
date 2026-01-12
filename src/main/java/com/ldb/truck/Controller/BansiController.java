@@ -116,7 +116,8 @@ public class BansiController {
             @RequestParam(value = "tag", required = false) String tag,
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+//            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "file", required = false) MultipartFile[] files,
             @RequestParam("b_id") Long bId
     ) {
         try {
@@ -137,7 +138,7 @@ public class BansiController {
             dto.setInternal_remark(internalRemark);
             dto.setTag(tag);
             dto.setDatermine_date(datermine_date);
-            dto.setFile(file);
+            dto.setFile(files);
             dto.setB_id(bId);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
@@ -177,7 +178,8 @@ public class BansiController {
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
             @RequestParam(value = "bill_status", required = false) String bill_status,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+//            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "file", required = false) MultipartFile[] files,
             @RequestParam("b_id") Long bId
     ) {
         try {
@@ -198,7 +200,7 @@ public class BansiController {
             dto.setTag(tag);
             dto.setDatermine_date(datermine_date);
             dto.setBill_status(bill_status);
-            dto.setFile(file);
+            dto.setFile(files);
             dto.setB_id(bId);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {

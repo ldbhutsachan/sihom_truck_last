@@ -11,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Profile {
     private String userId;
+    private String staff_id;
     private String userName;
     private String role;
     private String branchNo;

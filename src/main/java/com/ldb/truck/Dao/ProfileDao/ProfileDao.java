@@ -53,7 +53,7 @@ public class ProfileDao {
     public List<Profile> getProfileInfoByToken(String toKen){
 
         try{
-            String SQL = "select b.KEY_ID as userId ,b.USER_LOGIN as userName ,b.ROLE,b.BRANCH as branchNo ,a.B_NAME as banchName,b.bor_no \n" +
+            String SQL = "select b.STAFT_ID, b.KEY_ID as userId ,b.USER_LOGIN as userName ,b.ROLE,b.BRANCH as branchNo ,a.B_NAME as banchName,b.bor_no \n" +
                     "from LOGIN b left join TB_BRANCH a on a.KEY_ID  =b.BRANCH    where token='"+toKen+"'";
             log.info("SQL:"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<Profile>() {
@@ -61,6 +61,7 @@ public class ProfileDao {
                 public Profile mapRow(ResultSet rs, int rowNum) throws SQLException {
                     Profile tr = new Profile();
                     tr.setUserId(rs.getString("userId"));
+                    tr.setStaff_id(rs.getString("STAFT_ID"));
                     tr.setUserName(rs.getString("userName"));
                     tr.setRole(rs.getString("ROLE"));
                     tr.setBranchNo(rs.getString("branchNo"));

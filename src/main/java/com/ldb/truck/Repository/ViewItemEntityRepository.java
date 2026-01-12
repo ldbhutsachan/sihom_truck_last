@@ -48,20 +48,16 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     @Transactional
     @Query(value =
             "SELECT * " +
-                    "FROM v_items " +
-                    "WHERE " +
-                    "(:itemId IS NULL OR :itemId = '' OR item_id = :itemId) " +
-                    "AND (:borNo IS NULL OR :borNo = '' OR bor_no = :borNo) " +
-                    "AND (:khId IS NULL OR :khId = '' OR khid = :khId) " +
-                    "AND ( " +
-                    "     (:startDate IS NULL OR :startDate = '') " +
-                    "     OR make_date >= STR_TO_DATE(:startDate,'%Y-%m-%d') " +
-                    ") " +
-                    "AND ( " +
-                    "     (:endDate IS NULL OR :endDate = '') " +
-                    "     OR make_date <= STR_TO_DATE(:endDate,'%Y-%m-%d') " +
-                    ") " +
-                    "ORDER BY item_name ASC",
+                    "FROM v_items\n" +
+                    "WHERE 1=1\n" +
+                    "AND (:itemId IS NULL OR item_id = :itemId)\n" +
+                    "AND (:borNo IS NULL OR bor_no = :borNo)\n" +
+                    "AND (:khId IS NULL OR khid = :khId)\n" +
+                    "AND (:startDate IS NULL OR make_date >= STR_TO_DATE(:startDate,'%Y-%m-%d'))\n" +
+                    "AND (:endDate IS NULL OR make_date < DATE_ADD(STR_TO_DATE(:endDate,'%Y-%m-%d'), INTERVAL 1 DAY))\n" +
+                    "ORDER BY item_name ASC\n",
+
+
             nativeQuery = true)
     List<viewItemEntity> searchViewItems(
             @Param("itemId") String itemId,
@@ -70,6 +66,7 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
             @Param("startDate") String startDate,
             @Param("endDate") String endDate
     );
+
 
 
     @Transactional

@@ -66,6 +66,8 @@ public class ItemServiceImpl {
                         req.getEndDate()
                 );
             }
+            // ================= LOG RESULT SIZE =================
+            log.info("Result size = {}", rspList.size());
 
             if (!rspList.isEmpty()) {
                 for (viewItemEntity item : rspList) {

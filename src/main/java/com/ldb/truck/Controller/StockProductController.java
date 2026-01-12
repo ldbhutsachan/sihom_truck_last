@@ -183,6 +183,7 @@ public class StockProductController {
         }
         String userId = userProfiles.get(0).getUserName();
         String role = userProfiles.get(0).getRole();
+        String userMission = userProfiles.get(0).getStaff_id();
         String branchNo = userProfiles.get(0).getBranchNo();
         String status = stockItemDetailsEntity.getStatus();
         String conditionReq = stockItemDetailsEntity.getShowByCondition();
@@ -193,7 +194,7 @@ public class StockProductController {
         String borNoFone = stockItemDetailsEntity.getBorNo();
 
         try {
-                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo,borNoFone);
+                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo,borNoFone,userMission);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -481,15 +482,18 @@ public class StockProductController {
         }
         String userId = userProfiles.get(0).getUserName();
         String role = userProfiles.get(0).getRole();
-        Integer deId = stockItemDetailsEntity.getDetailId();
+        String userMission = userProfiles.get(0).getStaff_id();
         String billNo = stockItemDetailsEntity.getBillNo();
         String status = stockItemDetailsEntity.getStatus();
         String branchNo =userProfiles.get(0).getBranchNo();
         String borNo =userProfiles.get(0).getBorNo();
+        String startDate = stockItemDetailsEntity.getStartDate();
+        String endDate = stockItemDetailsEntity.getEndDate();
+
 
         try {
             log.info("branchNo:"+branchNo);
-            response = stockService.getRequestItem(billNo,role,userId,status,branchNo,borNo);
+            response = stockService.getRequestItem(billNo,role,userId,status,branchNo,borNo, userMission, startDate, endDate);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

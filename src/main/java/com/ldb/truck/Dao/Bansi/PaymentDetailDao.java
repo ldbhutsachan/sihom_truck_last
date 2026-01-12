@@ -8,10 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -113,7 +110,17 @@ public class PaymentDetailDao {
         model.setRemark(rs.getString("remark"));
         model.setInternalRemark(rs.getString("internal_remark"));
         model.setTag(rs.getString("tag"));
-        model.setFile(rs.getString("file"));
+//        model.setFile(rs.getString("file"));
+        String fileStr = rs.getString("file");
+        model.setFile(fileStr); // เก็บเหมือนเดิม
+        if (fileStr != null && !fileStr.isEmpty()) {
+            // แยกเป็น list ตาม comma
+            List<String> fileList = Arrays.asList(fileStr.split(","));
+            model.setFileList(fileList);
+        } else {
+            model.setFileList(new ArrayList<>()); // ถ้าไม่มีไฟล์
+        }
+
         model.setPayId(rs.getLong("payId"));
         model.setPaytype(rs.getString("type_name"));
         model.setType_of(rs.getString("type_of"));
@@ -340,7 +347,16 @@ public class PaymentDetailDao {
             model.setRemark(rs.getString("remark"));
             model.setInternalRemark(rs.getString("internal_remark"));
             model.setTag(rs.getString("tag"));
-            model.setFile(rs.getString("file"));
+//            model.setFile(rs.getString("file"));
+            String fileStr = rs.getString("file");
+            model.setFile(fileStr); // เก็บเหมือนเดิม
+            if (fileStr != null && !fileStr.isEmpty()) {
+                // แยกเป็น list ตาม comma
+                List<String> fileList = Arrays.asList(fileStr.split(","));
+                model.setFileList(fileList);
+            } else {
+                model.setFileList(new ArrayList<>()); // ถ้าไม่มีไฟล์
+            }
             model.setBillNo(rs.getString("bill_No"));
             model.setBill_status(rs.getString("bill_status"));
             model.setCurrency(rs.getString("currency"));
