@@ -602,7 +602,7 @@ public class StockServiceImpl {
 //        return response;
 //    }
     public V_OrderItemDetailsRes getOrderItemReport(String conReq,String branchNo, String userId,String role,String status,
-                                                    String startDate,String endDate,String borNo,String borNoFone, String userMission){
+                                                    String startDate,String endDate,String borNo,String borNoFone, String userMission, String type_of_order){
           //  DecimalFormat numfm = new DecimalFormat("###,###.###");
        V_OrderItemDetailsRes response = new V_OrderItemDetailsRes();
         List<V_OrderItemHeader> groupStockItemHeaders = new ArrayList<>();
@@ -610,7 +610,7 @@ public class StockServiceImpl {
         try {
 
             listData = getDataReportDetails ( conReq, branchNo,
-                     userId, role, status, startDate, endDate,borNo,borNoFone, userMission);
+                     userId, role, status, startDate, endDate,borNo,borNoFone, userMission, type_of_order);
 
             List<String> billNoList = listData.stream()
                     .map(V_order_item_details::getBillNo)
@@ -707,7 +707,7 @@ public class StockServiceImpl {
     public List<V_order_item_details> getDataReportDetails(String conReq, String branchNo,
                                                            String userId, String role,
                                                            String status, String startDate,
-                                                           String endDate, String borNo,String borNoFone,String userMission) {
+                                                           String endDate, String borNo,String borNoFone,String userMission, String type_of_order) {
         try {
             String borNoCon = "";
             String conDate= "";
@@ -715,6 +715,7 @@ public class StockServiceImpl {
             String conBranch  = "";
             String conStatus = "";
             String itemSize = "";
+            String typeOfOrder ="";
 
             if(conReq.equals("1")){
                 conBranch = "\n AND branchno ='"+branchNo+"' ";
@@ -756,6 +757,9 @@ public class StockServiceImpl {
             } else if ("APPROVEINOUT".equalsIgnoreCase(userMission)) {
                 itemSize = "\n AND size != 'nammun'";
             }
+            if (type_of_order != null && !type_of_order.trim().isEmpty() && !"all".equalsIgnoreCase(type_of_order)) {
+                typeOfOrder = "\n AND type_of_order = '" + type_of_order + "' ";
+            }
 
 
             StringBuilder sb = new StringBuilder();
@@ -766,6 +770,7 @@ public class StockServiceImpl {
             sb.append(conDate);
             sb.append(borNoCon);
             sb.append(itemSize);
+            sb.append(typeOfOrder);
 
             String sql = sb.toString();
             log.info("sql:"+sql);
@@ -817,12 +822,21 @@ public class StockServiceImpl {
                     tr.setDatePay(rs.getString("date_pay"));
                     tr.setItemArriveDate(rs.getString("item_arrive_date"));
 
-                    // ===== CALCULATE NEW STATUS =====
+                    // ===== CALCULATE NEW STATUS FOR ARRIVE DATE =====
                     String arriveStatus = calculateArriveStatus(
                             tr.getStatus(),
                             tr.getItemArriveDate()
                     );
                     tr.setItemArriveStatus(arriveStatus);
+
+                    // NEW STATUS FOR DATEPAY
+                    String payStatus = calculateDatePay(
+                            tr.getPayStatus(),   // payStatus
+                            tr.getDatePay(),     // datePay
+                            tr.getTypeOfOrder()  // typeOfOder
+                    );
+                    tr.setNotiDatePayS(payStatus);
+
 
                     return tr;
                 }
@@ -835,7 +849,18 @@ public class StockServiceImpl {
     private String calculateArriveStatus(String status, String itemArriveDate) {
 
         // คำนวณเฉพาะ status = wait
-        if (!"wait".equalsIgnoreCase(status)) {
+//        if (!"wait".equalsIgnoreCase(status)) {
+//            return null;
+//        }
+        // ไม่ต้องคำนวณสำหรับ status เหล่านี้
+        if (status == null) {
+            return null;
+        }
+
+        if ("ok".equalsIgnoreCase(status)
+                || "reject".equalsIgnoreCase(status)
+                || "reject_buyer".equalsIgnoreCase(status)
+                || "wait-item".equalsIgnoreCase(status)) {
             return null;
         }
 
@@ -860,6 +885,42 @@ public class StockServiceImpl {
             return null;
         }
     }
+    //calculate Datpay Status
+    private String calculateDatePay(String payStatus, String datePay, String typeOfOder) {
+
+        // ถ้า typeOfOder ไม่ใช่ credit → ไม่ต้องคำนวณ
+        if (typeOfOder == null || !"credit".equalsIgnoreCase(typeOfOder)) {
+            return null;
+        }
+
+        // ถ้า payStatus = paid → ไม่ต้องคำนวณ
+        if ("paid".equalsIgnoreCase(payStatus)) {
+            return null;
+        }
+
+        // ถ้า datePay ว่าง → return null
+        if (datePay == null || datePay.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            // รูปแบบวันที่: yyyy-MM-dd
+            LocalDate payDate = LocalDate.parse(datePay);
+            LocalDate today = LocalDate.now();
+
+            if (today.isBefore(payDate)) {
+                return "COMING";
+            } else if (today.isEqual(payDate)) {
+                return "EXPIRED";
+            } else {
+                return "OVERDUE";
+            }
+        } catch (Exception e) {
+            log.warn("Invalid datePay format: {}", datePay);
+            return null;
+        }
+    }
+
 
     ///-----
     public DataResponse saveItemIn(OrderRequest stockItemDetailsEntity, String userId) {
@@ -1044,7 +1105,8 @@ public class StockServiceImpl {
                         break;
 
                     case "buyer":
-                        updated = checkStatusBuyer(status, request, userId);
+//                        updated = checkStatusBuyer(status, request, userId);
+                        updated = checkStatusBuyer( request, userId);
                         break;
 
                     case "accounting":
@@ -1138,7 +1200,7 @@ public class StockServiceImpl {
                         "qty = ?, price = ?, status = 'auth', " +
                         "currency = ?, exchange_rate = ?, " +
                         "place_buy = ?, shope_id = ?, " +
-                        "type_of_order = ?, date_pay = ? " +
+                        "type_of_order = ?, date_pay = ? ,item_arrive_date = ? " +
                         "WHERE item_id = ? AND bill_no = ?";
 
         for (OrderItemReportEntity item : items) {
@@ -1155,6 +1217,7 @@ public class StockServiceImpl {
                     request.getShopeId(),
                     request.getTypeOfPay(),
                     request.getDatePay(),
+                    request.getItemArriveDate(),
                     item.getDetailId(),
                     item.getBillNo()
             );
@@ -1217,39 +1280,90 @@ public class StockServiceImpl {
         return totalUpdated;
     }
     //buyer
-    public int checkStatusBuyer(String status,StockItemAuthReq request, String userId){
-        log.info("====start service ====");
-        //****let start other service
+//    public int checkStatusBuyer(String status,StockItemAuthReq request, String userId){
+//        log.info("====start service ====");
+//        //****let start other service
+//        List<OrderItemReportEntity> items = authConvert(request, userId);
+//        log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
+//        int updated = 0;
+//        final String sql = "UPDATE order_item_details SET " +
+//                "buyer_id = ?, " +
+//                "buyer_date = ?, " +
+//                "qty = ?," +
+//                "price = ?," +
+//                "status= 'buyer' , " +
+//                "currency= ?, " +
+//                "exchange_rate= ?,  " +
+//                "WHERE detail_id = ? and bill_no=?  ";
+//        for (OrderItemReportEntity item : items) {
+//            log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
+//            updated = EBankJdbcTemplate.update(
+//                    sql,
+//                    userId,
+//                    new Date(),
+//                    item.getQty(),
+//                    item.getPrice(),
+//                    item.getCurrency(),
+//                    item.getExchangeRate(),
+//                    item.getDetailId(),
+//                    item.getBillNo()
+//            );
+//            log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
+//        }
+//        return 1;
+//
+//    }
+    @Transactional   // 🔹 เพิ่ม @Transactional กัน partial update
+    public int checkStatusBuyer(StockItemAuthReq request, String userId) {
+
+        log.info("=== START checkStatusBuyer ===");
+
         List<OrderItemReportEntity> items = authConvert(request, userId);
-        log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
-        int updated = 0;
-        final String sql = "UPDATE order_item_details SET " +
-                "buyer_id = ?, " +
-                "buyer_date = ?, " +
-                "qty = ?," +
-                "price = ?," +
-                "status= 'buyer' , " +
-                "currency= ?, " +
-                "exchange_rate= ? " +
-                "WHERE item_id = ? and bill_no=?  ";
+        log.info("Buyer update {} item(s), billNo={}", items.size(), request.getBillNo());
+
+        int updated = 0;  // 🔹 เปลี่ยนจากการใช้ updated = update() เป็น 0 แล้ว +=
+
+        final String sql =
+                "UPDATE order_item_details SET " +
+                        "buyer_id = ?, " +
+                        "buyer_date = ?, " +
+                        "qty = ?, " +
+                        "price = ?, " +
+                        "status = 'buyer', " +   // 🔹 ใช้ status fix 'buyer' แทน parameter
+                        "currency = ?, " +
+                        "exchange_rate = ?, " +
+                        "date_pay = ?, " +
+                        "item_arrive_date = ? " +
+                        "WHERE item_id = ? " +  // 🔹 เปลี่ยนจาก item_id
+                        "AND bill_no = ? " +
+                        "AND status = 'auth'";   // 🔹 เพิ่ม check status เดิมเพื่อ enforce flow
+
         for (OrderItemReportEntity item : items) {
-            log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
-            updated = EBankJdbcTemplate.update(
+
+            updated += EBankJdbcTemplate.update(   // 🔹 เปลี่ยนจาก = เป็น += เพื่อรวมทุก row
                     sql,
-                    userId,
-                    new Date(),
+                    userId,                     // buyer_id
+                    new Date(),                 // buyer_date
                     item.getQty(),
                     item.getPrice(),
                     item.getCurrency(),
                     item.getExchangeRate(),
-                    item.getDetailId(),
+                    request.getDatePay(),
+                    request.getItemArriveDate(),  // 🔹 แก้จาก datePay → itemArriveDate
+                    item.getDetailId(),           // 🔹 เปลี่ยนจาก itemId → detailId
                     item.getBillNo()
             );
-            log.info("Updated {} row(s) for detail_id = {}", updated, item.getDetailId());
-        }
-        return 1;
 
+            log.info("Buyer updated detail_id={}", item.getDetailId());
+        }
+
+        if (updated != items.size()) {   // 🔹 เพิ่ม check updated ครบทุก item
+            throw new IllegalStateException("Invalid status flow: auth → buyer");
+        }
+
+        return updated;  // 🔹 เปลี่ยนจาก return 1 → return จำนวน row จริง
     }
+
     //accounting
     public int checkStatusAccounting(String status,StockItemAuthReq request, String userId){
         log.info("====start service ====");
@@ -1298,7 +1412,7 @@ public class StockServiceImpl {
                 "price = ?," +
                 "status= 'wait-item' , " +
                 "currency= ?, " +
-                "exchange_rate= ? " +
+                "exchange_rate= ?, date_pay = ? ,item_arrive_date = ?,pay_status = ?  " +
                 "WHERE item_id = ? and bill_no=?  ";
         for (OrderItemReportEntity item : items) {
             log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
@@ -1310,6 +1424,9 @@ public class StockServiceImpl {
                     item.getPrice(),
                     item.getCurrency(),
                     item.getExchangeRate(),
+                    request.getDatePay(),
+                    request.getItemArriveDate(),
+                    request.getPayStatus(),
                     item.getDetailId(),
                     item.getBillNo()
             );

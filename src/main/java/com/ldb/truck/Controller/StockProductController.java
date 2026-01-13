@@ -192,9 +192,10 @@ public class StockProductController {
         String endDate =  stockItemDetailsEntity.getEndDate();
         String borNo = userProfiles.get(0).getBorNo();
         String borNoFone = stockItemDetailsEntity.getBorNo();
+        String type_of_order = stockItemDetailsEntity.getTypeOfPay();
 
         try {
-                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo,borNoFone,userMission);
+                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo,borNoFone,userMission, type_of_order);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -322,6 +323,7 @@ public class StockProductController {
         data.setShopeId(stockItemDetailsReq.getShopeId());
         data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
         data.setDatePay(stockItemDetailsReq.getDatePay());
+        data.setPayStatus(stockItemDetailsReq.getPayStatus());
         data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
 
         try {

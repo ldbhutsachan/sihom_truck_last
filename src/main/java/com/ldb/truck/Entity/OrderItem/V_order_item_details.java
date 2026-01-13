@@ -146,8 +146,15 @@ public class V_order_item_details {
     @Column(name = "date_pay")
     private String datePay;
 
+    @Column(name = "pay_status", length = 200)
+    private String payStatus;
+
+    @Transient
+    private String NotiDatePayS;
+
     @Column(name = "item_arrive_date")
     private String itemArriveDate;
+
 
     @Transient
     private String itemArriveStatus;
