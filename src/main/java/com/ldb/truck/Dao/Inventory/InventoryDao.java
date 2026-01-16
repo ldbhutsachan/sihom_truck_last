@@ -2678,54 +2678,70 @@ public List<OldInventoryModel> ShowOldInventoryDAOs (OldInventoryReq oldInventor
 }
     //report stock day week DAOs
     public List<ReportstockModel> reportStockDayWeekDaos(ReportstockReq reportstockReq) {
-        String sql;
+
         try {
-            if (reportstockReq.getItem_id() == null)
-            {
-                if (reportstockReq.getStartDate() == null){
-                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE branch_inventory ='"+reportstockReq.getBranch()+"'";
-                    log.info("SQL1:" + sql);
-                }else
-                {
-                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE branch_inventory ='"+reportstockReq.getBranch()+"' and dateOut between '" + reportstockReq.getStartDate() + "' and '" + reportstockReq.getEndDate() + "'\n" +
-                            "or dateIn BETWEEN '" + reportstockReq.getStartDate() + "' and '"+ reportstockReq.getEndDate() +"'";
-                    log.info("SQL2:" + sql);
-                }
+            StringBuilder sql = new StringBuilder(
+                    "SELECT * FROM V_REPORT_STOCK_NEW WHERE 1=1"
+            );
+
+            // branch
+            if (reportstockReq.getBranch() != null) {
+                sql.append(" AND branch_inventory = '")
+                        .append(reportstockReq.getBranch())
+                        .append("'");
             }
-            else {
-                if (reportstockReq.getStartDate() == null){
-                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE item_id = '" + reportstockReq.getItem_id() +"'";
-                    log.info("SQL3:" + sql);
-                }
-                else
-                {
-                    sql = "SELECT * FROM V_REPORT_STOCK  WHERE item_id = '" + reportstockReq.getItem_id() + "' and dateOut between '" + reportstockReq.getStartDate() + "' and '" + reportstockReq.getEndDate() + "'\n" +
-                            "or dateIn BETWEEN '" + reportstockReq.getStartDate() + "' and '"+ reportstockReq.getEndDate() +"'";
-                    log.info("SQL4:" + sql);
-                }
+
+            // item
+            if (reportstockReq.getItem_id() != null) {
+                sql.append(" AND item_id = '")
+                        .append(reportstockReq.getItem_id())
+                        .append("'");
             }
-            return EBankJdbcTemplate.query(sql, new RowMapper<ReportstockModel>() {
-                @Override
-                public ReportstockModel mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    ReportstockModel tr = new ReportstockModel();
-                    tr.setItem_id(rs.getString("item_id"));
-                    tr.setItem_name(rs.getString("item_name"));
-                    tr.setUnit(rs.getString("unit"));
-                    tr.setImg(rs.getString("img"));
-                    tr.setDateOut(rs.getString("dateOut"));
-                    tr.setDateIn(rs.getString("dateIn"));
-                    tr.setQty_stock(rs.getDouble("QTY_stock"));
-                    tr.setQty_out(rs.getDouble("QTY_out"));
-                    tr.setQty_in(rs.getDouble("QTY_in"));
-                    tr.setYordyokma(rs.getDouble("yordyokma"));
-                    return tr;
-                }
-            });
+
+            // date in / out
+            if (reportstockReq.getStartDateItemIn_out() != null) {
+                sql.append(" AND ( ")
+                        .append("dateOut BETWEEN '")
+                        .append(reportstockReq.getStartDateItemIn_out())
+                        .append("' AND '")
+                        .append(reportstockReq.getEndDateItemIn_out())
+                        .append("' ")
+                        .append(" OR dateIn BETWEEN '")
+                        .append(reportstockReq.getStartDateItemIn_out())
+                        .append("' AND '")
+                        .append(reportstockReq.getEndDateItemIn_out())
+                        .append("' )");
+            }
+
+            log.info("SQL : {}", sql.toString());
+
+            return EBankJdbcTemplate.query(
+                    sql.toString(),   // ⭐ สำคัญมาก
+                    new RowMapper<ReportstockModel>() {
+                        @Override
+                        public ReportstockModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                            ReportstockModel tr = new ReportstockModel();
+                            tr.setItem_id(rs.getString("item_id"));
+                            tr.setItem_name(rs.getString("item_name"));
+                            tr.setUnit(rs.getString("unit"));
+                            tr.setImg(rs.getString("img"));
+                            tr.setDateOut(rs.getString("dateOut"));
+                            tr.setDateIn(rs.getString("dateIn"));
+                            tr.setQty_stock(rs.getDouble("QTY_stock"));
+                            tr.setQty_out(rs.getDouble("QTY_out"));
+                            tr.setQty_in(rs.getDouble("QTY_in"));
+                            tr.setYordyokma(rs.getDouble("yordyokma"));
+                            return tr;
+                        }
+                    }
+            );
+
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
+
 
     // for inventory object
     public List<ReportstockModel2>inventoryalaireportStockDayWeekDaos (ReportstockReq reportstockReq) {

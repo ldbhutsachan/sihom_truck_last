@@ -1656,6 +1656,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 map.put("payStatus", first.getPayStatus());
                 map.put("currency", first.getCurrency());
                 map.put("createBy", first.getCreateBy());
+                map.put(("create_date"),first.getCreateDate());
                 map.put("token", first.getToken());
 
                 // รวม billNo เป็น list

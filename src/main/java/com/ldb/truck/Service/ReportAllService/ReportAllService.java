@@ -341,8 +341,11 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
                 // ===============================
                 int totalIn = groupItems.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
                 int totalOut = groupItems.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
-                int totalClosing = groupItems.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
-                int totalRaised = groupItems.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
+//                int totalClosing = groupItems.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
+//                int totalRaised = groupItems.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
+                int totalRaised = groupItems.get(0).getRaisedAmt();           // opening
+                int totalClosing = groupItems.get(groupItems.size() - 1)
+                        .getClosingAmt();              // closing
 
                 double outPrice = groupItems.stream()
                         .mapToDouble(i -> i.getPrice() * i.getOutAmt())

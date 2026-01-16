@@ -29,10 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -1128,77 +1125,180 @@ public ReportShowOfferPaper reportShowofferpaperCurrencyServiceLAK (@RequestBody
     }
 }
 //report stock day week
-public ReportstockRes reportStockDayWeekService (@RequestBody ReportstockReq reportstockReq ){
-    log.info("toKen=======================:"+reportstockReq.getToKen());
-    //============================get User info=======================
-    List<Profile> userIn = profileDao.getProfileInfoByToken(reportstockReq.getToKen());
-    log.info("show=================UserNo:"+userIn.get(0).getUserId());
-    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-    log.info("show=================Role:"+userIn.get(0).getRole());
-    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-    //================================================================
-    String userId = userIn.get(0).getUserId();
-    String userBranchNo = userIn.get(0).getBranchNo();
-    //===================set data to userId===============================
-    reportstockReq.setUserId(userId);
-    reportstockReq.setBranch(userBranchNo);
-    //====================================================================
-    List<ReportstockModel> listData = new ArrayList<>();
-    List<ReportstockModel2> listData2 = new ArrayList<>();
+//public ReportstockRes reportStockDayWeekService (@RequestBody ReportstockReq reportstockReq ){
+//    log.info("toKen=======================:"+reportstockReq.getToKen());
+//    //============================get User info=======================
+//    List<Profile> userIn = profileDao.getProfileInfoByToken(reportstockReq.getToKen());
+//    log.info("show=================UserNo:"+userIn.get(0).getUserId());
+//    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
+//    log.info("show=================Role:"+userIn.get(0).getRole());
+//    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
+//    //================================================================
+//    String userId = userIn.get(0).getUserId();
+//    String userBranchNo = userIn.get(0).getBranchNo();
+//    //===================set data to userId===============================
+//    reportstockReq.setUserId(userId);
+//    reportstockReq.setBranch(userBranchNo);
+//    //====================================================================
+//    List<ReportstockModel> listData = new ArrayList<>();
+//    List<ReportstockModel2> listData2 = new ArrayList<>();
+//    ReportstockRes result = new ReportstockRes();
+//    DecimalFormat numfm = new DecimalFormat("###,###.###");
+//    try {
+//
+//            listData2 = inventoryDao.inventoryalaireportStockDayWeekDaos(reportstockReq);
+//            sumFooterGroup2 restFooter2 = new sumFooterGroup2();
+//            double total_qty_stock2 =  listData2.stream().map(ReportstockModel2::getQty_stock2).collect(Collectors.summingDouble(Double::doubleValue));
+//            double total_yodyokma2 =  listData2.stream().map(ReportstockModel2::getYodyokma2).collect(Collectors.summingDouble(Double::doubleValue));
+//            restFooter2.setTotal_qty_stock2(numfm.format(total_qty_stock2));
+//            restFooter2.setTotal_yodyokma2(numfm.format(total_yodyokma2));
+//
+////==========================================================================================
+//            listData = inventoryDao.reportStockDayWeekDaos(reportstockReq);
+//            sumFooterGroup restFooter = new sumFooterGroup();
+//            double total_qty_stock = listData.stream().map(ReportstockModel::getQty_stock).collect(Collectors.summingDouble(Double::doubleValue));
+//            double total_qty_in = listData.stream().map(ReportstockModel::getQty_in).collect(Collectors.summingDouble(Double::doubleValue));
+//            double total_qty_out = listData.stream().map(ReportstockModel::getQty_out).collect(Collectors.summingDouble(Double::doubleValue));
+//            double total_yodyokma = listData.stream().map(ReportstockModel::getYordyokma).collect(Collectors.summingDouble(Double::doubleValue));
+//            restFooter.setTotal_qty_stock(numfm.format(total_qty_stock));
+//            restFooter.setTotal_qty_in(numfm.format(total_qty_in));
+//            restFooter.setTotal_qty_out(numfm.format(total_qty_out));
+//            restFooter.setTotal_yodyokma(numfm.format(total_yodyokma));
+////            =========================================================== for sang a lai
+//            restFooter2.setTotal_yodyokma2(numfm.format(total_yodyokma2));
+//            restFooter2.setTotal_qty_stock2(numfm.format(total_qty_stock2));
+//            restFooter2.setTotal_qty_in(numfm.format(total_qty_in));
+//            restFooter2.setTotal_qty_out(numfm.format(total_qty_out));
+//
+//            if (total_qty_stock==0 && total_yodyokma ==0){
+//                result.setSumFooter2(restFooter2);
+//                result.setMessage("Success");
+//                result.setStatus("00");
+//                result.setData(listData);
+//                return result;
+//            }else {
+//                result.setSumFooter(restFooter);
+//                result.setMessage("Success");
+//                result.setStatus("00");
+//                result.setData(listData);
+//                return result;
+//            }
+////            result.setSumFooter(restFooter);
+////            result.setMessage("Success");
+////            result.setStatus("00");
+////            result.setData(listData);
+////            return result;
+//
+//    }catch (Exception e){
+//        e.printStackTrace();
+//        result.setMessage("data not found");
+//        result.setStatus("01");
+//        return result;
+//    }
+//}
+public ReportstockRes reportStockDayWeekService(ReportstockReq reportstockReq) {
+
     ReportstockRes result = new ReportstockRes();
-    DecimalFormat numfm = new DecimalFormat("###,###.###");
+
     try {
+        // ========================= get user from token =========================
+        List<Profile> userIn =
+                profileDao.getProfileInfoByToken(reportstockReq.getToKen());
 
-            listData2 = inventoryDao.inventoryalaireportStockDayWeekDaos(reportstockReq);
-            sumFooterGroup2 restFooter2 = new sumFooterGroup2();
-            double total_qty_stock2 =  listData2.stream().map(ReportstockModel2::getQty_stock2).collect(Collectors.summingDouble(Double::doubleValue));
-            double total_yodyokma2 =  listData2.stream().map(ReportstockModel2::getYodyokma2).collect(Collectors.summingDouble(Double::doubleValue));
-            restFooter2.setTotal_qty_stock2(numfm.format(total_qty_stock2));
-            restFooter2.setTotal_yodyokma2(numfm.format(total_yodyokma2));
+        if (userIn == null || userIn.isEmpty()) {
+            result.setStatus("01");
+            result.setMessage("Invalid token");
+            return result;
+        }
 
-//==========================================================================================
-            listData = inventoryDao.reportStockDayWeekDaos(reportstockReq);
-            sumFooterGroup restFooter = new sumFooterGroup();
-            double total_qty_stock = listData.stream().map(ReportstockModel::getQty_stock).collect(Collectors.summingDouble(Double::doubleValue));
-            double total_qty_in = listData.stream().map(ReportstockModel::getQty_in).collect(Collectors.summingDouble(Double::doubleValue));
-            double total_qty_out = listData.stream().map(ReportstockModel::getQty_out).collect(Collectors.summingDouble(Double::doubleValue));
-            double total_yodyokma = listData.stream().map(ReportstockModel::getYordyokma).collect(Collectors.summingDouble(Double::doubleValue));
-            restFooter.setTotal_qty_stock(numfm.format(total_qty_stock));
-            restFooter.setTotal_qty_in(numfm.format(total_qty_in));
-            restFooter.setTotal_qty_out(numfm.format(total_qty_out));
-            restFooter.setTotal_yodyokma(numfm.format(total_yodyokma));
-//            =========================================================== for sang a lai
-            restFooter2.setTotal_yodyokma2(numfm.format(total_yodyokma2));
-            restFooter2.setTotal_qty_stock2(numfm.format(total_qty_stock2));
-            restFooter2.setTotal_qty_in(numfm.format(total_qty_in));
-            restFooter2.setTotal_qty_out(numfm.format(total_qty_out));
+        String userId = userIn.get(0).getUserId();
+        String branchNo = userIn.get(0).getBranchNo();
 
-            if (total_qty_stock==0 && total_yodyokma ==0){
-                result.setSumFooter2(restFooter2);
-                result.setMessage("Success");
-                result.setStatus("00");
-                result.setData(listData);
-                return result;
-            }else {
-                result.setSumFooter(restFooter);
-                result.setMessage("Success");
-                result.setStatus("00");
-                result.setData(listData);
-                return result;
+        reportstockReq.setUserId(userId);
+        reportstockReq.setBranch(branchNo);
+
+        // ========================= get raw data =========================
+        List<ReportstockModel> rawList =
+                inventoryDao.reportStockDayWeekDaos(reportstockReq);
+
+        if (rawList == null || rawList.isEmpty()) {
+            result.setStatus("01");
+            result.setMessage("data not found");
+            return result;
+        }
+
+        // ========================= group by item =========================
+        Map<String, List<ReportstockModel>> groupMap =
+                rawList.stream()
+                        .collect(Collectors.groupingBy(ReportstockModel::getItem_id));
+
+        List<ReportStockGroupRes> groupResultList = new ArrayList<>();
+
+        for (Map.Entry<String, List<ReportstockModel>> entry : groupMap.entrySet()) {
+
+            List<ReportstockModel> details = entry.getValue();
+
+            // ===== sort by dateIn =====
+            details.sort(Comparator.comparing(ReportstockModel::getDateIn));
+
+            ReportstockModel first = details.get(0);
+            ReportstockModel last = details.get(details.size() - 1);
+
+            // ========================= summary logic =========================
+            double total_qty_stock = last.getQty_stock();           // closing stock
+            double total_qty_in =
+                    details.stream().mapToDouble(ReportstockModel::getQty_in).sum();
+            double total_qty_out =
+                    details.stream().mapToDouble(ReportstockModel::getQty_out).sum();
+            double totalyordyokma = first.getYordyokma();            // opening balance
+
+            // ========================= detail cleanup =========================
+            for (ReportstockModel d : details) {
+
+                if (d.getQty_out() == null || d.getQty_out() <= 0) {
+                    d.setDateOut("");
+                }
+
+                if (d.getQty_in() == null || d.getQty_in() <= 0) {
+                    d.setDateIn("");
+                }
             }
-//            result.setSumFooter(restFooter);
-//            result.setMessage("Success");
-//            result.setStatus("00");
-//            result.setData(listData);
-//            return result;
 
-    }catch (Exception e){
+            // ========================= build group response =========================
+            ReportStockGroupRes group = new ReportStockGroupRes();
+            group.setItem_id(first.getItem_id());
+            group.setItem_name(first.getItem_name());
+            group.setUnit(first.getUnit());
+            group.setImg(first.getImg());
+
+            group.setTotal_qty_stock(total_qty_stock);
+            group.setTotal_qty_in(total_qty_in);
+            group.setTotal_qty_out(total_qty_out);
+            group.setTotalyordyokma(totalyordyokma);
+
+            group.setListDetail(details);
+
+            groupResultList.add(group);
+        }
+
+        // ========================= response =========================
+        result.setStatus("00");
+        result.setMessage("Success");
+        result.setData(groupResultList);
+        result.setSumFooter(null);
+        result.setSumFooter2(null);
+
+        return result;
+
+    } catch (Exception e) {
         e.printStackTrace();
-        result.setMessage("data not found");
         result.setStatus("01");
+        result.setMessage("exception");
         return result;
     }
 }
+
+
 // show all fix list
 public ShowFix  ShowFixList (@RequestBody FixReq fixReq){
     log.info("toKen=======================:"+fixReq.getToKen());
