@@ -37,22 +37,22 @@ public class SupplierNotPayRepo {
         supplierId = (supplierId == null || supplierId.trim().isEmpty()) ? null : supplierId;
 
         String sql =
-                "SELECT key_id, bill_no, finance_bill, supplier_id, supplier_name, " +
-                        "type_of, amount_must_pay, pay1, next_date_pay4, pay_status, currency, " +
-                        "create_by, create_date " +
-                        "FROM v_finace_supplier " +
-                        "WHERE pay_status != 'DONE' " +
-                        "AND (? IS NULL OR create_date >= ?) " +
-                        "AND (? IS NULL OR create_date <= ?) " +
-                        "AND (? IS NULL OR type_of = ?) " +
-                        "AND (? IS NULL OR supplier_id = ?) " +
-                        "ORDER BY supplier_id, finance_bill";
+                "SELECT key_id, bill_no, finance_bill, supplier_id, supplier_name,\n" +
+                        "       type_of, amount_must_pay, pay1, next_date_pay4, pay_status, currency,\n" +
+                        "       create_by, create_date\n" +
+                        "FROM v_finace_supplier\n" +
+                        "WHERE pay_status != 'DONE'\n" +
+                        "AND create_date >= IFNULL(?, create_date)\n" +
+                        "AND create_date <  IFNULL(DATE_ADD(?, INTERVAL 1 DAY), create_date)\n" +
+                        "AND (? IS NULL OR type_of = ?)\n" +
+                        "AND (? IS NULL OR supplier_id = ?)\n" +
+                        "ORDER BY supplier_id, finance_bill\n";
 
         return jdbcTemplate.query(sql, new Object[]{
-                startDate, startDate,
-                endDate, endDate,
-                typeOf, typeOf,
-                supplierId, supplierId
+                startDate,          // IFNULL start
+                endDate,            // IFNULL end
+                typeOf, typeOf,     // type_of
+                supplierId, supplierId // supplier_id
         }, (rs, rowNum) -> {
             SupplierNotPayDto dto = new SupplierNotPayDto();
             dto.setKeyId(rs.getLong("key_id"));
@@ -70,6 +70,7 @@ public class SupplierNotPayRepo {
             dto.setCreateDate(rs.getTimestamp("create_date").toLocalDateTime());
             return dto;
         });
+
 
     }
 

@@ -1819,6 +1819,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                     financeBillDto.setFinanceBill(financeBillStr);
                     financeBillDto.setAmountMustPay(row.getAmountMustPay());
                     financeBillDto.setPaid(row.getPaid());
+                    financeBillDto.setDateCreate(row.getCreateDate());
                     financeBillDto.setNextDatePay(row.getNextDatePay());
                     financeBillDto.setPayStatus(row.getPayStatus());
                     financeBillDto.setCurrency(row.getCurrency());
