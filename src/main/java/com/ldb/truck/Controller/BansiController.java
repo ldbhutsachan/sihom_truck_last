@@ -537,6 +537,12 @@ public class BansiController {
                 bansiService.searchSupplierNotPay(req)
         );
     }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/accountingNotify.service")
+    public DataResponse getAccountingWaitCount(@RequestBody FinanceViewDto financeViewDto) {
+        return bansiService.getAccountingWaitCount(financeViewDto);
+    }
+
 
 
 

@@ -10,6 +10,8 @@ import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Repository.Bansi.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BansiService {
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     @Autowired
     private BansiRepository bansiRepository;  // ✅ ใช้ entity type จริง
     @Autowired
@@ -1900,6 +1906,88 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         return response;
     }
+
+    public DataResponse getAccountingWaitCount(FinanceViewDto financeViewDto) {
+        DataResponse response = new DataResponse();
+        AccountingWaitCountRes result = new AccountingWaitCountRes();
+
+        try {
+            // 1) ตรวจสอบ token และ role
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(financeViewDto.getToken());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN", "SUPERBANSI");
+            if (!allowed.contains(user.getRole().toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No right to fetch data");
+                return response;
+            }
+
+            // --- Query 1 : v_accounting_report ---
+            String sql1 =
+                    "SELECT " +
+                            " SUM(CASE WHEN type_of = 'PAY' AND bill_status = 'wait' THEN 1 ELSE 0 END) AS pay_wait_count, " +
+                            " SUM(CASE WHEN type_of = 'RECEIVE' AND bill_status = 'wait' THEN 1 ELSE 0 END) AS receive_wait_count " +
+                            "FROM v_accounting_report";
+
+            List<AccountingWaitCountRes> list1 = jdbcTemplate.query(sql1, (rs, rowNum) -> {
+                AccountingWaitCountRes res = new AccountingWaitCountRes();
+                res.setAccountBillPayWait(rs.getInt("pay_wait_count"));
+                res.setAccountbillReceiveWait(rs.getInt("receive_wait_count"));
+                return res;
+            });
+
+            if (!list1.isEmpty()) {
+                result.setAccountBillPayWait(list1.get(0).getAccountBillPayWait());
+                result.setAccountbillReceiveWait(list1.get(0).getAccountbillReceiveWait());
+            }
+
+            // --- Query 2 : tb_finance ---
+            String sql2 =
+                    "SELECT " +
+                            " SUM(CASE WHEN TRIM(UPPER(pay_status)) = 'IN-PROGRESS' " +
+                            "  AND TRIM(UPPER(type_of)) = 'RECEIVE' THEN 1 ELSE 0 END) AS in_progress_receive, " +
+                            " SUM(CASE WHEN TRIM(UPPER(pay_status)) = 'IN-PROGRESS' " +
+                            "  AND TRIM(UPPER(type_of)) = 'PAY' THEN 1 ELSE 0 END) AS in_progress_pay " +
+                            "FROM tb_finance";
+
+            AccountingWaitCountRes financeCount =
+                    jdbcTemplate.queryForObject(sql2, (rs, rowNum) -> {
+                        AccountingWaitCountRes r = new AccountingWaitCountRes();
+                        r.setFinanceBillInProgressReceive(rs.getInt("in_progress_receive"));
+                        r.setFinanceBillInProgressPay(rs.getInt("in_progress_pay"));
+                        return r;
+                    });
+
+            if (financeCount != null) {
+                result.setFinanceBillInProgressReceive(financeCount.getFinanceBillInProgressReceive());
+                result.setFinanceBillInProgressPay(financeCount.getFinanceBillInProgressPay());
+            }
+
+
+            log.info(sql1);
+            log.info(sql2);
+            // --- set result ลง response ---
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(result);
+
+        } catch (Exception e) {
+            log.error("Error getAccountingWaitCount", e);
+            response.setStatus("99");
+            response.setMessage("Exception: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+
+
 
 
 
