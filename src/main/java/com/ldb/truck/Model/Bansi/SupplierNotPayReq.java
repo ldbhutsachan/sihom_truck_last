@@ -9,4 +9,5 @@ public class SupplierNotPayReq {
     private String endDate;
     private String typeOf;
     private String supplierId;
+    private String show;
 }

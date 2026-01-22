@@ -27,21 +27,22 @@ public class SupplierNotPayRepo {
             String startDate,
             String endDate,
             String typeOf,
-            String supplierId
+            String supplierId,
+            String show
     ) {
-
         // ตรวจสอบค่า ถ้า "" ให้เปลี่ยนเป็น null
         startDate = (startDate == null || startDate.trim().isEmpty()) ? null : startDate;
         endDate = (endDate == null || endDate.trim().isEmpty()) ? null : endDate;
         typeOf = (typeOf == null || typeOf.trim().isEmpty()) ? null : typeOf;
         supplierId = (supplierId == null || supplierId.trim().isEmpty()) ? null : supplierId;
+        show = (show == null || show.trim().isEmpty()) ? "all" : show;
 
         String sql =
                 "SELECT key_id, bill_no, finance_bill, supplier_id, supplier_name,\n" +
                         "       type_of, amount_must_pay, pay1, next_date_pay4, pay_status, currency,\n" +
                         "       create_by, create_date\n" +
                         "FROM v_finace_supplier\n" +
-                        "WHERE pay_status != 'DONE'\n" +
+                        "WHERE (? = 'all' OR (? = '1' AND pay_status = 'DONE') OR (? = '2' AND pay_status = 'IN-PROGRESS'))\n" +
                         "AND create_date >= IFNULL(?, create_date)\n" +
                         "AND create_date <  IFNULL(DATE_ADD(?, INTERVAL 1 DAY), create_date)\n" +
                         "AND (? IS NULL OR type_of = ?)\n" +
@@ -49,10 +50,11 @@ public class SupplierNotPayRepo {
                         "ORDER BY supplier_id, finance_bill\n";
 
         return jdbcTemplate.query(sql, new Object[]{
-                startDate,          // IFNULL start
-                endDate,            // IFNULL end
-                typeOf, typeOf,     // type_of
-                supplierId, supplierId // supplier_id
+                show, show, show,         // สำหรับเงื่อนไข pay_status
+                startDate,                // IFNULL start
+                endDate,                  // IFNULL end
+                typeOf, typeOf,           // type_of
+                supplierId, supplierId    // supplier_id
         }, (rs, rowNum) -> {
             SupplierNotPayDto dto = new SupplierNotPayDto();
             dto.setKeyId(rs.getLong("key_id"));
@@ -70,10 +72,7 @@ public class SupplierNotPayRepo {
             dto.setCreateDate(rs.getTimestamp("create_date").toLocalDateTime());
             return dto;
         });
-
-
     }
-
     private SupplierNotPayDto mapRow(ResultSet rs) throws SQLException {
         SupplierNotPayDto dto = new SupplierNotPayDto();
         dto.setKeyId(rs.getLong("key_id"));
@@ -92,53 +91,6 @@ public class SupplierNotPayRepo {
         return dto;
     }
 
-    // ==============================
-    // 2️⃣ Summary: Group by typeOf + currency
-    // ==============================
-    public List<SupplierSummaryRowDto> findSupplierSummary(
-            String startDate,
-            String endDate,
-            String typeOf,
-            String supplierId
-    ) {
 
-        startDate = (startDate == null || startDate.trim().isEmpty()) ? null : startDate;
-        endDate = (endDate == null || endDate.trim().isEmpty()) ? null : endDate;
-        typeOf =(typeOf == null || typeOf.trim().isEmpty()) ? null : typeOf;
-        supplierId = (supplierId == null || supplierId.trim().isEmpty()) ? null : supplierId;
-
-        String sql =
-                "SELECT supplier_id, type_of, currency, " +
-                        "SUM(amount_must_pay) AS sum_must_pay, " +
-                        "SUM(pay1) AS sum_pay " +
-                        "FROM v_finace_supplier " +
-                        "WHERE pay_status != 'DONE' " +
-                        "AND (? IS NULL OR create_date >= ?) " +
-                        "AND (? IS NULL OR create_date <= ?) " +
-                        "AND (? IS NULL OR type_of = ?) " +
-                        "AND (? IS NULL OR supplier_id = ?) " +
-                        "GROUP BY supplier_id, type_of, currency";
-        log.info(sql);
-
-        return jdbcTemplate.query(
-                sql,
-                new Object[]{
-                        startDate, startDate,
-                        endDate, endDate,
-                        typeOf, typeOf,
-                        supplierId, supplierId
-                }
-                ,
-                (rs, rowNum) -> {
-                    SupplierSummaryRowDto dto = new SupplierSummaryRowDto();
-                    dto.setSupplierId(rs.getLong("supplier_id"));
-                    dto.setTypeOf(rs.getString("type_of"));
-                    dto.setCurrency(rs.getString("currency"));
-                    dto.setSumMustPay(rs.getBigDecimal("sum_must_pay"));
-                    dto.setSumPay(rs.getBigDecimal("sum_pay"));
-                    return dto;
-                }
-        );
-    }
 
 }

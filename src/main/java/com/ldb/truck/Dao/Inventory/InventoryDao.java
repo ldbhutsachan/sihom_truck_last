@@ -1658,30 +1658,52 @@ public int PayToShopDao(List<PayToShopReq> payToShopReq) {
     public List<OfferPaperModelFaso> ShowofferpaperDAOs(OfferPaperReq offerPaperReq) {
         String sql;
         try {
+            // สร้าง SQL ตามเงื่อนไข branch และ date
             if (offerPaperReq.getBranch_id() != null) {
-
                 if (offerPaperReq.getStartDate() == null && offerPaperReq.getEndDate() == null) {
-                    sql = "SELECT * FROM V_OFFER_PAPER where branch_id='" + offerPaperReq.getBranch_id() + "'";
+                    sql = "SELECT * FROM V_OFFER_PAPER WHERE branch_id='" + offerPaperReq.getBranch_id() + "'";
                     log.info("SQL_show_normal_1:" + sql);
                 } else {
-                    sql = "SELECT * FROM V_OFFER_PAPER where branch_id='" + offerPaperReq.getBranch_id() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "' ";
+                    sql = "SELECT * FROM V_OFFER_PAPER WHERE branch_id='" + offerPaperReq.getBranch_id() +
+                            "' AND dateCreate BETWEEN '" + offerPaperReq.getStartDate() + "' AND '" + offerPaperReq.getEndDate() + "'";
                     log.info("SQL_show_by_date:" + sql);
                 }
-            } else
-            {
-//            removed STATUS='N' AND
-            if (offerPaperReq.getStartDate() == null && offerPaperReq.getEndDate() == null) {
-                sql = "SELECT * FROM V_OFFER_PAPER where BRANCH='" + offerPaperReq.getBranch() + "'";
-                log.info("SQL_show_normal_1:" + sql);
             } else {
-                sql = "SELECT * FROM V_OFFER_PAPER where BRANCH='" + offerPaperReq.getBranch() + "' and dateCreate between '" + offerPaperReq.getStartDate() + "' and '" + offerPaperReq.getEndDate() + "' ";
-                log.info("SQL_show_by_date:" + sql);
+                if (offerPaperReq.getStartDate() == null && offerPaperReq.getEndDate() == null) {
+                    sql = "SELECT * FROM V_OFFER_PAPER WHERE BRANCH='" + offerPaperReq.getBranch() + "'";
+                    log.info("SQL_show_normal_1:" + sql);
+                } else {
+                    sql = "SELECT * FROM V_OFFER_PAPER WHERE BRANCH='" + offerPaperReq.getBranch() +
+                            "' AND dateCreate BETWEEN '" + offerPaperReq.getStartDate() + "' AND '" + offerPaperReq.getEndDate() + "'";
+                    log.info("SQL_show_by_date:" + sql);
+                }
             }
-            }
+
             return EBankJdbcTemplate.query(sql, new RowMapper<OfferPaperModelFaso>() {
+
+                // ฟังก์ชันช่วยสำหรับอ่าน Double ปลอดภัย
+                private Double getDoubleSafe(ResultSet rs, String column) throws SQLException {
+                    String val = rs.getString(column);
+                    if (val == null || val.trim().isEmpty()) {
+                        return 0.0;
+                    }
+                    return Double.parseDouble(val);
+                }
+
+                // ฟังก์ชันช่วยสำหรับอ่าน Float ปลอดภัย
+                private Float getFloatSafe(ResultSet rs, String column) throws SQLException {
+                    String val = rs.getString(column);
+                    if (val == null || val.trim().isEmpty()) {
+                        return 0f;
+                    }
+                    return Float.parseFloat(val);
+                }
+
                 @Override
                 public OfferPaperModelFaso mapRow(ResultSet rs, int rowNum) throws SQLException {
                     OfferPaperModelFaso tr = new OfferPaperModelFaso();
+
+                    // --- String fields ---
                     tr.setKey_id(rs.getString("KEY_ID"));
                     tr.setUnit_price(rs.getString("unit_price"));
                     tr.setUnit_price1(rs.getString("unit_price1"));
@@ -1693,6 +1715,7 @@ public int PayToShopDao(List<PayToShopReq> payToShopReq) {
                     tr.setUnit_price7(rs.getString("unit_price7"));
                     tr.setUnit_price8(rs.getString("unit_price8"));
                     tr.setUnit_price9(rs.getString("unit_price9"));
+
                     tr.setQty_offer(rs.getString("qty_offer"));
                     tr.setQty_offer1(rs.getString("qty_offer1"));
                     tr.setQty_offer2(rs.getString("qty_offer2"));
@@ -1703,16 +1726,7 @@ public int PayToShopDao(List<PayToShopReq> payToShopReq) {
                     tr.setQty_offer7(rs.getString("qty_offer7"));
                     tr.setQty_offer8(rs.getString("qty_offer8"));
                     tr.setQty_offer9(rs.getString("qty_offer9"));
-                    tr.setTotalMoney(rs.getDouble("totalMoney"));
-                    tr.setTotalMoney1(rs.getDouble("totalMoney1"));
-                    tr.setTotalMoney2(rs.getDouble("totalMoney2"));
-                    tr.setTotalMoney3(rs.getDouble("totalMoney3"));
-                    tr.setTotalMoney4(rs.getDouble("totalMoney4"));
-                    tr.setTotalMoney5(rs.getDouble("totalMoney5"));
-                    tr.setTotalMoney6(rs.getDouble("totalMoney6"));
-                    tr.setTotalMoney7(rs.getDouble("totalMoney7"));
-                    tr.setTotalMoney8(rs.getDouble("totalMoney8"));
-                    tr.setTotalMoney9(rs.getDouble("totalMoney9"));
+
                     tr.setDescription(rs.getString("description"));
                     tr.setOfferManName(rs.getString("offerManName"));
                     tr.setJob(rs.getString("job"));
@@ -1726,6 +1740,7 @@ public int PayToShopDao(List<PayToShopReq> payToShopReq) {
                     tr.setItem_name7(rs.getString("item_name7"));
                     tr.setItem_name8(rs.getString("item_name8"));
                     tr.setItem_name9(rs.getString("item_name9"));
+
                     tr.setImg(rs.getString("img"));
                     tr.setImg1(rs.getString("img1"));
                     tr.setImg2(rs.getString("img2"));
@@ -1736,15 +1751,16 @@ public int PayToShopDao(List<PayToShopReq> payToShopReq) {
                     tr.setImg7(rs.getString("img7"));
                     tr.setImg8(rs.getString("img8"));
                     tr.setImg9(rs.getString("img9"));
+
                     tr.setH_VICIVLE_NUMBER(rs.getString("H_VICIVLE_NUMBER"));
                     tr.setF_CARD_NO(rs.getString("F_CARD_NO"));
                     tr.setDateCreate(rs.getString("dateCreate"));
                     tr.setOFFER_CODE(rs.getString("OFFER_CODE"));
                     tr.setStatus(rs.getString("status"));
-//                    tr.setItem_id(rs.getString("item_id"));
                     tr.setStock_status(rs.getString("stock_status"));
                     tr.setStatusPO(rs.getString("statusPO"));
                     tr.setShopName(rs.getString("shop_name"));
+
                     tr.setItem_id(rs.getString("item_id"));
                     tr.setItem_id1(rs.getString("item_id1"));
                     tr.setItem_id2(rs.getString("item_id2"));
@@ -1759,56 +1775,64 @@ public int PayToShopDao(List<PayToShopReq> payToShopReq) {
                     tr.setSize(rs.getString("size"));
                     tr.setBrand(rs.getString("brand"));
                     tr.setBer(rs.getString("ber"));
-
                     tr.setSize1(rs.getString("size1"));
                     tr.setBrand1(rs.getString("brand1"));
                     tr.setBer1(rs.getString("ber1"));
-
                     tr.setSize2(rs.getString("size2"));
                     tr.setBrand2(rs.getString("brand2"));
                     tr.setBer2(rs.getString("ber2"));
-
                     tr.setSize3(rs.getString("size3"));
                     tr.setBrand3(rs.getString("brand3"));
                     tr.setBer3(rs.getString("ber3"));
-
                     tr.setSize4(rs.getString("size4"));
                     tr.setBrand4(rs.getString("brand4"));
                     tr.setBer4(rs.getString("ber4"));
-
                     tr.setSize5(rs.getString("size5"));
                     tr.setBrand5(rs.getString("brand5"));
                     tr.setBer5(rs.getString("ber5"));
-
                     tr.setSize6(rs.getString("size6"));
                     tr.setBrand6(rs.getString("brand6"));
                     tr.setBer6(rs.getString("ber6"));
-
                     tr.setSize7(rs.getString("size7"));
                     tr.setBrand7(rs.getString("brand7"));
                     tr.setBer7(rs.getString("ber7"));
-
                     tr.setSize8(rs.getString("size8"));
                     tr.setBrand8(rs.getString("brand8"));
                     tr.setBer8(rs.getString("ber8"));
-
                     tr.setSize9(rs.getString("size9"));
                     tr.setBrand9(rs.getString("brand9"));
                     tr.setBer9(rs.getString("ber9"));
 
-                    tr.setReal_totalMoney(rs.getDouble("Real_totalMoney"));
-                    tr.setMoneyRate(rs.getFloat("moneyRate"));
+                    // --- Double fields (safe parsing) ---
+                    tr.setTotalMoney(getDoubleSafe(rs, "totalMoney"));
+                    tr.setTotalMoney1(getDoubleSafe(rs, "totalMoney1"));
+                    tr.setTotalMoney2(getDoubleSafe(rs, "totalMoney2"));
+                    tr.setTotalMoney3(getDoubleSafe(rs, "totalMoney3"));
+                    tr.setTotalMoney4(getDoubleSafe(rs, "totalMoney4"));
+                    tr.setTotalMoney5(getDoubleSafe(rs, "totalMoney5"));
+                    tr.setTotalMoney6(getDoubleSafe(rs, "totalMoney6"));
+                    tr.setTotalMoney7(getDoubleSafe(rs, "totalMoney7"));
+                    tr.setTotalMoney8(getDoubleSafe(rs, "totalMoney8"));
+                    tr.setTotalMoney9(getDoubleSafe(rs, "totalMoney9"));
+                    tr.setReal_totalMoney(getDoubleSafe(rs, "Real_totalMoney"));
+
+                    // --- Float field (safe parsing) ---
+                    tr.setMoneyRate(getFloatSafe(rs, "moneyRate"));
+
+                    // --- String field ---
                     tr.setCurrency(rs.getString("currency"));
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ new +++++++++++++++++++++++++++++++++++++++++
+
                     return tr;
                 }
             });
-        }catch (Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
-//    to show above to sum
+
+    //    to show above to sum
 public List<OfferPaperModelFaso> ToShowofferpaperDAOs (OfferPaperReq offerPaperReq) {
     String sql;
     try {

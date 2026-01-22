@@ -1746,8 +1746,9 @@ public DataResponse insertFinance(FinanceRequestDto req) {
         return response;  // return response ทั้งกรณี success และ error
     }
 
-    public DataResponse searchSupplierNotPay(SupplierNotPayReq req) {
 
+    // supplier not pay
+    public DataResponse searchSupplierNotPay(SupplierNotPayReq req) {
         DataResponse response = new DataResponse();
 
         try {
@@ -1787,7 +1788,8 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                             req.getStartDate(),
                             req.getEndDate(),
                             req.getTypeOf(),
-                            req.getSupplierId()
+                            req.getSupplierId(),
+                            req.getShow()
                     );
 
             Map<Long, SupplierNotPayNestedDto> supplierMap = new LinkedHashMap<>();
@@ -1796,7 +1798,6 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             // 4) Build supplier + financeBills
             // =========================
             for (SupplierNotPayDto row : flatList) {
-
                 Long supplierId = row.getSupplierId();
                 SupplierNotPayNestedDto supplier = supplierMap.get(supplierId);
 
@@ -1809,7 +1810,6 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 }
 
                 String financeBillStr = row.getFinanceBill();
-                String billNoStr = row.getBillNo();
 
                 Optional<FinanceBillDto> fbOpt = supplier.getFinanceBills()
                         .stream()
@@ -1834,69 +1834,86 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                     supplier.getFinanceBills().add(financeBillDto);
                 }
 
-                financeBillDto.getBillNos().add(billNoStr);
+                financeBillDto.getBillNos().add(row.getBillNo());
             }
 
             // =========================
-            // 5) Get SUMMARY from SQL
+            // 5) Calculate summary from financeBills
             // =========================
-            List<SupplierSummaryRowDto> summaryList =
-                    supplierNotPayRepo.findSupplierSummary(
-                            req.getStartDate(),
-                            req.getEndDate(),
-                            req.getTypeOf(),
-                            req.getSupplierId()
-                    );
+            for (SupplierNotPayNestedDto supplier : supplierMap.values()) {
+                // reset summary
+                supplier.getPAY().setSumMustPayLAK(BigDecimal.ZERO);
+                supplier.getPAY().setSumMustPayTHB(BigDecimal.ZERO);
+                supplier.getPAY().setSumMustPayUSD(BigDecimal.ZERO);
+                supplier.getPAY().setSumPayLAK(BigDecimal.ZERO);
+                supplier.getPAY().setSumPayTHB(BigDecimal.ZERO);
+                supplier.getPAY().setSumPayUSD(BigDecimal.ZERO);
 
-            // =========================
-            // 6) Merge SUMMARY → PAY / RECEIVE
-            // =========================
-            for (SupplierSummaryRowDto row : summaryList) {
+                supplier.getRECEIVE().setSumMustPayLAK(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumMustPayTHB(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumMustPayUSD(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumPayLAK(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumPayTHB(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumPayUSD(BigDecimal.ZERO);
 
-                SupplierNotPayNestedDto supplier = supplierMap.get(row.getSupplierId());
-                if (supplier == null) {
-                    continue; // safety
+                for (FinanceBillDto fb : supplier.getFinanceBills()) {
+                    CurrencySummaryDto summary = "PAY".equalsIgnoreCase(fb.getTypeOf())
+                            ? supplier.getPAY()
+                            : supplier.getRECEIVE();
+
+                    if ("LAK".equalsIgnoreCase(fb.getCurrency())) {
+                        summary.setSumMustPayLAK(summary.getSumMustPayLAK().add(fb.getAmountMustPay()));
+                        summary.setSumPayLAK(summary.getSumPayLAK().add(fb.getPaid()));
+                    } else if ("THB".equalsIgnoreCase(fb.getCurrency())) {
+                        summary.setSumMustPayTHB(summary.getSumMustPayTHB().add(fb.getAmountMustPay()));
+                        summary.setSumPayTHB(summary.getSumPayTHB().add(fb.getPaid()));
+                    } else if ("USD".equalsIgnoreCase(fb.getCurrency())) {
+                        summary.setSumMustPayUSD(summary.getSumMustPayUSD().add(fb.getAmountMustPay()));
+                        summary.setSumPayUSD(summary.getSumPayUSD().add(fb.getPaid()));
+                    }
                 }
 
-                CurrencySummaryDto summary =
-                        "PAY".equalsIgnoreCase(row.getTypeOf())
-                                ? supplier.getPAY()
-                                : supplier.getRECEIVE();
-
-                BigDecimal mustPay = row.getSumMustPay() == null
-                        ? BigDecimal.ZERO
-                        : row.getSumMustPay();
-
-                BigDecimal pay = row.getSumPay() == null
-                        ? BigDecimal.ZERO
-                        : row.getSumPay();
-
-                if ("LAK".equalsIgnoreCase(row.getCurrency())) {
-                    summary.setSumMustPayLAK(mustPay);
-                    summary.setSumPayLAK(pay);
-                } else if ("THB".equalsIgnoreCase(row.getCurrency())) {
-                    summary.setSumMustPayTHB(mustPay);
-                    summary.setSumPayTHB(pay);
-                } else if ("USD".equalsIgnoreCase(row.getCurrency())) {
-                    summary.setSumMustPayUSD(mustPay);
-                    summary.setSumPayUSD(pay);
-                }
+                // calculate nextPay for each summary
+                supplier.getPAY().calculateNextPay();
+                supplier.getRECEIVE().calculateNextPay();
             }
 
             // =========================
-            // 7) Calculate next pay
+            // 6) Calculate sumFooter
             // =========================
-            for (SupplierNotPayNestedDto s : supplierMap.values()) {
-                s.getPAY().calculateNextPay();
-                s.getRECEIVE().calculateNextPay();
+            Map<String, CurrencySummaryDto> sumFooterMap = new HashMap<>();
+            CurrencySummaryDto payFooter = new CurrencySummaryDto();
+            CurrencySummaryDto receiveFooter = new CurrencySummaryDto();
+
+            for (SupplierNotPayNestedDto supplier : supplierMap.values()) {
+                // SUM PAY
+                payFooter.setSumPayLAK(payFooter.getSumPayLAK().add(supplier.getPAY().getSumPayLAK()));
+                payFooter.setSumPayTHB(payFooter.getSumPayTHB().add(supplier.getPAY().getSumPayTHB()));
+                payFooter.setSumPayUSD(payFooter.getSumPayUSD().add(supplier.getPAY().getSumPayUSD()));
+
+                // SUM RECEIVE
+                receiveFooter.setSumPayLAK(receiveFooter.getSumPayLAK().add(supplier.getRECEIVE().getSumPayLAK()));
+                receiveFooter.setSumPayTHB(receiveFooter.getSumPayTHB().add(supplier.getRECEIVE().getSumPayTHB()));
+                receiveFooter.setSumPayUSD(receiveFooter.getSumPayUSD().add(supplier.getRECEIVE().getSumPayUSD()));
             }
 
-            // =========================
-            // 8) Response
-            // =========================
+// สร้าง sumFooter structure
+            Map<String, Object> sumFooter = new HashMap<>();
+            sumFooter.put("pay", Map.of(
+                    "amountPayLAK", payFooter.getSumPayLAK(),
+                    "amountPayTHB", payFooter.getSumPayTHB(),
+                    "amountPayUSD", payFooter.getSumPayUSD()
+            ));
+            sumFooter.put("receive", Map.of(
+                    "amountPayLAK", receiveFooter.getSumPayLAK(),
+                    "amountPayTHB", receiveFooter.getSumPayTHB(),
+                    "amountPayUSD", receiveFooter.getSumPayUSD()
+            ));
             response.setStatus("00");
             response.setMessage("Success showing Supplier Not Pay Data");
             response.setDataResponse(new ArrayList<>(supplierMap.values()));
+            response.setSumFooter(List.of(sumFooter)); // ใส่ sumFooter ใน field ที่เป็น List<Map<String,Object>>
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1906,6 +1923,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         return response;
     }
+
 
     public DataResponse getAccountingWaitCount(FinanceViewDto financeViewDto) {
         DataResponse response = new DataResponse();
