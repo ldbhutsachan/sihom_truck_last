@@ -1939,7 +1939,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN", "SUPERBANSI");
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "SUPERBANSI", "BANSIAPPROVE","FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
