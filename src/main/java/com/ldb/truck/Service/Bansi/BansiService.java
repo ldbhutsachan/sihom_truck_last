@@ -1169,6 +1169,7 @@ public class BansiService {
             existing.setAccountNo(bankEntity.getAccountNo());
             existing.setBankName(bankEntity.getBankName());
             existing.setBankNameLao(bankEntity.getBankNameLao());
+            existing.setBankGroup(bankEntity.getBankGroup());
             existing.setDateCreate(LocalDateTime.now());
             existing.setUserId(userId);
 
@@ -1212,7 +1213,20 @@ public class BansiService {
                 return response;
             }
 
-            List<BankEntity> list = bankRepository.findAll();
+            String bankGroup = bankEntity.getBankGroup();
+
+            List<BankEntity> list;
+
+            if (bankGroup == null || bankGroup.trim().isEmpty()
+                    || "ALL".equalsIgnoreCase(bankGroup)) {
+
+                list = bankRepository.findAll();
+
+            } else {
+                // OUR / THEIR
+                list = bankRepository.findByBankGroupIgnoreCase(bankGroup);
+            }
+
 
             response.setStatus("00");
             response.setMessage("Success showing Data");
@@ -1663,13 +1677,26 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 map.put("currency", first.getCurrency());
                 map.put("createBy", first.getCreateBy());
                 map.put(("create_date"),first.getCreateDate());
-                map.put("token", first.getToken());
-
                 // รวม billNo เป็น list
-                List<String> billNos = list.stream()
-                        .map(FinanceViewDto::getBillNo)
+//                List<String> billNos = list.stream()
+//                        .map(FinanceViewDto::getBillNo)
+//                        .collect(Collectors.toList());
+//                map.put("billNos", billNos);
+                List<Map<String, Object>> billNos = list.stream()
+                        .map(item -> {
+                            Map<String, Object> billMap = new HashMap<>();
+                            billMap.put("billNo", item.getBillNo());
+                            billMap.put("bigProjectName", item.getBigProjectName());
+                            billMap.put("smallProjectName", item.getSmallProjectName());
+                            billMap.put("payType", item.getPayType());
+                            billMap.put("bankNo", item.getBankNo());
+                            billMap.put("bankEnglishName", item.getBankEnglishName());
+                            return billMap;
+                        })
                         .collect(Collectors.toList());
+
                 map.put("billNos", billNos);
+
 
                 // คำนวณ paidTotal และ amountNotPayYet
                 double paidTotal = first.getPay1() ;
@@ -1834,7 +1861,16 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                     supplier.getFinanceBills().add(financeBillDto);
                 }
 
-                financeBillDto.getBillNos().add(row.getBillNo());
+                BillNoDetailDto bill = new BillNoDetailDto();
+                bill.setBillNo(row.getBillNo());
+                bill.setBigProject(row.getBigProject());
+                bill.setSmallProject(row.getSmallProject());
+                bill.setTypePay(row.getTypePay());
+                bill.setBankName(row.getBankName());
+                bill.setBankNo(row.getBankNo());
+
+                financeBillDto.getBillNos().add(bill);
+
             }
 
             // =========================

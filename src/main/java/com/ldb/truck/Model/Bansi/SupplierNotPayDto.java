@@ -9,6 +9,11 @@ import java.time.LocalDateTime;
 public class SupplierNotPayDto {
 
     private Long keyId;              // key_id
+    private String bigProject;
+    private String smallProject;
+    private String typePay;
+    private String bankNo;
+    private String bankName;
     private String billNo;            // bill_No
     private String financeBill;       // finance_bill
     private Long supplierId;          // supplier_id

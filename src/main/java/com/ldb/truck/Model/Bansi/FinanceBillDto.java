@@ -17,6 +17,6 @@ public class FinanceBillDto {
     private String currency;
     private String typeOf;
 
-    private List<String> billNos = new ArrayList<>();
+    private List<BillNoDetailDto> billNos = new ArrayList<>();
 }
 
