@@ -15,6 +15,7 @@ public class SupplierNotPayDto {
     private String bankNo;
     private String bankName;
     private String billNo;            // bill_No
+    private String title;
     private String financeBill;       // finance_bill
     private Long supplierId;          // supplier_id
     private String supplierName;      // supplier_name

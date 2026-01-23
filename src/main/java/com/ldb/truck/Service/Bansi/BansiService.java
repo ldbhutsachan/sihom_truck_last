@@ -1691,6 +1691,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                             billMap.put("payType", item.getPayType());
                             billMap.put("bankNo", item.getBankNo());
                             billMap.put("bankEnglishName", item.getBankEnglishName());
+                            billMap.put("title",item.getTitle());
                             return billMap;
                         })
                         .collect(Collectors.toList());
@@ -1868,6 +1869,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 bill.setTypePay(row.getTypePay());
                 bill.setBankName(row.getBankName());
                 bill.setBankNo(row.getBankNo());
+                bill.setTitle(row.getTitle());
 
                 financeBillDto.getBillNos().add(bill);
 

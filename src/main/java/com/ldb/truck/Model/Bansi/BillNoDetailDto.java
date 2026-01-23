@@ -10,4 +10,5 @@ public class BillNoDetailDto {
     private String typePay;
     private String bankNo;
     private String bankName;
+    private String title;
 }

@@ -40,7 +40,7 @@ public class SupplierNotPayRepo {
         String sql =
                 "SELECT key_id, bill_no, finance_bill, supplier_id, supplier_name,\n" +
                         "       type_of, amount_must_pay, pay1, next_date_pay4, pay_status, currency,\n" +
-                        "       create_by, create_date, big_project, small_project, pay_type, bank_account_name, bank_account_no\n" +
+                        "       create_by, create_date, big_project, small_project, pay_type, bank_account_name, bank_account_no, title\n" +
                         "FROM v_finace_supplier\n" +
                         "WHERE (? = 'all' OR (? = '1' AND pay_status = 'DONE') OR (? = '2' AND pay_status = 'IN-PROGRESS'))\n" +
                         "AND create_date >= IFNULL(?, create_date)\n" +
@@ -64,6 +64,7 @@ public class SupplierNotPayRepo {
             dto.setBankName(rs.getString("bank_account_name"));
             dto.setBankNo(rs.getString("bank_account_no"));
             dto.setBillNo(rs.getString("bill_no"));
+            dto.setTitle(rs.getString("title"));
             dto.setFinanceBill(rs.getString("finance_bill"));
             dto.setSupplierId(rs.getLong("supplier_id"));
             dto.setSupplierName(rs.getString("supplier_name"));
@@ -87,6 +88,7 @@ public class SupplierNotPayRepo {
         dto.setBankName(rs.getString("bank_account_name"));
         dto.setBankNo(rs.getString("bank_account_no"));
         dto.setBillNo(rs.getString("bill_no"));
+        dto.setTitle(rs.getString("title"));
         dto.setFinanceBill(rs.getString("finance_bill"));
         dto.setSupplierId(rs.getLong("supplier_id"));
         dto.setSupplierName(rs.getString("supplier_name"));
