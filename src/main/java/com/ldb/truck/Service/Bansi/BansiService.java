@@ -1432,7 +1432,9 @@ public DataResponse insertFinance(FinanceRequestDto req) {
         // ===============================
         // 7. Insert tb_finance_pay (HISTORY)
         // ===============================
-        if (!"SUPERBANSI".equalsIgnoreCase(user.getRole())) {
+        if (!"SUPERBANSI".equalsIgnoreCase(user.getRole())
+                && !"SUPERACCOUNT".equalsIgnoreCase(user.getRole())
+                && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
 
             if (req.getBillList() != null && !req.getBillList().isEmpty()) {
 
@@ -1448,6 +1450,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 financeHisRepository.saveAll(payHisList);
             }
         }
+
 
         response.setStatus("00");
         response.setMessage("Finance saved successfully");
