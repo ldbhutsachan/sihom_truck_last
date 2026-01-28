@@ -993,7 +993,8 @@ public class BansiService {
         boolean isAllowed =
                 "SUPERBANSI".equalsIgnoreCase(role) ||
                         "SUPERACCOUNT".equalsIgnoreCase(role) ||
-                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role);
+                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)||
+                        "BANSIAPPROVE".equalsIgnoreCase(role);
 
         if (!isAllowed) {
             result.setStatus("02");
@@ -1799,7 +1800,8 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             List<String> allowedRoles = Arrays.asList(
                     "SUPERACCOUNT",
                     "FOR_DOCUMENT_ADMIN",
-                    "SUPERBANSI"
+                    "SUPERBANSI",
+                    "BANSIAPPROVE"
             );
 
             if (!allowedRoles.contains(role)) {

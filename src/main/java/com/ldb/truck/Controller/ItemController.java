@@ -147,11 +147,14 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
         String role = userProfiles.get(0).getRole();
 
         // ✅ ถ้า role เป็น SUPERBANSI ให้ใส่ค่า "1"
-        if ("SUPERBANSI".equalsIgnoreCase(role)) {
+        if ("SUPERBANSI".equalsIgnoreCase(role)
+                || "SUPERACCOUNT".equalsIgnoreCase(role)
+                || "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             itemTypeEntity.setBansiUse("1");
         } else {
             itemTypeEntity.setBansiUse("");
         }
+
 
         // ✅ บันทึกข้อมูล
         response = itemTypeService.saveItemType(itemTypeEntity);
