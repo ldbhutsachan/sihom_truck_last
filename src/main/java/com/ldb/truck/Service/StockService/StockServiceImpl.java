@@ -763,7 +763,7 @@ public class StockServiceImpl {
                     itemSize = "\n AND size = 'item'";
                     break;
                 case "APPROVEINOUT":
-                    itemSize = "\n AND size NOT IN ('nammun', 'item')";
+                    itemSize = "\n AND size != 'nammun' AND size != 'item'";
                     break;
                 case "ADMIN":
                     itemSize = "\n AND size != 'item'";
