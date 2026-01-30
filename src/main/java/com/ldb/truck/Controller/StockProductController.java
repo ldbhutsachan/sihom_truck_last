@@ -158,11 +158,12 @@ public class StockProductController {
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String branchNo = userProfiles.get(0).getBranchNo();
+//        String branchNo = userProfiles.get(0).getBranchNo();
+        String borNo = userProfiles.get(0).getBorNo();
         String role = userProfiles.get(0).getRole();
         try {
             AlertReq req = new AlertReq();
-            req.setBranchNo(branchNo);
+            req.setBorNo(borNo);
             req.setRole(role);
             response = stockService.getAlertStock(req);
         }catch (Exception e){

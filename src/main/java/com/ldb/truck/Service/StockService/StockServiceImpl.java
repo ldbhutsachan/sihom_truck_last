@@ -417,36 +417,39 @@ public class StockServiceImpl {
         }
         return response;
     }
-    public DataResponse getAlertStock (AlertReq alertReq){
-        String branchNo = alertReq.getBranchNo();
+    public DataResponse getAlertStock(AlertReq alertReq) {
+        String borNo = alertReq.getBorNo(); // borNo ของ user
         String role = alertReq.getRole();
-        log.info("role:"+role);
-        log.info("branchNo:"+branchNo);
+        log.info("role: " + role);
+        log.info("borNo: " + borNo);
+
         DataResponse dataResponse = new DataResponse();
         try {
-            if(role.equals("USERSTOCK")){
-                dataResponse.setDataResponse(stockAlertRepository.getAlertByBranchNo(branchNo));
-            }
-            else if(role.equals("AUTH")){
-                dataResponse.setDataResponse(stockAlertRepository.getAlertByBranchNo(branchNo));
-            }else {
+            if ("USERSTOCK".equals(role) || "AUTH".equals(role)) {
+                dataResponse.setDataResponse(stockAlertRepository.getAlertByBorNo(borNo));
+            } else {
                 dataResponse.setDataResponse(stockAlertRepository.findAll());
-           }
-            if(dataResponse.getDataResponse() != null){
+            }
+
+            Object data = dataResponse.getDataResponse();
+            if (data != null && data instanceof List && !((List<?>) data).isEmpty()) {
                 dataResponse.setStatus("00");
                 dataResponse.setMessage("Success");
-            }else {
+            } else {
                 dataResponse.setStatus("05");
                 dataResponse.setMessage("Data not found");
             }
-        }catch (Exception e){
+
+        } catch (Exception e) {
+            log.error("Error getAlertStock", e);
             dataResponse.setStatus("EE");
             dataResponse.setMessage("Error Data");
         }
         return dataResponse;
     }
 
-//   public V_OrderItemDetailsRes getOrderItem(String conReq,String branchNo, String userId,String role,String status){
+
+    //   public V_OrderItemDetailsRes getOrderItem(String conReq,String branchNo, String userId,String role,String status){
 //        log.info("userId:"+userId);
 //        log.info("branchNo:"+branchNo);
 //        log.info("role:"+role);
@@ -752,15 +755,20 @@ public class StockServiceImpl {
 
                 borNoCon = "\n AND borkey = '" + borNoFone + "' ";
             }
-            if ("APPROVEOID".equalsIgnoreCase(userMission)) {
-                itemSize = "\n AND size = 'nammun'";
-            } else if ("APPROVEINOUT".equalsIgnoreCase(userMission)) {
-                itemSize = "\n AND size != 'nammun'";
+            switch (userMission.toUpperCase()) {
+                case "APPROVEOID":
+                    itemSize = "\n AND size = 'nammun'";
+                    break;
+                case "ALAIAPPROVE":
+                    itemSize = "\n AND size = 'item'";
+                    break;
+                case "APPROVEINOUT":
+                    itemSize = "\n AND size NOT IN ('nammun', 'item')";
+                    break;
+                case "ADMIN":
+                    itemSize = "\n AND size != 'item'";
+                    break;
             }
-            if (type_of_order != null && !type_of_order.trim().isEmpty() && !"all".equalsIgnoreCase(type_of_order)) {
-                typeOfOrder = "\n AND type_of_order = '" + type_of_order + "' ";
-            }
-
 
             StringBuilder sb = new StringBuilder();
             sb.append("SELECT * FROM v_order_item where 1=1 "); // You can add WHERE clauses based on parameters
