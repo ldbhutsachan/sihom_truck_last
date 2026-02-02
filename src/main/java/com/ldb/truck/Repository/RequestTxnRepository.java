@@ -45,24 +45,36 @@ public interface RequestTxnRepository extends CrudRepository<RequestTxnEntity,Lo
     //    @Transactional
 //    @Query(value = "select * from v_request_item_fix  order by status desc ", nativeQuery = true)
 //    List<RequestTxnEntity> getStockByBillNoAdminAll(@Param("") String uMission);
-@Transactional(readOnly = true)
-@Query(
-        value = "SELECT * FROM v_request_item_fix " +
-                "WHERE ( " +
-                "   :uMission IS NULL " +
-                "   OR :uMission = '' " +
-                "   OR (:uMission = 'APPROVEOID' AND size = 'nammun') " +
-                "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun') " +
-                ") " +
-                "AND (:startDate IS NULL OR :endDate IS NULL OR DATE(savedate) BETWEEN :startDate AND :endDate) " +
-                "ORDER BY status DESC",
-        nativeQuery = true
-)
-List<RequestTxnEntity> getStockByBillNoAdminAll(
-        @Param("uMission") String uMission,
-        @Param("startDate") String startDate,
-        @Param("endDate") String endDate
-);
+    @Transactional(readOnly = true)
+    @Query(
+            value = "SELECT * FROM v_request_item_fix " +
+                    "WHERE ( " +
+                    "   :uMission IS NULL " +
+                    "   OR :uMission = '' " +
+
+                    // APPROVEOID
+                    "   OR (:uMission = 'APPROVEOID' AND size = 'nammun') " +
+
+                    // ALAIAPPROVE
+                    "   OR (:uMission = 'ALAIAPPROVE' AND size = 'item') " +
+
+                    // APPROVEINOUT
+                    "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun' AND size != 'item') " +
+                    ") " +
+                    "AND ( " +
+                    "   :startDate IS NULL " +
+                    "   OR :endDate IS NULL " +
+                    "   OR DATE(savedate) BETWEEN :startDate AND :endDate " +
+                    ") " +
+                    "ORDER BY status DESC",
+            nativeQuery = true
+    )
+    List<RequestTxnEntity> getStockByBillNoAdminAll(
+            @Param("uMission") String uMission,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
+    );
+
 
 
 
