@@ -72,6 +72,10 @@ public class FinanceEntity {
     @JsonProperty("approve_date")
     private LocalDateTime approveDate;
 
+    @Column(name = "done_date")
+    @JsonProperty("done_date")
+    private LocalDateTime doneDate;
+
 
     @Transient
     private String toKen; //สำหรับ token จาก client

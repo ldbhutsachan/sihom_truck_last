@@ -816,6 +816,9 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             }
         }else {
             conItemBoNo ="\n and borkey='"+borNoss+"'";
+            if (!"all".equals(houseNo)) {
+                conItem += "\n and houseNo = '" + houseNo + "'";
+            }
         }
 
 //        String startDateCon = "\n and dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"' or dateOut >= '"+startDate+"' and dateOut <= '"+endDate+"' " ;

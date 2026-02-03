@@ -1578,6 +1578,8 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
             if (finance.getPay1().compareTo(amountMustPay) >= 0) {
                 finance.setPayStatus("DONE");
+                //save date when doen paying
+                finance.setDoneDate(LocalDateTime.now());
             } else {
                 finance.setPayStatus("IN-PROGRESS");
             }

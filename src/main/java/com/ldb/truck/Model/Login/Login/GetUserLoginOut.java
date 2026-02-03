@@ -18,8 +18,9 @@ public class GetUserLoginOut {
     private String toKen;
     private String branch;
     private String department;
+    private String department1;
+    private String role2;
     private String sprit_role;
-
     private String branchNo;
     private String branchName;
     private String borNo;
