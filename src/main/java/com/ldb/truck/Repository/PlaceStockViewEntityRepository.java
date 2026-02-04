@@ -20,11 +20,18 @@ public interface PlaceStockViewEntityRepository extends CrudRepository<PlaceStoc
     @Query(value =
             "SELECT * FROM v_stock_house " +
                     "WHERE (:borNo IS NULL OR :borNo = '' OR bor_no = :borNo) " +
+                    "AND ( :umission <> 'ALAIAPPROVE' " +
+                    "      OR not_for_alai IS NULL " +
+                    "      OR not_for_alai = '' " +
+                    "      OR not_for_alai <> 'Y' ) " +
                     "ORDER BY khid DESC",
             nativeQuery = true)
     List<PlaceStockViewEntity> findAllStockHousesAdminFilterBor(
-            @Param("borNo") String borNoForAdmin
+            @Param("borNo") String borNoForAdmin,
+            @Param("umission") String umission
     );
+
+
 
 
     @Transactional

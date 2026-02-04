@@ -5,6 +5,7 @@ import com.ldb.truck.Model.Login.ForShowTotalOil.ForShowTotalOilPaid;
 import com.ldb.truck.Model.Login.Report.ReportAll;
 import com.ldb.truck.Model.Login.Report.ReportAllReq;
 import com.ldb.truck.Model.Login.Report.ReportFuel;
+import com.ldb.truck.Model.ReportAllStock.ItemHisModel;
 import com.ldb.truck.Model.ReportAllStock.ReportAllStock;
 
 import com.ldb.truck.Model.ReportAllStock.ReportAllStockInOut;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 @Component
 @Repository
@@ -867,81 +869,129 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         }
         return null;
     }
-    public List<ReportAllStock> getTxnStock(ReportItemInOutModelReq stockRequest){
+
+    // report item his
+    public List<ItemHisModel> getReportItemHis(ReportItemInOutModelReq stockRequest,
+                                               String role,
+                                               String borNos,
+                                               String borNoss,
+                                               String umission) {
+
         String startDate = stockRequest.getStartDate();
         String endDate = stockRequest.getEndDate();
         String itemId = stockRequest.getItemId();
-        log.info("start itemId:"+itemId);
-        String group = "\n group by a.item_id,a.image,item_name,\n" +
-                "d.req_id,d.req_name,f.key_id,f.b_name,f.location,to_char(b.savedate,'yyyy-mm-dd'),to_char(c.savedate,'yyyy-mm-dd') ";
-        String startDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') >= '"+startDate+"'";
-        String endDateCon = "\nand to_char(c.savedate,'yyyy-mm-dd') <= '"+endDate+"'";
-        String tableCon = "\n from  item_inventory a left join sotck_item_details b on a.item_id=b.item_id\n" +
-                "left join request_item_details c on a.item_id=c.item_id \n" +
-                "left join tb_bors f on f.type=c.type\n" +
-                "left join request_item_type d on f.type= d.req_id ";
+        String houseNo = stockRequest.getHouseNo();
+        String borNo = stockRequest.getBorNo();
+
+        StringBuilder condition = new StringBuilder();
+        StringBuilder borCondition = new StringBuilder();
+        StringBuilder size = new StringBuilder();
+
+        /* ================= house filter ================= */
+        if (!"all".equalsIgnoreCase(houseNo)) {
+            condition.append("\n and houseid = '").append(houseNo).append("'");
+        }
+
+        /* ================= item filter ================= */
+        if (!"all".equalsIgnoreCase(itemId)) {
+            condition.append("\n and item_id = '").append(itemId).append("'");
+        }
+
+        /* ================= bor / role filter ================= */
+        if ("PADMIN".equalsIgnoreCase(role)) {
+            if (!"all".equalsIgnoreCase(borNo)) {
+                borCondition.append("\n and key_id = '").append(borNo).append("'");
+            }
+        } else {
+            borCondition.append("\n and key_id = '").append(borNoss).append("'");
+        }
+        if("ALAIAPPROVE".equalsIgnoreCase(umission)){
+            size.append("\n and size != 'food' and size!='nammun'");
+        }
+
+
+        /* ================= date filter ================= */
+        String dateCondition =
+                "\n and (buydate >= '" + startDate + "' and buydate <= '" + endDate + "')";
+
         try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("select  \n" +
-                    "a.item_id,\n" +
-                    "a.item_name,\n" +
-                    "a.image,\n" +
-                    "d.req_id type,\n" +
-                    "d.req_name type_name,\n" +
-                    "f.key_id bor_no,\n" +
-                    "f.b_name bor_name,\n" +
-                    "f.location blocation,\n" +
-                    "to_char(b.savedate,'yyyy-mm-dd') txndateIn,\n" +
-                    "to_char(c.savedate,'yyyy-mm-dd') txndateOut,\n" +
-                    "   SUM(a.unit) AS amt,\n" +
-                    "    FORMAT(SUM(a.price), '###,###,###') AS price,\n" +
-                    "    FORMAT(SUM(a.qty * a.price), '###,###,###') AS total,\n" +
-                    "    \n" +
-                    "    SUM(b.unit) AS amt_in,\n" +
-                    "    FORMAT(SUM(b.price), '###,###,###') AS price_in,\n" +
-                    "    FORMAT(SUM(b.qty * b.price), '###,###,###') AS total_in,\n" +
-                    "    \n" +
-                    "    SUM(c.unit) AS amt_out,\n" +
-                    "    FORMAT(SUM(c.price), '###,###,###') AS price_out,\n" +
-                    "    FORMAT(SUM(c.qty * c.price), '###,###,###') AS total_out  ");
-            sb.append(tableCon);
-            sb.append(startDateCon);
-            sb.append(endDateCon);
-            sb.append(group);
-            String query = sb.toString();
-            log.info("query sql:"+query);
-            return EBankJdbcTemplate.query(query, new RowMapper<ReportAllStock>() {
-                @Override
-                public ReportAllStock mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    ReportAllStock tr = new ReportAllStock();
-                    tr.setImage(rs.getString("image"));
-                    tr.setItemName(rs.getString("item_name"));
-                    tr.setItemId(rs.getString("item_id"));
-                    tr.setType(rs.getString("type"));
-                    tr.setTypeName(rs.getString("type_name"));
-                    tr.setBorNo(rs.getString("bor_no"));
-                    tr.setBorName(rs.getString("bor_name"));
-                    tr.setBlocation(rs.getString("blocation"));
-                    tr.setTxnDateIn(rs.getString("txndateIn"));
-                    tr.setTotalOut(rs.getString("txndateOut"));
-                    tr.setAmt(rs.getInt("amt"));
-                    tr.setPrice(rs.getDouble("price"));
-                    tr.setTotal(rs.getInt("total"));
-                    tr.setAmtIn(rs.getInt("amt_in") != 0 ? rs.getInt("amt_in") : 0);
-                    tr.setPriceIn(rs.getDouble("price_in"));
-                    tr.setTotalIn(rs.getString("total_in") != null ? rs.getString("total_in") : "0");
-                    tr.setAmtOut(rs.getInt("amt_out") != 0 ? rs.getInt("amt_out") : 0);
-                    tr.setPriceOut(rs.getDouble("price_out"));
-                    tr.setTotalOut(rs.getString("total_out") != null ? rs.getString("total_out") : "0");
-                    return tr;
-                }
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT ")
+                    .append("detail_id, bill_no, key_id, b_name, houseid, khname, ")
+                    .append("item_id, item_name, size, currency, exchange_rate, ")
+                    .append("qty, price, ")
+                    .append("saveby_id, saveby, savedate, ")
+                    .append("buyby_id, buyby, buydate, ")
+                    .append("approveby_id, approveby, approvedate, ")
+                    .append("acceptby_id, acceptby, acceptdate, ")
+                    .append("status, shope_id, shop_name, ")
+                    .append("type_of_order, date_pay, item_arrive_date, pay_status ")
+                    .append("FROM v_orderitem_his WHERE 1=1 ");
+
+            sql.append(dateCondition);
+            sql.append(condition);
+            sql.append(borCondition);
+            sql.append(size);
+            sql.append("\n ORDER BY buydate DESC");
+
+            String query = sql.toString();
+            log.info("SQL getReportItemHis : {}", query);
+
+            return EBankJdbcTemplate.query(query, (rs, rowNum) -> {
+                ItemHisModel tr = new ItemHisModel();
+
+                tr.setDetailId(rs.getInt("detail_id"));
+                tr.setBillNo(rs.getString("bill_no"));
+                tr.setBorId(rs.getInt("key_id"));
+                tr.setBName(rs.getString("b_name"));
+
+                tr.setHouseId(rs.getInt("houseid"));
+                tr.setHouseName(rs.getString("khname"));
+
+                tr.setType(rs.getString("size"));
+                tr.setItemId(rs.getInt("item_id"));
+                tr.setItemName(rs.getString("item_name"));
+                tr.setCurrency(rs.getString("currency"));
+                tr.setExchangeRate(rs.getInt("exchange_rate"));
+
+                tr.setQty(rs.getInt("qty"));
+                tr.setPrice(rs.getFloat("price"));
+
+                tr.setSavebyId(rs.getString("saveby_id"));
+                tr.setSaveby(rs.getString("saveby"));
+                tr.setSavedate(rs.getString("savedate"));
+
+                tr.setBuybyId(rs.getString("buyby_id"));
+                tr.setBuyby(rs.getString("buyby"));
+                tr.setBuydate(rs.getString("buydate"));
+
+                tr.setApprovebyId(rs.getString("approveby_id"));
+                tr.setApproveby(rs.getString("approveby"));
+                tr.setApprovedate(rs.getString("approvedate"));
+
+                tr.setAcceptId(rs.getString("acceptby_id"));
+                tr.setAcceptby(rs.getString("acceptby"));
+                tr.setAcceptDate(rs.getString("acceptdate"));
+
+                tr.setStatus(rs.getString("status"));
+                tr.setShopeId(rs.getInt("shope_id"));
+                tr.setShopName(rs.getString("shop_name"));
+
+                tr.setTypeOfOrder(rs.getString("type_of_order"));
+                tr.setDatePay(rs.getString("date_pay"));
+                tr.setItemArriveDate(rs.getString("item_arrive_date"));
+                tr.setPayStatus(rs.getString("pay_status"));
+
+                return tr;
             });
 
-        }catch (Exception e){
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("Error getReportItemHis", e);
+            return new ArrayList<>();
         }
-        return null;
     }
+
+
 
 
 }

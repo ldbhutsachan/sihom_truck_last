@@ -1,6 +1,7 @@
 package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Bor.BorEntityReq;
 import com.ldb.truck.Entity.Bor.BorEntityReqSave;
 import com.ldb.truck.Entity.ItemPayment.*;
@@ -21,7 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Slf4j
@@ -30,6 +35,8 @@ import java.util.List;
 public class StockProductController {
     @Autowired
     StockServiceImpl stockService;
+    @Autowired
+    private MediaUploadService mediaUploadService;
     @Autowired
     ProfileDao profileDao;
     @CrossOrigin(origins = "*")
@@ -291,56 +298,164 @@ public class StockProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "*")
-    @PostMapping("/approveOrderItemAuth.service")
-    public ResponseEntity<?> approveOrderItemAuth(
-            @RequestBody StockItemAuthReq stockItemDetailsReq) {
+//    @CrossOrigin(origins = "*")
+//    @PostMapping("/approveOrderItemAuth.service")
+//    public ResponseEntity<?> approveOrderItemAuth(
+//            @RequestBody StockItemAuthReq stockItemDetailsReq) {
+//
+//        log.info("=== start approveOrderItemAuth ===");
+//
+//        DataResponse response = new DataResponse();
+//
+//        List<Profile> userProfiles =
+//                profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+//
+//        if (userProfiles.isEmpty()) {
+//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+//        }
+//
+//        Profile profile = userProfiles.get(0);
+//
+//        StockItemAuthReq data = new StockItemAuthReq();
+//        data.setUserId(profile.getUserId());
+//        data.setBillNo(stockItemDetailsReq.getBillNo());
+//        data.setRole(profile.getRole());
+//        data.setStatus(stockItemDetailsReq.getStatus());
+//        data.setOrderStatus(stockItemDetailsReq.getOrderStatus());
+//        data.setRemark(stockItemDetailsReq.getRemark());
+//        data.setToKen(stockItemDetailsReq.getToKen());
+//        data.setDetailId(stockItemDetailsReq.getDetailId());
+//
+//        // new fields
+//        data.setPlaceBuy(stockItemDetailsReq.getPlaceBuy());
+//        data.setShopeId(stockItemDetailsReq.getShopeId());
+//        data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
+//        data.setDatePay(stockItemDetailsReq.getDatePay());
+//        data.setPayStatus(stockItemDetailsReq.getPayStatus());
+//        data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
+//
+//
+//        try {
+//            response = stockService.auth(
+//                    data,
+//                    profile.getUserId(),
+//                    profile.getUserName()
+//            );
+//        } catch (Exception e) {
+//            log.error("Controller error", e);
+//            response.setStatus("EE");
+//            response.setMessage("Data Error Controller !!");
+//        }
+//
+//        return ResponseEntity.ok(response);
+//    }
+@CrossOrigin(origins = "*")
+@PostMapping("/approveOrderItemAuth.service")
+public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stockItemDetailsReq) {
 
-        log.info("=== start approveOrderItemAuth ===");
+    log.info("=== start approveOrderItemAuth ===");
 
-        DataResponse response = new DataResponse();
+    DataResponse response = new DataResponse();
 
-        List<Profile> userProfiles =
-                profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
-
-        if (userProfiles.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
-        Profile profile = userProfiles.get(0);
-
-        StockItemAuthReq data = new StockItemAuthReq();
-        data.setUserId(profile.getUserId());
-        data.setBillNo(stockItemDetailsReq.getBillNo());
-        data.setRole(profile.getRole());
-        data.setStatus(stockItemDetailsReq.getStatus());
-        data.setOrderStatus(stockItemDetailsReq.getOrderStatus());
-        data.setRemark(stockItemDetailsReq.getRemark());
-        data.setToKen(stockItemDetailsReq.getToKen());
-        data.setDetailId(stockItemDetailsReq.getDetailId());
-
-        // new fields
-        data.setPlaceBuy(stockItemDetailsReq.getPlaceBuy());
-        data.setShopeId(stockItemDetailsReq.getShopeId());
-        data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
-        data.setDatePay(stockItemDetailsReq.getDatePay());
-        data.setPayStatus(stockItemDetailsReq.getPayStatus());
-        data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
-
-        try {
-            response = stockService.auth(
-                    data,
-                    profile.getUserId(),
-                    profile.getUserName()
-            );
-        } catch (Exception e) {
-            log.error("Controller error", e);
-            response.setStatus("EE");
-            response.setMessage("Data Error Controller !!");
-        }
-
-        return ResponseEntity.ok(response);
+    // 1. ดึงข้อมูล user จาก token
+    List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+    if (userProfiles.isEmpty()) {
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
+
+    Profile profile = userProfiles.get(0);
+
+    // 2. เตรียมข้อมูลสำหรับ service
+    StockItemAuthReq data = new StockItemAuthReq();
+    data.setUserId(profile.getUserId());
+    data.setBillNo(stockItemDetailsReq.getBillNo());
+    data.setRole(profile.getRole());
+    data.setStatus(stockItemDetailsReq.getStatus());
+    data.setOrderStatus(stockItemDetailsReq.getOrderStatus());
+    data.setRemark(stockItemDetailsReq.getRemark());
+    data.setToKen(stockItemDetailsReq.getToKen());
+    data.setDetailId(stockItemDetailsReq.getDetailId());
+
+    // new fields
+    data.setPlaceBuy(stockItemDetailsReq.getPlaceBuy());
+    data.setShopeId(stockItemDetailsReq.getShopeId());
+    data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
+    data.setDatePay(stockItemDetailsReq.getDatePay());
+    data.setPayStatus(stockItemDetailsReq.getPayStatus());
+    data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
+
+    // 3. Upload image จาก Base64
+    // ✅ ประกาศ base64 ให้ชัดเจน
+    final String base64 = stockItemDetailsReq.getImage();
+
+    if (base64 != null && !base64.isEmpty()) {
+        try {
+            final byte[] fileBytes = java.util.Base64.getDecoder().decode(base64);
+            final String fileNameFinal = System.currentTimeMillis() + "_image.jpg";
+
+            // สร้าง MultipartFile แบบ anonymous class
+            MultipartFile multipartFile = new MultipartFile() {
+                @Override
+                public String getName() { return "file"; }
+
+                @Override
+                public String getOriginalFilename() { return fileNameFinal; }
+
+                @Override
+                public String getContentType() { return "image/jpeg"; }
+
+                @Override
+                public boolean isEmpty() { return fileBytes == null || fileBytes.length == 0; }
+
+                @Override
+                public long getSize() { return fileBytes.length; }
+
+                @Override
+                public byte[] getBytes() throws IOException { return fileBytes; }
+
+                @Override
+                public InputStream getInputStream() throws IOException { return new ByteArrayInputStream(fileBytes); }
+
+                @Override
+                public void transferTo(File dest) throws IOException, IllegalStateException {
+                    try (FileOutputStream fos = new FileOutputStream(dest)) {
+                        fos.write(fileBytes);
+                    }
+                }
+            };
+
+            // เรียก service upload
+            String uploadedFileName = mediaUploadService.uploadMedia(multipartFile);
+            String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+            data.setImage(fileUrl);
+
+            log.info("✅ Uploaded file: {}", fileUrl);
+
+        } catch (Exception e) {
+            log.error("Error uploading image", e);
+            // เก็บ URL เดิมถ้า upload fail
+            data.setImage(stockItemDetailsReq.getImage());
+        }
+    } else {
+        // ไม่มีภาพใหม่ -> เก็บ URL เดิม
+        data.setImage(stockItemDetailsReq.getImage());
+        log.info("ℹ️ No new image uploaded. Keep old file: {}", data.getImage());
+    }
+
+    // 4. เรียก service auth
+    try {
+        response = stockService.auth(data, profile.getUserId(), profile.getUserName());
+    } catch (Exception e) {
+        log.error("Controller error", e);
+        response.setStatus("EE");
+        response.setMessage("Data Error Controller !!");
+    }
+
+    return ResponseEntity.ok(response);
+}
+
+
+
 
 
     @CrossOrigin(origins = "*")

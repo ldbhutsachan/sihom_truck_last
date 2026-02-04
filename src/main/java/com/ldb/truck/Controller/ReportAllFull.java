@@ -205,18 +205,40 @@ public ReportAllStockInOutRes reportAllService (@RequestBody ReportItemInOutMode
     return result;
 }
 
-@CrossOrigin(origins = "*")
-@PostMapping("/reportTxnDailyStock.service")
-public ReportItemInOutModelResponse reportTxnDailyStock (@RequestBody ReportItemInOutModelReq reportAllReq){
-        ReportItemInOutModelResponse result = new ReportItemInOutModelResponse();
-    try {
-        result = reportAllService.getTxnStock(reportAllReq);
-    }catch (Exception e){
-        e.printStackTrace();
-        result.setStatus("01");
-        result.setMessage("Error Exception");
+    @CrossOrigin(origins = "*")
+    @PostMapping("/reportItemOrderHis.service")
+    public DataResponse reportItemOrderHis(
+            @RequestBody ReportItemInOutModelReq reportAllReq) {
+
+        DataResponse result = new DataResponse();
+
+        try {
+            List<Profile> userProfiles =
+                    profileDao.getProfileInfoByToken(reportAllReq.getToKen());
+
+            if (userProfiles == null || userProfiles.isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Invalid Token");
+                return result;
+            }
+
+            Profile profile = userProfiles.get(0);
+            String role = profile.getRole();
+            String branchNo = profile.getBranchNo();
+            String borNoss = profile.getBorNo();
+            String umission = profile.getStaff_id();
+
+            result = reportAllService.getReportItemHis(
+                    reportAllReq, role, branchNo, borNoss,umission);
+
+        } catch (Exception e) {
+            log.error("Error reportItemOrderHis", e);
+            result.setStatus("01");
+            result.setMessage("Error Exception");
+        }
+
         return result;
     }
-    return result;
-}
+
+
 }

@@ -155,6 +155,8 @@ public class V_order_item_details {
     @Column(name = "item_arrive_date")
     private String itemArriveDate;
 
+    @Column(name = "imagefile")
+    private String imagefile;
 
     @Transient
     private String itemArriveStatus;

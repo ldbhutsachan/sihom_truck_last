@@ -24,5 +24,6 @@ public class StockItemAuthReq {
     String datePay;
     String payStatus;
     String itemArriveDate;
+    String image;
     List<StockItemAuthModel> detailId;
 }

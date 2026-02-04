@@ -829,6 +829,7 @@ public class StockServiceImpl {
                     tr.setTypeOfOrder(rs.getString("type_of_order"));
                     tr.setDatePay(rs.getString("date_pay"));
                     tr.setItemArriveDate(rs.getString("item_arrive_date"));
+                    tr.setImagefile(rs.getString("imagefile"));
 
                     // ===== CALCULATE NEW STATUS FOR ARRIVE DATE =====
                     String arriveStatus = calculateArriveStatus(
@@ -1208,7 +1209,7 @@ public class StockServiceImpl {
                         "qty = ?, price = ?, status = 'auth', " +
                         "currency = ?, exchange_rate = ?, " +
                         "place_buy = ?, shope_id = ?, " +
-                        "type_of_order = ?, date_pay = ? ,item_arrive_date = ? " +
+                        "type_of_order = ?, date_pay = ? ,item_arrive_date = ?, image = ? " +
                         "WHERE item_id = ? AND bill_no = ?";
 
         for (OrderItemReportEntity item : items) {
@@ -1226,6 +1227,7 @@ public class StockServiceImpl {
                     request.getTypeOfPay(),
                     request.getDatePay(),
                     request.getItemArriveDate(),
+                    request.getImage(),        // ✅ image URL
                     item.getDetailId(),
                     item.getBillNo()
             );

@@ -86,7 +86,7 @@ public class PlaceStockService {
 //        return response;
 //    }
 
-    public DataResponse getPlaceStockHouse(PlaceStockEntityReq placeStockEntity, String borNoForAdmin){
+    public DataResponse getPlaceStockHouse(PlaceStockEntityReq placeStockEntity, String borNoForAdmin, String umission){
 
         String role = placeStockEntity.getRole();
         String branchNo = placeStockEntity.getBrandNo();
@@ -99,7 +99,7 @@ public class PlaceStockService {
             if ("PADMIN".equals(role)) {
                 response.setDataResponse(
                         placeStockViewEntityRepository
-                                .findAllStockHousesAdminFilterBor(borNoForAdmin)
+                                .findAllStockHousesAdminFilterBor(borNoForAdmin, umission)
                 );
             }
             else if ("AUTH".equals(role) || "USERSTOCK".equals(role)) {

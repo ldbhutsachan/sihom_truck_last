@@ -3,6 +3,7 @@ package com.ldb.truck.Service.ReportAllService;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.ReportAllDao.ReportAllServiceDao;
 import com.ldb.truck.Entity.Stock.StockRequest;
+import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.ForShowTotalOil.ForShowTotalOilPaid;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.*;
@@ -444,41 +445,41 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
         return response;
     }
 
+    //service report itemhis
+    public DataResponse getReportItemHis(
+            ReportItemInOutModelReq stockRequest,
+            String role,
+            String borNo,
+            String borNoss,
+            String umission) {
 
+        DataResponse response = new DataResponse();
 
-
-    public ReportItemInOutModelResponse getTxnStock(ReportItemInOutModelReq stockRequest){
-//update
-        ReportItemInOutModelResponse resposne = new ReportItemInOutModelResponse();
-        List<ReportAllStock> listData = new ArrayList<>();
         try {
-            listData = reportStaffServiceDao.getTxnStock(stockRequest);
-            if(listData.size() > 0){
-                double sumRaisedAmt =  listData.stream().map(ReportAllStock::getTotal).collect(Collectors.summingInt(Integer::intValue));
-                double sumInAmt =  listData.stream().map(ReportAllStock::getAmtIn).collect(Collectors.summingInt(Integer::intValue));
-                double sumOutAmt =  listData.stream().map(ReportAllStock::getAmtOut).collect(Collectors.summingInt(Integer::intValue));
-                double sumAmt =  listData.stream().map(ReportAllStock::getAmt).collect(Collectors.summingInt(Integer::intValue));
-                double sumAmount =  listData.stream().map(ReportAllStock::getPrice).collect(Collectors.summingDouble(Double::doubleValue));
-                double sumAmountIn =  listData.stream().map(ReportAllStock::getPriceIn).collect(Collectors.summingDouble(Double::doubleValue));
-                double sumAmountOut =  listData.stream().map(ReportAllStock::getPriceOut).collect(Collectors.summingDouble(Double::doubleValue));
-                resposne.setDataResponse(listData);
-                resposne.setSumRaisedAmt(sumRaisedAmt);
-                resposne.setSumInAmt(sumInAmt);
-                resposne.setSumOutAmt(sumOutAmt);
-                resposne.setSumAmt(sumAmt);
-                resposne.setSumPrice(sumAmount);
-                resposne.setSumPriceIn(sumAmountIn);
-                resposne.setSumPriceOut(sumAmountOut);
-                return resposne;
+            List<ItemHisModel> rsListData =
+                    reportStaffServiceDao.getReportItemHis(
+                            stockRequest, role, borNo, borNoss, umission);
+
+            if (rsListData == null || rsListData.isEmpty()) {
+                response.setStatus("00");
+                response.setMessage("Data Not Found !!");
+                response.setDataResponse(Collections.emptyList());
+                return response;
             }
-            resposne.setStatus("00");
-            resposne.setMessage("Data Not Found !!");
-        }catch (Exception e){
-            resposne.setStatus("EE");
-            resposne.setMessage("Error Data !!!");
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(rsListData);
+
+        } catch (Exception e) {
+            log.error("Error in getReportItemHis", e);
+            response.setStatus("EE");
+            response.setMessage("Error Data !!!");
         }
-        return resposne;
-}
+
+        return response;
+    }
+
+
 
 
 }
