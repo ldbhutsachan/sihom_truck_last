@@ -919,7 +919,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
             sql.append("SELECT ")
                     .append("detail_id, bill_no, key_id, b_name, houseid, khname, ")
                     .append("item_id, item_name, size, currency, exchange_rate, ")
-                    .append("qty, price, ")
+                    .append("qty, price, img, ")
                     .append("saveby_id, saveby, savedate, ")
                     .append("buyby_id, buyby, buydate, ")
                     .append("approveby_id, approveby, approvedate, ")
@@ -981,6 +981,8 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 tr.setDatePay(rs.getString("date_pay"));
                 tr.setItemArriveDate(rs.getString("item_arrive_date"));
                 tr.setPayStatus(rs.getString("pay_status"));
+
+                tr.setImg(rs.getString("img"));
 
                 return tr;
             });

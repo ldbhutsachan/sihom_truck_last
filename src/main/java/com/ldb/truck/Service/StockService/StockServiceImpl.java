@@ -1187,6 +1187,57 @@ public class StockServiceImpl {
 
     }
     //================auth
+//    public int checkStatusAuth(
+//            String status,
+//            String placeBuy,
+//            StockItemAuthReq request,
+//            String userId) {
+//
+//        log.info("=== START checkStatusAuth ===");
+//
+//        List<OrderItemReportEntity> items =
+//                authConvert(request, userId);
+//
+//        log.info("Approving {} item(s), billNo={}",
+//                items.size(), request.getBillNo());
+//
+//        int updated = 0;
+//
+//        final String sql =
+//                "UPDATE order_item_details SET " +
+//                        "approveby = ?, approvedate = ?, " +
+//                        "qty = ?, price = ?, status = 'auth', " +
+//                        "currency = ?, exchange_rate = ?, " +
+//                        "place_buy = ?, shope_id = ?, " +
+//                        "type_of_order = ?, date_pay = ? ,item_arrive_date = ?, image = ? " +
+//                        "WHERE item_id = ? AND bill_no = ?";
+//
+//        for (OrderItemReportEntity item : items) {
+//
+//            updated += EBankJdbcTemplate.update(
+//                    sql,
+//                    userId,                    // approveby
+//                    new Date(),                // approvedate
+//                    item.getQty(),
+//                    item.getPrice(),
+//                    item.getCurrency(),
+//                    item.getExchangeRate(),
+//                    placeBuy,
+//                    request.getShopeId(),
+//                    request.getTypeOfPay(),
+//                    request.getDatePay(),
+//                    request.getItemArriveDate(),
+//                    request.getImage(),        // ✅ image URL
+//                    item.getDetailId(),
+//                    item.getBillNo()
+//            );
+//
+//            log.info("Updated item_id={}", item.getDetailId());
+//        }
+//
+//        return updated;
+//    }
+
     public int checkStatusAuth(
             String status,
             String placeBuy,
@@ -1195,29 +1246,36 @@ public class StockServiceImpl {
 
         log.info("=== START checkStatusAuth ===");
 
-        List<OrderItemReportEntity> items =
-                authConvert(request, userId);
-
-        log.info("Approving {} item(s), billNo={}",
-                items.size(), request.getBillNo());
+        // 1️⃣ ดึงรายการ items จาก request
+        List<OrderItemReportEntity> items = authConvert(request, userId);
+        log.info("Approving {} item(s), billNo={}", items.size(), request.getBillNo());
 
         int updated = 0;
 
-        final String sql =
-                "UPDATE order_item_details SET " +
-                        "approveby = ?, approvedate = ?, " +
-                        "qty = ?, price = ?, status = 'auth', " +
-                        "currency = ?, exchange_rate = ?, " +
-                        "place_buy = ?, shope_id = ?, " +
-                        "type_of_order = ?, date_pay = ? ,item_arrive_date = ?, image = ? " +
-                        "WHERE item_id = ? AND bill_no = ?";
+        // 2️⃣ ดึง uploadedUrls จาก request (หลังจาก upload ผ่าน controller แล้ว)
+        List<String> uploadedUrls = request.getImageList();
+        log.info("✅ imageList before update: {}", uploadedUrls);
+
+        final String sql = "UPDATE order_item_details SET " +
+                "approveby = ?, approvedate = ?, " +
+                "qty = ?, price = ?, status = 'auth', " +
+                "currency = ?, exchange_rate = ?, " +
+                "place_buy = ?, shope_id = ?, " +
+                "type_of_order = ?, date_pay = ?, item_arrive_date = ?, image = ? " +
+                "WHERE item_id = ? AND bill_no = ?";
 
         for (OrderItemReportEntity item : items) {
 
+            // 3️⃣ รวมทุก URL เป็น 1 string คั่นด้วย comma
+            String fileUrls = (uploadedUrls != null && !uploadedUrls.isEmpty())
+                    ? String.join(",", uploadedUrls)
+                    : null;
+
+            // 4️⃣ อัพเดต DB
             updated += EBankJdbcTemplate.update(
                     sql,
-                    userId,                    // approveby
-                    new Date(),                // approvedate
+                    userId,                // approveby
+                    new Date(),            // approvedate
                     item.getQty(),
                     item.getPrice(),
                     item.getCurrency(),
@@ -1227,16 +1285,18 @@ public class StockServiceImpl {
                     request.getTypeOfPay(),
                     request.getDatePay(),
                     request.getItemArriveDate(),
-                    request.getImage(),        // ✅ image URL
+                    fileUrls,              // ✅ image = หลายไฟล์รวมกัน
                     item.getDetailId(),
-                    item.getBillNo()
+                    request.getBillNo()
             );
 
-            log.info("Updated item_id={}", item.getDetailId());
+            log.info("Updated item_id={} with image={}", item.getDetailId(), fileUrls);
         }
 
         return updated;
     }
+
+
 
     //================reject
     public int checkStatusReject(String status, StockItemAuthReq request, String userId) {

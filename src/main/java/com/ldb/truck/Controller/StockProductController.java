@@ -27,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @Slf4j
@@ -357,7 +359,7 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
 
     DataResponse response = new DataResponse();
 
-    // 1. ดึงข้อมูล user จาก token
+    // 1️⃣ ดึงข้อมูล user จาก token
     List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
     if (userProfiles.isEmpty()) {
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -365,7 +367,7 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
 
     Profile profile = userProfiles.get(0);
 
-    // 2. เตรียมข้อมูลสำหรับ service
+    // 2️⃣ เตรียม DTO สำหรับส่งเข้า Service
     StockItemAuthReq data = new StockItemAuthReq();
     data.setUserId(profile.getUserId());
     data.setBillNo(stockItemDetailsReq.getBillNo());
@@ -384,65 +386,66 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
     data.setPayStatus(stockItemDetailsReq.getPayStatus());
     data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
 
-    // 3. Upload image จาก Base64
-    // ✅ ประกาศ base64 ให้ชัดเจน
-    final String base64 = stockItemDetailsReq.getImage();
+    // 3️⃣ Upload images จาก Base64 (หลายไฟล์)
+    List<String> uploadedUrls = new ArrayList<>();
+    if (stockItemDetailsReq.getImageList() != null && !stockItemDetailsReq.getImageList().isEmpty()) {
 
-    if (base64 != null && !base64.isEmpty()) {
-        try {
-            final byte[] fileBytes = java.util.Base64.getDecoder().decode(base64);
-            final String fileNameFinal = System.currentTimeMillis() + "_image.jpg";
+        for (String base64 : stockItemDetailsReq.getImageList()) {
+            if (base64 == null || base64.isBlank()) continue;
 
-            // สร้าง MultipartFile แบบ anonymous class
-            MultipartFile multipartFile = new MultipartFile() {
-                @Override
-                public String getName() { return "file"; }
+            // Skip ถ้าเป็น URL
+            if (base64.startsWith("http")) {
+                log.warn("Skip URL image: {}", base64);
+                uploadedUrls.add(base64);
+                continue;
+            }
 
-                @Override
-                public String getOriginalFilename() { return fileNameFinal; }
+            // ตัด prefix data:image/...;base64, ถ้ามี
+            if (base64.startsWith("data:image")) {
+                base64 = base64.substring(base64.indexOf(",") + 1);
+            }
 
-                @Override
-                public String getContentType() { return "image/jpeg"; }
+            try {
+                byte[] fileBytes = Base64.getDecoder().decode(base64);
 
-                @Override
-                public boolean isEmpty() { return fileBytes == null || fileBytes.length == 0; }
-
-                @Override
-                public long getSize() { return fileBytes.length; }
-
-                @Override
-                public byte[] getBytes() throws IOException { return fileBytes; }
-
-                @Override
-                public InputStream getInputStream() throws IOException { return new ByteArrayInputStream(fileBytes); }
-
-                @Override
-                public void transferTo(File dest) throws IOException, IllegalStateException {
-                    try (FileOutputStream fos = new FileOutputStream(dest)) {
-                        fos.write(fileBytes);
+                // สร้าง MultipartFile แบบ override
+                final String fileName = System.currentTimeMillis() + "_image.jpg";
+                MultipartFile multipartFile = new MultipartFile() {
+                    @Override public String getName() { return "file"; }
+                    @Override public String getOriginalFilename() { return fileName; }
+                    @Override public String getContentType() { return "image/jpeg"; }
+                    @Override public boolean isEmpty() { return fileBytes.length == 0; }
+                    @Override public long getSize() { return fileBytes.length; }
+                    @Override public byte[] getBytes() { return fileBytes; }
+                    @Override public InputStream getInputStream() { return new ByteArrayInputStream(fileBytes); }
+                    @Override public void transferTo(File dest) throws IOException {
+                        try (FileOutputStream fos = new FileOutputStream(dest)) {
+                            fos.write(fileBytes);
+                        }
                     }
-                }
-            };
+                };
 
-            // เรียก service upload
-            String uploadedFileName = mediaUploadService.uploadMedia(multipartFile);
-            String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
-            data.setImage(fileUrl);
+                // upload
+                String uploadedFileName = mediaUploadService.uploadMedia(multipartFile);
+                String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+                uploadedUrls.add(fileUrl);
+                log.info("✅ Uploaded image: {}", fileUrl);
 
-            log.info("✅ Uploaded file: {}", fileUrl);
-
-        } catch (Exception e) {
-            log.error("Error uploading image", e);
-            // เก็บ URL เดิมถ้า upload fail
-            data.setImage(stockItemDetailsReq.getImage());
+            } catch (IllegalArgumentException e) {
+                log.error("❌ Invalid base64 image, skip", e);
+                uploadedUrls.add(null);
+            } catch (Exception e) {
+                log.error("❌ Error uploading image", e);
+                uploadedUrls.add(null);
+            }
         }
-    } else {
-        // ไม่มีภาพใหม่ -> เก็บ URL เดิม
-        data.setImage(stockItemDetailsReq.getImage());
-        log.info("ℹ️ No new image uploaded. Keep old file: {}", data.getImage());
     }
 
-    // 4. เรียก service auth
+    // 4️⃣ copy uploadedUrls เข้า data
+    data.setImageList(uploadedUrls);
+    log.info("✅ imageList before checkStatusAuth: {}", data.getImageList());
+
+    // 5️⃣ เรียก Service
     try {
         response = stockService.auth(data, profile.getUserId(), profile.getUserName());
     } catch (Exception e) {

@@ -49,4 +49,5 @@ public class ItemHisModel {
     private String datePay;            // date_pay
     private String itemArriveDate;     // item_arrive_date
     private String payStatus;          // pay_status
+    private String img;
 }
