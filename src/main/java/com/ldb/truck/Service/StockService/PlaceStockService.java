@@ -96,10 +96,11 @@ public class PlaceStockService {
         DataResponse response = new DataResponse();
 
         try {
-            if ("PADMIN".equals(role)) {
+            if ("PADMIN".equals(role) || "BUYER".equals(role)) {
                 response.setDataResponse(
                         placeStockViewEntityRepository
                                 .findAllStockHousesAdminFilterBor(borNoForAdmin, umission)
+
                 );
             }
             else if ("AUTH".equals(role) || "USERSTOCK".equals(role)) {
@@ -124,6 +125,7 @@ public class PlaceStockService {
 
                 response.setStatus("00");
                 response.setMessage("Success");
+
             } else {
                 response.setStatus("05");
                 response.setMessage("Data not Found !!!");

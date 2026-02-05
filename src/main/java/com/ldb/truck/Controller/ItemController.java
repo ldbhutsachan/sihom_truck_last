@@ -275,6 +275,7 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
 //            else {
 //                reqBody.setBrandNo(branchNo);
 //            }
+
             reqBody.setBorNo(borNo);
             response = placeStockService.getPlaceStockHouse(reqBody,borNoForAdmin,umission);
         }catch (Exception e){
