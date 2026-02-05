@@ -898,7 +898,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         }
 
         /* ================= bor / role filter ================= */
-        if ("PADMIN".equalsIgnoreCase(role)) {
+        if ("PADMIN".equalsIgnoreCase(role) || ("BUYER".equalsIgnoreCase(role))) {
             if (!"all".equalsIgnoreCase(borNo)) {
                 borCondition.append("\n and key_id = '").append(borNo).append("'");
             }

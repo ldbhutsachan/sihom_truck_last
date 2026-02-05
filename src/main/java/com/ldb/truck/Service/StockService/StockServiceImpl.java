@@ -828,6 +828,7 @@ public class StockServiceImpl {
                     tr.setShopName(rs.getString("shop_name"));
                     tr.setTypeOfOrder(rs.getString("type_of_order"));
                     tr.setDatePay(rs.getString("date_pay"));
+                    tr.setPayStatus(rs.getString("pay_status"));
                     tr.setItemArriveDate(rs.getString("item_arrive_date"));
                     tr.setImagefile(rs.getString("imagefile"));
 
@@ -904,7 +905,7 @@ public class StockServiceImpl {
 
         // ถ้า payStatus = paid → ไม่ต้องคำนวณ
         if ("paid".equalsIgnoreCase(payStatus)) {
-            return null;
+            return "DONE-PAY";
         }
 
         // ถ้า datePay ว่าง → return null
