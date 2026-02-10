@@ -28,6 +28,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -643,12 +644,25 @@ public class StockServiceImpl {
                         .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
                         .count());
 
-                double totalLak = listData.stream()
+                //I have change double to BigDecimal
+//                double totalLak = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
+//                        .map(V_order_item_details::getAmountCurrency)
+//                        .filter(Objects::nonNull)
+//                        .mapToDouble(Float::doubleValue)
+//                        .sum();
+                BigDecimal totalLak = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
-                        .map(V_order_item_details::getAmountCurrency)
-                        .filter(Objects::nonNull)
-                        .mapToDouble(Float::doubleValue)
-                        .sum();
+                        .map(p -> {
+                            BigDecimal qty = BigDecimal.valueOf(p.getQty());
+                            BigDecimal price = BigDecimal.valueOf(p.getPrice());
+                            return qty.multiply(price);
+                        })
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+
+                groupHeader.setLakAmount(numfm.format(totalLak));
+
 
                 groupHeader.setLakAmount(numfm.format(totalLak));
 
@@ -656,12 +670,19 @@ public class StockServiceImpl {
                         .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
                         .count());
 
-                double totalUsd = listData.stream()
+//                double totalUsd = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
+//                        .map(V_order_item_details::getAmountCurrency)
+//                        .filter(Objects::nonNull)
+//                        .mapToDouble(Float::doubleValue)
+//                        .sum();
+                BigDecimal totalUsd = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
-                        .map(V_order_item_details::getAmountCurrency)
-                        .filter(Objects::nonNull)
-                        .mapToDouble(Float::doubleValue)
-                        .sum();
+                        .map(p -> BigDecimal.valueOf(p.getQty())
+                                .multiply(BigDecimal.valueOf(p.getPrice())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+
 
                 groupHeader.setUsdAmount(numfm.format(totalUsd));
 
@@ -669,12 +690,19 @@ public class StockServiceImpl {
                         .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
                         .count());
 
-                double totalThb = listData.stream()
+//                double totalThb = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
+//                        .map(V_order_item_details::getAmountCurrency)
+//                        .filter(Objects::nonNull)
+//                        .mapToDouble(Float::doubleValue)
+//                        .sum();
+                BigDecimal totalThb = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
-                        .map(V_order_item_details::getAmountCurrency)
-                        .filter(Objects::nonNull)
-                        .mapToDouble(Float::doubleValue)
-                        .sum();
+                        .map(p -> BigDecimal.valueOf(p.getQty())
+                                .multiply(BigDecimal.valueOf(p.getPrice())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+
 
                 groupHeader.setThbAmount(numfm.format(totalThb));
 
@@ -801,7 +829,7 @@ public class StockServiceImpl {
                     tr.setPrice(rs.getFloat("price"));
                     tr.setStatus(rs.getString("status"));
                     tr.setToKen(rs.getString("token"));
-                    tr.setTotal(rs.getFloat("total"));
+                    tr.setTotal(rs.getBigDecimal("total"));
                     tr.setAmountCurrency(rs.getFloat("amount"));
                     tr.setTotalAmountCurrency(rs.getFloat("toal_amount"));
                     tr.setImage(rs.getString("image"));
