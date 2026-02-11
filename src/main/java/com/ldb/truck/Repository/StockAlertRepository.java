@@ -9,8 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface StockAlertRepository extends CrudRepository<StockAlertEntity,Long> {
-    @Query(value = "select  * from v_alert_stock where branch_no=:branchNo ",nativeQuery = true)
-    List<StockAlertEntity> getAlertByBranchNo(@Param("branchNo") String branchNo);
+public interface StockAlertRepository extends CrudRepository<StockAlertEntity, Long> {
+
+    @Query(value = "SELECT * FROM v_alert_stock WHERE bor_no = :borNo", nativeQuery = true)
+    List<StockAlertEntity> getAlertByBorNo(@Param("borNo") String borNo);
 
 }
+

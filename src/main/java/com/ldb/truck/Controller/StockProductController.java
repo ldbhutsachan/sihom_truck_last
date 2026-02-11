@@ -1,6 +1,7 @@
 package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Bor.BorEntityReq;
 import com.ldb.truck.Entity.Bor.BorEntityReqSave;
 import com.ldb.truck.Entity.ItemPayment.*;
@@ -21,7 +22,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @Slf4j
@@ -30,6 +37,8 @@ import java.util.List;
 public class StockProductController {
     @Autowired
     StockServiceImpl stockService;
+    @Autowired
+    private MediaUploadService mediaUploadService;
     @Autowired
     ProfileDao profileDao;
     @CrossOrigin(origins = "*")
@@ -158,11 +167,12 @@ public class StockProductController {
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String branchNo = userProfiles.get(0).getBranchNo();
+//        String branchNo = userProfiles.get(0).getBranchNo();
+        String borNo = userProfiles.get(0).getBorNo();
         String role = userProfiles.get(0).getRole();
         try {
             AlertReq req = new AlertReq();
-            req.setBranchNo(branchNo);
+            req.setBorNo(borNo);
             req.setRole(role);
             response = stockService.getAlertStock(req);
         }catch (Exception e){
@@ -183,6 +193,7 @@ public class StockProductController {
         }
         String userId = userProfiles.get(0).getUserName();
         String role = userProfiles.get(0).getRole();
+        String userMission = userProfiles.get(0).getStaff_id();
         String branchNo = userProfiles.get(0).getBranchNo();
         String status = stockItemDetailsEntity.getStatus();
         String conditionReq = stockItemDetailsEntity.getShowByCondition();
@@ -191,9 +202,10 @@ public class StockProductController {
         String endDate =  stockItemDetailsEntity.getEndDate();
         String borNo = userProfiles.get(0).getBorNo();
         String borNoFone = stockItemDetailsEntity.getBorNo();
+        String type_of_order = stockItemDetailsEntity.getTypeOfPay();
 
         try {
-                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo,borNoFone);
+                response = stockService.getOrderItemReport(conditionReq,branchNo,userId, role,status,startDate,endDate,borNo,borNoFone,userMission, type_of_order);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -288,55 +300,165 @@ public class StockProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "*")
-    @PostMapping("/approveOrderItemAuth.service")
-    public ResponseEntity<?> approveOrderItemAuth(
-            @RequestBody StockItemAuthReq stockItemDetailsReq) {
+//    @CrossOrigin(origins = "*")
+//    @PostMapping("/approveOrderItemAuth.service")
+//    public ResponseEntity<?> approveOrderItemAuth(
+//            @RequestBody StockItemAuthReq stockItemDetailsReq) {
+//
+//        log.info("=== start approveOrderItemAuth ===");
+//
+//        DataResponse response = new DataResponse();
+//
+//        List<Profile> userProfiles =
+//                profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+//
+//        if (userProfiles.isEmpty()) {
+//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+//        }
+//
+//        Profile profile = userProfiles.get(0);
+//
+//        StockItemAuthReq data = new StockItemAuthReq();
+//        data.setUserId(profile.getUserId());
+//        data.setBillNo(stockItemDetailsReq.getBillNo());
+//        data.setRole(profile.getRole());
+//        data.setStatus(stockItemDetailsReq.getStatus());
+//        data.setOrderStatus(stockItemDetailsReq.getOrderStatus());
+//        data.setRemark(stockItemDetailsReq.getRemark());
+//        data.setToKen(stockItemDetailsReq.getToKen());
+//        data.setDetailId(stockItemDetailsReq.getDetailId());
+//
+//        // new fields
+//        data.setPlaceBuy(stockItemDetailsReq.getPlaceBuy());
+//        data.setShopeId(stockItemDetailsReq.getShopeId());
+//        data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
+//        data.setDatePay(stockItemDetailsReq.getDatePay());
+//        data.setPayStatus(stockItemDetailsReq.getPayStatus());
+//        data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
+//
+//
+//        try {
+//            response = stockService.auth(
+//                    data,
+//                    profile.getUserId(),
+//                    profile.getUserName()
+//            );
+//        } catch (Exception e) {
+//            log.error("Controller error", e);
+//            response.setStatus("EE");
+//            response.setMessage("Data Error Controller !!");
+//        }
+//
+//        return ResponseEntity.ok(response);
+//    }
+@CrossOrigin(origins = "*")
+@PostMapping("/approveOrderItemAuth.service")
+public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stockItemDetailsReq) {
 
-        log.info("=== start approveOrderItemAuth ===");
+    log.info("=== start approveOrderItemAuth ===");
 
-        DataResponse response = new DataResponse();
+    DataResponse response = new DataResponse();
 
-        List<Profile> userProfiles =
-                profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
-
-        if (userProfiles.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
-        Profile profile = userProfiles.get(0);
-
-        StockItemAuthReq data = new StockItemAuthReq();
-        data.setUserId(profile.getUserId());
-        data.setBillNo(stockItemDetailsReq.getBillNo());
-        data.setRole(profile.getRole());
-        data.setStatus(stockItemDetailsReq.getStatus());
-        data.setOrderStatus(stockItemDetailsReq.getOrderStatus());
-        data.setRemark(stockItemDetailsReq.getRemark());
-        data.setToKen(stockItemDetailsReq.getToKen());
-        data.setDetailId(stockItemDetailsReq.getDetailId());
-
-        // new fields
-        data.setPlaceBuy(stockItemDetailsReq.getPlaceBuy());
-        data.setShopeId(stockItemDetailsReq.getShopeId());
-        data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
-        data.setDatePay(stockItemDetailsReq.getDatePay());
-        data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
-
-        try {
-            response = stockService.auth(
-                    data,
-                    profile.getUserId(),
-                    profile.getUserName()
-            );
-        } catch (Exception e) {
-            log.error("Controller error", e);
-            response.setStatus("EE");
-            response.setMessage("Data Error Controller !!");
-        }
-
-        return ResponseEntity.ok(response);
+    // 1️⃣ ดึงข้อมูล user จาก token
+    List<Profile> userProfiles = profileDao.getProfileInfoByToken(stockItemDetailsReq.getToKen());
+    if (userProfiles.isEmpty()) {
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
+
+    Profile profile = userProfiles.get(0);
+
+    // 2️⃣ เตรียม DTO สำหรับส่งเข้า Service
+    StockItemAuthReq data = new StockItemAuthReq();
+    data.setUserId(profile.getUserId());
+    data.setBillNo(stockItemDetailsReq.getBillNo());
+    data.setRole(profile.getRole());
+    data.setStatus(stockItemDetailsReq.getStatus());
+    data.setOrderStatus(stockItemDetailsReq.getOrderStatus());
+    data.setRemark(stockItemDetailsReq.getRemark());
+    data.setToKen(stockItemDetailsReq.getToKen());
+    data.setDetailId(stockItemDetailsReq.getDetailId());
+
+    // new fields
+    data.setPlaceBuy(stockItemDetailsReq.getPlaceBuy());
+    data.setShopeId(stockItemDetailsReq.getShopeId());
+    data.setTypeOfPay(stockItemDetailsReq.getTypeOfPay());
+    data.setDatePay(stockItemDetailsReq.getDatePay());
+    data.setPayStatus(stockItemDetailsReq.getPayStatus());
+    data.setItemArriveDate(stockItemDetailsReq.getItemArriveDate());
+
+    // 3️⃣ Upload images จาก Base64 (หลายไฟล์)
+    List<String> uploadedUrls = new ArrayList<>();
+    if (stockItemDetailsReq.getImageList() != null && !stockItemDetailsReq.getImageList().isEmpty()) {
+
+        for (String base64 : stockItemDetailsReq.getImageList()) {
+            if (base64 == null || base64.isBlank()) continue;
+
+            // Skip ถ้าเป็น URL
+            if (base64.startsWith("http")) {
+                log.warn("Skip URL image: {}", base64);
+                uploadedUrls.add(base64);
+                continue;
+            }
+
+            // ตัด prefix data:image/...;base64, ถ้ามี
+            if (base64.startsWith("data:image")) {
+                base64 = base64.substring(base64.indexOf(",") + 1);
+            }
+
+            try {
+                byte[] fileBytes = Base64.getDecoder().decode(base64);
+
+                // สร้าง MultipartFile แบบ override
+                final String fileName = System.currentTimeMillis() + "_image.jpg";
+                MultipartFile multipartFile = new MultipartFile() {
+                    @Override public String getName() { return "file"; }
+                    @Override public String getOriginalFilename() { return fileName; }
+                    @Override public String getContentType() { return "image/jpeg"; }
+                    @Override public boolean isEmpty() { return fileBytes.length == 0; }
+                    @Override public long getSize() { return fileBytes.length; }
+                    @Override public byte[] getBytes() { return fileBytes; }
+                    @Override public InputStream getInputStream() { return new ByteArrayInputStream(fileBytes); }
+                    @Override public void transferTo(File dest) throws IOException {
+                        try (FileOutputStream fos = new FileOutputStream(dest)) {
+                            fos.write(fileBytes);
+                        }
+                    }
+                };
+
+                // upload
+                String uploadedFileName = mediaUploadService.uploadMedia(multipartFile);
+                String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+                uploadedUrls.add(fileUrl);
+                log.info("✅ Uploaded image: {}", fileUrl);
+
+            } catch (IllegalArgumentException e) {
+                log.error("❌ Invalid base64 image, skip", e);
+                uploadedUrls.add(null);
+            } catch (Exception e) {
+                log.error("❌ Error uploading image", e);
+                uploadedUrls.add(null);
+            }
+        }
+    }
+
+    // 4️⃣ copy uploadedUrls เข้า data
+    data.setImageList(uploadedUrls);
+    log.info("✅ imageList before checkStatusAuth: {}", data.getImageList());
+
+    // 5️⃣ เรียก Service
+    try {
+        response = stockService.auth(data, profile.getUserId(), profile.getUserName());
+    } catch (Exception e) {
+        log.error("Controller error", e);
+        response.setStatus("EE");
+        response.setMessage("Data Error Controller !!");
+    }
+
+    return ResponseEntity.ok(response);
+}
+
+
+
 
 
     @CrossOrigin(origins = "*")
@@ -481,15 +603,18 @@ public class StockProductController {
         }
         String userId = userProfiles.get(0).getUserName();
         String role = userProfiles.get(0).getRole();
-        Integer deId = stockItemDetailsEntity.getDetailId();
+        String userMission = userProfiles.get(0).getStaff_id();
         String billNo = stockItemDetailsEntity.getBillNo();
         String status = stockItemDetailsEntity.getStatus();
         String branchNo =userProfiles.get(0).getBranchNo();
         String borNo =userProfiles.get(0).getBorNo();
+        String startDate = stockItemDetailsEntity.getStartDate();
+        String endDate = stockItemDetailsEntity.getEndDate();
+
 
         try {
             log.info("branchNo:"+branchNo);
-            response = stockService.getRequestItem(billNo,role,userId,status,branchNo,borNo);
+            response = stockService.getRequestItem(billNo,role,userId,status,branchNo,borNo, userMission, startDate, endDate);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

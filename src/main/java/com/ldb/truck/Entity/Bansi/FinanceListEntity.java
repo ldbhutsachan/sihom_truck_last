@@ -23,6 +23,22 @@ public class FinanceListEntity {
     @JsonProperty("supplier_name")
     private String supplierName;
 
+    @Column(name = "big_project_id")
+    @JsonProperty("big_project_id")
+    private Integer bigProjectId;
+
+    @Column(name = "big_project")
+    @JsonProperty("big_project")
+    private String bigProject;
+
+    @Column(name = "small_project_id")
+    @JsonProperty("small_project_id")
+    private Integer smallProjectId;
+
+    @Column(name = "small_project")
+    @JsonProperty("small_project")
+    private String smallproject;
+
     @Column(name = "pay_type_id")
     @JsonProperty("pay_type_id")
     private String payTypeId;
@@ -75,9 +91,9 @@ public class FinanceListEntity {
     @JsonProperty("usd_price")
     private Double usdPrice;
 
-    @Column(name = "finance_approve_date")
-    @JsonProperty("finance_approve_date")
-    private String  financeApproveDate;
+    @Column(name = "basi_approve_date")
+    @JsonProperty("basi_approve_date")
+    private String  basiAapproveDate;
 
     @Column(name = "date_create")
     @JsonProperty("date_create")

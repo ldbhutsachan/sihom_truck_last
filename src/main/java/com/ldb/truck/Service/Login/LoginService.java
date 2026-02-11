@@ -93,6 +93,7 @@ public class LoginService {
             data.setStatus(listData.get(0).getStatus());
             data.setToKen(listData.get(0).getToKen());
             data.setDepartment(listData.get(0).getDepartment());
+            data.setDepartment1(listData.get(0).getDepartment1());
             data.setSprit_role(listData.get(0).getSprit_role());
             data.setBranchNo(listData.get(0).getBranchNo());
             data.setBranchName(listData.get(0).getBranchName());

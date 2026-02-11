@@ -22,6 +22,9 @@ public class StockItemAuthReq {
     String shopeId;
     String typeOfPay;
     String datePay;
+    String payStatus;
     String itemArriveDate;
+    String image;
+    private List<String> imageList; // <-- Base64 หลายไฟล์
     List<StockItemAuthModel> detailId;
 }

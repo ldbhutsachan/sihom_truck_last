@@ -1,5 +1,6 @@
 package com.ldb.truck.Model.Bansi;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.List;
@@ -21,7 +22,10 @@ public class PaymentDetailModel {
     private String remark;
     private String internalRemark;
     private String tag;
+
+    @JsonIgnore // ⬅️ จะไม่ส่ง field นี้ไป client
     private String file;
+    private List<String> fileList; // ใหม่: เก็บหลายไฟล์
     private Long   payId;
     private String paytype;
     private String type_of;
@@ -35,15 +39,12 @@ public class PaymentDetailModel {
     private String user;
     private String basi_approve_date;
     private String bansi_approveby;
-    private String account_approve_date;
-    private String account_approveby;
-//    private String final_approve_date;
-//    private String final_approveby;
     private String returnby;
     private String return_date;
     private String account_name;
     private String account_no;
     private String bank_name;
+    private String bank_lao_name;
     // add field for list
     private List<PaymentDetailListModel> listItems;
 }

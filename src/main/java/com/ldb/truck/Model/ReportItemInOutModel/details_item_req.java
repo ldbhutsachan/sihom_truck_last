@@ -19,4 +19,5 @@ public class details_item_req {
     String startDate;
     String endDate;
     String borNo;
+    String typeOfPay;
 }

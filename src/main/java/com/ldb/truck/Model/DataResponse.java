@@ -14,6 +14,7 @@ import lombok.EqualsAndHashCode;
         "status",
         "message",
         "dataResponse",
+        "sumFooter",
         "groupHeader"
 })
 @EqualsAndHashCode(callSuper = false)
@@ -25,6 +26,9 @@ public class DataResponse {
     private String message;
     @JsonProperty("dataResponse")
     private Object dataResponse;
+    @JsonProperty("sumFooter")
+    private Object sumFooter;
+
 
     @JsonProperty("groupHeader")
     private ItemGroupHeader groupHeader;

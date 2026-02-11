@@ -3,6 +3,7 @@ package com.ldb.truck.Entity.OrderItem;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 @Data
 @Entity
@@ -50,7 +51,9 @@ public class V_order_item_details {
     private String toKen;
 
     @Column(name = "total")
-    private Float total;
+//    private Float total;
+    private BigDecimal total;
+
 
     @Column(name = "amount")
     private Float amountCurrency;
@@ -146,8 +149,17 @@ public class V_order_item_details {
     @Column(name = "date_pay")
     private String datePay;
 
+    @Column(name = "pay_status", length = 200)
+    private String payStatus;
+
+    @Transient
+    private String NotiDatePayS;
+
     @Column(name = "item_arrive_date")
     private String itemArriveDate;
+
+    @Column(name = "imagefile")
+    private String imagefile;
 
     @Transient
     private String itemArriveStatus;

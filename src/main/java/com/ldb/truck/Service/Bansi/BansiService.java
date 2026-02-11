@@ -1,5 +1,6 @@
 package com.ldb.truck.Service.Bansi;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.Bansi.PaymentDetailDao;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
@@ -9,6 +10,8 @@ import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Repository.Bansi.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BansiService {
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     @Autowired
     private BansiRepository bansiRepository;  // ✅ ใช้ entity type จริง
     @Autowired
@@ -67,6 +74,8 @@ public class BansiService {
     private FinanceHisRepository financeHisRepository;
     @Autowired
     private FinancePayHisRepo financePayHisRepo;
+    @Autowired
+    private SupplierNotPayRepo supplierNotPayRepo;
 
 
 
@@ -438,24 +447,43 @@ public class BansiService {
         entity.setBillStatus("wait");
         entity.setBId(req.getB_id());
 
-        MultipartFile file = req.getFile();
-        if (file != null && !file.isEmpty()) {
-            // ✅ ใช้ service เดิมเพื่อให้ path เหมือนกับ saveMachine()
-            String uploadedFileName = mediaUploadService.uploadMedia(file);
-
-            // ✅ สร้าง URL สำหรับบันทึกใน DB
-            String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
-
-            // ✅ เซตค่าให้ entity
-            entity.setFile(fileUrl);
-
-            // ✅ log ตรวจสอบได้
-            log.info("Uploaded file successfully: {}", fileUrl);
+//        MultipartFile[] files = req.getFiles(); // รับหลายไฟล์จาก @RequestParam("files") MultipartFile[]
+//        List<String> fileUrls = new ArrayList<>();
+//
+//        if (files != null && files.length > 0) {
+//            for (MultipartFile file : files) {
+//                if (!file.isEmpty()) {
+//                    String uploadedFileName = mediaUploadService.uploadMedia(file);
+//                    String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+//                    fileUrls.add(fileUrl);
+//                }
+//            }
+//            // แปลง List เป็น JSON string
+//            ObjectMapper mapper = new ObjectMapper();
+//            String filesJson = mapper.writeValueAsString(fileUrls);
+//            entity.setFile(filesJson);
+//        } else {
+//            entity.setFile("[]"); // ไม่มีไฟล์
+//        }
+        MultipartFile[] files = req.getFile();
+        if (files != null && files.length > 0) {
+            List<String> fileUrls = new ArrayList<>();
+            for (MultipartFile f : files) {
+                if (!f.isEmpty()) {
+                    String uploadedFileName = mediaUploadService.uploadMedia(f);
+                    String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+                    fileUrls.add(fileUrl);
+                    log.info("Uploaded file successfully: {}", fileUrl);
+                }
+            }
+            // join เป็น string เดียวเก็บใน entity (ถ้าต้องการ)
+            entity.setFile(String.join(",", fileUrls));
         } else {
-            // ✅ กรณีไม่มีไฟล์ (optional)
-            log.warn("No file uploaded for payment detail.");
+            log.warn("No files uploaded for payment detail.");
             entity.setFile("http://khounkham.com/images/image.jpg");
         }
+
+
         // save main data
         PaymentRequestEntity saved = paymentRequestRepository.save(entity);
 
@@ -531,15 +559,45 @@ public class BansiService {
             entity.setDate(sdf.format(parsedDate));
         }
         //  Upload file (ใช้ service เดิม)
-        MultipartFile file = req.getFile();
-        if (file != null && !file.isEmpty()) {
-            String uploadedFileName = mediaUploadService.uploadMedia(file);
-            String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
-            entity.setFile(fileUrl);
-            log.info("✅ Updated file uploaded: {}", fileUrl);
+//        MultipartFile file = req.getFile();
+//        if (file != null && !file.isEmpty()) {
+//            String uploadedFileName = mediaUploadService.uploadMedia(file);
+//            String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+//            entity.setFile(fileUrl);
+//            log.info("✅ Updated file uploaded: {}", fileUrl);
+//        } else {
+//            log.info("ℹ️ No new file uploaded. Keep old file: {}", entity.getFile());
+//        }
+        // Upload files (ใช้ service เดิม แต่รองรับหลายไฟล์)
+        MultipartFile[] files = req.getFile(); // DTO ต้องมี getFiles()
+        if (files != null && files.length > 0) {
+            List<String> fileUrls = new ArrayList<>();
+
+            // ถ้า entity มีไฟล์เก่าอยู่แล้ว ให้เก็บไว้ก่อน
+            if (entity.getFile() != null && !entity.getFile().isEmpty()) {
+                // แยก string เดิมเป็น list
+                String[] existingFiles = entity.getFile().split(",");
+                fileUrls.addAll(Arrays.asList(existingFiles));
+            }
+
+            // upload ไฟล์ใหม่ทั้งหมด
+            for (MultipartFile f : files) {
+                if (!f.isEmpty()) {
+                    String uploadedFileName = mediaUploadService.uploadMedia(f);
+                    String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+                    fileUrls.add(fileUrl);
+                    log.info("✅ Uploaded new file: {}", fileUrl);
+                }
+            }
+
+            // เซตค่าไฟล์รวมทั้งหมดกลับไปที่ entity
+            entity.setFile(String.join(",", fileUrls));
+
         } else {
-            log.info("ℹ️ No new file uploaded. Keep old file: {}", entity.getFile());
+            log.info("ℹ️ No new files uploaded. Keep old files: {}", entity.getFile());
         }
+
+
         // save main data
         PaymentRequestEntity saved = paymentRequestRepository.save(entity);
 
@@ -606,6 +664,8 @@ public class BansiService {
         }
         // เรียก DAO พร้อม role + userId
         List<PaymentDetailModel> data = paymentDetailDao.findPaymentDetails(
+                req.getStartDate(),
+                req.getEndDate(),
                 req.getItemTypeid(),
                 req.getReq_id(),
                 req.getPid(),
@@ -647,21 +707,25 @@ public class BansiService {
         if (!"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             if ("wait".equals(status) && !"bansiapprove".equalsIgnoreCase(role)) {
                 throw new Exception("this user can't approve this bill: 'wait'");
-            } else if ("wait-finance".equals(status) && !"superaccount".equalsIgnoreCase(role)) {
-                throw new Exception("this user can't approve this bill: 'wait-finance'");
             }
+//            else if ("wait-finance".equals(status) && !"superaccount".equalsIgnoreCase(role)) {
+//                throw new Exception("this user can't approve this bill: 'wait-finance'");
+//            }
         }
 
         // อนุมัติขั้นต่อไป
         if ("wait".equals(status) || "".equals(status)) {
             entity.setBasiApproveDate(now);
             entity.setBansiApproveBy(approveBy);
-            entity.setBillStatus("wait-finance");
-        } else if ("wait-finance".equals(status)) {
-            entity.setAccountApproveDate(now);
-            entity.setAccountApproveBy(approveBy);
             entity.setBillStatus("ok");
-        }else if ("ok".equals(status)) {
+//            entity.setBillStatus("wait-finance");
+        }
+//        else if ("wait-finance".equals(status)) {
+//            entity.setAccountApproveDate(now);
+//            entity.setAccountApproveBy(approveBy);
+//            entity.setBillStatus("ok");
+//        }
+        else if ("ok".equals(status)) {
             throw new Exception("this bill has done approving (status = ok).");
         } else {
             throw new Exception("the bill_status is incorrect : " + status);
@@ -929,7 +993,8 @@ public class BansiService {
         boolean isAllowed =
                 "SUPERBANSI".equalsIgnoreCase(role) ||
                         "SUPERACCOUNT".equalsIgnoreCase(role) ||
-                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role);
+                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)||
+                        "BANSIAPPROVE".equalsIgnoreCase(role);
 
         if (!isAllowed) {
             result.setStatus("02");
@@ -1104,6 +1169,8 @@ public class BansiService {
             existing.setAccountName(bankEntity.getAccountName());
             existing.setAccountNo(bankEntity.getAccountNo());
             existing.setBankName(bankEntity.getBankName());
+            existing.setBankNameLao(bankEntity.getBankNameLao());
+            existing.setBankGroup(bankEntity.getBankGroup());
             existing.setDateCreate(LocalDateTime.now());
             existing.setUserId(userId);
 
@@ -1147,7 +1214,20 @@ public class BansiService {
                 return response;
             }
 
-            List<BankEntity> list = bankRepository.findAll();
+            String bankGroup = bankEntity.getBankGroup();
+
+            List<BankEntity> list;
+
+            if (bankGroup == null || bankGroup.trim().isEmpty()
+                    || "ALL".equalsIgnoreCase(bankGroup)) {
+
+                list = bankRepository.findAll();
+
+            } else {
+                // OUR / THEIR
+                list = bankRepository.findByBankGroupIgnoreCase(bankGroup);
+            }
+
 
             response.setStatus("00");
             response.setMessage("Success showing Data");
@@ -1179,7 +1259,7 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1254,7 +1334,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
     Profile user = profileList.get(0);
 
     // 2. Check role
-    List<String> allowedRoles = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+    List<String> allowedRoles = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
     if (!allowedRoles.contains(user.getRole().toUpperCase())) {
         response.setStatus("01");
         response.setMessage("No permission to insert finance");
@@ -1351,19 +1431,26 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         // ===============================
         // 7. Insert tb_finance_pay (HISTORY)
-        if (req.getBillList() != null && !req.getBillList().isEmpty()) {
+        // ===============================
+        if (!"SUPERBANSI".equalsIgnoreCase(user.getRole())
+                && !"SUPERACCOUNT".equalsIgnoreCase(user.getRole())
+                && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
 
-            List<FinanceHisEntity> payHisList = new ArrayList<>();
+            if (req.getBillList() != null && !req.getBillList().isEmpty()) {
+
+                List<FinanceHisEntity> payHisList = new ArrayList<>();
 
                 FinanceHisEntity h = new FinanceHisEntity();
                 h.setFinanceBill(financeBill);
                 h.setPayAmount(pay);
                 h.setDatePay(req.getFirstDatePay());
                 h.setCreateDate(LocalDateTime.now());
-                payHisList.add(h);
 
-            financeHisRepository.saveAll(payHisList);
+                payHisList.add(h);
+                financeHisRepository.saveAll(payHisList);
+            }
         }
+
 
         response.setStatus("00");
         response.setMessage("Finance saved successfully");
@@ -1491,10 +1578,13 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
             if (finance.getPay1().compareTo(amountMustPay) >= 0) {
                 finance.setPayStatus("DONE");
+                //save date when doen paying
+                finance.setDoneDate(LocalDateTime.now());
             } else {
                 finance.setPayStatus("IN-PROGRESS");
             }
-
+            finance.setApproveby(user.getUserName());
+            finance.setApproveDate(LocalDateTime.now());
 
             FinanceEntity updatedFinance = financeRepository.save(finance);
 
@@ -1552,7 +1642,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1592,13 +1682,28 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 map.put("payStatus", first.getPayStatus());
                 map.put("currency", first.getCurrency());
                 map.put("createBy", first.getCreateBy());
-                map.put("token", first.getToken());
-
+                map.put(("create_date"),first.getCreateDate());
                 // รวม billNo เป็น list
-                List<String> billNos = list.stream()
-                        .map(FinanceViewDto::getBillNo)
+//                List<String> billNos = list.stream()
+//                        .map(FinanceViewDto::getBillNo)
+//                        .collect(Collectors.toList());
+//                map.put("billNos", billNos);
+                List<Map<String, Object>> billNos = list.stream()
+                        .map(item -> {
+                            Map<String, Object> billMap = new HashMap<>();
+                            billMap.put("billNo", item.getBillNo());
+                            billMap.put("bigProjectName", item.getBigProjectName());
+                            billMap.put("smallProjectName", item.getSmallProjectName());
+                            billMap.put("payType", item.getPayType());
+                            billMap.put("bankNo", item.getBankNo());
+                            billMap.put("bankEnglishName", item.getBankEnglishName());
+                            billMap.put("title",item.getTitle());
+                            return billMap;
+                        })
                         .collect(Collectors.toList());
+
                 map.put("billNos", billNos);
+
 
                 // คำนวณ paidTotal และ amountNotPayYet
                 double paidTotal = first.getPay1() ;
@@ -1674,6 +1779,282 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         return response;  // return response ทั้งกรณี success และ error
     }
+
+
+    // supplier not pay
+    public DataResponse searchSupplierNotPay(SupplierNotPayReq req) {
+        DataResponse response = new DataResponse();
+
+        try {
+            // =========================
+            // 1) Validate token
+            // =========================
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToken());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+
+            // =========================
+            // 2) Validate role
+            // =========================
+            String role = user.getRole() == null ? "" : user.getRole().toUpperCase();
+            List<String> allowedRoles = Arrays.asList(
+                    "SUPERACCOUNT",
+                    "FOR_DOCUMENT_ADMIN",
+                    "SUPERBANSI",
+                    "BANSIAPPROVE"
+            );
+
+            if (!allowedRoles.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("No right to fetch data");
+                return response;
+            }
+
+            // =========================
+            // 3) Get finance bills (flat)
+            // =========================
+            List<SupplierNotPayDto> flatList =
+                    supplierNotPayRepo.findSupplierNotPay(
+                            req.getStartDate(),
+                            req.getEndDate(),
+                            req.getTypeOf(),
+                            req.getSupplierId(),
+                            req.getShow()
+                    );
+
+            Map<Long, SupplierNotPayNestedDto> supplierMap = new LinkedHashMap<>();
+
+            // =========================
+            // 4) Build supplier + financeBills
+            // =========================
+            for (SupplierNotPayDto row : flatList) {
+                Long supplierId = row.getSupplierId();
+                SupplierNotPayNestedDto supplier = supplierMap.get(supplierId);
+
+                if (supplier == null) {
+                    supplier = new SupplierNotPayNestedDto();
+                    supplier.setKeyId(row.getKeyId());
+                    supplier.setSupplierId(supplierId);
+                    supplier.setSupplierName(row.getSupplierName());
+                    supplierMap.put(supplierId, supplier);
+                }
+
+                String financeBillStr = row.getFinanceBill();
+
+                Optional<FinanceBillDto> fbOpt = supplier.getFinanceBills()
+                        .stream()
+                        .filter(fb -> fb.getFinanceBill().equals(financeBillStr))
+                        .findFirst();
+
+                FinanceBillDto financeBillDto;
+
+                if (fbOpt.isPresent()) {
+                    financeBillDto = fbOpt.get();
+                } else {
+                    financeBillDto = new FinanceBillDto();
+                    financeBillDto.setFinanceBill(financeBillStr);
+                    financeBillDto.setAmountMustPay(row.getAmountMustPay());
+                    financeBillDto.setPaid(row.getPaid());
+                    financeBillDto.setDateCreate(row.getCreateDate());
+                    financeBillDto.setNextDatePay(row.getNextDatePay());
+                    financeBillDto.setPayStatus(row.getPayStatus());
+                    financeBillDto.setCurrency(row.getCurrency());
+                    financeBillDto.setTypeOf(row.getTypeOf());
+
+                    supplier.getFinanceBills().add(financeBillDto);
+                }
+
+                BillNoDetailDto bill = new BillNoDetailDto();
+                bill.setBillNo(row.getBillNo());
+                bill.setBigProject(row.getBigProject());
+                bill.setSmallProject(row.getSmallProject());
+                bill.setTypePay(row.getTypePay());
+                bill.setBankName(row.getBankName());
+                bill.setBankNo(row.getBankNo());
+                bill.setTitle(row.getTitle());
+
+                financeBillDto.getBillNos().add(bill);
+
+            }
+
+            // =========================
+            // 5) Calculate summary from financeBills
+            // =========================
+            for (SupplierNotPayNestedDto supplier : supplierMap.values()) {
+                // reset summary
+                supplier.getPAY().setSumMustPayLAK(BigDecimal.ZERO);
+                supplier.getPAY().setSumMustPayTHB(BigDecimal.ZERO);
+                supplier.getPAY().setSumMustPayUSD(BigDecimal.ZERO);
+                supplier.getPAY().setSumPayLAK(BigDecimal.ZERO);
+                supplier.getPAY().setSumPayTHB(BigDecimal.ZERO);
+                supplier.getPAY().setSumPayUSD(BigDecimal.ZERO);
+
+                supplier.getRECEIVE().setSumMustPayLAK(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumMustPayTHB(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumMustPayUSD(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumPayLAK(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumPayTHB(BigDecimal.ZERO);
+                supplier.getRECEIVE().setSumPayUSD(BigDecimal.ZERO);
+
+                for (FinanceBillDto fb : supplier.getFinanceBills()) {
+                    CurrencySummaryDto summary = "PAY".equalsIgnoreCase(fb.getTypeOf())
+                            ? supplier.getPAY()
+                            : supplier.getRECEIVE();
+
+                    if ("LAK".equalsIgnoreCase(fb.getCurrency())) {
+                        summary.setSumMustPayLAK(summary.getSumMustPayLAK().add(fb.getAmountMustPay()));
+                        summary.setSumPayLAK(summary.getSumPayLAK().add(fb.getPaid()));
+                    } else if ("THB".equalsIgnoreCase(fb.getCurrency())) {
+                        summary.setSumMustPayTHB(summary.getSumMustPayTHB().add(fb.getAmountMustPay()));
+                        summary.setSumPayTHB(summary.getSumPayTHB().add(fb.getPaid()));
+                    } else if ("USD".equalsIgnoreCase(fb.getCurrency())) {
+                        summary.setSumMustPayUSD(summary.getSumMustPayUSD().add(fb.getAmountMustPay()));
+                        summary.setSumPayUSD(summary.getSumPayUSD().add(fb.getPaid()));
+                    }
+                }
+
+                // calculate nextPay for each summary
+                supplier.getPAY().calculateNextPay();
+                supplier.getRECEIVE().calculateNextPay();
+            }
+
+            // =========================
+            // 6) Calculate sumFooter
+            // =========================
+            Map<String, CurrencySummaryDto> sumFooterMap = new HashMap<>();
+            CurrencySummaryDto payFooter = new CurrencySummaryDto();
+            CurrencySummaryDto receiveFooter = new CurrencySummaryDto();
+
+            for (SupplierNotPayNestedDto supplier : supplierMap.values()) {
+                // SUM PAY
+                payFooter.setSumPayLAK(payFooter.getSumPayLAK().add(supplier.getPAY().getSumPayLAK()));
+                payFooter.setSumPayTHB(payFooter.getSumPayTHB().add(supplier.getPAY().getSumPayTHB()));
+                payFooter.setSumPayUSD(payFooter.getSumPayUSD().add(supplier.getPAY().getSumPayUSD()));
+
+                // SUM RECEIVE
+                receiveFooter.setSumPayLAK(receiveFooter.getSumPayLAK().add(supplier.getRECEIVE().getSumPayLAK()));
+                receiveFooter.setSumPayTHB(receiveFooter.getSumPayTHB().add(supplier.getRECEIVE().getSumPayTHB()));
+                receiveFooter.setSumPayUSD(receiveFooter.getSumPayUSD().add(supplier.getRECEIVE().getSumPayUSD()));
+            }
+
+// สร้าง sumFooter structure
+            Map<String, Object> sumFooter = new HashMap<>();
+            sumFooter.put("pay", Map.of(
+                    "amountPayLAK", payFooter.getSumPayLAK(),
+                    "amountPayTHB", payFooter.getSumPayTHB(),
+                    "amountPayUSD", payFooter.getSumPayUSD()
+            ));
+            sumFooter.put("receive", Map.of(
+                    "amountPayLAK", receiveFooter.getSumPayLAK(),
+                    "amountPayTHB", receiveFooter.getSumPayTHB(),
+                    "amountPayUSD", receiveFooter.getSumPayUSD()
+            ));
+            response.setStatus("00");
+            response.setMessage("Success showing Supplier Not Pay Data");
+            response.setDataResponse(new ArrayList<>(supplierMap.values()));
+            response.setSumFooter(List.of(sumFooter)); // ใส่ sumFooter ใน field ที่เป็น List<Map<String,Object>>
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error retrieving Supplier Not Pay Data");
+        }
+
+        return response;
+    }
+
+
+    public DataResponse getAccountingWaitCount(FinanceViewDto financeViewDto) {
+        DataResponse response = new DataResponse();
+        AccountingWaitCountRes result = new AccountingWaitCountRes();
+
+        try {
+            // 1) ตรวจสอบ token และ role
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(financeViewDto.getToken());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            List<String> allowed = Arrays.asList("SUPERACCOUNT", "SUPERBANSI", "BANSIAPPROVE","FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(user.getRole().toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No right to fetch data");
+                return response;
+            }
+
+            // --- Query 1 : v_accounting_report ---
+            String sql1 =
+                    "SELECT " +
+                            " SUM(CASE WHEN type_of = 'PAY' AND bill_status = 'wait' THEN 1 ELSE 0 END) AS pay_wait_count, " +
+                            " SUM(CASE WHEN type_of = 'RECEIVE' AND bill_status = 'wait' THEN 1 ELSE 0 END) AS receive_wait_count " +
+                            "FROM v_accounting_report";
+
+            List<AccountingWaitCountRes> list1 = jdbcTemplate.query(sql1, (rs, rowNum) -> {
+                AccountingWaitCountRes res = new AccountingWaitCountRes();
+                res.setAccountBillPayWait(rs.getInt("pay_wait_count"));
+                res.setAccountbillReceiveWait(rs.getInt("receive_wait_count"));
+                return res;
+            });
+
+            if (!list1.isEmpty()) {
+                result.setAccountBillPayWait(list1.get(0).getAccountBillPayWait());
+                result.setAccountbillReceiveWait(list1.get(0).getAccountbillReceiveWait());
+            }
+
+            // --- Query 2 : tb_finance ---
+            String sql2 =
+                    "SELECT " +
+                            " SUM(CASE WHEN TRIM(UPPER(pay_status)) = 'IN-PROGRESS' " +
+                            "  AND TRIM(UPPER(type_of)) = 'RECEIVE' THEN 1 ELSE 0 END) AS in_progress_receive, " +
+                            " SUM(CASE WHEN TRIM(UPPER(pay_status)) = 'IN-PROGRESS' " +
+                            "  AND TRIM(UPPER(type_of)) = 'PAY' THEN 1 ELSE 0 END) AS in_progress_pay " +
+                            "FROM tb_finance";
+
+            AccountingWaitCountRes financeCount =
+                    jdbcTemplate.queryForObject(sql2, (rs, rowNum) -> {
+                        AccountingWaitCountRes r = new AccountingWaitCountRes();
+                        r.setFinanceBillInProgressReceive(rs.getInt("in_progress_receive"));
+                        r.setFinanceBillInProgressPay(rs.getInt("in_progress_pay"));
+                        return r;
+                    });
+
+            if (financeCount != null) {
+                result.setFinanceBillInProgressReceive(financeCount.getFinanceBillInProgressReceive());
+                result.setFinanceBillInProgressPay(financeCount.getFinanceBillInProgressPay());
+            }
+
+
+            log.info(sql1);
+            log.info(sql2);
+            // --- set result ลง response ---
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(result);
+
+        } catch (Exception e) {
+            log.error("Error getAccountingWaitCount", e);
+            response.setStatus("99");
+            response.setMessage("Exception: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+
+
+
+
+
+
 
 
 

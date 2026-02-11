@@ -4,6 +4,7 @@ import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.Brand.BrandEntity;
 import com.ldb.truck.Entity.Brand.BrandReq;
 import com.ldb.truck.Entity.Item.ItemEntity;
+import com.ldb.truck.Entity.Item.listItemEntity;
 import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Entity.ItemType.ItemTypeEntity;
 import com.ldb.truck.Entity.PlaceStock.PlaceStockEntity;
@@ -147,11 +148,14 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
         String role = userProfiles.get(0).getRole();
 
         // ✅ ถ้า role เป็น SUPERBANSI ให้ใส่ค่า "1"
-        if ("SUPERBANSI".equalsIgnoreCase(role)) {
+        if ("SUPERBANSI".equalsIgnoreCase(role)
+                || "SUPERACCOUNT".equalsIgnoreCase(role)
+                || "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             itemTypeEntity.setBansiUse("1");
         } else {
             itemTypeEntity.setBansiUse("");
         }
+
 
         // ✅ บันทึกข้อมูล
         response = itemTypeService.saveItemType(itemTypeEntity);
@@ -259,6 +263,7 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
             String branchNo = userProfiles.get(0).getBranchNo();
             String borNo = userProfiles.get(0).getBorNo();
             String borNoForAdmin = brandReq.getBorNo();
+            String umission = userProfiles.get(0).getStaff_id();
 
             PlaceStockEntityReq reqBody = new PlaceStockEntityReq();
             reqBody.setRole(role);
@@ -271,8 +276,9 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
 //            else {
 //                reqBody.setBrandNo(branchNo);
 //            }
+
             reqBody.setBorNo(borNo);
-            response = placeStockService.getPlaceStockHouse(reqBody,borNoForAdmin);
+            response = placeStockService.getPlaceStockHouse(reqBody,borNoForAdmin,umission);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -394,7 +400,7 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
 
     @CrossOrigin(origins = "*")
 @PostMapping("/getItemList.service")
-public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
+public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
     DataResponse response  = new DataResponse();
     try {
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());

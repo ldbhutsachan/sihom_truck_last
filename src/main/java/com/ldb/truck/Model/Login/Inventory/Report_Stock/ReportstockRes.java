@@ -16,7 +16,8 @@ import java.util.List;
 public class ReportstockRes {
     private String status;
     private String message;
-    private List<ReportstockModel> data;
+//    private List<ReportstockModel> data;
+    private List<ReportStockGroupRes> data;
     private sumFooterGroup sumFooter;
     private sumFooterGroup2 sumFooter2;
 }

@@ -10,8 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReportstockReq {
-    private String startDate;
-    private String endDate;
+    private String startDateItemIn_out;
+    private String endDateItemIn_out;
     private String item_id;
     private String toKen;
     private String branch;

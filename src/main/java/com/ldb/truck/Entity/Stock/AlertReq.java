@@ -11,6 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AlertReq {
     private String toKen;
-    private String branchNo;
+    private String borNo;
     private String role;
 }

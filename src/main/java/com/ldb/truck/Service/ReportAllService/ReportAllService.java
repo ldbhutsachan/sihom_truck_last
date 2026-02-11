@@ -3,6 +3,7 @@ package com.ldb.truck.Service.ReportAllService;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.ReportAllDao.ReportAllServiceDao;
 import com.ldb.truck.Entity.Stock.StockRequest;
+import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.ForShowTotalOil.ForShowTotalOilPaid;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.*;
@@ -288,104 +289,152 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
 //    }
 
     public ReportAllStockInOutRes getReportDetailDailyStock(
-            ReportItemInOutModelReq stockRequest, String role, String borNo, String borNoss) {
+            ReportItemInOutModelReq stockRequest,
+            String role,
+            String borNo,
+            String borNoss) {
 
         ReportAllStockInOutRes response = new ReportAllStockInOutRes();
+
         try {
-            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo, borNoss);
+            List<ReportAllStockInOut> rsListData =
+                    reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo, borNoss);
 
-            if (!rsListData.isEmpty()) {
-
-                // จัดกลุ่มตาม itemId
-//                Map<String, List<ReportAllStockInOut>> groupedMap =
-//                        rsListData.stream().collect(Collectors.groupingBy(ReportAllStockInOut::getItemId));
-                Map<String, List<ReportAllStockInOut>> groupedMap =
-                        rsListData.stream()
-                                .collect(Collectors.groupingBy(
-                                        ReportAllStockInOut::getItemId,
-                                        LinkedHashMap::new,
-                                        Collectors.toList()
-                                ));
-
-
-                List<ReportAllStockGroup> groupedList = new ArrayList<>();
-
-                for (Map.Entry<String, List<ReportAllStockInOut>> entry : groupedMap.entrySet()) {
-                    List<ReportAllStockInOut> groupItems = entry.getValue();
-
-                    // คำนวณยอดรวมในกลุ่ม
-                    int totalIn = groupItems.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
-                    int totalOut = groupItems.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
-                    int totalClosing = groupItems.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
-                    int totalRaised = groupItems.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
-                    double outPrice = groupItems.stream().mapToDouble(item -> item.getPrice() * item.getOutAmt()).sum();
-
-                    // ดึงข้อมูลพื้นฐานจากรายการแรก
-                    ReportAllStockInOut first = groupItems.get(0);
-
-                    // ดึงรายการที่ dateOut มากที่สุด
-                    ReportAllStockInOut last = groupItems.stream()
-                            .max(Comparator.comparing(ReportAllStockInOut::getDateOut))
-                            .orElse(first);
-
-                    ReportAllStockGroup group = new ReportAllStockGroup();
-                    group.setItemId(first.getItemId());
-                    group.setImage(first.getImage());
-                    group.setItemName(first.getItemName());
-                    group.setUnit(first.getUnit());
-                    group.setPrice(first.getPrice());
-                    group.setOutprice(outPrice);
-                    group.setCurrency(first.getCurrency());
-                    group.setRaisedAmt(totalRaised);
-                    group.setInAmt(totalIn);
-                    group.setOutAmt(totalOut);
-                    group.setClosingAmt(totalClosing);
-                    group.setBorkey(first.getBorkey());
-                    group.setBorname(first.getBorname());
-                    group.setHouseNo(first.getHouseNo());
-                    group.setHouseName(first.getHouseName());
-                    group.setGroupList(groupItems);
-                    // ✅ ตั้งค่า dateOut ของกลุ่ม
-                    group.setFirstDateOut(first.getDateOut());
-                    group.setLastDateOut(last.getDateOut());
-
-                    groupedList.add(group);
-                }
-
-                // ✅ คำนวณ sumReport ทั้งหมดจาก groupedList
-                SumReportAll sumReport = new SumReportAll();
-                sumReport.setTotalRaised(groupedList.stream().mapToInt(ReportAllStockGroup::getRaisedAmt).sum());
-                sumReport.setTotalIn(groupedList.stream().mapToInt(ReportAllStockGroup::getInAmt).sum());
-                sumReport.setTotalOut(groupedList.stream().mapToInt(ReportAllStockGroup::getOutAmt).sum());
-                sumReport.setTotalClosing(groupedList.stream().mapToInt(ReportAllStockGroup::getClosingAmt).sum());
-
-// แยกตาม currency
-                sumReport.setTotalOutPriceUSD(groupedList.stream()
-                        .filter(g -> "USD".equalsIgnoreCase(g.getCurrency()))
-                        .mapToDouble(ReportAllStockGroup::getOutprice)
-                        .sum());
-
-                sumReport.setTotalOutPriceLAK(groupedList.stream()
-                        .filter(g -> "LAK".equalsIgnoreCase(g.getCurrency()))
-                        .mapToDouble(ReportAllStockGroup::getOutprice)
-                        .sum());
-
-                sumReport.setTotalOutPriceTHB(groupedList.stream()
-                        .filter(g -> "THB".equalsIgnoreCase(g.getCurrency()))
-                        .mapToDouble(ReportAllStockGroup::getOutprice)
-                        .sum());
-
-
-                // เซ็ต response
-                response.setStatus("00");
-                response.setMessage("Success");
-                response.setData(groupedList);
-                response.setSumReport(sumReport); // ✅ ใส่ sumReport
-
-            } else {
+            if (rsListData == null || rsListData.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("Data Not Found !!");
+                return response;
             }
+
+            // ===============================
+            // GROUP BY itemId (keep order)
+            // ===============================
+            Map<String, List<ReportAllStockInOut>> groupedMap =
+                    rsListData.stream()
+                            .collect(Collectors.groupingBy(
+                                    ReportAllStockInOut::getItemId,
+                                    LinkedHashMap::new,
+                                    Collectors.toList()
+                            ));
+
+            List<ReportAllStockGroup> groupedList = new ArrayList<>();
+
+            for (Map.Entry<String, List<ReportAllStockInOut>> entry : groupedMap.entrySet()) {
+
+                List<ReportAllStockInOut> groupItems = entry.getValue();
+
+                // ===============================
+                // FIX dateIn / dateOut per row
+                // ===============================
+                for (ReportAllStockInOut item : groupItems) {
+
+                    if (item.getOutAmt() <= 0) {
+                        item.setDateOut("");
+                    }
+
+                    if (item.getInAmt() <= 0) {
+                        item.setDateIn("");
+                    }
+                }
+
+                // ===============================
+                // CALCULATE TOTAL
+                // ===============================
+                int totalIn = groupItems.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
+                int totalOut = groupItems.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
+//                int totalClosing = groupItems.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
+//                int totalRaised = groupItems.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
+                int totalRaised = groupItems.get(0).getRaisedAmt();           // opening
+                int totalClosing = groupItems.get(groupItems.size() - 1)
+                        .getClosingAmt();              // closing
+
+                double outPrice = groupItems.stream()
+                        .mapToDouble(i -> i.getPrice() * i.getOutAmt())
+                        .sum();
+
+                // ===============================
+                // BASE INFO
+                // ===============================
+                ReportAllStockInOut first = groupItems.get(0);
+
+                ReportAllStockInOut lastOutDate = groupItems.stream()
+                        .filter(i -> i.getOutAmt() > 0 && i.getDateOut() != null && !i.getDateOut().isEmpty())
+                        .max(Comparator.comparing(ReportAllStockInOut::getDateOut))
+                        .orElse(null);
+
+                ReportAllStockGroup group = new ReportAllStockGroup();
+                group.setItemId(first.getItemId());
+                group.setImage(first.getImage());
+                group.setItemName(first.getItemName());
+                group.setUnit(first.getUnit());
+                group.setPrice(first.getPrice());
+                group.setOutprice(outPrice);
+                group.setCurrency(first.getCurrency());
+                group.setRaisedAmt(totalRaised);
+                group.setInAmt(totalIn);
+                group.setOutAmt(totalOut);
+                group.setClosingAmt(totalClosing);
+                group.setBorkey(first.getBorkey());
+                group.setBorname(first.getBorname());
+                group.setHouseNo(first.getHouseNo());
+                group.setHouseName(first.getHouseName());
+
+                // ===============================
+                // SET dateOut (GROUP LEVEL)
+                // ===============================
+                if (totalOut <= 0) {
+                    group.setFirstDateOut("");
+                    group.setLastDateOut("");
+                } else {
+                    group.setFirstDateOut(first.getDateOut());
+                    group.setLastDateOut(lastOutDate != null ? lastOutDate.getDateOut() : "");
+                }
+
+                // ===============================
+                // SET groupList
+                // ===============================
+                group.setGroupList(groupItems);
+
+                groupedList.add(group);
+            }
+
+            // ===============================
+            // SUMMARY REPORT
+            // ===============================
+            SumReportAll sumReport = new SumReportAll();
+            sumReport.setTotalRaised(groupedList.stream().mapToInt(ReportAllStockGroup::getRaisedAmt).sum());
+            sumReport.setTotalIn(groupedList.stream().mapToInt(ReportAllStockGroup::getInAmt).sum());
+            sumReport.setTotalOut(groupedList.stream().mapToInt(ReportAllStockGroup::getOutAmt).sum());
+            sumReport.setTotalClosing(groupedList.stream().mapToInt(ReportAllStockGroup::getClosingAmt).sum());
+
+            sumReport.setTotalOutPriceUSD(
+                    groupedList.stream()
+                            .filter(g -> "USD".equalsIgnoreCase(g.getCurrency()))
+                            .mapToDouble(ReportAllStockGroup::getOutprice)
+                            .sum()
+            );
+
+            sumReport.setTotalOutPriceLAK(
+                    groupedList.stream()
+                            .filter(g -> "LAK".equalsIgnoreCase(g.getCurrency()))
+                            .mapToDouble(ReportAllStockGroup::getOutprice)
+                            .sum()
+            );
+
+            sumReport.setTotalOutPriceTHB(
+                    groupedList.stream()
+                            .filter(g -> "THB".equalsIgnoreCase(g.getCurrency()))
+                            .mapToDouble(ReportAllStockGroup::getOutprice)
+                            .sum()
+            );
+
+            // ===============================
+            // RESPONSE
+            // ===============================
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setData(groupedList);
+            response.setSumReport(sumReport);
 
         } catch (Exception e) {
             log.error("Error in getReportDetailDailyStock", e);
@@ -396,40 +445,41 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
         return response;
     }
 
+    //service report itemhis
+    public DataResponse getReportItemHis(
+            ReportItemInOutModelReq stockRequest,
+            String role,
+            String borNo,
+            String borNoss,
+            String umission) {
 
+        DataResponse response = new DataResponse();
 
-    public ReportItemInOutModelResponse getTxnStock(ReportItemInOutModelReq stockRequest){
-//update
-        ReportItemInOutModelResponse resposne = new ReportItemInOutModelResponse();
-        List<ReportAllStock> listData = new ArrayList<>();
         try {
-            listData = reportStaffServiceDao.getTxnStock(stockRequest);
-            if(listData.size() > 0){
-                double sumRaisedAmt =  listData.stream().map(ReportAllStock::getTotal).collect(Collectors.summingInt(Integer::intValue));
-                double sumInAmt =  listData.stream().map(ReportAllStock::getAmtIn).collect(Collectors.summingInt(Integer::intValue));
-                double sumOutAmt =  listData.stream().map(ReportAllStock::getAmtOut).collect(Collectors.summingInt(Integer::intValue));
-                double sumAmt =  listData.stream().map(ReportAllStock::getAmt).collect(Collectors.summingInt(Integer::intValue));
-                double sumAmount =  listData.stream().map(ReportAllStock::getPrice).collect(Collectors.summingDouble(Double::doubleValue));
-                double sumAmountIn =  listData.stream().map(ReportAllStock::getPriceIn).collect(Collectors.summingDouble(Double::doubleValue));
-                double sumAmountOut =  listData.stream().map(ReportAllStock::getPriceOut).collect(Collectors.summingDouble(Double::doubleValue));
-                resposne.setDataResponse(listData);
-                resposne.setSumRaisedAmt(sumRaisedAmt);
-                resposne.setSumInAmt(sumInAmt);
-                resposne.setSumOutAmt(sumOutAmt);
-                resposne.setSumAmt(sumAmt);
-                resposne.setSumPrice(sumAmount);
-                resposne.setSumPriceIn(sumAmountIn);
-                resposne.setSumPriceOut(sumAmountOut);
-                return resposne;
+            List<ItemHisModel> rsListData =
+                    reportStaffServiceDao.getReportItemHis(
+                            stockRequest, role, borNo, borNoss, umission);
+
+            if (rsListData == null || rsListData.isEmpty()) {
+                response.setStatus("00");
+                response.setMessage("Data Not Found !!");
+                response.setDataResponse(Collections.emptyList());
+                return response;
             }
-            resposne.setStatus("00");
-            resposne.setMessage("Data Not Found !!");
-        }catch (Exception e){
-            resposne.setStatus("EE");
-            resposne.setMessage("Error Data !!!");
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(rsListData);
+
+        } catch (Exception e) {
+            log.error("Error in getReportItemHis", e);
+            response.setStatus("EE");
+            response.setMessage("Error Data !!!");
         }
-        return resposne;
-}
+
+        return response;
+    }
+
+
 
 
 }

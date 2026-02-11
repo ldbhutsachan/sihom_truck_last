@@ -89,4 +89,11 @@ public class RequestItemEbtity {
 
     @Column(name = "using_by", length = 200)
     private String usingBy;
+
+    @Transient
+    private String startDate;
+
+    @Transient
+    private String endDate;
+
 }

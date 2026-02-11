@@ -1,7 +1,9 @@
 package com.ldb.truck.Model.Bansi;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class AccountingReportModel {
@@ -11,6 +13,8 @@ public class AccountingReportModel {
     private Integer bansiId;
 
     private Date date_create;
+
+    private Date basi_approve_date;
 
     private Integer bigProjectId;
 
@@ -34,8 +38,6 @@ public class AccountingReportModel {
 
     private String exchangeRate;
 
-    private Date date;
-
     private Date datermineDate;
 
     private String referenceNumber;
@@ -48,7 +50,9 @@ public class AccountingReportModel {
 
     private String tag;
 
+    @JsonIgnore // ⬅️ จะไม่ส่ง field นี้ไป client
     private String file;
+    private List<String> fileList; // ใหม่: เก็บหลายไฟล์
 
     private String billNo;
 

@@ -32,6 +32,12 @@ public class BankEntity {
     @Column(name = "user_id")
     private String userId;
 
+    @Column(name ="bank_name_lao")
+    private String bankNameLao;
+
+    @Column(name ="bank_group")
+    private String bankGroup;
+
     @Transient
     private String toKen; // สำหรับส่ง token จาก client
 

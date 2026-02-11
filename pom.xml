@@ -26,6 +26,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jersey</artifactId>
+            <scope>compile</scope> <!-- สำคัญ: ต้องเป็น compile เพื่อใช้จริงใน Controller -->
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.jboss.resteasy/resteasy-jaxrs -->
         <dependency>

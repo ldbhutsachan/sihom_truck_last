@@ -1,14 +1,18 @@
 package com.ldb.truck.Service.StockService;
 
 import com.ldb.truck.Dao.ItemList.ItemListModel;
+import com.ldb.truck.Dao.ItemList.modelItemList;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.Item.ItemEntity;
+import com.ldb.truck.Entity.Item.ItemListView;
+import com.ldb.truck.Entity.Item.listItemEntity;
 import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.ItemGroupHeader;
 import com.ldb.truck.Model.ItemSearch.ViewItemInventoryReq;
 import com.ldb.truck.Repository.ItemEntityRepository;
 import com.ldb.truck.Repository.ViewItemEntityRepository;
+import com.ldb.truck.Repository.testRepository.ItemListRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,8 @@ public class ItemServiceImpl {
     ViewItemEntityRepository viewItemEntityRepository;
     @Autowired
     ItemEntityRepository itemEntityRepository;
+    @Autowired
+    ItemListRepository itemListRepository;
 
     @Autowired
     ProfileDao profileDao;
@@ -66,6 +72,8 @@ public class ItemServiceImpl {
                         req.getEndDate()
                 );
             }
+            // ================= LOG RESULT SIZE =================
+            log.info("Result size = {}", rspList.size());
 
             if (!rspList.isEmpty()) {
                 for (viewItemEntity item : rspList) {
@@ -100,47 +108,97 @@ public class ItemServiceImpl {
     }
 
 
-    public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
+//    public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
+//    log.info("role:" + role);
+//    log.info("userName:" + userName);
+//    log.info("branchNo:" + branchNo);
+//    log.info("borNo:" + borNo);
+//
+//    DataResponse response = new DataResponse();
+//    String khid = viewItemEntity.getKhid();
+//
+//    try {
+//        List<viewItemEntity> items;
+//
+//        if ("PADMIN".equals(role)) {
+//            if (viewItemEntity.getBorNo() != null && !viewItemEntity.getBorNo().trim().isEmpty()) {
+//                items = viewItemEntityRepository.getAllViewItemsBorNo(viewItemEntity.getBorNo(), khid);
+//            } else {
+//                items = viewItemEntityRepository.getAllViewItemsAdmin();
+//            }
+//        } else {
+//            items = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo, borNo, khid);
+//        }
+//
+//        List<ItemListModel> resultList = items.stream()
+//                .map(item -> new ItemListModel(
+//                        item.getItemId(),
+//                        item.getItem_name(), // ✅ ใช้ camelCase
+//                        item.getPrice(),
+//                        item.getInqty(),
+//                        item.getImage(),
+//                        item.getBorNo(),
+//                        item.getBorName(),
+//                        item.getItemtype_Name(),
+//                        item.getQty(),
+//                        item.getUnit(),
+//                        item.getSize(),
+//                        item.getKhid(),
+//                        item.getKhno(),
+//                        item.getKhname()
+//                ))
+//                .collect(Collectors.toList());
+//
+//
+//        response.setDataResponse(resultList);
+//        response.setStatus("00");
+//        response.setMessage("Success");
+//
+//    } catch (Exception e) {
+//        response.setStatus("EE");
+//        response.setMessage("Error Data !!");
+//        e.printStackTrace();
+//    }
+//
+//    return response;
+//}
+public DataResponse getItemList(listItemEntity listItemEntity, String userName, String role, String branchNo, String borNo) {
     log.info("role:" + role);
     log.info("userName:" + userName);
     log.info("branchNo:" + branchNo);
     log.info("borNo:" + borNo);
 
     DataResponse response = new DataResponse();
-    String khid = viewItemEntity.getKhid();
+    String khid = listItemEntity.getKhid();
 
     try {
-        List<viewItemEntity> items;
+        List<ItemListView> items;
 
         if ("PADMIN".equals(role)) {
-            if (viewItemEntity.getBorNo() != null && !viewItemEntity.getBorNo().trim().isEmpty()) {
-                items = viewItemEntityRepository.getAllViewItemsBorNo(viewItemEntity.getBorNo(), khid);
+            if (listItemEntity.getBorNo() != null && !listItemEntity.getBorNo().trim().isEmpty()) {
+                items = itemListRepository.getAllViewItemsBorNo(listItemEntity.getBorNo(), khid);
             } else {
-                items = viewItemEntityRepository.getAllViewItemsAdmin();
+                items = itemListRepository.getAllViewItemsAdmin();
             }
         } else {
-            items = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo, borNo, khid);
+            items = itemListRepository.getAllViewItemsBranchNo(branchNo, borNo, khid);
         }
 
-        List<ItemListModel> resultList = items.stream()
-                .map(item -> new ItemListModel(
+        // map Projection → modelItemList
+        List<modelItemList> resultList = items.stream()
+                .map(item -> new modelItemList(
                         item.getItemId(),
-                        item.getItem_name(), // ✅ ใช้ camelCase
-                        item.getPrice(),
-                        item.getInqty(),
+                        item.getItemName(),
                         item.getImage(),
                         item.getBorNo(),
                         item.getBorName(),
-                        item.getItemtype_Name(),
-                        item.getQty(),
-                        item.getUnit(),
                         item.getSize(),
+                        item.getQty(),
                         item.getKhid(),
                         item.getKhno(),
                         item.getKhname()
                 ))
                 .collect(Collectors.toList());
-
 
         response.setDataResponse(resultList);
         response.setStatus("00");
@@ -154,6 +212,7 @@ public class ItemServiceImpl {
 
     return response;
 }
+
 
     public DataResponse saveItem(ItemEntity viewItemEntity){
         log.info("show alert:"+viewItemEntity.getAlertqty());

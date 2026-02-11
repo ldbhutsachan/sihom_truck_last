@@ -8,10 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -21,12 +18,12 @@ public class PaymentDetailDao {
     private final JdbcTemplate jdbcTemplate;
 
     // 🔹 ดึงข้อมูลหลักจาก tb_accounting (filter ตามตัวเลือก)
-    public List<PaymentDetailModel> findPaymentDetails(Long itemTypeid, Long req_id, Long pid, String role) {
+    public List<PaymentDetailModel> findPaymentDetails(String startDate, String endDate,Long itemTypeid, Long req_id, Long pid, String role) {
         String sql = "SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, a.date, a.datermine_date, a.date_create, a.data_type, " +
                 "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, a.supplierid, a.bill_status, " +
                 "pt.pid as payId, pt.type_name,pt.type_pay as type_of, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role, " +
-                "a.basi_approve_date, a.bansi_approveby, a.account_approve_date, a.account_approveby, a.final_approve_date, a.final_approveby, " +
-                "a.returnby, a.return_date,b.account_name, b.account_no, b.bank_name " +  // ← ใส่ space หลัง a.return_date
+                "a.basi_approve_date, a.bansi_approveby, " +
+                "a.returnby, a.return_date,b.account_name, b.account_no, b.bank_name, b.bank_name_lao " +  // ← ใส่ space หลัง a.return_date
                 "FROM tb_accounting a " +
                 "INNER JOIN pay_type pt ON a.pay_typeid = pt.pid " +
                 "LEFT JOIN LOGIN l ON a.user_id = l.KEY_ID " +
@@ -35,9 +32,17 @@ public class PaymentDetailDao {
                 "LEFT JOIN item_type it ON rt.item_typeid = it.itemTypeid " +
                 "LEFT JOIN tb_bank b ON a.b_id = b.b_id";
 
-
         List<Object> params = new ArrayList<>();
         List<String> conditions = new ArrayList<>();
+
+        // 🔹 filter วันที่
+        if (startDate != null && !startDate.isEmpty() &&
+                endDate != null && !endDate.isEmpty()) {
+
+            conditions.add("DATE(a.date_create) BETWEEN ? AND ?");
+            params.add(startDate);
+            params.add(endDate);
+        }
 
         if (itemTypeid != null) {
             conditions.add("it.itemTypeid = ?");
@@ -73,6 +78,10 @@ public class PaymentDetailDao {
 //        if (!conditions.isEmpty()) {
 //            sql += " WHERE " + String.join(" AND ", conditions);
 //        }
+        // 🔹 รวม WHERE
+        if (!conditions.isEmpty()) {
+            sql += " WHERE " + String.join(" AND ", conditions);
+        }
 
         sql += " ORDER BY a.date DESC";
 
@@ -101,7 +110,17 @@ public class PaymentDetailDao {
         model.setRemark(rs.getString("remark"));
         model.setInternalRemark(rs.getString("internal_remark"));
         model.setTag(rs.getString("tag"));
-        model.setFile(rs.getString("file"));
+//        model.setFile(rs.getString("file"));
+        String fileStr = rs.getString("file");
+        model.setFile(fileStr); // เก็บเหมือนเดิม
+        if (fileStr != null && !fileStr.isEmpty()) {
+            // แยกเป็น list ตาม comma
+            List<String> fileList = Arrays.asList(fileStr.split(","));
+            model.setFileList(fileList);
+        } else {
+            model.setFileList(new ArrayList<>()); // ถ้าไม่มีไฟล์
+        }
+
         model.setPayId(rs.getLong("payId"));
         model.setPaytype(rs.getString("type_name"));
         model.setType_of(rs.getString("type_of"));
@@ -115,15 +134,12 @@ public class PaymentDetailDao {
         model.setUser(rs.getString("USER_LOGIN"));
         model.setBansi_approveby(rs.getString("bansi_approveby"));
         model.setBasi_approve_date(rs.getString("basi_approve_date"));
-        model.setAccount_approveby(rs.getString("account_approveby"));
-        model.setAccount_approve_date(rs.getString("account_approve_date"));
-//        model.setFinal_approveby(rs.getString("account_approveby"));
-//        model.setFinal_approve_date(rs.getString("final_approve_date"));
         model.setReturnby(rs.getString("returnby"));
         model.setReturn_date(rs.getString("return_date"));
         model.setAccount_name(rs.getString("account_name"));
         model.setAccount_no(rs.getString("account_no"));
         model.setBank_name(rs.getString("bank_name"));
+        model.setBank_lao_name(rs.getString("bank_name_lao"));
 
         //  เติม listItems จาก tb_accounting_list
         model.setListItems(findListItemsByBillNo(model.getBillNo()));
@@ -288,7 +304,7 @@ public class PaymentDetailDao {
 
         // Filter date range
         if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
-            conditions.add("DATE(date) BETWEEN ? AND ?");
+            conditions.add("DATE(basi_approve_date) BETWEEN ? AND ?");
             params.add(startDate);
             params.add(endDate);
         }
@@ -313,6 +329,7 @@ public class PaymentDetailDao {
             model.setKeyId(rs.getInt("key_id"));
             model.setBansiId(rs.getInt("Bansi_id"));
             model.setDate_create(rs.getDate("date_create"));
+            model.setBasi_approve_date(rs.getDate("basi_approve_date"));
             model.setBigProjectId(rs.getInt("big_project_id"));
             model.setBigProject(rs.getString("big_project"));
             model.setSmallProjectId(rs.getInt("small_project_id"));
@@ -324,14 +341,22 @@ public class PaymentDetailDao {
             model.setBunsiName(rs.getString("BunsiName"));
             model.setTitle(rs.getString("title"));
             model.setExchangeRate(rs.getString("exchange_rate"));
-            model.setDate(rs.getDate("date"));
             model.setDatermineDate(rs.getDate("datermine_date"));
             model.setReferenceNumber(rs.getString("reference_number"));
             model.setReference(rs.getString("reference"));
             model.setRemark(rs.getString("remark"));
             model.setInternalRemark(rs.getString("internal_remark"));
             model.setTag(rs.getString("tag"));
-            model.setFile(rs.getString("file"));
+//            model.setFile(rs.getString("file"));
+            String fileStr = rs.getString("file");
+            model.setFile(fileStr); // เก็บเหมือนเดิม
+            if (fileStr != null && !fileStr.isEmpty()) {
+                // แยกเป็น list ตาม comma
+                List<String> fileList = Arrays.asList(fileStr.split(","));
+                model.setFileList(fileList);
+            } else {
+                model.setFileList(new ArrayList<>()); // ถ้าไม่มีไฟล์
+            }
             model.setBillNo(rs.getString("bill_No"));
             model.setBill_status(rs.getString("bill_status"));
             model.setCurrency(rs.getString("currency"));

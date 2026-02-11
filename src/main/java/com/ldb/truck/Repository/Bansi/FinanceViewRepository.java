@@ -51,7 +51,17 @@ public class FinanceViewRepository {
             dto.setPayStatus(rs.getString("pay_status"));
             dto.setCurrency(rs.getString("currency"));
             dto.setCreateBy(rs.getString("create_by"));
+            dto.setTitle(rs.getString("title"));
+            dto.setBankNo(rs.getString("bank_account_no"));
+            dto.setBankEnglishName(rs.getString("bank_account_name"));
+            dto.setBankLaoName(rs.getString("bank_name"));
             dto.setBillNo(rs.getString("bill_no"));
+            dto.setBigProjectId(rs.getInt("big_project_id"));
+            dto.setBigProjectName(rs.getString("big_project"));
+            dto.setSamllProjectId(rs.getInt("small_project_id"));
+            dto.setSmallProjectName(rs.getString("small_project"));
+            dto.setPayTypeId(rs.getInt("pay_type_id"));
+            dto.setPayType(rs.getString("pay_type"));
             dto.setCreateDate(rs.getString("create_date"));
             return dto;
         };
