@@ -4,6 +4,7 @@ import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Entity.Brand.BrandEntity;
 import com.ldb.truck.Entity.Brand.BrandReq;
 import com.ldb.truck.Entity.Item.ItemEntity;
+import com.ldb.truck.Entity.Item.listItemEntity;
 import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Entity.ItemType.ItemTypeEntity;
 import com.ldb.truck.Entity.PlaceStock.PlaceStockEntity;
@@ -399,7 +400,7 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
 
     @CrossOrigin(origins = "*")
 @PostMapping("/getItemList.service")
-public ResponseEntity<?> getItemList(@RequestBody viewItemEntity brandReq){
+public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
     DataResponse response  = new DataResponse();
     try {
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(brandReq.getToKen());

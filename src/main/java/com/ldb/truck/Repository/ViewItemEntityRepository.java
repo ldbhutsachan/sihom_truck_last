@@ -23,27 +23,27 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     @Query(value = "SELECT * FROM v_items where make_by_id=:make_by_id ORDER BY item_name asc", nativeQuery = true)
     List<viewItemEntity> getAllViewItemsUserId(@Param("make_by_id") String make_by_id);
 
-    @Transactional
-    @Query(
-            value = "SELECT * FROM v_items " +
-                    "WHERE branch_no = :branchNo " +
-                    "AND bor_no = :borNo " +
-                    "AND (:khid IS NULL OR :khid = '' OR khid = :khid) " +
-                    "ORDER BY item_name ASC",
-            nativeQuery = true
-    )
-    List<viewItemEntity> getAllViewItemsBranchNo(
-            @Param("branchNo") String branchNo,
-            @Param("borNo") String borNo,
-            @Param("khid") String khid
-    );
+//    @Transactional
+//    @Query(
+//            value = "SELECT * FROM v_items " +
+//                    "WHERE branch_no = :branchNo " +
+//                    "AND bor_no = :borNo " +
+//                    "AND (:khid IS NULL OR :khid = '' OR khid = :khid) " +
+//                    "ORDER BY item_name ASC",
+//            nativeQuery = true
+//    )
+//    List<viewItemEntity> getAllViewItemsBranchNo(
+//            @Param("branchNo") String branchNo,
+//            @Param("borNo") String borNo,
+//            @Param("khid") String khid
+//    );
 
 
 
 
-    @Transactional
-    @Query(value = "SELECT * FROM v_items ORDER BY item_name asc", nativeQuery = true)
-    List<viewItemEntity> getAllViewItemsAdmin();
+//    @Transactional
+//    @Query(value = "SELECT * FROM v_items ORDER BY item_name asc", nativeQuery = true)
+//    List<viewItemEntity> getAllViewItemsAdmin();
 
     @Transactional
     @Query(value =
@@ -69,9 +69,9 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
 
 
 
-    @Transactional
-    @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo and khid =:khid ORDER BY item_name ASC", nativeQuery = true)
-    List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo,@Param("khid") String khid);
+//    @Transactional
+//    @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo and khid =:khid ORDER BY item_name ASC", nativeQuery = true)
+//    List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo,@Param("khid") String khid);
 
 
 
