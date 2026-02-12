@@ -196,7 +196,13 @@ public DataResponse getItemList(listItemEntity listItemEntity, String userName, 
                         item.getQty(),
                         item.getKhid(),
                         item.getKhno(),
-                        item.getKhname()
+                        item.getKhname(),
+                        item.getShopId(),
+                        item.getShopName(),
+                        item.getOrderType(),
+                        item.getCurrency(),
+                        item.getExchangeRate(),
+                        item.getPrice()
                 ))
                 .collect(Collectors.toList());
 
@@ -259,6 +265,8 @@ public DataResponse getItemList(listItemEntity listItemEntity, String userName, 
                             viewItemEntity.getItemtypeid(),
                             viewItemEntity.getHouseid(),
                             viewItemEntity.getAlertqty(),
+                            viewItemEntity.getShopId(),
+                            viewItemEntity.getOrderType(),
                             viewItemEntity.getItemId()));
                 }else {
                     response.setDataResponse(itemEntityRepository.updateItem(
@@ -282,6 +290,8 @@ public DataResponse getItemList(listItemEntity listItemEntity, String userName, 
                             viewItemEntity.getItemtypeid(),
                             viewItemEntity.getHouseid(),
                             viewItemEntity.getAlertqty(),
+                            viewItemEntity.getShopId(),
+                            viewItemEntity.getOrderType(),
                             viewItemEntity.getItemId()));
                 }
             if(response.getDataResponse() != null){

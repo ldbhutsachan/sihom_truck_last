@@ -19,6 +19,7 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
     List<RequestItemEbtity> findByKeyIdRequest(@Param("billNo") String billNo, @Param("itemId") List<Integer> itemId);
 
 
+    //reject
     @Modifying
     @Transactional//request_item_details
     @Query(value = "UPDATE request_item_details SET rejectby = :rejectby, " +
@@ -27,6 +28,18 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
     int updateItemStatusById(
             @Param("rejectby") String rejectby,
             @Param("rejectDate") Date rejectDate,
+            @Param("itemId") Long itemId,
+            @Param("billNo") String billNo); // Use String instead of List<Long>
+
+    // auth
+    @Modifying
+    @Transactional//request_item_details
+    @Query(value = "UPDATE request_item_details SET acceptby = :acceptby, " +
+            "acceptdate =:acceptdate, status ='auth'  " +
+            "WHERE FIND_IN_SET(item_id, :itemId) and bill_no=:billNo ", nativeQuery = true)
+    int updateItemStatusAuth(
+            @Param("acceptby") String acceptby,
+            @Param("acceptdate") Date acceptdate,
             @Param("itemId") Long itemId,
             @Param("billNo") String billNo); // Use String instead of List<Long>
 

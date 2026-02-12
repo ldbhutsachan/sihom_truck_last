@@ -19,7 +19,13 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
             "size, qty, " +
             "khid, " +
             "khno, " +
-            "khname " +
+            "khname,\n" +
+            "shopid AS shopId,\n" +
+            "shop_name AS shopName,\n" +
+            "ordertype AS orderType,\n" +
+            "exchange_rate AS exchangeRate,\n" +
+            "currency,\n" +
+            "price\n" +
             "FROM v_items_list " +
             "WHERE bor_no = :borNo AND khid = :khid " +
             "ORDER BY item_name ASC",
@@ -35,7 +41,13 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
             "size, qty," +
             "khid, " +
             "khno, " +
-            "khname " +
+            "khname,\n" +
+            "shopid AS shopId,\n" +
+            "shop_name AS shopName,\n" +
+            "ordertype AS orderType,\n" +
+            "exchange_rate AS exchangeRate,\n" +
+            "currency,\n" +
+            "price\n " +
             "FROM v_items_list " +
             "ORDER BY item_name ASC",
             nativeQuery = true)
@@ -50,7 +62,13 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
             "size, qty," +
             "khid, " +
             "khno, " +
-            "khname " +
+            "khname,\n" +
+            "shopid AS shopId,\n" +
+            "shop_name AS shopName,\n" +
+            "ordertype AS orderType,\n" +
+            "exchange_rate AS exchangeRate,\n" +
+            "currency,\n" +
+            "price\n" +
             "FROM v_items_list " +
             "WHERE branch_no = :branchNo " +
             "AND bor_no = :borNo " +

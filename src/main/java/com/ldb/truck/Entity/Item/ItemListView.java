@@ -12,4 +12,12 @@ public interface ItemListView {
     String getKhid();
     String getKhno();
     String getKhname();
+    String getShopId();
+    String getShopName();
+    String getOrderType();
+    String getCurrency();
+    String getExchangeRate();
+    String getPrice();
+
+
 }

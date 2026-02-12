@@ -35,6 +35,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -1023,9 +1024,15 @@ public class StockServiceImpl {
             entity.setRealCurrency(item.getCurrency());
 
             entity.setSaveBy(userId);
-            entity.setSaveDate(new Date());
+            entity.setSaveDate(LocalDateTime.now());
             entity.setStatus("wait"); // Example default status
             entities.add(entity);
+            //NEW
+            entity.setShopeId(item.getShopeId());
+            entity.setTypeOfOrder(item.getOrderType());
+            entity.setCurrency(item.getCurrency());
+
+
         }
 
         return entities;
@@ -1187,8 +1194,8 @@ public class StockServiceImpl {
             log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
             int updated = 0;
             final String sql = "UPDATE order_item_details SET " +
-                    "saveby = ?, " +
-                    "savedate = ?, " +
+//                    "saveby = ?, " +
+//                    "savedate = ?, " +
                     "qty = ?," +
                     "price = ?," +
                     "status= 'wait' , " +
@@ -1200,8 +1207,8 @@ public class StockServiceImpl {
                 log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
                 updated = EBankJdbcTemplate.update(
                         sql,
-                        userId,
-                        new Date(),
+//                        userId,
+//                        new Date(),
                         item.getQty(),
                         item.getPrice(),
                         item.getCurrency(),
@@ -1575,6 +1582,7 @@ public class StockServiceImpl {
         log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
         int updated = 0;
         final String sql = "UPDATE order_item_details SET " +
+                "editby = ?, editdate = ?," +
                 "qty = ?," +
                 "price = ?," +
              //   "status= ? , " +
@@ -1585,8 +1593,8 @@ public class StockServiceImpl {
             log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
             updated = EBankJdbcTemplate.update(
                     sql,
-                 //   userId,
-                  //  new Date(),
+                    userId,
+                    new Date(),
                     item.getQty(),
                     item.getPrice(),
                   //  item.getStatus(),
@@ -1746,7 +1754,7 @@ public class StockServiceImpl {
             entity.setExchangeRate(item.getExchangeRate());
 
             entity.setSaveBy(userId);
-            entity.setSaveDate(new Date());
+            entity.setSaveDate(LocalDateTime.now());
             entity.setStatus(request.getStatus());
 
             entities.add(entity);
@@ -1988,7 +1996,10 @@ public class StockServiceImpl {
             log.info("Processing item: " + itemNo + ", Quantity: " + qty);
 
             // Update inventory
-            itemEntityRepository.updateStockInItem(qty, amount, ccy, realPriceData, itemNo);
+            itemEntityRepository.updateStockInItem(
+                    qty,
+//                    amount,
+                     ccy, realPriceData, itemNo);
 
             // Update order details
             itemEntityRepository.updateStockInItemOrderDetails(
@@ -2278,6 +2289,9 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
         // ===== ตรวจสอบว่า reject ทั้งหมดหรือไม่
         boolean allRejected = stockItemDetailsReq.getDetailId().stream()
                 .allMatch(item -> "reject".equalsIgnoreCase(item.getStatus()));
+        // ===== ตรวจสอบว่า auth ทั้งหมดหรือไม่
+        boolean allAuth = stockItemDetailsReq.getDetailId().stream()
+                .allMatch(item -> "auth".equalsIgnoreCase(item.getStatus()));
 
         if (allRejected) {
             log.info("=====reject all items=====");
@@ -2304,6 +2318,31 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                 response.setMessage("Can't Reject this del No!!!!");
             }
             return response;
+        } else if (allAuth) {
+            requestItemRepository.rejectItemRequestByUser(
+                    stockItemDetailsReq.getRemark(),
+                    stockItemDetailsReq.getBillNo()
+            );
+
+            int check = 0;
+            for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+                check = requestItemRepository.updateItemStatusAuth(
+                        stockItemDetailsReq.getUserId(),
+                        new Date(),
+                        item.getItemId(),
+                        stockItemDetailsReq.getBillNo()
+                );
+            }
+
+            if (check > 0) {
+                response.setStatus("00");
+                response.setMessage("Ready approve by Auth ");
+            } else {
+                response.setStatus("EE");
+                response.setMessage("Can't approve this!!!!");
+            }
+            return response;
+
         }
 
         // ===== ตรวจสอบ stock ก่อน approve
@@ -2436,7 +2475,11 @@ public DataResponse checkKeyOrder(){
                 }
             }
             else {
-                listData = requestTxnRepository.getStockByBillNoAdmin(status,branchNo);
+                if("PADMIN".equals(role)) {
+                    listData = requestTxnRepository.getStockByBillNoAdminStatus(uMission, startDate,endDate,status);
+                }else {
+                    listData = requestTxnRepository.getRequestBillByBor(branchNo,borNo, startDate,endDate ,status);
+                }
             }
 
             List<String> billNoList = listData.stream()

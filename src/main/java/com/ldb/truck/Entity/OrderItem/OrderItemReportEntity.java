@@ -3,6 +3,7 @@ package com.ldb.truck.Entity.OrderItem;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -48,15 +49,13 @@ public class OrderItemReportEntity {
     private String saveBy;
 
     @Column(name = "savedate")
-    @Temporal(TemporalType.DATE)
-    private Date saveDate;
+    private LocalDateTime saveDate;
 
     @Column(name = "editby", length = 200)
     private String editBy;
 
     @Column(name = "editdate")
-    @Temporal(TemporalType.DATE)
-    private Date editDate;
+    private LocalDateTime editDate;
 
     @Column(name = "approveby", length = 200)
     private String approveBy;
@@ -103,6 +102,12 @@ public class OrderItemReportEntity {
 
     @Column(name ="place_buy")
     private String placeBuy;
+
+    @Column(name = "shope_id")
+    private int shopeId;
+
+    @Column(name ="type_of_order")
+    private String typeOfOrder;
 
 
 
