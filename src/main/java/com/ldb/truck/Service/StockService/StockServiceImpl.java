@@ -1670,6 +1670,8 @@ public class StockServiceImpl {
         log.info("Reject {} item(s) for billNo: {}", items.size(), request.getBillNo());
         int updated = 0;
         final String sql = "UPDATE order_item_details SET " +
+                "rejectby = ?," +
+                "rejectbyDate = ?, " +
                 "qty = ?," +
                 "price = ?," +
                 "status= ? , " +
@@ -1680,6 +1682,8 @@ public class StockServiceImpl {
             log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
             updated = EBankJdbcTemplate.update(
                     sql,
+                    userId,
+                    now,
                     item.getQty(),
                     item.getPrice(),
                     item.getStatus(),

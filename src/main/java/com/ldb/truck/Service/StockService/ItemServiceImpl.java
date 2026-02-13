@@ -265,7 +265,6 @@ public DataResponse getItemList(listItemEntity listItemEntity, String userName, 
                             viewItemEntity.getItemtypeid(),
                             viewItemEntity.getHouseid(),
                             viewItemEntity.getAlertqty(),
-                            viewItemEntity.getShopId(),
                             viewItemEntity.getOrderType(),
                             viewItemEntity.getItemId()));
                 }else {
@@ -290,7 +289,6 @@ public DataResponse getItemList(listItemEntity listItemEntity, String userName, 
                             viewItemEntity.getItemtypeid(),
                             viewItemEntity.getHouseid(),
                             viewItemEntity.getAlertqty(),
-                            viewItemEntity.getShopId(),
                             viewItemEntity.getOrderType(),
                             viewItemEntity.getItemId()));
                 }

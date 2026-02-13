@@ -551,7 +551,6 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
             ,@RequestParam("itemtypeid") Integer  itemtypeid
             ,@RequestParam("houseid") Integer  houseid
             ,@RequestParam("alertqty") Integer  alertqty
-            ,@RequestParam("shopid") Integer  shopid
             ,@RequestParam("ordertype") String  ordertype
             ,HttpServletRequest request) throws Exception {
         log.info("\t\t --> save item Request controller >>>>>>>>>>>>>>>>>>>>>>");
@@ -600,7 +599,6 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
         data.setItemtypeid(itemtypeid);
         data.setHouseid(houseid);
         data.setAlertqty(alertqty);
-        data.setShopId(shopid);
         data.setOrderType(ordertype);
         //====================check doc file before upload this==============
         // Handle file upload

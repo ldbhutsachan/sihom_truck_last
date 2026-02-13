@@ -58,7 +58,6 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             Integer itemtypeid,
             Integer houseid,
             Integer alertqty,
-            Integer shopId,
             String orderType,
             Long itemId
     );
@@ -104,7 +103,6 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             Integer itemtypeid,
             Integer houseid,
             Integer alertqty,
-            Integer shopId,
             String orderType,
             Long itemId
     );

@@ -80,8 +80,6 @@ public class ItemEntity {
     @Column(name = "alertqty", nullable = false)
     private Integer alertqty;
 
-    @Column(name = "shop_id", nullable = false)
-    private Integer shopId;
 
     @Column(name = "ordertype", length = 50)
     private String orderType;

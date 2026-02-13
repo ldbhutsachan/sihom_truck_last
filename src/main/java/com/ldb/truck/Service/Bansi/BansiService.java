@@ -412,7 +412,7 @@ public class BansiService {
         if (!"SUPERBANSI".equalsIgnoreCase(role)
                 && !"SUPERACCOUNT".equalsIgnoreCase(role)
                 && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
-            throw new Exception("No right to update (role: " + role + ")");
+            throw new Exception("No right to insert (role: " + role + ")");
         }
         if ("SUPERBANSI".equalsIgnoreCase(role)) {
             entity.setDataType("bansi");
@@ -2048,6 +2048,66 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         return response;
     }
+    //itemforaccounting service
+    // itemforaccounting service
+    public DataResponse findItemforaccounting(SupplierNotPayReq req) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // =========================
+            // 1) Validate token
+            // =========================
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToken());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+
+            // =========================
+            // 2) Validate role
+            // =========================
+            String role = user.getRole() == null ? "" : user.getRole().toUpperCase();
+
+            List<String> allowedRoles = Arrays.asList(
+                    "SUPERACCOUNT",
+                    "FOR_DOCUMENT_ADMIN",
+                    "SUPERBANSI",
+                    "BANSIAPPROVE"
+            );
+
+            if (!allowedRoles.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("No right to fetch data");
+                return response;
+            }
+
+            // =========================
+            // 3) Get Accounting Items
+            // =========================
+            List<ItemForAccountingDto> listItem =
+                    supplierNotPayRepo.findItemforaccounting(
+                            req.getStartDate(),
+                            req.getEndDate(),
+                            req.getSupplierId()
+                    );
+
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(listItem);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error retrieving Accounting Item Data");
+        }
+
+        return response;
+    }
+
 
 
 

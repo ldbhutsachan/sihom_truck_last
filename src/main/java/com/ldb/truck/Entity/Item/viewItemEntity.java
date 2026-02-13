@@ -146,12 +146,6 @@ public class viewItemEntity {
     @Column(name = "outqty", nullable = false)
     private Integer outqty;
 
-    @Column(name = "shopid", nullable = false)
-    private Integer shopid;
-
-    @Column(name = "shop_name", nullable = false)
-    private String shopName;
-
     @Column(name = "ordertype", nullable = false)
     private String ordertype;
 
