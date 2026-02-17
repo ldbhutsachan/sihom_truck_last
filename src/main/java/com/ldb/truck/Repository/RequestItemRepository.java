@@ -89,6 +89,7 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
         "status = :status, " +
         "using_status = :usingStatus, " +
         "using_date = :usingDate, " +
+        "old_stock_house = :oldStockHouse," +
         "using_by = :usingBy " +
         "WHERE item_id = :itemId AND bill_no = :billNo", nativeQuery = true)
 int approveRequestItem(
@@ -97,6 +98,7 @@ int approveRequestItem(
         @Param("status") String status,
         @Param("usingStatus") String usingStatus,
         @Param("usingDate") Date usingDate,
+        @Param("oldStockHouse") String old_stock_house,
         @Param("usingBy") String usingBy,
         @Param("itemId") Long itemId,
         @Param("billNo") String billNo

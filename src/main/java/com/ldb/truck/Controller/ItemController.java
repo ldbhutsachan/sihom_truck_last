@@ -264,6 +264,7 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
             String borNo = userProfiles.get(0).getBorNo();
             String borNoForAdmin = brandReq.getBorNo();
             String umission = userProfiles.get(0).getStaff_id();
+            String status = brandReq.getStatus();
 
             PlaceStockEntityReq reqBody = new PlaceStockEntityReq();
             reqBody.setRole(role);
@@ -278,7 +279,7 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
 //            }
 
             reqBody.setBorNo(borNo);
-            response = placeStockService.getPlaceStockHouse(reqBody,borNoForAdmin,umission);
+            response = placeStockService.getPlaceStockHouse(reqBody,borNoForAdmin,umission,status);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

@@ -189,6 +189,7 @@ public DataResponse getItemList(listItemEntity listItemEntity, String userName, 
                 .map(item -> new modelItemList(
                         item.getItemId(),
                         item.getItemName(),
+                        item.getUnit(),
                         item.getImage(),
                         item.getBorNo(),
                         item.getBorName(),

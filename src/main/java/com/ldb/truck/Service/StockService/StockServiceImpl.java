@@ -797,7 +797,13 @@ public class StockServiceImpl {
                 case "ADMIN":
                     itemSize = "\n AND size != 'item'";
                     break;
+                case "BILLCHECKER":
+                    itemSize = "";   // ไม่ใส่เงื่อนไข → แสดงทั้งหมด
+                    break;
+                default:
+                    itemSize = "";   // กัน error กรณี role อื่น
             }
+
 
             StringBuilder sb = new StringBuilder();
             sb.append("SELECT * FROM v_order_item where 1=1 "); // You can add WHERE clauses based on parameters
@@ -1585,7 +1591,7 @@ public class StockServiceImpl {
                 "editby = ?, editdate = ?," +
                 "qty = ?," +
                 "price = ?," +
-             //   "status= ? , " +
+                "status= ? , " +
                 "currency= ?, " +
                 "exchange_rate= ? " +
                 "WHERE item_id = ? and bill_no=?  ";
@@ -1597,7 +1603,7 @@ public class StockServiceImpl {
                     new Date(),
                     item.getQty(),
                     item.getPrice(),
-                  //  item.getStatus(),
+                    item.getStatus(),
                     item.getCurrency(),
                     item.getExchangeRate(),
                     item.getDetailId(),
@@ -2323,14 +2329,10 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
             }
             return response;
         } else if (allAuth) {
-            requestItemRepository.rejectItemRequestByUser(
-                    stockItemDetailsReq.getRemark(),
-                    stockItemDetailsReq.getBillNo()
-            );
+            int totalUpdated = 0;
 
-            int check = 0;
             for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
-                check = requestItemRepository.updateItemStatusAuth(
+                totalUpdated += requestItemRepository.updateItemStatusAuth(
                         stockItemDetailsReq.getUserId(),
                         new Date(),
                         item.getItemId(),
@@ -2338,13 +2340,14 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                 );
             }
 
-            if (check > 0) {
+            if (totalUpdated == stockItemDetailsReq.getDetailId().size()) {
                 response.setStatus("00");
-                response.setMessage("Ready approve by Auth ");
+                response.setMessage("Ready approve by Auth");
             } else {
                 response.setStatus("EE");
-                response.setMessage("Can't approve this!!!!");
+                response.setMessage("Some items failed to approve");
             }
+
             return response;
 
         }
@@ -2381,15 +2384,6 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
 
         // ===== approve items
         int updatedRows = 0;
-//        for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
-//            updatedRows = requestItemRepository.approveRequestItem(
-//                    stockItemDetailsReq.getUserId(),
-//                    new Date(),
-//                    stockItemDetailsReq.getStatus(),
-//                    item.getItemId(),
-//                    stockItemDetailsReq.getBillNo()
-//            );
-//        }
         for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
             updatedRows = requestItemRepository.approveRequestItem(
                     stockItemDetailsReq.getUserId(), // approveBy
@@ -2397,6 +2391,7 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                     stockItemDetailsReq.getStatus(), // status
                     "ok",                            // usingStatus
                     new Date(),                      // usingDate
+                    stockItemDetailsReq.getKhid(),   //old_stock_house
                     stockItemDetailsReq.getUserId(), // usingBy (คนเดียวกับ approveBy)
                     item.getItemId(),                // itemId
                     stockItemDetailsReq.getBillNo()  // billNo

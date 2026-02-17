@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface ItemListRepository extends JpaRepository<listItemEntity, String> {
     @Query(value = "SELECT item_id AS itemId, " +
-            "item_name AS itemName, " +
+            "item_name AS itemName, unit, " +
             "image, " +
             "bor_no AS borNo, " +
             "bor_name AS borName, " +
@@ -34,7 +34,7 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
 
     // สำหรับ PADMIN ทั้งหมด
     @Query(value = "SELECT item_id AS itemId, " +
-            "item_name AS itemName, " +
+            "item_name AS itemName, unit, " +
             "image, " +
             "bor_no AS borNo, " +
             "bor_name AS borName, " +
@@ -55,7 +55,7 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
 
     // สำหรับ Branch
     @Query(value = "SELECT item_id AS itemId, " +
-            "item_name AS itemName, " +
+            "item_name AS itemName, unit, " +
             "image, " +
             "bor_no AS borNo, " +
             "bor_name AS borName, " +

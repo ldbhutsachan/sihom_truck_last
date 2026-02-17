@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class modelItemList {
     private String itemId;
     private String item_name;
+    private String unit;
     private String image;
     private String borNo;
     private String borName;

@@ -4,6 +4,7 @@ public interface ItemListView {
 
     String getItemId();
     String getItemName();
+    String getUnit();
     String getImage();
     String getBorNo();
     String getBorName();

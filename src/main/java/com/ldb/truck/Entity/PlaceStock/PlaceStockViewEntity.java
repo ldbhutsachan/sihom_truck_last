@@ -67,4 +67,10 @@ public class PlaceStockViewEntity {
     @Column(name = "update_byname")
     private String updateByName;
 
+    @Column(name = "stock_status")
+    private String stockSatus;
+
+    @Column(name = "not_for_alai")
+    private String notForAlai;
+
 }

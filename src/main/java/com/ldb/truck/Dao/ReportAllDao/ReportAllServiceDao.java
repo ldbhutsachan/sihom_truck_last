@@ -877,121 +877,97 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                                                String borNoss,
                                                String umission) {
 
-        String startDate = stockRequest.getStartDate();
-        String endDate = stockRequest.getEndDate();
-        String itemId = stockRequest.getItemId();
-        String houseNo = stockRequest.getHouseNo();
-        String borNo = stockRequest.getBorNo();
+        StringBuilder sql = new StringBuilder();
+        List<Object> params = new ArrayList<>();
 
-        StringBuilder condition = new StringBuilder();
-        StringBuilder borCondition = new StringBuilder();
-        StringBuilder size = new StringBuilder();
+        sql.append("SELECT detail_id, bill_no, key_id, b_name, houseid, khname, ")
+                .append("item_id, item_name, size, currency, exchange_rate, ")
+                .append("qty, price, img, ")
+                .append("saveby_id, saveby, savedate, ")
+                .append("buyby_id, buyby, buydate, ")
+                .append("approveby_id, approveby, approvedate, ")
+                .append("acceptby_id, acceptby, acceptdate, ")
+                .append("status, shope_id, shop_name, ")
+                .append("type_of_order, date_pay, item_arrive_date, pay_status ")
+                .append("FROM v_orderitem_his ")
+                .append("WHERE buydate BETWEEN ? AND ? ");
 
-        /* ================= house filter ================= */
-        if (!"all".equalsIgnoreCase(houseNo)) {
-            condition.append("\n and houseid = '").append(houseNo).append("'");
+
+        // date
+        params.add(stockRequest.getStartDate() + " 00:00:00");
+        params.add(stockRequest.getEndDate() + " 23:59:59");
+
+        // house
+        if (!"all".equalsIgnoreCase(stockRequest.getHouseNo())) {
+            sql.append(" AND houseid = ? ");
+            params.add(stockRequest.getHouseNo());
         }
 
-        /* ================= item filter ================= */
-        if (!"all".equalsIgnoreCase(itemId)) {
-            condition.append("\n and item_id = '").append(itemId).append("'");
+        // item
+        if (!"all".equalsIgnoreCase(stockRequest.getItemId())) {
+            sql.append(" AND item_id = ? ");
+            params.add(stockRequest.getItemId());
         }
 
-        /* ================= bor / role filter ================= */
-        if ("PADMIN".equalsIgnoreCase(role) || ("BUYER".equalsIgnoreCase(role))) {
-            if (!"all".equalsIgnoreCase(borNo)) {
-                borCondition.append("\n and key_id = '").append(borNo).append("'");
+        // role
+        if ("PADMIN".equalsIgnoreCase(role) || "BUYER".equalsIgnoreCase(role)) {
+            if (!"all".equalsIgnoreCase(stockRequest.getBorNo())) {
+                sql.append(" AND key_id = ? ");
+                params.add(stockRequest.getBorNo());
             }
         } else {
-            borCondition.append("\n and key_id = '").append(borNoss).append("'");
-        }
-        if("ALAIAPPROVE".equalsIgnoreCase(umission)){
-            size.append("\n and size != 'food' and size!='nammun'");
+            sql.append(" AND key_id = ? ");
+            params.add(borNoss);
         }
 
-
-        /* ================= date filter ================= */
-        String dateCondition =
-                "\n and (buydate >= '" + startDate + "' and buydate <= '" + endDate + "')";
-
-        try {
-            StringBuilder sql = new StringBuilder();
-            sql.append("SELECT ")
-                    .append("detail_id, bill_no, key_id, b_name, houseid, khname, ")
-                    .append("item_id, item_name, size, currency, exchange_rate, ")
-                    .append("qty, price, img, ")
-                    .append("saveby_id, saveby, savedate, ")
-                    .append("buyby_id, buyby, buydate, ")
-                    .append("approveby_id, approveby, approvedate, ")
-                    .append("acceptby_id, acceptby, acceptdate, ")
-                    .append("status, shope_id, shop_name, ")
-                    .append("type_of_order, date_pay, item_arrive_date, pay_status ")
-                    .append("FROM v_orderitem_his WHERE 1=1 ");
-
-            sql.append(dateCondition);
-            sql.append(condition);
-            sql.append(borCondition);
-            sql.append(size);
-            sql.append("\n ORDER BY buydate DESC");
-
-            String query = sql.toString();
-            log.info("SQL getReportItemHis : {}", query);
-
-            return EBankJdbcTemplate.query(query, (rs, rowNum) -> {
-                ItemHisModel tr = new ItemHisModel();
-
-                tr.setDetailId(rs.getInt("detail_id"));
-                tr.setBillNo(rs.getString("bill_no"));
-                tr.setBorId(rs.getInt("key_id"));
-                tr.setBName(rs.getString("b_name"));
-
-                tr.setHouseId(rs.getInt("houseid"));
-                tr.setHouseName(rs.getString("khname"));
-
-                tr.setType(rs.getString("size"));
-                tr.setItemId(rs.getInt("item_id"));
-                tr.setItemName(rs.getString("item_name"));
-                tr.setCurrency(rs.getString("currency"));
-                tr.setExchangeRate(rs.getInt("exchange_rate"));
-
-                tr.setQty(rs.getInt("qty"));
-                tr.setPrice(rs.getFloat("price"));
-
-                tr.setSavebyId(rs.getString("saveby_id"));
-                tr.setSaveby(rs.getString("saveby"));
-                tr.setSavedate(rs.getString("savedate"));
-
-                tr.setBuybyId(rs.getString("buyby_id"));
-                tr.setBuyby(rs.getString("buyby"));
-                tr.setBuydate(rs.getString("buydate"));
-
-                tr.setApprovebyId(rs.getString("approveby_id"));
-                tr.setApproveby(rs.getString("approveby"));
-                tr.setApprovedate(rs.getString("approvedate"));
-
-                tr.setAcceptId(rs.getString("acceptby_id"));
-                tr.setAcceptby(rs.getString("acceptby"));
-                tr.setAcceptDate(rs.getString("acceptdate"));
-
-                tr.setStatus(rs.getString("status"));
-                tr.setShopeId(rs.getInt("shope_id"));
-                tr.setShopName(rs.getString("shop_name"));
-
-                tr.setTypeOfOrder(rs.getString("type_of_order"));
-                tr.setDatePay(rs.getString("date_pay"));
-                tr.setItemArriveDate(rs.getString("item_arrive_date"));
-                tr.setPayStatus(rs.getString("pay_status"));
-
-                tr.setImg(rs.getString("img"));
-
-                return tr;
-            });
-
-        } catch (Exception e) {
-            log.error("Error getReportItemHis", e);
-            return new ArrayList<>();
+        // mission
+        if ("ALAIAPPROVE".equalsIgnoreCase(umission)) {
+            sql.append(" AND size NOT IN ('food','nammun') ");
         }
+
+        sql.append(" ORDER BY buydate DESC");
+
+        log.info("SQL getReportItemHis: {}", sql);
+
+        return EBankJdbcTemplate.query(sql.toString(), params.toArray(), (rs, rowNum) -> {
+            ItemHisModel tr = new ItemHisModel();
+            tr.setDetailId(rs.getInt("detail_id"));
+            tr.setBillNo(rs.getString("bill_no"));
+            tr.setBorId(rs.getInt("key_id"));
+            tr.setBName(rs.getString("b_name"));
+            tr.setHouseId(rs.getInt("houseid"));
+            tr.setHouseName(rs.getString("khname"));
+            tr.setType(rs.getString("size"));
+            tr.setItemId(rs.getInt("item_id"));
+            tr.setItemName(rs.getString("item_name"));
+            tr.setCurrency(rs.getString("currency"));
+            tr.setExchangeRate(rs.getInt("exchange_rate"));
+            tr.setQty(rs.getInt("qty"));
+            tr.setPrice(rs.getFloat("price"));
+            tr.setSavebyId(rs.getString("saveby_id"));
+            tr.setSaveby(rs.getString("saveby"));
+            tr.setSavedate(rs.getString("savedate"));
+            tr.setBuybyId(rs.getString("buyby_id"));
+            tr.setBuyby(rs.getString("buyby"));
+            tr.setBuydate(rs.getString("buydate"));
+            tr.setApprovebyId(rs.getString("approveby_id"));
+            tr.setApproveby(rs.getString("approveby"));
+            tr.setApprovedate(rs.getString("approvedate"));
+            tr.setAcceptId(rs.getString("acceptby_id"));
+            tr.setAcceptby(rs.getString("acceptby"));
+            tr.setAcceptDate(rs.getString("acceptdate"));
+            tr.setStatus(rs.getString("status"));
+            tr.setShopeId(rs.getInt("shope_id"));
+            tr.setShopName(rs.getString("shop_name"));
+            tr.setTypeOfOrder(rs.getString("type_of_order"));
+            tr.setDatePay(rs.getString("date_pay"));
+            tr.setItemArriveDate(rs.getString("item_arrive_date"));
+            tr.setPayStatus(rs.getString("pay_status"));
+            tr.setImg(rs.getString("img"));
+            return tr;
+        });
     }
+
 
 
 

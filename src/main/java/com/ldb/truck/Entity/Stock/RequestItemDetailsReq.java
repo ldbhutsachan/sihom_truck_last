@@ -11,6 +11,7 @@ public class RequestItemDetailsReq {
     String billNo;
     String status;
     String remark;
+    String khid;
     String pathApi;
     String role;
     private List<OrderObject> detailId;
