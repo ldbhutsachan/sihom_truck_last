@@ -1298,13 +1298,31 @@ public class StockServiceImpl {
         List<String> uploadedUrls = request.getImageList();
         log.info("✅ imageList before update: {}", uploadedUrls);
 
-        final String sql = "UPDATE order_item_details SET " +
-                "approveby = ?, approvedate = ?, " +
-                "qty = ?, price = ?, status = 'auth', " +
-                "currency = ?, exchange_rate = ?, " +
-                "place_buy = ?, shope_id = ?, " +
-                "type_of_order = ?, date_pay = ?, item_arrive_date = ?, image = ? " +
-                "WHERE item_id = ? AND bill_no = ?";
+//        final String sql =
+//                "UPDATE order_item_details SET " +
+//                "approveby = ?, approvedate = ?, " +
+//                "qty = ?, price = ?, status = 'auth', " +
+//                "currency = ?, exchange_rate = ?, " +
+//                "place_buy = ?, shope_id = ?, " +
+//                "type_of_order = ?, date_pay = ?, item_arrive_date = ?, image = ? " +
+//                "WHERE item_id = ? AND bill_no = ?";
+        final String sql =
+                "UPDATE order_item_details SET " +
+                        "approveby = ?, approvedate = ?, " +
+                        "qty = ?, price = ?, status = 'auth', " +
+
+                        "currency = COALESCE(NULLIF(?, ''), currency), " +
+                        "exchange_rate = ?, " +
+
+                        "place_buy = COALESCE(NULLIF(?, ''), place_buy), " +
+                        "shope_id = COALESCE(NULLIF(?, ''), shope_id), " +
+                        "type_of_order = COALESCE(NULLIF(?, ''), type_of_order), " +
+
+                        "date_pay = ?, item_arrive_date = ?, " +
+                        "image = COALESCE(NULLIF(?, ''), image) " +
+
+                        "WHERE item_id = ? AND bill_no = ?";
+
 
         for (OrderItemReportEntity item : items) {
 
