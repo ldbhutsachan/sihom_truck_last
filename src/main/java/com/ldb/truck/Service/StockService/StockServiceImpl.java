@@ -792,13 +792,14 @@ public class StockServiceImpl {
                     itemSize = "\n AND size = 'item'";
                     break;
                 case "APPROVEINOUT":
-                    itemSize = "\n AND size != 'nammun' AND size != 'item'";
+//                    itemSize = "\n AND size != 'nammun' AND size != 'item'";
+                    itemSize = "\n AND borkey !='145'";
                     break;
                 case "ADMIN":
                     itemSize = "\n AND size != 'item'";
                     break;
                 case "BILLCHECKER":
-                    itemSize = "";   // ไม่ใส่เงื่อนไข → แสดงทั้งหมด
+                    itemSize = "\n AND borkey ='145'";   // SHOW ONLY DATA FROM lAP 21 K
                     break;
                 default:
                     itemSize = "";   // กัน error กรณี role อื่น
