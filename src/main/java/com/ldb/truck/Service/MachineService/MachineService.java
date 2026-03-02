@@ -240,6 +240,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
 
                  //ກຳນົດ limit monitor
+
+                 
                  int time1 = resp.getTime_fix_monitor();
                  // ຄໍານວນ ຍໍ້າມັນ
                  int time2 = resp.getTotalFixMo();
