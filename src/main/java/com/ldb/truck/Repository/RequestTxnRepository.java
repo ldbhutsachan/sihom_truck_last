@@ -79,9 +79,11 @@ List<RequestTxnEntity> getRequestBillByBor(
                     "   OR (:uMission = 'ALAIAPPROVE' AND size = 'item') " +
 
                     // APPROVEINOUT
-                    "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun' AND size != 'item') " +
+//                    "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun' AND size != 'item') " +
+                    "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun') " +
+
                     // ADMIN
-                    "   OR (:uMission = 'ADMIN' AND size != 'item') " +
+//                    "   OR (:uMission = 'ADMIN' AND size != 'item') " +
                     ") " +
                     "AND ( " +
                     "   :startDate IS NULL " +
