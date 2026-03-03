@@ -84,6 +84,9 @@ List<RequestTxnEntity> getRequestBillByBor(
 
                     // ADMIN
 //                    "   OR (:uMission = 'ADMIN' AND size != 'item') " +
+                    "   OR (:uMission = 'ADMIN') " +
+
+
                     ") " +
                     "AND ( " +
                     "   :startDate IS NULL " +
@@ -118,6 +121,8 @@ List<RequestTxnEntity> getRequestBillByBor(
 
                     // ADMIN
 //                    "   OR (:uMission = 'ADMIN' AND size != 'item') " +
+                    "   OR (:uMission = 'ADMIN') " +
+
 
                     ") " +
                     "AND ( " +
