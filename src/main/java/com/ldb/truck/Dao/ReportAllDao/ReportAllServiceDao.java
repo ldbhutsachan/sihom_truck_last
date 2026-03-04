@@ -799,6 +799,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         String borNo= stockRequest.getBorNo();
         String conItem = "";
         String conItemBoNo = "";
+        String conchType = "";
         if (!"all".equals(houseNo)) {
             conItem += "\n and houseNo = '" + houseNo + "'";
         }
@@ -822,18 +823,21 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 conItem += "\n and houseNo = '" + houseNo + "'";
             }
         }
-
-//        String startDateCon = "\n and dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"' or dateOut >= '"+startDate+"' and dateOut <= '"+endDate+"' " ;
+        if("old".equals(stockRequest.getStockType())){
+            conchType = "\n and stock_status='OLD-STOCK' ";
+        }else{
+            conchType = "\n and stock_status is not null";
+        }
         String startDateCon = "\n and ((dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"') " +
                 "or (dateOut >= '"+startDate+"' and dateOut <= '"+endDate+"'))";
 
         try {
             StringBuilder sb = new StringBuilder();
-//            sb.append("SELECT * FROM v_sum_order_item_sum WHERE stockOut > 0 AND stockOut IS NOT NULL AND 1=1 \n");
             sb.append("SELECT * FROM v_sum_order_item_sum WHERE 1=1\n");
             sb.append(startDateCon);
             sb.append(conItem);
             sb.append(conItemBoNo);
+            sb.append(conchType);
             sb.append(" ORDER BY houseNo DESC");
 
             String query = sb.toString();

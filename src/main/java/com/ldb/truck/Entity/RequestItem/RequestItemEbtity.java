@@ -96,4 +96,7 @@ public class RequestItemEbtity {
     @Transient
     private String endDate;
 
+    @Column(name = "transfer_old_no", length = 200)
+    private String transferOld;
+
 }

@@ -7,6 +7,7 @@ import com.ldb.truck.Entity.Bor.BorEntityReqSave;
 import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Entity.ItemPayment.*;
 import com.ldb.truck.Entity.OrderItem.*;
+import com.ldb.truck.Entity.PlaceStock.PlaceStockViewEntity;
 import com.ldb.truck.Entity.RequestItem.*;
 import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Entity.User.UserHisEntity;
@@ -118,6 +119,8 @@ public class StockServiceImpl {
     ItemKeyRepository itemKeyRepository;
     @Autowired
     StockTxnEntityRepository stockTxnEntityRepository;
+    @Autowired
+    PlaceStockViewEntityRepository placeStockViewEntityRepository;
 @Autowired
     BorRepository view_borRepository;
     public DataResponse saveStockIn(StockItemDetailsEntity stockItemDetailsEntity,String userId){
@@ -999,7 +1002,7 @@ public class StockServiceImpl {
 
         return response;
     }
-    private List<RequestItemEbtity> convertToRequest(String keyIdBill,RequestItems request, String userId) {
+    private List<RequestItemEbtity> convertToRequest(String keyIdBill,RequestItems request, String userId,String borNo) {
         List<RequestItemEbtity> entities = new ArrayList<>();
         for (RequestItem item : request.getItemId()) {
             RequestItemEbtity entity = new RequestItemEbtity();
@@ -1011,6 +1014,10 @@ public class StockServiceImpl {
             entity.setQty(item.getQty());
             entity.setSaveBy(userId);
             entity.setSaveDate(new Date());
+            Long transferId = placeStockViewEntityRepository.findByBorNo(borNo)
+                    .map(PlaceStockViewEntity::getKhId) // Get the ID if entity exists
+                    .orElse(null);                      // Return null if it doesn't
+            entity.setTransferOld(String.valueOf(transferId));
             entity.setStatus("wait"); // Example default status
             entities.add(entity);
         }
@@ -2222,7 +2229,7 @@ public class StockServiceImpl {
 //        }
 //        return response;
 //    }
-    public DataResponse saveRequestItem(RequestItems stockItemDetailsEntity, String userId) {
+    public DataResponse saveRequestItem(RequestItems stockItemDetailsEntity, String userId,String borNo) {
 
         DataResponse response = new DataResponse();
 
@@ -2230,7 +2237,7 @@ public class StockServiceImpl {
         String genKey = keyGen.getMaxReqKey();
         log.info("genKey:"+genKey);
         try {
-            List<RequestItemEbtity> entities = convertToRequest(genKey,stockItemDetailsEntity, userId);
+            List<RequestItemEbtity> entities = convertToRequest(genKey,stockItemDetailsEntity, userId,borNo);
             List<RequestItemEbtity> savedEntities = new ArrayList<>();
             requestItemRepository.saveAll(entities).forEach(savedEntities::add);
             if (!savedEntities.isEmpty()) {
