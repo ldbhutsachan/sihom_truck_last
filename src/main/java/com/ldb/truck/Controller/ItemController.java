@@ -441,7 +441,8 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
             value = "JSON body request to check information",
             required = true) @Valid  @RequestParam(name="files" , required=false) MultipartFile files
             ,@RequestParam("brandId") Integer  brandId
-            ,@RequestParam("supplierId") Integer  supplierId
+//            ,@RequestParam("supplierId") Integer  supplierId
+            ,@RequestParam(name = "supplierId", required = false) Integer supplierId
             ,@RequestParam("barcode") String  barcode
             ,@RequestParam("item_name") String  item_name
             ,@RequestParam("unit") String  unit

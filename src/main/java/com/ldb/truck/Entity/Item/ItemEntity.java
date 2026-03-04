@@ -17,7 +17,9 @@ public class ItemEntity {
     @Column(name = "brand_id", nullable = false)
     private Integer brandId;
 
-    @Column(name = "supplier_id", nullable = false)
+//    @Column(name = "supplier_id", nullable = false)
+//    private Integer supplierId;
+    @Column(name = "supplier_id")
     private Integer supplierId;
 
     @Column(name = "barcode", nullable = false)

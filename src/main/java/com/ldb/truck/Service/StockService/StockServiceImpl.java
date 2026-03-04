@@ -762,7 +762,7 @@ public class StockServiceImpl {
             if ("USERSTOCK".equals(role)) {
                 conUserId = "\n AND saveby ='"+userId+"' and borkey='"+borNo+"' ";
             } else if ("AUTH".equals(role)) {
-                conUserId = "";
+                conUserId = "\n AND borkey='"+borNo+"'";
             } else if ("BUYER".equals(role)) {
                 conUserId = "";
             } else if ("ACCOUNTING".equals(role)) {
