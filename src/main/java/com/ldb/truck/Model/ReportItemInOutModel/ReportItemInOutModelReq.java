@@ -16,5 +16,4 @@ public class ReportItemInOutModelReq {
     String houseNo;
     String borNo;
     String toKen;
-    String stockType;/// | new
 }

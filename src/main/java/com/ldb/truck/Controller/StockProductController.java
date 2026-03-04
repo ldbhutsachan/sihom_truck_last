@@ -541,9 +541,8 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = userProfiles.get(0).getUserId();
-        String borNo = userProfiles.get(0).getBorNo();
         try {
-            response = stockService.saveRequestItem(stockItemDetailsEntity,userId,borNo);
+            response = stockService.saveRequestItem(stockItemDetailsEntity,userId);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
