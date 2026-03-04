@@ -35,6 +35,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -761,7 +762,7 @@ public class StockServiceImpl {
             if ("USERSTOCK".equals(role)) {
                 conUserId = "\n AND saveby ='"+userId+"' and borkey='"+borNo+"' ";
             } else if ("AUTH".equals(role)) {
-                conUserId = "";
+                conUserId = "\n AND borkey='"+borNo+"'";
             } else if ("BUYER".equals(role)) {
                 conUserId = "";
             } else if ("ACCOUNTING".equals(role)) {
@@ -791,12 +792,19 @@ public class StockServiceImpl {
                     itemSize = "\n AND size = 'item'";
                     break;
                 case "APPROVEINOUT":
-                    itemSize = "\n AND size != 'nammun' AND size != 'item'";
+//                    itemSize = "\n AND size != 'nammun' AND size != 'item'";
+                    itemSize = "\n AND borkey !='145'";
                     break;
                 case "ADMIN":
                     itemSize = "\n AND size != 'item'";
                     break;
+                case "BILLCHECKER":
+                    itemSize = "\n AND borkey ='145'";   // SHOW ONLY DATA FROM lAP 21 K
+                    break;
+                default:
+                    itemSize = "";   // กัน error กรณี role อื่น
             }
+
 
             StringBuilder sb = new StringBuilder();
             sb.append("SELECT * FROM v_order_item where 1=1 "); // You can add WHERE clauses based on parameters
@@ -1023,9 +1031,15 @@ public class StockServiceImpl {
             entity.setRealCurrency(item.getCurrency());
 
             entity.setSaveBy(userId);
-            entity.setSaveDate(new Date());
+            entity.setSaveDate(LocalDateTime.now());
             entity.setStatus("wait"); // Example default status
             entities.add(entity);
+            //NEW
+            entity.setShopeId(item.getShopeId());
+            entity.setTypeOfOrder(item.getOrderType());
+            entity.setCurrency(item.getCurrency());
+
+
         }
 
         return entities;
@@ -1187,8 +1201,8 @@ public class StockServiceImpl {
             log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
             int updated = 0;
             final String sql = "UPDATE order_item_details SET " +
-                    "saveby = ?, " +
-                    "savedate = ?, " +
+//                    "saveby = ?, " +
+//                    "savedate = ?, " +
                     "qty = ?," +
                     "price = ?," +
                     "status= 'wait' , " +
@@ -1200,8 +1214,8 @@ public class StockServiceImpl {
                 log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
                 updated = EBankJdbcTemplate.update(
                         sql,
-                        userId,
-                        new Date(),
+//                        userId,
+//                        new Date(),
                         item.getQty(),
                         item.getPrice(),
                         item.getCurrency(),
@@ -1285,13 +1299,31 @@ public class StockServiceImpl {
         List<String> uploadedUrls = request.getImageList();
         log.info("✅ imageList before update: {}", uploadedUrls);
 
-        final String sql = "UPDATE order_item_details SET " +
-                "approveby = ?, approvedate = ?, " +
-                "qty = ?, price = ?, status = 'auth', " +
-                "currency = ?, exchange_rate = ?, " +
-                "place_buy = ?, shope_id = ?, " +
-                "type_of_order = ?, date_pay = ?, item_arrive_date = ?, image = ? " +
-                "WHERE item_id = ? AND bill_no = ?";
+//        final String sql =
+//                "UPDATE order_item_details SET " +
+//                "approveby = ?, approvedate = ?, " +
+//                "qty = ?, price = ?, status = 'auth', " +
+//                "currency = ?, exchange_rate = ?, " +
+//                "place_buy = ?, shope_id = ?, " +
+//                "type_of_order = ?, date_pay = ?, item_arrive_date = ?, image = ? " +
+//                "WHERE item_id = ? AND bill_no = ?";
+        final String sql =
+                "UPDATE order_item_details SET " +
+                        "approveby = ?, approvedate = ?, " +
+                        "qty = ?, price = ?, status = 'auth', " +
+
+                        "currency = COALESCE(NULLIF(?, ''), currency), " +
+                        "exchange_rate = ?, " +
+
+                        "place_buy = COALESCE(NULLIF(?, ''), place_buy), " +
+                        "shope_id = COALESCE(NULLIF(?, ''), shope_id), " +
+                        "type_of_order = COALESCE(NULLIF(?, ''), type_of_order), " +
+
+                        "date_pay = ?, item_arrive_date = ?, " +
+                        "image = COALESCE(NULLIF(?, ''), image) " +
+
+                        "WHERE item_id = ? AND bill_no = ?";
+
 
         for (OrderItemReportEntity item : items) {
 
@@ -1575,9 +1607,10 @@ public class StockServiceImpl {
         log.info("Approving {} item(s) for billNo: {}", items.size(), request.getBillNo());
         int updated = 0;
         final String sql = "UPDATE order_item_details SET " +
+                "editby = ?, editdate = ?," +
                 "qty = ?," +
                 "price = ?," +
-             //   "status= ? , " +
+                "status= ? , " +
                 "currency= ?, " +
                 "exchange_rate= ? " +
                 "WHERE item_id = ? and bill_no=?  ";
@@ -1585,11 +1618,11 @@ public class StockServiceImpl {
             log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
             updated = EBankJdbcTemplate.update(
                     sql,
-                 //   userId,
-                  //  new Date(),
+                    userId,
+                    new Date(),
                     item.getQty(),
                     item.getPrice(),
-                  //  item.getStatus(),
+                    item.getStatus(),
                     item.getCurrency(),
                     item.getExchangeRate(),
                     item.getDetailId(),
@@ -1662,6 +1695,8 @@ public class StockServiceImpl {
         log.info("Reject {} item(s) for billNo: {}", items.size(), request.getBillNo());
         int updated = 0;
         final String sql = "UPDATE order_item_details SET " +
+                "rejectby = ?," +
+                "rejectbyDate = ?, " +
                 "qty = ?," +
                 "price = ?," +
                 "status= ? , " +
@@ -1672,6 +1707,8 @@ public class StockServiceImpl {
             log.debug("Updating detail_id = {}, qty = {}, price = {} ,status ={}", item.getDetailId(), item.getQty(), item.getPrice(),item.getStatus());
             updated = EBankJdbcTemplate.update(
                     sql,
+                    userId,
+                    now,
                     item.getQty(),
                     item.getPrice(),
                     item.getStatus(),
@@ -1746,7 +1783,7 @@ public class StockServiceImpl {
             entity.setExchangeRate(item.getExchangeRate());
 
             entity.setSaveBy(userId);
-            entity.setSaveDate(new Date());
+            entity.setSaveDate(LocalDateTime.now());
             entity.setStatus(request.getStatus());
 
             entities.add(entity);
@@ -1988,7 +2025,10 @@ public class StockServiceImpl {
             log.info("Processing item: " + itemNo + ", Quantity: " + qty);
 
             // Update inventory
-            itemEntityRepository.updateStockInItem(qty, amount, ccy, realPriceData, itemNo);
+            itemEntityRepository.updateStockInItem(
+                    qty,
+//                    amount,
+                     ccy, realPriceData, itemNo);
 
             // Update order details
             itemEntityRepository.updateStockInItemOrderDetails(
@@ -2278,6 +2318,9 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
         // ===== ตรวจสอบว่า reject ทั้งหมดหรือไม่
         boolean allRejected = stockItemDetailsReq.getDetailId().stream()
                 .allMatch(item -> "reject".equalsIgnoreCase(item.getStatus()));
+        // ===== ตรวจสอบว่า auth ทั้งหมดหรือไม่
+        boolean allAuth = stockItemDetailsReq.getDetailId().stream()
+                .allMatch(item -> "auth".equalsIgnoreCase(item.getStatus()));
 
         if (allRejected) {
             log.info("=====reject all items=====");
@@ -2304,6 +2347,28 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                 response.setMessage("Can't Reject this del No!!!!");
             }
             return response;
+        } else if (allAuth) {
+            int totalUpdated = 0;
+
+            for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
+                totalUpdated += requestItemRepository.updateItemStatusAuth(
+                        stockItemDetailsReq.getUserId(),
+                        new Date(),
+                        item.getItemId(),
+                        stockItemDetailsReq.getBillNo()
+                );
+            }
+
+            if (totalUpdated == stockItemDetailsReq.getDetailId().size()) {
+                response.setStatus("00");
+                response.setMessage("Ready approve by Auth");
+            } else {
+                response.setStatus("EE");
+                response.setMessage("Some items failed to approve");
+            }
+
+            return response;
+
         }
 
         // ===== ตรวจสอบ stock ก่อน approve
@@ -2338,15 +2403,6 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
 
         // ===== approve items
         int updatedRows = 0;
-//        for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
-//            updatedRows = requestItemRepository.approveRequestItem(
-//                    stockItemDetailsReq.getUserId(),
-//                    new Date(),
-//                    stockItemDetailsReq.getStatus(),
-//                    item.getItemId(),
-//                    stockItemDetailsReq.getBillNo()
-//            );
-//        }
         for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
             updatedRows = requestItemRepository.approveRequestItem(
                     stockItemDetailsReq.getUserId(), // approveBy
@@ -2354,6 +2410,7 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                     stockItemDetailsReq.getStatus(), // status
                     "ok",                            // usingStatus
                     new Date(),                      // usingDate
+                    stockItemDetailsReq.getKhid(),   //old_stock_house
                     stockItemDetailsReq.getUserId(), // usingBy (คนเดียวกับ approveBy)
                     item.getItemId(),                // itemId
                     stockItemDetailsReq.getBillNo()  // billNo
@@ -2436,7 +2493,11 @@ public DataResponse checkKeyOrder(){
                 }
             }
             else {
-                listData = requestTxnRepository.getStockByBillNoAdmin(status,branchNo);
+                if("PADMIN".equals(role)) {
+                    listData = requestTxnRepository.getStockByBillNoAdminStatus(uMission, startDate,endDate,status);
+                }else {
+                    listData = requestTxnRepository.getRequestBillByBor(branchNo,borNo, startDate,endDate ,status);
+                }
             }
 
             List<String> billNoList = listData.stream()

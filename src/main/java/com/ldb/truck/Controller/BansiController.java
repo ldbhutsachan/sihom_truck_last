@@ -542,6 +542,15 @@ public class BansiController {
     public DataResponse getAccountingWaitCount(@RequestBody FinanceViewDto financeViewDto) {
         return bansiService.getAccountingWaitCount(financeViewDto);
     }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/findItemforaccounting.service")
+    public ResponseEntity<DataResponse> findItemforaccounting(
+            @RequestBody SupplierNotPayReq req
+    ) {
+        return ResponseEntity.ok(
+                bansiService.findItemforaccounting(req)
+        );
+    }
 
 
 

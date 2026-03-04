@@ -35,7 +35,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
 
             " i.barcode = :barcode, " +
             " i.itemtypeid = :itemtypeid, " +
-            " i.houseid = :houseid,i.alertqty=:alertqty " +
+            " i.houseid = :houseid,i.alertqty=:alertqty , i.ordertype = :orderType" +
             "WHERE i.item_id = :itemId",nativeQuery = true)
     int updateItem(
             Integer brandId,
@@ -58,6 +58,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             Integer itemtypeid,
             Integer houseid,
             Integer alertqty,
+            String orderType,
             Long itemId
     );
  @Modifying
@@ -80,7 +81,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
 
             " i.barcode = :barcode, " +
             " i.itemtypeid = :itemtypeid, " +
-            " i.houseid = :houseid,i.alertqty=:alertqty " +
+            " i.houseid = :houseid,i.alertqty=:alertqty, i.ordertype =:orderType " +
             "WHERE i.item_id = :itemId",nativeQuery = true)
     int updateItemNoImage(
             Integer brandId,
@@ -102,6 +103,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
             Integer itemtypeid,
             Integer houseid,
             Integer alertqty,
+            String orderType,
             Long itemId
     );
 
@@ -109,11 +111,13 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
     @Transactional
     @Query(value = "UPDATE item_inventory as i SET " +
            // "i.unit =i.unit + :unit, " +
-            "i.qty =i.qty + :qty ,i.price=:amount,i.currency=:ccy, i.real_price=:realPriceData " +
+            "i.qty =i.qty + :qty ," +
+//            "i.price=:amount," +
+            "i.currency=:ccy, i.real_price=:realPriceData " +
             "\n WHERE i.item_id =:itemId ",nativeQuery = true)
     int updateStockInItem(
             Integer qty,
-            Float amount,
+//            Float amount,
             String ccy,
             Float realPriceData,
             Integer itemId

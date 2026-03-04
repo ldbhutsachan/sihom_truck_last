@@ -12,14 +12,20 @@ import java.util.List;
 @Repository
 public interface ItemListRepository extends JpaRepository<listItemEntity, String> {
     @Query(value = "SELECT item_id AS itemId, " +
-            "item_name AS itemName, " +
+            "item_name AS itemName, unit, " +
             "image, " +
             "bor_no AS borNo, " +
             "bor_name AS borName, " +
             "size, qty, " +
             "khid, " +
             "khno, " +
-            "khname " +
+            "khname,\n" +
+            "shopid AS shopId,\n" +
+            "shop_name AS shopName,\n" +
+            "ordertype AS orderType,\n" +
+            "exchange_rate AS exchangeRate,\n" +
+            "currency,\n" +
+            "price\n" +
             "FROM v_items_list " +
             "WHERE bor_no = :borNo AND khid = :khid " +
             "ORDER BY item_name ASC",
@@ -28,14 +34,20 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
 
     // สำหรับ PADMIN ทั้งหมด
     @Query(value = "SELECT item_id AS itemId, " +
-            "item_name AS itemName, " +
+            "item_name AS itemName, unit, " +
             "image, " +
             "bor_no AS borNo, " +
             "bor_name AS borName, " +
             "size, qty," +
             "khid, " +
             "khno, " +
-            "khname " +
+            "khname,\n" +
+            "shopid AS shopId,\n" +
+            "shop_name AS shopName,\n" +
+            "ordertype AS orderType,\n" +
+            "exchange_rate AS exchangeRate,\n" +
+            "currency,\n" +
+            "price\n " +
             "FROM v_items_list " +
             "ORDER BY item_name ASC",
             nativeQuery = true)
@@ -43,14 +55,20 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
 
     // สำหรับ Branch
     @Query(value = "SELECT item_id AS itemId, " +
-            "item_name AS itemName, " +
+            "item_name AS itemName, unit, " +
             "image, " +
             "bor_no AS borNo, " +
             "bor_name AS borName, " +
             "size, qty," +
             "khid, " +
             "khno, " +
-            "khname " +
+            "khname,\n" +
+            "shopid AS shopId,\n" +
+            "shop_name AS shopName,\n" +
+            "ordertype AS orderType,\n" +
+            "exchange_rate AS exchangeRate,\n" +
+            "currency,\n" +
+            "price\n" +
             "FROM v_items_list " +
             "WHERE branch_no = :branchNo " +
             "AND bor_no = :borNo " +

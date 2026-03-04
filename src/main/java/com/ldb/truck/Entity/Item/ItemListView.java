@@ -4,6 +4,7 @@ public interface ItemListView {
 
     String getItemId();
     String getItemName();
+    String getUnit();
     String getImage();
     String getBorNo();
     String getBorName();
@@ -12,4 +13,12 @@ public interface ItemListView {
     String getKhid();
     String getKhno();
     String getKhname();
+    String getShopId();
+    String getShopName();
+    String getOrderType();
+    String getCurrency();
+    String getExchangeRate();
+    String getPrice();
+
+
 }

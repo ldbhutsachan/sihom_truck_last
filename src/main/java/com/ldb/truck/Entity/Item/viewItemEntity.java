@@ -146,5 +146,8 @@ public class viewItemEntity {
     @Column(name = "outqty", nullable = false)
     private Integer outqty;
 
+    @Column(name = "ordertype", nullable = false)
+    private String ordertype;
+
 
 }

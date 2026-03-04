@@ -24,12 +24,15 @@ public interface PlaceStockViewEntityRepository extends CrudRepository<PlaceStoc
                     "      OR not_for_alai IS NULL " +
                     "      OR not_for_alai = '' " +
                     "      OR not_for_alai <> 'Y' ) " +
+                    "AND (:status IS NULL OR :status = '' OR stock_status = :status) " +
                     "ORDER BY khid DESC",
             nativeQuery = true)
     List<PlaceStockViewEntity> findAllStockHousesAdminFilterBor(
             @Param("borNo") String borNoForAdmin,
-            @Param("umission") String umission
+            @Param("umission") String umission,
+            @Param("status") String status
     );
+
 
 
 

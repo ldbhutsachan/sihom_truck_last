@@ -264,6 +264,7 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
             String borNo = userProfiles.get(0).getBorNo();
             String borNoForAdmin = brandReq.getBorNo();
             String umission = userProfiles.get(0).getStaff_id();
+            String status = brandReq.getStatus();
 
             PlaceStockEntityReq reqBody = new PlaceStockEntityReq();
             reqBody.setRole(role);
@@ -278,7 +279,7 @@ public ResponseEntity<?> saveItemType(@RequestBody ItemTypeEntity itemTypeEntity
 //            }
 
             reqBody.setBorNo(borNo);
-            response = placeStockService.getPlaceStockHouse(reqBody,borNoForAdmin,umission);
+            response = placeStockService.getPlaceStockHouse(reqBody,borNoForAdmin,umission,status);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -440,7 +441,8 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
             value = "JSON body request to check information",
             required = true) @Valid  @RequestParam(name="files" , required=false) MultipartFile files
             ,@RequestParam("brandId") Integer  brandId
-            ,@RequestParam("supplierId") Integer  supplierId
+//            ,@RequestParam("supplierId") Integer  supplierId
+            ,@RequestParam(name = "supplierId", required = false) Integer supplierId
             ,@RequestParam("barcode") String  barcode
             ,@RequestParam("item_name") String  item_name
             ,@RequestParam("unit") String  unit
@@ -551,6 +553,7 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
             ,@RequestParam("itemtypeid") Integer  itemtypeid
             ,@RequestParam("houseid") Integer  houseid
             ,@RequestParam("alertqty") Integer  alertqty
+            ,@RequestParam("ordertype") String  ordertype
             ,HttpServletRequest request) throws Exception {
         log.info("\t\t --> save item Request controller >>>>>>>>>>>>>>>>>>>>>>");
         String clientIpAddress = request.getRemoteAddr();
@@ -598,6 +601,7 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
         data.setItemtypeid(itemtypeid);
         data.setHouseid(houseid);
         data.setAlertqty(alertqty);
+        data.setOrderType(ordertype);
         //====================check doc file before upload this==============
         // Handle file upload
         String imageUrl = "http://khounkham.com/images/image.jpg"; // Default image

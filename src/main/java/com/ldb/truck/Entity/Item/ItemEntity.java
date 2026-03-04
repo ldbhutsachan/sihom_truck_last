@@ -17,7 +17,9 @@ public class ItemEntity {
     @Column(name = "brand_id", nullable = false)
     private Integer brandId;
 
-    @Column(name = "supplier_id", nullable = false)
+//    @Column(name = "supplier_id", nullable = false)
+//    private Integer supplierId;
+    @Column(name = "supplier_id")
     private Integer supplierId;
 
     @Column(name = "barcode", nullable = false)
@@ -79,6 +81,10 @@ public class ItemEntity {
 
     @Column(name = "alertqty", nullable = false)
     private Integer alertqty;
+
+
+    @Column(name = "ordertype", length = 50)
+    private String orderType;
 
 
 }

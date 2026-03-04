@@ -18,4 +18,6 @@ public class OrderReqItem {
     private int exchangeRate;
     private Float realPrice;
     private Float price;
+    private int shopeId;
+    private String orderType;
 }

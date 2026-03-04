@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class modelItemList {
     private String itemId;
     private String item_name;
+    private String unit;
     private String image;
     private String borNo;
     private String borName;
@@ -18,4 +19,10 @@ public class modelItemList {
     private String khid;
     private String khno;
     private String khname;
+    private String shopid;
+    private String shopName;
+    private String orderType;
+    private String currency;
+    private String exchangeRate;
+    private String price;
 }
