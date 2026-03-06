@@ -822,6 +822,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
                 conItem += "\n and houseNo = '" + houseNo + "'";
             }
         }
+        //my old code
 
 //        String startDateCon = "\n and dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"' or dateOut >= '"+startDate+"' and dateOut <= '"+endDate+"' " ;
         String startDateCon = "\n and ((dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"') " +
