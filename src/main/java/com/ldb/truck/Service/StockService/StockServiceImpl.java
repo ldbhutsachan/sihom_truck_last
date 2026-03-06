@@ -1045,6 +1045,8 @@ public class StockServiceImpl {
             entity.setShopeId(item.getShopeId());
             entity.setTypeOfOrder(item.getOrderType());
             entity.setCurrency(item.getCurrency());
+            entity.setPlaceBuy(item.getPlaceBuy());
+
 
 
         }

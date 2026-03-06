@@ -20,4 +20,5 @@ public class OrderReqItem {
     private Float price;
     private int shopeId;
     private String orderType;
+    private String placeBuy;
 }

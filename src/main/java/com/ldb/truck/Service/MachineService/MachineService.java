@@ -94,12 +94,12 @@ public class MachineService {
                 return response;
             }
             else if(check == 2){
-                response.setStatus("00");
-                response.setMessage("You're data is Error!!!!");
+                response.setStatus("01");
+                response.setMessage("out of update step!!!!");
                 response.setData(null);
                 return response;
             }
-            response.setStatus("00");
+            response.setStatus("02");
             response.setMessage("Can't update Data !!!!");
             response.setData(null);
             return response;
@@ -122,27 +122,34 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         String mchNo = machineHisReq.getMchNo();
 
         if ("1".equals(type)) {
-            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(mchNo);
+            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(mchNo, userName);
         } else if ("2".equals(type)) {
-            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(mchNo);
+            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(mchNo, userName);
         } else {
-            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(mchNo);
+            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(mchNo, userName);
         }
 
         log.info("check: {}", check);
 
-        switch (check) {
-            case 1:
-                response.setStatus("00");
-                response.setMessage("Update completed successfully.");
-                break;
-            case 2:
-                response.setStatus("01");
-                response.setMessage("Machine already closed or no data to update.");
-                break;
-            default:
-                response.setStatus("00");
-                response.setMessage("Update data success!");
+//        switch (check) {
+//            case 1:
+//                response.setStatus("00");
+//                response.setMessage("Update completed successfully.");
+//                break;
+//            case 2:
+//                response.setStatus("01");
+//                response.setMessage("Machine already closed or no data to update.");
+//                break;
+//            default:
+//                response.setStatus("00");
+//                response.setMessage("Update data success!");
+//        }
+        if (check > 0) {
+            response.setStatus("00");
+            response.setMessage("Update completed successfully. Rows updated: " + check);
+        } else {
+            response.setStatus("01");
+            response.setMessage("No data found to update.");
         }
 
     } catch (Exception e) {
@@ -231,6 +238,9 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setTime_oil_fix(resp.getTime_oil_fix());
                  machine.setTime_oil_fix_mo(resp.getTime_oil_fix_mo());
 
+                 machine.setAll_Used_Hours(resp.getAll_Used_Hours());
+                 machine.setLast_engine_Hours(resp.getLast_engine_Hours());
+                 machine.setLast_hydraulic_Hours(resp.getLast_hydraulic_Hours());
                  machine.setTotalFixMo(resp.getTotalFixMo());
                  machine.setTotalFixMoOil(resp.getTotalFixMoOil());
                  machine.setImage(resp.getImage());

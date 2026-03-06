@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -490,7 +491,8 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
 
     // ✅ สร้าง SQL หลัก
     sb.append("SELECT \n")
-            .append("a.key_id, a.mch_no,a.status, a.status2, a.create_date, a.create_by, d.USER_LOGIN AS USER_LOGIN, a.time_total, a.txn_date, a.status,\n")
+            .append("a.key_id, a.mch_no,a.status, a.status2, a.create_date, a.create_by,chanage_by,change_date,change_by2,change_date2," +
+                    " d.USER_LOGIN AS USER_LOGIN, a.time_total, a.txn_date, a.status,\n")
             .append("b.mch_name, b.mch_branch_name, b.mch_model, b.mch_product_year,\n")
             .append("c.key_id borNo, c.b_name borName\n")
             .append("FROM tb_machine_his a\n")
@@ -526,6 +528,10 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                 tr.setBorNo(rs.getString("borNo"));
                 tr.setBorName(rs.getString("borName"));
                 tr.setStatus2(rs.getInt("status2"));
+                tr.setEngineOil_By(rs.getString("chanage_by"));
+                tr.setEngine_Date(rs.getString("change_date"));
+                tr.setHydraulic_By(rs.getString("change_by2"));
+                tr.setHudrawlic_Date2(rs.getString("change_date2"));
                 return tr;
             }
         });
@@ -569,11 +575,11 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
             entity.setMchNo(machineHisReq.getMchNo());
             entity.setTime_total(machineHisReq.getTimeClose());
             entity.setTxnDate(machineHisReq.getTxnDate());
-            entity.setStatus(machineHisReq.getStatus()); // Assuming status is part of MachineHisReq
-            entity.setStatus2(machineHisReq.getStatus2());
+            entity.setStatus(machineHisReq.getStatus()); // set status = 1 because just update
+            entity.setStatus2(machineHisReq.getStatus());// set status2 = 1 because just update
             try {
                 MERCHIN_HIS_REPOSITORY.save(entity); // Save the updated entity
-                return 1; // Return 0 for success
+                return 1; //  success
             } catch (Exception e) {
                 e.printStackTrace();
                 return -1; // Return -1 for failure
@@ -719,6 +725,9 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 .append("    a.time_oil_fix,\n")
                 .append("    a.time_oil_fix_mo,\n")
                 .append("    a.image, a.date_in,\n")
+                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.mch_no = a.mch_no),0) AS all_used_hours,\n")
+                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no),0) AS last_engine_hours,\n")
+                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no),0) AS last_hydraulic_hours,\n")
                 .append("(a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
                 .append("(a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
 
@@ -759,6 +768,21 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setTime_fix_monitor(rs.getInt("time_fix_monitor"));
                 tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
                 tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
+                // ถ้า column เป็น NULL จะได้ 0 แทน
+                tr.setAll_Used_Hours(
+                        rs.getObject("all_used_hours") != null ?
+                                ((BigDecimal) rs.getObject("all_used_hours")).intValue() : 0
+                );
+
+                tr.setLast_engine_Hours(
+                        rs.getObject("last_engine_hours") != null ?
+                                ((BigDecimal) rs.getObject("last_engine_hours")).intValue() : 0
+                );
+
+                tr.setLast_hydraulic_Hours(
+                        rs.getObject("last_hydraulic_hours") != null ?
+                                ((BigDecimal) rs.getObject("last_hydraulic_hours")).intValue() : 0
+                );
                 tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
                 tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
                 tr.setImage(rs.getString("image"));

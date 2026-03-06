@@ -29,18 +29,21 @@ public class Machine {
     private String borName;
     private String borLocationName;
 
+    private Integer all_Used_Hours;
+    private Integer last_engine_Hours;
     private Integer time_fix;
     private Integer time_fix_monitor;
+    private Integer totalFixMo;
+    private String status_mo;
+    private Integer last_hydraulic_Hours;
     private Integer time_oil_fix;
     private Integer time_oil_fix_mo;
-    private Integer totalFixMo;
     private Integer totalFixMoOil;
+    private String status_oil_mo;
 
     private  String image;
     private String date_in;
 
-    private String status_mo;
-    private String status_oil_mo;
 
 
     // ✅ List ของ tools ที่จะ return ไปให้ client
