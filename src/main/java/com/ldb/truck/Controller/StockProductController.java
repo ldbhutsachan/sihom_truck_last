@@ -707,9 +707,12 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
     @PostMapping("/getBorAll.service")
     public ResponseEntity<?> getBorAll (@RequestBody BorEntityReq borEntityReq){
         DataResponse response  = new DataResponse();
+        List<Profile> users = profileDao.getProfileInfoByToken(borEntityReq.getToKen());
+        String uMission = users.get(0).getStaff_id();
+
 
         try {
-            response = stockService.getBorAll(borEntityReq);
+            response = stockService.getBorAll(borEntityReq, uMission);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");

@@ -699,7 +699,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         String reqBorNo = machineRPReq.getBorNo();
         if (reqBorNo != null && !reqBorNo.isEmpty()) {
             conAdmin = "\nAND a.borNo='" + reqBorNo + "' ";
-        } else if (!"PADMIN".equals(role)) {
+        } else if (!"PADMIN".equals(role) && !"HR".equals(role)) {
             conAdmin = "\nAND a.borNo='" + borNo + "' ";
         } else {
             conAdmin = "";

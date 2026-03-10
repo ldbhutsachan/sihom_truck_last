@@ -2638,12 +2638,15 @@ public DataResponse checkKeyOrder(){
     //======make bor start =====
     //view_borRepository
 
-    public DataResponse getBorAll(BorEntityReq borEntityReq){
+    public DataResponse getBorAll(BorEntityReq borEntityReq, String uMission){
         String keyId = borEntityReq.getKeyId();
         String typeBor = borEntityReq.getTypeBor();
         log.info("role start:"+keyId);
         DataResponse response = new DataResponse();
        try {
+           if("MANAGE".equals(uMission)){
+               response.setDataResponse((view_borRepository.getBor4HR(typeBor)));
+           }
            if(keyId.isEmpty() || keyId.equals("all") || keyId.equals("all")){
                response.setDataResponse(view_borRepository.getBorViewEntityAll(typeBor));
            }else {

@@ -96,7 +96,7 @@ public class PlaceStockService {
         DataResponse response = new DataResponse();
 
         try {
-            if ("PADMIN".equals(role) || "BUYER".equals(role)) {
+            if ("PADMIN".equals(role) || "BUYER".equals(role))  {
                 response.setDataResponse(
                         placeStockViewEntityRepository
                                 .findAllStockHousesAdminFilterBor(borNoForAdmin, umission, status)
@@ -113,6 +113,11 @@ public class PlaceStockService {
                 response.setDataResponse(
                         placeStockViewEntityRepository
                                 .findAllStockHousesUserId(userId)
+                );
+            }else if ("HR".equals(role)) {
+                response.setDataResponse(
+                        placeStockViewEntityRepository
+                                .findStock4HR(borNoForAdmin, umission)
                 );
             }
             else {

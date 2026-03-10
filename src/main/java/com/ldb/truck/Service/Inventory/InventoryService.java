@@ -1301,16 +1301,10 @@ public ReportstockRes reportStockDayWeekService(ReportstockReq reportstockReq) {
 
 // show all fix list
 public ShowFix  ShowFixList (@RequestBody FixReq fixReq){
-    log.info("toKen=======================:"+fixReq.getToKen());
-    //============================get User info=======================
     List<Profile> userIn = profileDao.getProfileInfoByToken(fixReq.getToKen());
-    log.info("show=================UserNo:"+userIn.get(0).getUserId());
-    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-    log.info("show=================Role:"+userIn.get(0).getRole());
-    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-    //================================================================
     String userId = userIn.get(0).getUserId();
     String userBranchNo = userIn.get(0).getBranchNo();
+    String uMission = userIn.get(0).getStaff_id();
     //===================set data to userId===============================
     fixReq.setUserId(userId);
     fixReq.setBranch(userBranchNo);
@@ -1318,7 +1312,7 @@ public ShowFix  ShowFixList (@RequestBody FixReq fixReq){
     List<ShowFixModel> listData = new ArrayList<>();
     ShowFix result = new ShowFix();
     try {
-        listData = inventoryDao.ShowFixListDAOs(fixReq);
+        listData = inventoryDao.ShowFixListDAOs(fixReq, uMission);
         result.setMessage("Success");
         result.setStatus("00");
         result.setData(listData);
@@ -1445,25 +1439,17 @@ public ShowFix  UpdateFixCostService (@RequestBody FixReq fixReq){
 }
 // fix report service
 public FixReportRes FixReportService (@RequestBody FixReq fixReq ){
-    log.info("toKen=======================:"+fixReq.getToKen());
-    //============================get User info=======================
     List<Profile> userIn = profileDao.getProfileInfoByToken(fixReq.getToKen());
-    log.info("show=================UserNo:"+userIn.get(0).getUserId());
-    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-    log.info("show=================Role:"+userIn.get(0).getRole());
-    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-    //================================================================
+    String uMission = userIn.get(0).getStaff_id();
     String userId = userIn.get(0).getUserId();
     String userBranchNo = userIn.get(0).getBranchNo();
-    //===================set data to userId===============================
     fixReq.setUserId(userId);
     fixReq.setBranch(userBranchNo);
-    //====================================================================
     List<FixModelFaso> listData = new ArrayList<>();
     FixReportRes result = new FixReportRes();
     DecimalFormat numfm = new DecimalFormat("###,###.###");
     try {
-        listData = inventoryDao.FixReportDAOs(fixReq);
+        listData = inventoryDao.FixReportDAOs(fixReq, uMission);
         sumFooterGroupFix restFooter = new sumFooterGroupFix();
         double TotalFixCost =  listData.stream().map(FixModelFaso::getTotalFixCost).collect(Collectors.summingDouble(Double::doubleValue));
         restFooter.setTotalFixCost(numfm.format(TotalFixCost));

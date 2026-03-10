@@ -18,4 +18,8 @@ public interface BorRepository extends CrudRepository<BorViewEntity,Long> {
     @Query(value = "SELECT * FROM v_bor where  type_bor=?", nativeQuery = true)
     List<BorViewEntity> getBorViewEntityAll(String typeBor);
 
+    // new
+    @Query(value = "SELECT * FROM v_bor where  type_bor=?", nativeQuery = true)
+    List<BorViewEntity> getBor4HR(String typeBor);
+
 }

@@ -34,6 +34,19 @@ public interface PlaceStockViewEntityRepository extends CrudRepository<PlaceStoc
             @Param("status") String status
     );
 
+    //get Stock4 HR
+    @Transactional
+    @Query(value =
+            "SELECT * FROM v_stock_house " +
+                    "WHERE (:borNo IS NULL OR :borNo = '' OR bor_no = :borNo) " +
+                    "AND (:umission <> 'MANAGE' OR stock_status = 'ASSETS-STOCK') " +
+                    "ORDER BY khid DESC",
+            nativeQuery = true)
+    List<PlaceStockViewEntity> findStock4HR(
+            @Param("borNo") String borNoForAdmin,
+            @Param("umission") String umission
+    );
+
 
 
 
@@ -41,9 +54,10 @@ public interface PlaceStockViewEntityRepository extends CrudRepository<PlaceStoc
     @Transactional
     @Query(value = "SELECT * FROM v_stock_house where branch_no=:branchNo and bor_no=:borNo ORDER BY khid DESC", nativeQuery = true)
     List<PlaceStockViewEntity> findAllStockHousesBranchNo(@Param("branchNo") String branchNo,@Param("borNo") String borNo);
-  @Transactional
+    @Transactional
     @Query(value = "SELECT * FROM v_stock_house where userid=:userId ORDER BY khid DESC", nativeQuery = true)
     List<PlaceStockViewEntity> findAllStockHousesUserId(@Param("userId") String userId);
+
     @Query(value = "SELECT * FROM v_stock_house where bor_no=:borNo and stock_status='OLD-STOCK'  ORDER BY khid DESC", nativeQuery = true)
     Optional<PlaceStockViewEntity> findByBorNo(@Param("borNo") String borNo);
 
