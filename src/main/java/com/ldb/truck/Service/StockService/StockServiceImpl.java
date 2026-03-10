@@ -787,12 +787,12 @@ public class StockServiceImpl {
 
                 borNoCon = "\n AND borkey = '" + borNoFone + "' ";
             }
-            switch (userMission.toUpperCase()) {
+            switch (userMission == null ? "" : userMission.toUpperCase()) {
                 case "APPROVEOID":
                     itemSize = "\n AND size = 'nammun'";
                     break;
                 case "ALAIAPPROVE":
-                    itemSize = "\n AND size = 'item'";
+                    itemSize = "\n AND size = 'item' AND place_buy ='office'";
                     break;
                 case "APPROVEINOUT":
 //                    itemSize = "\n AND size != 'nammun' AND size != 'item'";
@@ -803,6 +803,9 @@ public class StockServiceImpl {
                     break;
                 case "BILLCHECKER":
                     itemSize = "\n AND borkey ='145'";   // SHOW ONLY DATA FROM lAP 21 K
+                    break;
+                case "FIELDAPPROVE":
+                    itemSize = "\n AND size = 'item' AND (place_buy = 'field' OR place_buy = '' OR place_buy IS NULL)";
                     break;
                 default:
                     itemSize = "";   // กัน error กรณี role อื่น
