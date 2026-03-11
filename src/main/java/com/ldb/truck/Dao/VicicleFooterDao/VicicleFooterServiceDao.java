@@ -27,10 +27,19 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
     @Qualifier("EBankJdbcTemplate")
     private JdbcTemplate EBankJdbcTemplate;
     @Override
-    public List<VicicleFooter> ListVicicleFooter(VicicleFooterReq vicicleFooterReq) {
+    public List<VicicleFooter> ListVicicleFooter(VicicleFooterReq vicicleFooterReq, String uMission) {
         try {
-//            String sql = "select * from V_ALL_FOOTER_TRUCH ";
-            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b on a.userId =b.KEY_ID where b.BRANCH = '"+vicicleFooterReq.getBranch()+"' ";
+//            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b on a.userId =b.KEY_ID" +
+//                    " where b.BRANCH = '"+vicicleFooterReq.getBranch()+"' ";
+            String sql = "SELECT * FROM V_ALL_FOOTER_TRUCH a " +
+                    "INNER JOIN LOGIN b ON a.userId = b.KEY_ID " +
+                    "WHERE 1=1 ";
+
+            if ("MANAGE".equals(uMission)) {
+                sql += " AND b.BRANCH = '2' ";
+            } else {
+                sql += " AND b.BRANCH = '" + vicicleFooterReq.getBranch() + "' ";
+            }
             return EBankJdbcTemplate.query(sql, new RowMapper<VicicleFooter>() {
                 @Override
                 public VicicleFooter mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -148,9 +157,19 @@ public class VicicleFooterServiceDao  implements VicicleFooterInfDao{
         return null;
     }
     @Override
-    public List<VicicleFooter> ListVicicleFooterByID(VicicleFooterReq vicicleFooterReq) {
+    public List<VicicleFooter> ListVicicleFooterByID(VicicleFooterReq vicicleFooterReq, String uMission) {
         try {
-            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b on a.userId =b.KEY_ID WHERE a.KEY_ID= '"+vicicleFooterReq.getKey_id()+"' and b.BRANCH = '"+vicicleFooterReq.getBranch()+"'";
+//            String sql = "select * from V_ALL_FOOTER_TRUCH a inner join LOGIN b on a.userId =b.KEY_ID " +
+//                    "WHERE a.KEY_ID= '"+vicicleFooterReq.getKey_id()+"' and b.BRANCH = '"+vicicleFooterReq.getBranch()+"'";
+            String sql = "SELECT * FROM V_ALL_FOOTER_TRUCH a " +
+                    "INNER JOIN LOGIN b ON a.userId = b.KEY_ID " +
+                    "WHERE a.KEY_ID = '" + vicicleFooterReq.getKey_id() + "' ";
+
+            if ("MANAGE".equals(uMission)) {
+                sql += " AND b.BRANCH = '2' ";
+            } else {
+                sql += " AND b.BRANCH = '" + vicicleFooterReq.getBranch() + "' ";
+            }
             return EBankJdbcTemplate.query(sql, new RowMapper<VicicleFooter>() {
                 @Override
                 public VicicleFooter mapRow(ResultSet rs, int rowNum) throws SQLException {

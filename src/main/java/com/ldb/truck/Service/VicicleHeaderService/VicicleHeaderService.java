@@ -43,21 +43,17 @@ public class VicicleHeaderService  {
         log.info("toKen=======================:"+vicicleHeaderReq.getToKen());
         //============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleHeaderReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
         //===================set data to userId===============================
         vicicleHeaderReq.setUserId(userId);
         vicicleHeaderReq.setBranch(userBranchNo);
-        //====================================================================
+        //new
+        String uMission = userIn.get(0).getStaff_id();
         List<VicicleHeader> vicicleHeaders = new ArrayList<>();
         VicicleHeaderRes result = new VicicleHeaderRes();
         try {
-            vicicleHeaders = vicicleHeaderDao.listVicicleHeader(vicicleHeaderReq);
+            vicicleHeaders = vicicleHeaderDao.listVicicleHeader(vicicleHeaderReq, uMission);
             if(vicicleHeaders.size() < 1 ){
                 result.setMessage("data not found");
                 result.setStatus("01");
@@ -112,24 +108,21 @@ public class VicicleHeaderService  {
     }
     //---get data by id
     public VicicleHeaderRes listVicicleHeaderByID (@RequestBody VicicleHeaderReq vicicleHeaderReq){
-        log.info("toKen=======================:"+vicicleHeaderReq.getToKen());
         //============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleHeaderReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
         //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
         //===================set data to userId===============================
         vicicleHeaderReq.setUserId(userId);
         vicicleHeaderReq.setBranch(userBranchNo);
-        //====================================================================
+
+        //new
+        String uMission = userIn.get(0).getStaff_id();
         List<VicicleHeader> vicicleHeaders = new ArrayList<>();
         VicicleHeaderRes result = new VicicleHeaderRes();
         try {
-            vicicleHeaders = vicicleHeaderDao.listVicicleHeaderByID(vicicleHeaderReq);
+            vicicleHeaders = vicicleHeaderDao.listVicicleHeaderByID(vicicleHeaderReq, uMission);
             if(vicicleHeaders.size() < 1 ){
                 result.setMessage("data not found");
                 result.setStatus("01");

@@ -6,8 +6,8 @@ import com.ldb.truck.Model.Login.VicicleFooter.VicicleFooterRes;
 import java.util.List;
 
 public interface VicicleFooterInfDao {
-    public List<VicicleFooter> ListVicicleFooter (VicicleFooterReq vicicleFooterReq);
-    public List<VicicleFooter> ListVicicleFooterByID(VicicleFooterReq vicicleFooterReq);
+    public List<VicicleFooter> ListVicicleFooter (VicicleFooterReq vicicleFooterReq, String uMission);
+    public List<VicicleFooter> ListVicicleFooterByID(VicicleFooterReq vicicleFooterReq, String uMission);
     public int saveVicicleFooter (VicicleFooterReq vicicleFooterReq);
     public int delVicicleFooter (VicicleFooterReq vicicleFooterReq);
     public int updateVicicleFooter(VicicleFooterReq vicicleFooterReq);

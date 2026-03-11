@@ -826,7 +826,7 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         if("old".equals(stockRequest.getStockType())){
             conchType = "\n and stock_status='OLD-STOCK' ";
         }else{
-            conchType = "\n and stock_status is not null";
+            conchType = "";
         }
         String startDateCon = "\n and ((dateIn >= '"+startDate+"' and dateIn <= '"+endDate+"') " +
                 "or (dateOut >= '"+startDate+"' and dateOut <= '"+endDate+"'))";

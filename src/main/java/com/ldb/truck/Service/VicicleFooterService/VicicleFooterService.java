@@ -43,25 +43,23 @@ public class VicicleFooterService {
     }
     //--show all data
     public VicicleFooterRes listViciclefooter (VicicleFooterReq vicicleFooterReq){
-        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
         //============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
         //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
         //===================set data to userId===============================
         vicicleFooterReq.setUserId(userId);
         vicicleFooterReq.setBranch(userBranchNo);
+
+        //new
+        String uMission = userIn.get(0).getStaff_id();
         //====================================================================
         List<VicicleFooter> vicicleHeaders = new ArrayList<>();
         VicicleFooterRes result = new VicicleFooterRes();
 
         try {
-            vicicleHeaders = vicicleFooterServiceDao.ListVicicleFooter(vicicleFooterReq);
+            vicicleHeaders = vicicleFooterServiceDao.ListVicicleFooter(vicicleFooterReq, uMission);
             if(vicicleHeaders.size() < 1 ){
                 result.setMessage("data not found");
                 result.setStatus("01");
@@ -80,13 +78,7 @@ public class VicicleFooterService {
     }
     //--combo
     public VicicleFooterRes listViciclefootercombox1(VicicleFooterReq vicicleFooterReq){
-        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
-        //============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
         //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
@@ -116,16 +108,12 @@ public class VicicleFooterService {
     }
     //--show all data
     public VicicleFooterRes listViciclefooterbyID (VicicleFooterReq vicicleFooterReq){
-        log.info("toKen=======================:"+vicicleFooterReq.getToKen());
         //============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleFooterReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
         //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
+        String uMission = userIn.get(0).getStaff_id();
         //===================set data to userId===============================
         vicicleFooterReq.setUserId(userId);
         vicicleFooterReq.setBranch(userBranchNo);
@@ -133,7 +121,7 @@ public class VicicleFooterService {
         List<VicicleFooter> vicicleHeaders = new ArrayList<>();
         VicicleFooterRes result = new VicicleFooterRes();
         try {
-            vicicleHeaders = vicicleFooterServiceDao.ListVicicleFooterByID(vicicleFooterReq);
+            vicicleHeaders = vicicleFooterServiceDao.ListVicicleFooterByID(vicicleFooterReq, uMission);
             if(vicicleHeaders.size() < 1 ){
                 result.setMessage("data not found");
                 result.setStatus("01");
