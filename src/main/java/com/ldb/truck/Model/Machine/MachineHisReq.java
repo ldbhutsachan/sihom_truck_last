@@ -26,4 +26,6 @@ public class MachineHisReq {
     private String borNo;
 
     private String type;
+    private String startDate;
+    private String endDate;
 }

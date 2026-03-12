@@ -317,6 +317,13 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
                 SQL.append("AND a.borNo IS NOT NULL AND TRIM(a.borNo) <> '' AND a.borNo REGEXP '^[0-9]+$' ");
                 log.info("Query condition: BRANCH + BOR_NO IS NOT NULL");
             }
+        } else if ("HR".equalsIgnoreCase(role)) {
+            if(carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()){
+                SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
+            }else {
+                SQL.append("AND c.BRANCH = '").append(branch).append("' ");
+            }
+            
         } else {
             SQL.append("AND c.BRANCH = '").append(branch).append("' ");
 //            SQL.append("AND a.borNo IS NULL AND TRIM(a.borNo) = '' AND a.borNo NOT REGEXP '^[0-9]+$' ");

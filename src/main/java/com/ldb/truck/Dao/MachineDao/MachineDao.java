@@ -458,12 +458,15 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     Integer keyId = machineHisReq.getKeyId();
 //    Integer status = machineHisReq.getStatus();
     String mchNo = machineHisReq.getMchNo();
+    String startDate = machineHisReq.getStartDate();
+    String endDate = machineHisReq.getEndDate();
 
     String conOrder = "\n ORDER BY a.key_id DESC";
     String conBorNo = "";
     String conKeyId = "";
 //    String conStatus = "";
     String conMchNo = "";
+    String conDate = "";
 
     // ✅ เงื่อนไข status
 //    if (status != null) {
@@ -488,6 +491,13 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     if (mchNo != null && !mchNo.trim().isEmpty()) {
         conMchNo = "\n AND a.mch_no = '" + mchNo + "'";
     }
+    //query by startDate and endDate
+    if (startDate != null && !startDate.isEmpty()) {
+        conDate += "\n AND a.txn_date >= '" + startDate + "'";
+    }
+    if (endDate != null && !endDate.isEmpty()) {
+        conDate += "\n AND a.txn_date <= '" + endDate + "'";
+    }
 
     // ✅ สร้าง SQL หลัก
     sb.append("SELECT \n")
@@ -506,6 +516,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     sb.append(conMchNo);
     sb.append(conKeyId);
 //    sb.append(conStatus);
+    sb.append(conDate);
     sb.append(conOrder);
 
     // Log SQL
