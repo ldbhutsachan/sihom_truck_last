@@ -299,7 +299,7 @@ public DataResponse getItemList(listItemEntity listItemEntity, String userName, 
             }else {
                 response.setStatus("05");
                 response.setMessage("can't save data!!");
-            }s
+            }
         }catch (Exception e){
             e.printStackTrace();
             log.error("Error updating item: " + e.getMessage(), e);
