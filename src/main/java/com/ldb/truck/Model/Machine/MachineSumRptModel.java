@@ -14,6 +14,7 @@ public class MachineSumRptModel {
 
     @Data
     public static class  GroupItemList{
+        private String billNo;
         private String saveDate;
         private String saveBy;
         private String approveDate;

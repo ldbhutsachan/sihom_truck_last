@@ -606,8 +606,15 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
         // Handle file upload
         String imageUrl = "http://khounkham.com/images/image.jpg"; // Default image
         if (files != null && !files.isEmpty()) {
-            String uploadedFileName = mediaUploadService.uploadMedia(files);
-            imageUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+            try {
+                String uploadedFileName = mediaUploadService.uploadMedia(files);
+                imageUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
+                log.info("Uploaded file name: " + uploadedFileName); // เพิ่ม log
+                log.info("Image URL: " + imageUrl); // เพิ่ม log
+            } catch (Exception e) {
+                log.error("File upload failed: " + e.getMessage(), e); // เพิ่ม log
+                throw e;
+            }
         }
         data.setImage(imageUrl);
 

@@ -96,6 +96,7 @@ public class MachineDao implements MachineInterface {
                 tr.setKeyId(rs.getInt("key_id"));
                 tr.setMchNo(rs.getString("mch_no"));
                 tr.setMchName(rs.getString("mch_name"));
+                tr.setBillNo(rs.getString("bill_no"));
 
                 tr.setSaveBy(rs.getString("saveby_name"));
                 tr.setSaveDate(rs.getString("savedate"));

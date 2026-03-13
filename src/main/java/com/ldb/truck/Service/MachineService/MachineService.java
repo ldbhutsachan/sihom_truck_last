@@ -253,6 +253,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
 
                  
                  int time1 = resp.getTime_fix_monitor();
+                 int time_mo = resp.getTime_oil_fix_mo();
                  // ຄໍານວນ ຍໍ້າມັນ
                  int time2 = resp.getTotalFixMo();
                  // ຄໍານວນ ນໍ້າມັນ ໄຮໂດລິກ
@@ -262,21 +263,26 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  String mesTime2 = "LOW";
                  String mesTime3 = "EP";
 
-                 //ກວດສະຖານະນໍ້າມັຫນ
-                 if(time2 > time1 ){
+                 if(time1 <= 0 && time_mo <= 0){
                      totalMsg = mesTime1;
-                 }else if(time2 <=0  ){
-                     totalMsg = mesTime3;
-                 }else  {
-                     totalMsg = mesTime2;
-                 }
-                 //ກວດສະຖານະນ ໄຮໂດລິກ
-                 if(time3 > time1 ){
                      totalMs2 = mesTime1;
-                 }else if(time3 <= 0  ){
-                     totalMs2 = mesTime3;
-                 }else  {
-                     totalMs2 = mesTime2;
+                 }else{
+                     //ກວດສະຖານະນໍ້າມັຫນ
+                     if(time2 > time1 ){
+                         totalMsg = mesTime1;
+                     }else if(time2 <=0  ){
+                         totalMsg = mesTime3;
+                     }else  {
+                         totalMsg = mesTime2;
+                     }
+                     //ກວດສະຖານະນ ໄຮໂດລິກ
+                     if(time3 > time_mo ){
+                         totalMs2 = mesTime1;
+                     }else if(time3 <= 0  ){
+                         totalMs2 = mesTime3;
+                     }else  {
+                         totalMs2 = mesTime2;
+                     }
                  }
 
                  machine.setStatus_mo(totalMsg);
@@ -383,7 +389,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                     List<MachineSumRptModel.GroupItemList> groupItemList = filtered.stream()
                             .map(p -> {
                                 MachineSumRptModel.GroupItemList item = new MachineSumRptModel.GroupItemList();
-
+                                item.setBillNo(p.getBillNo());
                                 item.setSaveBy(p.getSaveBy());
                                 item.setSaveDate(p.getSaveDate());
                                 item.setApproveBy(p.getApproveBy());
