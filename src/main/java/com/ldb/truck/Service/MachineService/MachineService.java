@@ -251,7 +251,10 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
 
                  //ກຳນົດ limit monitor
 
-                 
+                 //for checking
+                 int timeOFix=resp.getTime_fix();
+                 int timeHFix=resp.getTime_oil_fix();
+
                  int time1 = resp.getTime_fix_monitor();
                  int time_mo = resp.getTime_oil_fix_mo();
                  // ຄໍານວນ ຍໍ້າມັນ
@@ -263,7 +266,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  String mesTime2 = "LOW";
                  String mesTime3 = "EP";
 
-                 if(time1 <= 0 && time_mo <= 0){
+                 if(timeOFix <= 0 && timeHFix <= 0){
                      totalMsg = mesTime1;
                      totalMs2 = mesTime1;
                  }else{
