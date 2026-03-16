@@ -14,13 +14,8 @@ public class ItemPaymentReq {
     private String status;
     private Float amountPayment;
     private Integer percentPayment;
-
     private String startDate;
     private String endDate;
     private String borNumber;
-
-
-
-
 
 }

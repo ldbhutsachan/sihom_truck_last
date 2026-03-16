@@ -262,31 +262,6 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
     return result;
 }
 
-//    public ReportAllStockInOutRes getReportDetailDailyStock(ReportItemInOutModelReq stockRequest,String role,String borNo,String borNoss) {
-//
-//        ReportAllStockInOutRes response = new ReportAllStockInOutRes();
-//        try {
-//           // ReportInoutItemGroup groupFooter = new ReportInoutItemGroup();
-//            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo,borNoss);
-//
-//            if (!rsListData.isEmpty()) {
-//                response.setStatus("00");
-//                response.setMessage("Success");
-//                response.setData(rsListData);
-//                ///response.setGroupFooter(groupFooter);
-//            } else {
-//                response.setStatus("00");
-//                response.setMessage("Data Not Found !!");
-//            }
-//
-//        } catch (Exception e) {
-//            log.error("Error in getReportDetailDailyStock", e);
-//            response.setStatus("EE");
-//            response.setMessage("Error Data !!!");
-//        }
-//
-//        return response;
-//    }
 
     public ReportAllStockInOutRes getReportDetailDailyStock(
             ReportItemInOutModelReq stockRequest,
@@ -305,10 +280,6 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
                 response.setMessage("Data Not Found !!");
                 return response;
             }
-
-            // ===============================
-            // GROUP BY itemId (keep order)
-            // ===============================
             Map<String, List<ReportAllStockInOut>> groupedMap =
                     rsListData.stream()
                             .collect(Collectors.groupingBy(
@@ -342,8 +313,6 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
                 // ===============================
                 int totalIn = groupItems.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
                 int totalOut = groupItems.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
-//                int totalClosing = groupItems.stream().mapToInt(ReportAllStockInOut::getClosingAmt).sum();
-//                int totalRaised = groupItems.stream().mapToInt(ReportAllStockInOut::getRaisedAmt).sum();
                 int totalRaised = groupItems.get(0).getRaisedAmt();           // opening
                 int totalClosing = groupItems.get(groupItems.size() - 1)
                         .getClosingAmt();              // closing

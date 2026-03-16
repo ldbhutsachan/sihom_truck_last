@@ -1,5 +1,7 @@
 package com.ldb.truck.Controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Bor.BorEntityReq;
@@ -853,4 +855,16 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/move-stock.service")
+    public ResponseEntity<?> moveStock(@RequestBody ItemMoveReq itemPaymentReq) throws JsonProcessingException {
+
+        log.info("=====> start from billNo <========== {}", itemPaymentReq.getBillNo());
+        ObjectMapper mapper = new ObjectMapper();
+        log.info("Request Mapper: {}", mapper.writeValueAsString(itemPaymentReq));
+
+         return new ResponseEntity<>(stockService.moveItemToStock(itemPaymentReq),HttpStatus.OK);
+    }
+
 }
