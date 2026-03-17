@@ -17,4 +17,8 @@ public class MachineHis {
     private String borNo;
     private String borName;
     private Integer status2;
+    private String engineOil_By;
+    private String engine_Date;
+    private String Hydraulic_By;
+    private String hudrawlic_Date2;
 }

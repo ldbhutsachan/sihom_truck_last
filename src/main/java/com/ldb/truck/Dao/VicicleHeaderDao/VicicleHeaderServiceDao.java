@@ -47,11 +47,20 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
     private JdbcTemplate EBankJdbcTemplate;
 
     @Override
-    public List<VicicleHeader> listVicicleHeader(VicicleHeaderReq vicicleHeaderReq) {
+    public List<VicicleHeader> listVicicleHeader(VicicleHeaderReq vicicleHeaderReq, String uMission) {
         try{
-      String SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+vicicleHeaderReq.getBranch()+"' ";
-//            String SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on " +
-//                    "a.batNo =b.KEY_ID AND (a.batNo2 IS NULL OR a.batNo2 = b.KEY_ID) INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+vicicleHeaderReq.getBranch()+"'";
+//      String SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID" +
+//              " where c.BRANCH='"+vicicleHeaderReq.getBranch()+"' ";
+            String SQL = "SELECT * FROM V_All_HEADER_TRUCK a " +
+                    "LEFT JOIN MORFAI b ON a.batNo = b.KEY_ID " +
+                    "INNER JOIN LOGIN c ON a.userId = c.KEY_ID " +
+                    "WHERE 1=1 ";
+
+            if ("MANAGE".equals(uMission)) {
+                SQL += " AND c.BRANCH = '2' ";
+            } else {
+                SQL += " AND c.BRANCH = '" + vicicleHeaderReq.getBranch() + "' ";
+            }
             log.info("SQL"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<VicicleHeader>() {
                 @Override
@@ -308,6 +317,13 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
                 SQL.append("AND a.borNo IS NOT NULL AND TRIM(a.borNo) <> '' AND a.borNo REGEXP '^[0-9]+$' ");
                 log.info("Query condition: BRANCH + BOR_NO IS NOT NULL");
             }
+        } else if ("HR".equalsIgnoreCase(role)) {
+            if(carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()){
+                SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
+            }else {
+                SQL.append("AND c.BRANCH = '").append(branch).append("' ");
+            }
+            
         } else {
             SQL.append("AND c.BRANCH = '").append(branch).append("' ");
 //            SQL.append("AND a.borNo IS NULL AND TRIM(a.borNo) = '' AND a.borNo NOT REGEXP '^[0-9]+$' ");
@@ -695,13 +711,24 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
         return null;
     }
     @Override
-    public List<VicicleHeader> listVicicleHeaderByID(VicicleHeaderReq vicicleHeaderReq) {
+    public List<VicicleHeader> listVicicleHeaderByID(VicicleHeaderReq vicicleHeaderReq, String uMission) {
         try{
-            String SQL="";
-            log.info("key:"+vicicleHeaderReq.getKey_id());
-// old           SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID where a.key_id='"+vicicleHeaderReq.getKey_id()+"'";
-                 SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.key_id='"+vicicleHeaderReq.getKey_id()+"' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"' ";
-// have 2 morfai                SQL ="select * from V_All_HEADER_TRUCK a inner join MORFAI b on a.batNo =b.KEY_ID  AND (a.batNo2 IS NULL OR a.batNo2 = b.KEY_ID) INNER JOIN LOGIN c ON a.userId = c.KEY_ID where a.key_id='"+vicicleHeaderReq.getKey_id()+"' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"' ";
+//            String SQL="";
+//                 SQL ="select * from V_All_HEADER_TRUCK a left join MORFAI b on a.batNo =b.KEY_ID INNER JOIN LOGIN c ON a.userId  = c.KEY_ID" +
+//                         " where a.key_id='"+vicicleHeaderReq.getKey_id()+"' and c.BRANCH ='"+vicicleHeaderReq.getBranch()+"' ";
+            String SQL = "";
+
+            SQL = "SELECT * FROM V_All_HEADER_TRUCK a " +
+                    "LEFT JOIN MORFAI b ON a.batNo = b.KEY_ID " +
+                    "INNER JOIN LOGIN c ON a.userId = c.KEY_ID " +
+                    "WHERE a.key_id = '" + vicicleHeaderReq.getKey_id() + "' ";
+
+            if ("MANAGE".equals(uMission)) {
+                SQL += " AND c.BRANCH = '2' ";
+            } else {
+                SQL += " AND c.BRANCH = '" + vicicleHeaderReq.getBranch() + "' ";
+            }
+
             return EBankJdbcTemplate.query(SQL, new RowMapper<VicicleHeader>() {
                 @Override
                 public VicicleHeader mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -7,10 +7,12 @@ import com.ldb.truck.Entity.Bor.BorEntityReqSave;
 import com.ldb.truck.Entity.Item.viewItemEntity;
 import com.ldb.truck.Entity.ItemPayment.*;
 import com.ldb.truck.Entity.OrderItem.*;
+import com.ldb.truck.Entity.PlaceStock.PlaceStockViewEntity;
 import com.ldb.truck.Entity.RequestItem.*;
 import com.ldb.truck.Entity.Stock.*;
 import com.ldb.truck.Entity.User.UserHisEntity;
 import com.ldb.truck.Model.DataResponse;
+import com.ldb.truck.Model.MoveItemResponse;
 import com.ldb.truck.Repository.*;
 import com.ldb.truck.Repository.Payment.ItemDetailsEntityRepository;
 import com.ldb.truck.Repository.Payment.ItemPaymentEntityRepository;
@@ -23,6 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -118,6 +123,8 @@ public class StockServiceImpl {
     ItemKeyRepository itemKeyRepository;
     @Autowired
     StockTxnEntityRepository stockTxnEntityRepository;
+    @Autowired
+    PlaceStockViewEntityRepository placeStockViewEntityRepository;
 @Autowired
     BorRepository view_borRepository;
     public DataResponse saveStockIn(StockItemDetailsEntity stockItemDetailsEntity,String userId){
@@ -784,12 +791,12 @@ public class StockServiceImpl {
 
                 borNoCon = "\n AND borkey = '" + borNoFone + "' ";
             }
-            switch (userMission.toUpperCase()) {
+            switch (userMission == null ? "" : userMission.toUpperCase()) {
                 case "APPROVEOID":
                     itemSize = "\n AND size = 'nammun'";
                     break;
                 case "ALAIAPPROVE":
-                    itemSize = "\n AND size = 'item'";
+                    itemSize = "\n AND size = 'item' AND place_buy ='office'";
                     break;
                 case "APPROVEINOUT":
 //                    itemSize = "\n AND size != 'nammun' AND size != 'item'";
@@ -800,6 +807,9 @@ public class StockServiceImpl {
                     break;
                 case "BILLCHECKER":
                     itemSize = "\n AND borkey ='145'";   // SHOW ONLY DATA FROM lAP 21 K
+                    break;
+                case "FIELDAPPROVE":
+                    itemSize = "\n AND size = 'item' AND (place_buy = 'field' OR place_buy = '' OR place_buy IS NULL)";
                     break;
                 default:
                     itemSize = "";   // กัน error กรณี role อื่น
@@ -999,7 +1009,7 @@ public class StockServiceImpl {
 
         return response;
     }
-    private List<RequestItemEbtity> convertToRequest(String keyIdBill,RequestItems request, String userId) {
+    private List<RequestItemEbtity> convertToRequest(String keyIdBill,RequestItems request, String userId,String borNo) {
         List<RequestItemEbtity> entities = new ArrayList<>();
         for (RequestItem item : request.getItemId()) {
             RequestItemEbtity entity = new RequestItemEbtity();
@@ -1011,6 +1021,10 @@ public class StockServiceImpl {
             entity.setQty(item.getQty());
             entity.setSaveBy(userId);
             entity.setSaveDate(new Date());
+            Long transferId = placeStockViewEntityRepository.findByBorNo(borNo)
+                    .map(PlaceStockViewEntity::getKhId) // Get the ID if entity exists
+                    .orElse(null);                      // Return null if it doesn't
+            entity.setTransferOld(String.valueOf(transferId));
             entity.setStatus("wait"); // Example default status
             entities.add(entity);
         }
@@ -1038,6 +1052,8 @@ public class StockServiceImpl {
             entity.setShopeId(item.getShopeId());
             entity.setTypeOfOrder(item.getOrderType());
             entity.setCurrency(item.getCurrency());
+            entity.setPlaceBuy(item.getPlaceBuy());
+
 
 
         }
@@ -2222,7 +2238,7 @@ public class StockServiceImpl {
 //        }
 //        return response;
 //    }
-    public DataResponse saveRequestItem(RequestItems stockItemDetailsEntity, String userId) {
+    public DataResponse saveRequestItem(RequestItems stockItemDetailsEntity, String userId,String borNo) {
 
         DataResponse response = new DataResponse();
 
@@ -2230,7 +2246,7 @@ public class StockServiceImpl {
         String genKey = keyGen.getMaxReqKey();
         log.info("genKey:"+genKey);
         try {
-            List<RequestItemEbtity> entities = convertToRequest(genKey,stockItemDetailsEntity, userId);
+            List<RequestItemEbtity> entities = convertToRequest(genKey,stockItemDetailsEntity, userId,borNo);
             List<RequestItemEbtity> savedEntities = new ArrayList<>();
             requestItemRepository.saveAll(entities).forEach(savedEntities::add);
             if (!savedEntities.isEmpty()) {
@@ -2626,12 +2642,15 @@ public DataResponse checkKeyOrder(){
     //======make bor start =====
     //view_borRepository
 
-    public DataResponse getBorAll(BorEntityReq borEntityReq){
+    public DataResponse getBorAll(BorEntityReq borEntityReq, String uMission){
         String keyId = borEntityReq.getKeyId();
         String typeBor = borEntityReq.getTypeBor();
         log.info("role start:"+keyId);
         DataResponse response = new DataResponse();
        try {
+           if("MANAGE".equals(uMission)){
+               response.setDataResponse((view_borRepository.getBor4HR(typeBor)));
+           }
            if(keyId.isEmpty() || keyId.equals("all") || keyId.equals("all")){
                response.setDataResponse(view_borRepository.getBorViewEntityAll(typeBor));
            }else {
@@ -3077,25 +3096,6 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
    return entity;
     }
 
-    //****
-//    public DataResponse getRequestItemType(){
-//        DataResponse response = new DataResponse();
-//        try {
-//            response.setDataResponse(requestItemTypeRepository.findAll());
-//            if(response.getDataResponse() != null){
-//                response.setStatus("00");
-//                response.setMessage("success");
-//            }else {
-//                response.setStatus("00");
-//                response.setMessage("Data not Found !!");
-//            }
-//
-//        }catch (Exception e){
-//            response.setStatus("EE");
-//            response.setMessage("Error Data !!");
-//        }
-//        return response;
-//    }
     public DataResponse getRequestItemType() {
         DataResponse response = new DataResponse();
         try {
@@ -3201,7 +3201,124 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             }
         });
 
+    }
+    public Optional<StockCheckModel> callToRequestItemBtBillNo(String billNo) {
+        String sql = "select \n" +
+                "h.key_id\t,h.b_name\n" +
+                "from item_inventory a\n" +
+                "left join stock_house g on a.houseid = g.khid\n" +
+                "join tb_bors h on h.key_id = g.key_id\n" +
+                "join request_item_details i on a.item_id=i.item_id\n" +
+                "where i.bill_no= ? limit 1  ";
 
+        try {
+            StockCheckModel result = EBankJdbcTemplate.queryForObject(
+                    sql,
+                    new Object[]{billNo},
+                    (rs, rowNum) -> {
+                        StockCheckModel tr = new StockCheckModel();
+                        tr.setKeyNo(rs.getString("key_id"));
+                        tr.setBorName(rs.getString("b_name"));
+                        return tr;
+                    }
+            );
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
+    public Optional<StockCheckModel> checkStockBtBorNo(String borNo) {
+        String sql = "SELECT a.key_id, b.b_name, a.khid, a.khname, a.stock_status " +
+                "FROM stock_house a " +
+                "INNER JOIN tb_bors b ON a.key_id = b.key_id " +
+                "WHERE a.key_id = ? AND a.stock_status = 'OLD-STOCK' " +
+                "LIMIT 1";
+
+        try {
+            StockCheckModel result = EBankJdbcTemplate.queryForObject(
+                    sql,
+                    new Object[]{borNo},
+                    (rs, rowNum) -> {
+                        StockCheckModel tr = new StockCheckModel();
+                        tr.setKeyNo(rs.getString("key_id"));
+                        tr.setBorName(rs.getString("b_name"));
+                        tr.setKhId(rs.getString("khid"));
+                        tr.setKhName(rs.getString("khname"));
+                        return tr;
+                    }
+            );
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+    public int updateItemToOldStock(String khNo, String usingStatus,int amt,String billNo, String itemId) {
+        String sql = "UPDATE request_item_details " +
+                "SET transfer_old_no = ?, using_status = ? , using_amt=? " +
+                "WHERE bill_no = ? AND item_id = ?";
+
+        try {
+            return EBankJdbcTemplate.update(sql, khNo, usingStatus,amt,billNo, itemId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0; // return 0 if update fails
+        }
+    }
+    //move data to stock
+    public int moveToOldStock(ItemMoveReq itemMoveReq) {
+        Optional<StockCheckModel> billInfo = callToRequestItemBtBillNo(itemMoveReq.getBillNo());
+        if (billInfo.isEmpty()) return 5; // bill not found
+
+        String borNo = billInfo.get().getKeyNo();
+        Optional<StockCheckModel> stockInfo = checkStockBtBorNo(borNo);
+        if (stockInfo.isEmpty()) return 1; // stock not found
+
+        int updatedCount = 0;
+        if (itemMoveReq.getItemMoveList() != null) {
+            for (itemInfo item : itemMoveReq.getItemMoveList()) {
+                updatedCount += updateItemToOldStock(
+                        borNo,
+                        "OLD-STOCK",
+                        item.getAmt(),
+                        itemMoveReq.getBillNo(),
+                        item.getItemNo()
+                );
+            }
+        }
+        return updatedCount;
+    }
+
+    public MoveItemResponse moveItemToStock(ItemMoveReq itemMoveReq) {
+        MoveItemResponse response = new MoveItemResponse();
+        try {
+            int check = moveToOldStock(itemMoveReq);
+
+            switch (check) {
+                case 5:
+                    response.setStatus("NF");
+                    response.setMessage("Bill not found");
+                    break;
+                case 1:
+                    response.setStatus("NS");
+                    response.setMessage("Stock not found for borNo");
+                    break;
+                case 0:
+                    response.setStatus("NU");
+                    response.setMessage("No items updated");
+                    break;
+                default:
+                    response.setStatus("00");
+                    response.setMessage("Successfully moved " + check + " item(s) to OLD-STOCK");
+            }
+        } catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error processing data: " + e.getMessage());
+        }
+        return response;
+    }
 }

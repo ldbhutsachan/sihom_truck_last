@@ -1,5 +1,7 @@
 package com.ldb.truck.Controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Bor.BorEntityReq;
@@ -541,8 +543,9 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = userProfiles.get(0).getUserId();
+        String borNo = userProfiles.get(0).getBorNo();
         try {
-            response = stockService.saveRequestItem(stockItemDetailsEntity,userId);
+            response = stockService.saveRequestItem(stockItemDetailsEntity,userId,borNo);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -706,9 +709,12 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
     @PostMapping("/getBorAll.service")
     public ResponseEntity<?> getBorAll (@RequestBody BorEntityReq borEntityReq){
         DataResponse response  = new DataResponse();
+        List<Profile> users = profileDao.getProfileInfoByToken(borEntityReq.getToKen());
+        String uMission = users.get(0).getStaff_id();
+
 
         try {
-            response = stockService.getBorAll(borEntityReq);
+            response = stockService.getBorAll(borEntityReq, uMission);
         }catch (Exception e){
             response.setStatus("EE");
             response.setMessage("Data Error !!");
@@ -849,4 +855,16 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/move-stock.service")
+    public ResponseEntity<?> moveStock(@RequestBody ItemMoveReq itemPaymentReq) throws JsonProcessingException {
+
+        log.info("=====> start from billNo <========== {}", itemPaymentReq.getBillNo());
+        ObjectMapper mapper = new ObjectMapper();
+        log.info("Request Mapper: {}", mapper.writeValueAsString(itemPaymentReq));
+
+         return new ResponseEntity<>(stockService.moveItemToStock(itemPaymentReq),HttpStatus.OK);
+    }
+
 }

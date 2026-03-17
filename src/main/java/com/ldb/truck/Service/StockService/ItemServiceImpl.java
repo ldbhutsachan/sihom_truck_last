@@ -301,8 +301,10 @@ public DataResponse getItemList(listItemEntity listItemEntity, String userName, 
                 response.setMessage("can't save data!!");
             }
         }catch (Exception e){
+            e.printStackTrace();
+            log.error("Error updating item: " + e.getMessage(), e);
             response.setStatus("EE");
-            response.setMessage("Error Data !!");
+            response.setMessage("Error Data !! : " + e.getMessage());
         }
         return response;
             }

@@ -35,7 +35,7 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
 
             " i.barcode = :barcode, " +
             " i.itemtypeid = :itemtypeid, " +
-            " i.houseid = :houseid,i.alertqty=:alertqty , i.ordertype = :orderType" +
+            " i.houseid = :houseid,i.alertqty=:alertqty , i.ordertype = :orderType " +
             "WHERE i.item_id = :itemId",nativeQuery = true)
     int updateItem(
             Integer brandId,

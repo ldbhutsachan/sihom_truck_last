@@ -12,8 +12,8 @@ import com.ldb.truck.Model.Login.Report.ReportHeader;
 import java.text.ParseException;
 import java.util.List;
 public interface VicicleHeaderDao {
-    public List<VicicleHeader> listVicicleHeader (VicicleHeaderReq vicicleHeaderReq);
-    public List<VicicleHeader> listVicicleHeaderByID (VicicleHeaderReq vicicleHeaderReq);
+    public List<VicicleHeader> listVicicleHeader (VicicleHeaderReq vicicleHeaderReq, String uMission);
+    public List<VicicleHeader> listVicicleHeaderByID (VicicleHeaderReq vicicleHeaderReq, String uMission);
     public List<CarOfficeModel> listCarOfficeDAOs (CarOfficeReq carOfficeReq, String role, String branch, String bor_no );
     public List<CarBorModel> listCarBorDao(CarBorReq CarBorReq, String role, String  borNoClient,String borNoProfile);
     public List<CarPaidModel> listCarDaoPaid (CarOfficeReq carOfficeReq);

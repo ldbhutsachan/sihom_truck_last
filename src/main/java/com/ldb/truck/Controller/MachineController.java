@@ -385,17 +385,6 @@ public ResponseEntity<MachineReportResposne> updateMachine(
     String fileName = "";
     List<String> fileNames = new ArrayList<>();
     String pathAdd="http://khounkham.com/images/batery/";
-//    if(imageFile == null){
-//        log.warn("************* file name is null ****************");
-//        machineReq.setImage("http://khounkham.com/images/image.jpg");
-//    }else {
-//        Arrays.asList(imageFile).stream().forEach(file -> {
-//            fileNames.add(mediaUploadService.uploadMedia(file));
-//        });
-//        log.info("Uploaded the files successfully: "+ fileNames );
-//        fileName = StringUtils.join(fileNames, ',');
-//        machineReq.setImage(pathAdd+fileName);
-//    }
     if (imageFile != null && !imageFile.isEmpty()) {
         Arrays.asList(imageFile).forEach(file -> {
             fileNames.add(mediaUploadService.uploadMedia(file));
