@@ -537,7 +537,8 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
             required = true) @Valid  @RequestParam(name="files" , required=false) MultipartFile files
             ,@RequestParam("item_id") Long  item_id
             ,@RequestParam("brandId") Integer  brandId
-            ,@RequestParam("supplierId") Integer  supplierId
+//            ,@RequestParam("supplierId") Integer  supplierId
+            ,@RequestParam(name = "supplierId", required = false) String supplierId
             ,@RequestParam("barcode") String  barcode
             ,@RequestParam("item_name") String  item_name
             ,@RequestParam("unit") String  unit
@@ -572,6 +573,12 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
         SimpleDateFormat outputFormat3 = new SimpleDateFormat("yy-MM-dd");
         String outputDate3 = outputFormat3.format(date3);
 
+        //new
+        Integer supplierIdInt = null;
+        if (supplierId != null && !supplierId.trim().isEmpty() && !"null".equalsIgnoreCase(supplierId)) {
+            supplierIdInt = Integer.parseInt(supplierId);
+        }
+
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(toKen);
         if (userProfiles.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -582,7 +589,8 @@ public ResponseEntity<?> getItemList(@RequestBody listItemEntity brandReq){
         ItemEntity data = new ItemEntity();
         data.setItemId(item_id);
         data.setBrandId(brandId);
-        data.setSupplierId(supplierId);
+//        data.setSupplierId(supplierId);
+        data.setSupplierId(supplierIdInt);
         data.setBarcode(barcode);
         data.setItem_name(item_name);
         data.setUnit(unit);
