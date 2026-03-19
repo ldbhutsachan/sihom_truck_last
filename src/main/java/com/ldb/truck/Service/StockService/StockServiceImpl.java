@@ -867,6 +867,8 @@ public class StockServiceImpl {
                     tr.setAcceptDate(rs.getDate("acceptdate"));
                     tr.setBranchNo(rs.getString("branchno"));
                     tr.setBranchName(rs.getString("bname"));
+                    tr.setKhId(rs.getString("khid"));
+                    tr.setKhName(rs.getString("khname"));
                     tr.setBorkey(rs.getString("borkey"));
                     tr.setBorame(rs.getString("borname"));
                     tr.setRemark(rs.getString("remark"));
