@@ -35,6 +35,7 @@ public class MachineReq {
 
     @Data
     public static class ToolReq {
+        private Long id;
         private String toolName;
         private Integer qty;
         //add new

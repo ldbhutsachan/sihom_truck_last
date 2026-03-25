@@ -14,10 +14,14 @@ import com.ldb.truck.Repository.MachineHis.MerchinHisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.sql.Timestamp;
@@ -598,53 +602,123 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         return response;
     }
 
-@Transactional
-public MachineReportResposne updateMachine(MachineReq machineReq) {
-    MachineReportResposne response = new MachineReportResposne();
-    try {
-        // 1. Update tb_machine
-        int result = machineInterface.updateMachine(machineReq);
+    @Transactional
+    public MachineReportResposne updateMachine(MachineReq machineReq) {
 
-        // 2. Update/Insert tools
-        if (result > 0 && machineReq.getTools() != null) {
-            // ลบ tools เก่าของ mch_no ก่อน
-            String deleteSql = "DELETE FROM tb_machine_tool WHERE mch_no = ?";
-            jdbcTemplate.update(deleteSql, machineReq.getMchNo());
+        MachineReportResposne response = new MachineReportResposne();
 
-            // Insert tools ใหม่
-            String insertSql = "INSERT INTO tb_machine_tool " +
-                    "(mch_no, tool_name, qty, status, update_date, updated_by,unit) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            for (MachineReq.ToolReq tool : machineReq.getTools()) {
-                jdbcTemplate.update(insertSql,
-                        machineReq.getMchNo(),
-                        tool.getToolName(),
-                        tool.getQty(),
-                        "ok",
-                        new Timestamp(System.currentTimeMillis()),
-                        machineReq.getCreateBy(),
-                        tool.getUnit() != null ? tool.getUnit() : ""
-                );
+        try {
+            // 1. Update tb_machine
+            int result = machineInterface.updateMachine(machineReq);
+
+            if (result <= 0) {
+                response.setStatus("01");
+                response.setMessage("Failed to update machine");
+                return response;
             }
-        }
 
-        if (result > 0) {
+            // 2. Update/Insert tools
+            if (machineReq.getTools() != null) {
+
+                List<MachineReq.ToolReq> incomingTools = machineReq.getTools();
+
+                List<Long> incomingIds = new ArrayList<>();
+
+                String insertSql = "INSERT INTO tb_machine_tool " +
+                        "(mch_no, tool_name, qty, status, update_date, updated_by, unit) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+                String updateSql = "UPDATE tb_machine_tool " +
+                        "SET tool_name = ?, qty = ?, unit = ?, status = 'ok', " +
+                        "update_date = ?, updated_by = ? " +
+                        "WHERE id = ? AND mch_no = ?";
+
+                for (MachineReq.ToolReq tool : incomingTools) {
+
+                    // =========================
+                    // INSERT NEW TOOL
+                    // =========================
+                    if (tool.getId() == null) {
+
+                        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+                        jdbcTemplate.update(connection -> {
+                            PreparedStatement ps = connection.prepareStatement(
+                                    insertSql,
+                                    Statement.RETURN_GENERATED_KEYS
+                            );
+
+                            ps.setString(1, machineReq.getMchNo());
+                            ps.setString(2, tool.getToolName());
+                            ps.setInt(3, tool.getQty());
+                            ps.setString(4, "ok"); // ✅ always ok
+                            ps.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+                            ps.setString(6, machineReq.getCreateBy());
+                            ps.setString(7, tool.getUnit() != null ? tool.getUnit() : "");
+
+                            return ps;
+
+                        }, keyHolder);
+
+                        Long newId = keyHolder.getKey().longValue();
+                        incomingIds.add(newId);
+
+                    }
+
+                    // =========================
+                    // UPDATE EXISTING TOOL
+                    // =========================
+                    else {
+
+                        jdbcTemplate.update(updateSql,
+                                tool.getToolName(),
+                                tool.getQty(),
+                                tool.getUnit() != null ? tool.getUnit() : "",
+                                new Timestamp(System.currentTimeMillis()),
+                                machineReq.getCreateBy(),
+                                tool.getId(),
+                                machineReq.getMchNo()
+                        );
+
+                        incomingIds.add(tool.getId()); // ✅ important
+                    }
+                }
+
+                // =========================
+                // MARK NOT-USE (SAFE VERSION)
+                // =========================
+                if (!incomingIds.isEmpty()) {
+
+                    String placeholders = incomingIds.stream()
+                            .map(id -> "?")
+                            .collect(Collectors.joining(","));
+
+                    String updateStatusSql =
+                            "UPDATE tb_machine_tool SET status = 'NOT-USE' " +
+                                    "WHERE mch_no = ? AND id NOT IN (" + placeholders + ")";
+
+                    List<Object> params = new ArrayList<>();
+                    params.add(machineReq.getMchNo());
+                    params.addAll(incomingIds);
+
+                    jdbcTemplate.update(updateStatusSql, params.toArray());
+                }
+            }
+
+            // =========================
+            // RESPONSE
+            // =========================
             response.setStatus("00");
             response.setMessage("Data updated successfully");
-            response.setData(null); // หรือส่ง keyId กลับก็ได้
-        } else {
-            response.setStatus("01");
-            response.setMessage("Failed to update data");
+            response.setData(null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("05");
+            response.setMessage("An error occurred while updating data");
             response.setData(null);
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        response.setStatus("05");
-        response.setMessage("An error occurred while updating data");
-        response.setData(null);
+        return response;
     }
-
-    return response;
-}
 }
