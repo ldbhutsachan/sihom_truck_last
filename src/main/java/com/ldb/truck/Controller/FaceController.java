@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("${base_url}")
@@ -25,25 +26,29 @@ public class FaceController {
 
     // ✅ consumes = MULTIPART_FORM_DATA_VALUE รองรับ FormData
     @CrossOrigin(origins = "*")
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/register.service", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StaffRegisterResponseDTO> register(
             @RequestParam("staffCode") String staffCode,
             @RequestParam("username") String username,
-            @RequestParam("password") String password,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "role", required = false) String role,
-            @RequestParam(value = "image", required = false) MultipartFile image
+            @RequestParam(value = "image", required = false) MultipartFile image  // ✅ optional
     ) throws IOException {
 
         // แปลง param → DTO
         StaffRegisterRequestDTO dto = new StaffRegisterRequestDTO();
         dto.setStaffCode(staffCode);
         dto.setUsername(username);
-        dto.setPassword(password);
-        dto.setPhone(phone);
-        dto.setRole(role);
-        String fileName = mediaUploadService.uploadMedia(image);
-        String fileUrl = "http://khounkham.com/images/batery/" + fileName;
+        dto.setRole("USER");
+
+        // ✅ Generate password อัตโนมัติ
+        String autoPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
+        dto.setPassword(autoPassword);
+
+        // ✅ อัปโหลดรูปเฉพาะตอนที่ client ส่งมาเท่านั้น
+        String fileUrl = null;
+        if (image != null && !image.isEmpty()) {
+            String fileName = mediaUploadService.uploadMedia(image);
+            fileUrl = "http://khounkham.com/images/batery/" + fileName;
+        }
 
         StaffRegisterResponseDTO response = faceService.registerStaff(dto, fileUrl);
         return ResponseEntity.ok(response);
@@ -97,6 +102,22 @@ public class FaceController {
     public ResponseEntity<AttendanceResponseDTO> getAttendance(
             @RequestBody AttendanceRequestDTO dto) {
         return ResponseEntity.ok(faceService.getAttendance(dto));
+    }
+
+    // ✅ ADMIN reset password
+    @CrossOrigin(origins = "*")
+    @PostMapping("/reset-password")
+    public ResponseEntity<PasswordResponseDTO> resetPassword(
+            @RequestBody ResetPasswordRequestDTO dto) {
+        return ResponseEntity.ok(faceService.resetPassword(dto));
+    }
+
+    // ✅ Staff เปลี่ยน password ตัวเอง
+    @CrossOrigin(origins = "*")
+    @PostMapping("/change-password")
+    public ResponseEntity<PasswordResponseDTO> changePassword(
+            @RequestBody ChangePasswordRequestDTO dto) {
+        return ResponseEntity.ok(faceService.changePassword(dto));
     }
 
 }

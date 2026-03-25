@@ -12,5 +12,6 @@ public class StaffRegisterResponseDTO {
     private Long userId;
     private String staffCode;
     private String username;
+    private String password;
     private LocalDateTime createdAt;
 }

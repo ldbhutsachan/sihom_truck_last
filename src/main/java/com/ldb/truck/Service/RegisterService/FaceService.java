@@ -3,9 +3,11 @@ package com.ldb.truck.Service.RegisterService;
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Staff.AttendanceLog;
 import com.ldb.truck.Entity.Staff.StaffEntity;
+import com.ldb.truck.Model.Login.Login.LoginReq;
 import com.ldb.truck.Model.Staffs.*;
 import com.ldb.truck.Repository.Staffs.AttendanceLogRepository;
 import com.ldb.truck.Repository.Staffs.UserRepository;
+import com.ldb.truck.Util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,44 +33,50 @@ public class FaceService {
     public StaffRegisterResponseDTO registerStaff(StaffRegisterRequestDTO dto,
                                                   String fileUrl) throws IOException {
 
-        // Step 1: เช็ค username ซ้ำ
-        if (userRepository.existsByUsername(dto.getUsername())) {
-            throw new RuntimeException("Username นี้ถูกใช้งานแล้ว");
-        }
+        // เช็ค username ซ้ำ
+//        if (userRepository.existsByUsername(dto.getUsername())) {
+//            throw new RuntimeException("Username นี้ถูกใช้งานแล้ว");
+//        }
 
-        // Step 2: เช็ค staffCode ซ้ำ
+        // เช็ค staffCode ซ้ำ
         if (userRepository.existsByStaffCode(dto.getStaffCode())) {
             throw new RuntimeException("Staff Code ນີ້ຖືກໃຊ້ໄປແລ້ວ");
         }
 
-        // Step 3: Generate Token ที่ไม่ซ้ำกัน ✅
-        String token;
+        // Generate token
+        String newToken;
         do {
-            token = UUID.randomUUID().toString().replace("-", "");
-        } while (userRepository.findByToken(token).isPresent()); // เช็คซ้ำใน DB
+            newToken = UUID.randomUUID().toString().replace("-", "");
+        } while (userRepository.findByToken(newToken).isPresent());
 
-        // Step 4: สร้าง staff ใหม่
+        // ✅ Hash password ก่อนเก็บลง DB
+        String plainPassword = dto.getPassword();  // เก็บ plain ไว้ก่อน response กลับ
+        String hashedPassword = PasswordUtil.hashPassword(plainPassword);
+
+        // สร้าง staff ใหม่
         StaffEntity staff = new StaffEntity();
         staff.setStaffCode(dto.getStaffCode());
         staff.setUsername(dto.getUsername());
-        staff.setPasswordHash(dto.getPassword()); // TODO: BCrypt ภายหลัง
-        staff.setPhone(dto.getPhone());
+        staff.setPasswordHash(hashedPassword);  // ✅ เก็บ hashed ใน DB
         staff.setRole(dto.getRole() != null ? dto.getRole() : "USER");
         staff.setStatus("ACTIVE");
-        staff.setStaffImage(fileUrl);
-        staff.setToken(token);                    // ✅ เซ็ต token
-        staff.setTokenExpiredAt(LocalDateTime.now().plusYears(1)); // ✅ หมดอายุ 1 ปี
+        staff.setToken(newToken);
+//        staff.setTokenExpiredAt(LocalDateTime.now().plusYears(1));
+        staff.setTokenExpiredAt(LocalDateTime.now().plusMonths(5));
 
-        // Step 5: บันทึกลง DB
+        if (fileUrl != null) {
+            staff.setStaffImage(fileUrl);
+        }
+
         StaffEntity saved = userRepository.save(staff);
 
-        // Step 6: Return response
         return new StaffRegisterResponseDTO(
                 true,
                 "ລົງທະບຽນສຳເລັດ",
                 saved.getId(),
                 saved.getStaffCode(),
                 saved.getUsername(),
+                plainPassword,      // ✅ ส่ง plain password กลับให้ client รู้
                 saved.getCreatedAt()
         );
     }
@@ -336,20 +344,184 @@ public class FaceService {
                     log.getStaff().getUsername(),
                     log.getCheckTime().toLocalDate(),
                     null,
-                    null
+                    null,
+                    null,   // checkInStatus
+                    null    // checkOutStatus
             ));
 
             AttendanceDayDTO day = map.get(key);
 
             if (log.getCheckType().equals("CHECK_IN")) {
                 day.setCheckIn(log.getCheckTime());
+                day.setCheckInStatus(calculateCheckInStatus(log.getCheckTime()));
             } else {
                 day.setCheckOut(log.getCheckTime());
+                day.setCheckOutStatus(calculateCheckOutStatus(log.getCheckTime()));
             }
         }
 
         List<AttendanceDayDTO> result = new ArrayList<>(map.values());
-
         return new AttendanceResponseDTO(true, "Success Fetching Data", result);
+    }
+    // ✅ คำนวณ CHECK_IN status
+    private String calculateCheckInStatus(LocalDateTime checkInTime) {
+
+        LocalTime checkIn = checkInTime.toLocalTime();
+        LocalTime deadline = LocalTime.of(8, 1); // หลัง 08:01 = สาย
+
+        if (checkIn.isAfter(deadline)) {
+            // คำนวณนาทีที่สาย
+            long minutesLate = java.time.Duration.between(deadline, checkIn).toMinutes();
+
+            if (minutesLate >= 60) {
+                long hours = minutesLate / 60;
+                long mins  = minutesLate % 60;
+                return "LATE " + hours + " hr " + mins + " mins";
+            } else {
+                return "LATE " + minutesLate + " mins";
+            }
+        }
+        return "ON-TIME";
+    }
+
+    // ✅ คำนวณ CHECK_OUT status
+    private String calculateCheckOutStatus(LocalDateTime checkOutTime) {
+
+        LocalTime checkOut = checkOutTime.toLocalTime();
+        LocalTime endTime  = LocalTime.of(17, 0); // ก่อน 17:00 = ออกก่อนเวลา
+
+        if (checkOut.isBefore(endTime)) {
+            // คำนวณนาทีที่ออกก่อนเวลา
+            long minutesEarly = java.time.Duration.between(checkOut, endTime).toMinutes();
+
+            if (minutesEarly >= 60) {
+                long hours = minutesEarly / 60;
+                long mins  = minutesEarly % 60;
+                return "EARLY " + hours + " hr " + mins + " mins";
+            } else {
+                return "EARLY " + minutesEarly + " mins";
+            }
+        }
+        return "ON-TIME";
+    }
+
+
+
+    //LOGIN SERVICE FOR FACE-DETECTION SYSTEM
+    public LoginResDTO login(LoginReq dto) {
+        LoginResDTO result = new LoginResDTO();
+
+        // Step 1: หา staff จาก username
+        StaffEntity staff = userRepository.findByUsername(dto.getUser())
+                .orElseThrow(() -> new RuntimeException("Not found Username"));
+
+        // Step 2: ✅ เช็ค password ด้วย PasswordUtil
+        if (!PasswordUtil.verifyPassword(dto.getPassword(), staff.getPasswordHash())) {
+            throw new RuntimeException("Incorrect Password");
+        }
+
+        // Step 3: เช็ค status
+        if (!staff.getStatus().equals("ACTIVE")) {
+            throw new RuntimeException("บัญชีนี้ถูกระงับการใช้งาน");
+        }
+
+        // Step 4: Generate token ใหม่
+        String newToken;
+        do {
+            newToken = UUID.randomUUID().toString().replace("-", "");
+        } while (userRepository.findByToken(newToken).isPresent());
+
+        // Step 5: อัปเดต token และ tokenExpiredAt
+//        LocalDateTime newExpiredAt = LocalDateTime.now().plusYears(1);
+        LocalDateTime newExpiredAt = LocalDateTime.now().plusDays(5);
+        staff.setToken(newToken);
+        staff.setTokenExpiredAt(newExpiredAt);
+        userRepository.save(staff);
+
+        result.setStatus("00");
+        result.setMessage("success");
+        result.setData(new StaffLoginResponseDTO(
+                staff.getUsername(),
+                newToken,
+                staff.getRole(),
+                newExpiredAt
+        ));
+
+        return result;
+    }
+
+    // ==============================
+// ADMIN reset password
+// ==============================
+    public PasswordResponseDTO resetPassword(ResetPasswordRequestDTO dto) {
+
+        // Step 1: หา ADMIN จาก token
+        StaffEntity admin = userRepository.findByToken(dto.getToken())
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+
+        // Step 2: เช็ค token หมดอายุ
+        if (admin.getTokenExpiredAt() != null
+                && admin.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
+        }
+
+        // Step 3: เช็คว่าเป็น ADMIN
+        if (!admin.getRole().equals("ADMIN")) {
+            throw new RuntimeException("only ADMIN can reset");
+        }
+
+        // Step 4: หา staff ที่จะ reset
+        StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
+                .orElseThrow(() -> new RuntimeException("not found Staff Code: " + dto.getStaffCode()));
+
+        // Step 5: Generate password ใหม่
+        String newPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        String hashedPassword = PasswordUtil.hashPassword(newPassword);
+
+        staff.setPasswordHash(hashedPassword);
+        userRepository.save(staff);
+
+        return new PasswordResponseDTO(
+                true,
+                "Reset Password ສຳເລັດ",
+                newPassword     // ✅ ส่ง plain password กลับให้ ADMIN รู้
+        );
+    }
+
+    // ==============================
+// Staff เปลี่ยน password ตัวเอง
+// ==============================
+    public PasswordResponseDTO changePassword(ChangePasswordRequestDTO dto) {
+
+        // Step 1: หา staff จาก token
+        StaffEntity staff = userRepository.findByToken(dto.getToken())
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+
+        // Step 2: เช็ค token หมดอายุ
+        if (staff.getTokenExpiredAt() != null
+                && staff.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
+        }
+
+        // Step 3: เช็ค old password
+        if (!PasswordUtil.verifyPassword(dto.getOldPassword(), staff.getPasswordHash())) {
+            throw new RuntimeException("Password ເກົ່າບໍ່ຖືກຕ້ອງ");
+        }
+
+        // Step 4: เช็คว่า new password ไม่เหมือน old password
+        if (dto.getOldPassword().equals(dto.getNewPassword())) {
+            throw new RuntimeException("Password Must Be Different from old Password");
+        }
+
+        // Step 5: Hash และบันทึก password ใหม่
+        String hashedPassword = PasswordUtil.hashPassword(dto.getNewPassword());
+        staff.setPasswordHash(hashedPassword);
+        userRepository.save(staff);
+
+        return new PasswordResponseDTO(
+                true,
+                "ປ່ຽນ Password ສຳເລັດ",
+                null    // ✅ ไม่ส่ง password กลับ เพราะ staff รู้อยู่แล้ว
+        );
     }
 }

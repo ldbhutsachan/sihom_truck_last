@@ -20,6 +20,7 @@ import com.ldb.truck.Model.Login.staft.stafReq;
 import com.ldb.truck.Model.Login.staft.staftRes;
 import com.ldb.truck.Service.Login.LoginService;
 import com.ldb.truck.Service.Product.ProductService;
+import com.ldb.truck.Service.RegisterService.FaceService;
 import com.ldb.truck.Service.Truck.TruckService;
 import com.ldb.truck.Service.customer.CustomerService;
 import com.ldb.truck.Service.location.LocationService;
@@ -40,6 +41,8 @@ import java.util.List;
 @RestController
 @RequestMapping("${base_url}")
 public class Controller {
+    @Autowired
+    private  FaceService faceService;
 
     @Autowired
     ProfileDao profileDao;
@@ -559,18 +562,27 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/Login")
-    public GetUserLoginRes Login (@RequestBody  LoginReq loginReq){
-        GetUserLoginRes result = new GetUserLoginRes();
+    public Object Login(@RequestBody LoginReq loginReq) {
+
         try {
             System.out.println("============================>login service<============================================");
-            result = loginService.Userlogin(loginReq);
-        }catch (Exception e){
+
+            // ✅ เช็คว่าจะ login ระบบไหน
+            if ("CHECK-INOUT".equalsIgnoreCase(loginReq.getSystem())) {
+                // ระบบใหม่ → Face Detection
+                return faceService.login(loginReq);
+            } else {
+                // ระบบเดิม → ERP
+                return loginService.Userlogin(loginReq);
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
+            GetUserLoginRes result = new GetUserLoginRes();
             result.setStatus("01");
-            result.setMessage("exeption");
+            result.setMessage("exception");
             return result;
         }
-        return result;
     }
 
     @CrossOrigin(origins = "*")
