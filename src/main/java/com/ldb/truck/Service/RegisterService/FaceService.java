@@ -340,6 +340,8 @@ public class FaceService {
                     + "_" + log.getCheckTime().toLocalDate();
 
             map.putIfAbsent(key, new AttendanceDayDTO(
+                    log.getId(),
+                    log.getStaff().getId(),
                     log.getStaff().getStaffCode(),
                     log.getStaff().getUsername(),
                     log.getCheckTime().toLocalDate(),

@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class AttendanceDayDTO {
+    private Long  id;
+    private Long staffId;
     private String staffCode;
     private String username;
     private LocalDate date;
