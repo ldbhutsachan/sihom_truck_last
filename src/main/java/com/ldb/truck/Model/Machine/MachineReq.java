@@ -29,6 +29,7 @@ public class MachineReq {
     private String currency;
 //    private String date_in;
     private LocalDate date_in;
+    private String remark; // เพิ่มตรงนี้
 
     // สำหรับ tools
     private List<ToolReq> tools;

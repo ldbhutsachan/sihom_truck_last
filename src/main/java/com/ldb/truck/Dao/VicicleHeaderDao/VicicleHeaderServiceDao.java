@@ -700,8 +700,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     //add new
                     tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
                     tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
-//                    tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
-//                    tr.setEnddate_kongnam(rs.getString("endate_kongnam"));
+                    tr.setBorNo(rs.getString("borNo"));
+                    tr.setBorName(rs.getString("borName"));
                     return tr ;
                 }
             });
@@ -1173,14 +1173,16 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
     //update car office
     @Override
     public int UpdateCarOfficeDAOs (CarOfficeReq carOfficeReq) throws ParseException {
-//
-//        String path="http://khounkham.com/images/car/";
-//        String fileName = carOfficeReq.getImg();
-//        log.info("path:"+path+fileName);
-//        log.info("sqlEndDate:"+sqlEndDate);
         List<VicicleHeader> data = new ArrayList<>();
         try{
-            String SQL = "update CARS_OFFICE set license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?,car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?,car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?,insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?,oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?,serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,userId=?,tungsitnumber=?,tungsitDateExpire=?,lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=?,leanFuengThaiy=?,leanGiaNextday=?,startdate_kongnam=?,enddate_kongnam=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
+            String SQL = "update CARS_OFFICE set license_plate=?,battery_code_name=?,license_plate_end=?,license_plate_start=?,car_year=?," +
+                    "car_type=?,car_brand=?,lekJuk=?,lekThung=?,carColor=?,font_light=?,back_light=?,millor_back=?,millor_side=?," +
+                    "car_mileage_now=?,cc=?,leanGia=?,insurance_Lao=?,insurance_viet=?,insurance_thai=?,insurance_Lao_expireDate=?," +
+                    "insurance_viet_expireDate=?,insurance_thai_expireDate=?,technic_check_dateStart=?,technic_check_dateEnd=?,total_weigh_car=?," +
+                    "oil=?,car_model=?,owner_car=?,steering_wheel=?,dao=?,wide=?,longg=?,tall=?,sitPosition_amount=?,serial_wheel_left_font=?," +
+                    "serial_wheel_left_back=?,serial_wheel_right_font=?,serial_wheel_right_back=?,tungsitnumber=?,tungsitDateExpire=?," +
+                    "lekmai_next=?,serial_tire_second=?,date_change_lean=?,date_change_lean_next=?,leanFuengThaiy=?,leanGiaNextday=?," +
+                    "startdate_kongnam=?,enddate_kongnam=? where KEY_ID ='"+carOfficeReq.getKEY_ID()+"'";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
 //            paramList.add(path + fileName);
@@ -1223,7 +1225,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getSerial_wheel_left_back());
             paramList.add(carOfficeReq.getSerial_wheel_right_font());
             paramList.add(carOfficeReq.getSerial_wheel_right_back());
-            paramList.add(carOfficeReq.getUserId());
+//            paramList.add(carOfficeReq.getUserId());
 //            paramList.add(carOfficeReq.getLean());
             paramList.add(carOfficeReq.getTungsitnumber());
             paramList.add(carOfficeReq.getTungsitDateExpire());

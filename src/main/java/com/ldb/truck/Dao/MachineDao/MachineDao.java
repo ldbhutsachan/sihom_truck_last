@@ -736,7 +736,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 .append("    a.time_fix_monitor,\n")
                 .append("    a.time_oil_fix,\n")
                 .append("    a.time_oil_fix_mo,\n")
-                .append("    a.image, a.date_in,\n")
+                .append("    a.image, a.date_in, a.remark,\n")
                 .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.mch_no = a.mch_no),0) AS all_used_hours,\n")
                 .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no),0) AS last_engine_hours,\n")
                 .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no),0) AS last_hydraulic_hours,\n")
@@ -799,6 +799,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
                 tr.setImage(rs.getString("image"));
                 tr.setDate_in(rs.getString("date_in"));
+                tr.setRemark(rs.getString("remark"));
+
                 return tr;
             }
         });
@@ -1232,6 +1234,11 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             if (machineReq.getDate_in() != null) {
                 sql.append("date_in = ?, ");
                 params.add(machineReq.getDate_in());
+            }
+            // ✅ remark เฉพาะถ้ามี
+            if (machineReq.getRemark() != null && !machineReq.getRemark().isEmpty()) {
+                sql.append("remark = ?, ");
+                params.add(machineReq.getRemark());
             }
 
             sql.append("time_oil_fix_mo = ? ");

@@ -44,6 +44,7 @@ public class Machine {
 
     private  String image;
     private String date_in;
+    private String remark;
 
 
 

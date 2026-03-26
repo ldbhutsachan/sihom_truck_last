@@ -252,6 +252,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setTotalFixMoOil(resp.getTotalFixMoOil());
                  machine.setImage(resp.getImage());
                  machine.setDate_in(resp.getDate_in());
+                 machine.setRemark(resp.getRemark());
 
                  // ✅ เพิ่มตรงนี้เพื่อ map tools ด้วย
                  machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
