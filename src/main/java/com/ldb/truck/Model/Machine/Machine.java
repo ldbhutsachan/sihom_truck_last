@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,9 +55,12 @@ public class Machine {
     @NoArgsConstructor // จำเป็นสำหรับ Jackson
     @AllArgsConstructor
     public static class Tool {
-        private String tool_name;
-        private int qty;
         private int id;
+        private String tool_name;
+        private BigDecimal original_qty;
+        private BigDecimal  update_qty;
+        private BigDecimal  qty;
+        private String status;
         private String mch_no;
         private String unit;
     }

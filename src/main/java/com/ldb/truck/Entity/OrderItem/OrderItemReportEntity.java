@@ -3,6 +3,7 @@ package com.ldb.truck.Entity.OrderItem;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -38,10 +39,10 @@ public class OrderItemReportEntity {
     private Integer exchangeRate;
 
     @Column(name = "qty")
-    private Integer qty;
+    private BigDecimal qty;
 
     @Column(name = "price")
-    private Float price;
+    private BigDecimal price;
 
 
 
@@ -95,7 +96,7 @@ public class OrderItemReportEntity {
     private int realExchangeRate;
 
     @Column(name = "r_price")
-    private Float rPrice;
+    private BigDecimal rPrice;
 
     @Column(name = "real_price")
     private Float realPrice;

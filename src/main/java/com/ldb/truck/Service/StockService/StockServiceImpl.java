@@ -652,20 +652,17 @@ public class StockServiceImpl {
                         .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
                         .count());
 
-                //I have change double to BigDecimal
-//                double totalLak = listData.stream()
+//                BigDecimal totalLak = listData.stream()
 //                        .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
-//                        .map(V_order_item_details::getAmountCurrency)
-//                        .filter(Objects::nonNull)
-//                        .mapToDouble(Float::doubleValue)
-//                        .sum();
+//                        .map(p -> {
+//                            BigDecimal qty = BigDecimal.valueOf(p.getQty());
+//                            BigDecimal price = BigDecimal.valueOf(p.getPrice());
+//                            return qty.multiply(price);
+//                        })
+//                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal totalLak = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
-                        .map(p -> {
-                            BigDecimal qty = BigDecimal.valueOf(p.getQty());
-                            BigDecimal price = BigDecimal.valueOf(p.getPrice());
-                            return qty.multiply(price);
-                        })
+                        .map(p -> p.getQty().multiply(p.getPrice()))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
 
@@ -678,16 +675,14 @@ public class StockServiceImpl {
                         .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
                         .count());
 
-//                double totalUsd = listData.stream()
+//                BigDecimal totalUsd = listData.stream()
 //                        .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
-//                        .map(V_order_item_details::getAmountCurrency)
-//                        .filter(Objects::nonNull)
-//                        .mapToDouble(Float::doubleValue)
-//                        .sum();
+//                        .map(p -> BigDecimal.valueOf(p.getQty())
+//                                .multiply(BigDecimal.valueOf(p.getPrice())))
+//                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal totalUsd = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
-                        .map(p -> BigDecimal.valueOf(p.getQty())
-                                .multiply(BigDecimal.valueOf(p.getPrice())))
+                        .map(p -> p.getQty().multiply(p.getPrice()))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
 
@@ -704,10 +699,15 @@ public class StockServiceImpl {
 //                        .filter(Objects::nonNull)
 //                        .mapToDouble(Float::doubleValue)
 //                        .sum();
+
+//                BigDecimal totalThb = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
+//                        .map(p -> BigDecimal.valueOf(p.getQty())
+//                                .multiply(BigDecimal.valueOf(p.getPrice())))
+//                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal totalThb = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
-                        .map(p -> BigDecimal.valueOf(p.getQty())
-                                .multiply(BigDecimal.valueOf(p.getPrice())))
+                        .map(p -> p.getQty().multiply(p.getPrice()))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
 
@@ -843,8 +843,9 @@ public class StockServiceImpl {
                     tr.setSize(rs.getString("size"));
                     tr.setCurrency(rs.getString("currency"));
                     tr.setExchangeRate(rs.getInt("exchange_rate"));
-                    tr.setQty(rs.getInt("qty"));
-                    tr.setPrice(rs.getFloat("price"));
+//                    tr.setQty(rs.getInt("qty"));
+                    tr.setQty(rs.getBigDecimal("qty"));
+                    tr.setPrice(rs.getBigDecimal("price"));
                     tr.setStatus(rs.getString("status"));
                     tr.setToKen(rs.getString("token"));
                     tr.setTotal(rs.getBigDecimal("total"));
@@ -1113,23 +1114,23 @@ public class StockServiceImpl {
     }
 
 
-    private List<OrderItemReportEntity> mapOrderItemAuth(StockItemAuthReq request, String userId) {
-        List<OrderItemReportEntity> entities = new ArrayList<>();
-
-        for (StockItemAuthModel item : request.getDetailId()) {
-            OrderItemReportEntity entity = new OrderItemReportEntity();
-            entity.setBillNo(request.getBillNo());
-            entity.setItemId(item.getItemId());
-            entity.setQty(item.getQty());
-            entity.setPrice(item.getAmount());
-            entity.setApproveBy(userId);
-            entity.setApproveDate(new Date());
-            entity.setStatus("auth"); // Example default status
-            entities.add(entity);
-        }
-
-        return entities;
-    }
+//    private List<OrderItemReportEntity> mapOrderItemAuth(StockItemAuthReq request, String userId) {
+//        List<OrderItemReportEntity> entities = new ArrayList<>();
+//
+//        for (StockItemAuthModel item : request.getDetailId()) {
+//            OrderItemReportEntity entity = new OrderItemReportEntity();
+//            entity.setBillNo(request.getBillNo());
+//            entity.setItemId(item.getItemId());
+//            entity.setQty(item.getQty());
+//            entity.setPrice(item.getAmount());
+//            entity.setApproveBy(userId);
+//            entity.setApproveDate(new Date());
+//            entity.setStatus("auth"); // Example default status
+//            entities.add(entity);
+//        }
+//
+//        return entities;
+//    }
     @Autowired
     VCalOrderEntityRepository vCalOrderEntityRepository;
 
@@ -1943,7 +1944,7 @@ public class StockServiceImpl {
         // Process and update items
         for (RequestItemEbtity stock : items) {
 
-            Integer qty = stock.getQty();
+            BigDecimal qty = stock.getQty();
             Integer itemNo = stock.getItemId();
 
             // Logging details before updating
@@ -1954,7 +1955,7 @@ public class StockServiceImpl {
 
             //call check out stock
             List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(itemNo);
-            Integer beforeQty = inventoryList.get(0).getQty();
+            BigDecimal beforeQty = inventoryList.get(0).getQty();
             String itemNoId = inventoryList.get(0).getItemId();
             Integer delId = stock.getDetailId();
             log.info("show beforeQty:"+beforeQty);
@@ -2405,7 +2406,7 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
         for (RequestItemEbtity item : items) {
             List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(item.getItemId());
 
-            if (inventoryList.isEmpty() || item.getQty() > inventoryList.get(0).getQty()) {
+            if (inventoryList.isEmpty() || item.getQty().compareTo(inventoryList.get(0).getQty()) > 0) {
                 String msg = String.format(
                         "No: %s, Name: %s, QtyInStock: %s, RequestedQty: %s",
                         inventoryList.isEmpty() ? "?" : inventoryList.get(0).getItemId(),
@@ -2415,7 +2416,7 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                 );
                 response.setStatus("05");
                 response.setMessage("ອາໄຫຼ່ນີ້ໝົດເເລ້ວ : " + msg);
-                return response; // หยุด function ไม่ให้ approve
+                return response;
             }
         }
 
@@ -2533,9 +2534,12 @@ public DataResponse checkKeyOrder(){
 
                 groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
 
-                groupHeader.setQty((int) listData.stream()
+//                groupHeader.setQty((int) listData.stream()
+//                        .filter(p -> p.getBillNo().equals(bill))
+//                        .count());
+                groupHeader.setQty(BigDecimal.valueOf(listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
-                        .count());
+                        .count()));
                 //numfm
                 Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
 
@@ -2608,9 +2612,12 @@ public DataResponse checkKeyOrder(){
 
                 groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
 
-                groupHeader.setQty((int) listData.stream()
+//                groupHeader.setQty((int) listData.stream()
+//                        .filter(p -> p.getBillNo().equals(bill))
+//                        .count());
+                groupHeader.setQty(BigDecimal.valueOf(listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
-                        .count());
+                        .count()));
                 Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
 
                 groupHeader.setAmount(numfm.format(total));

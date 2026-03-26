@@ -1,6 +1,7 @@
 package com.ldb.truck.Service.MachineService;
 
 import com.ldb.truck.Dao.MachineDao.MachineInterface;
+import com.ldb.truck.Entity.MerchineHis.MachineToolHis;
 import com.ldb.truck.Model.Borcar.BorCarModel;
 import com.ldb.truck.Model.Borcar.BorCarResponse;
 import com.ldb.truck.Model.Borcar.Borcar;
@@ -10,6 +11,7 @@ import com.ldb.truck.Model.Login.Payment.GenerateInvoiceID;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
 import com.ldb.truck.Model.Login.Performance.v_performance;
 import com.ldb.truck.Model.Machine.*;
+import com.ldb.truck.Repository.MachineHis.MachineToolHisRepository;
 import com.ldb.truck.Repository.MachineHis.MerchinHisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,7 @@ public class MachineService {
     private final MachineInterface machineInterface;
     private final MerchinHisRepository MERCHIN_HIS_REPOSITORY;
     private final JdbcTemplate jdbcTemplate;
+    private final MachineToolHisRepository machineToolHisRepository;
 
 
 
@@ -629,8 +632,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                         "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
                 String updateSql = "UPDATE tb_machine_tool " +
-                        "SET tool_name = ?, qty = ?, unit = ?, status = 'ok', " +
-                        "update_date = ?, updated_by = ? " +
+                        "SET tool_name = ?, unit = ?, status = 'ok' " +
                         "WHERE id = ? AND mch_no = ?";
 
                 for (MachineReq.ToolReq tool : incomingTools) {
@@ -672,10 +674,10 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
 
                         jdbcTemplate.update(updateSql,
                                 tool.getToolName(),
-                                tool.getQty(),
+//                                tool.getQty(),  //can not update qr=ty
                                 tool.getUnit() != null ? tool.getUnit() : "",
-                                new Timestamp(System.currentTimeMillis()),
-                                machineReq.getCreateBy(),
+//                                new Timestamp(System.currentTimeMillis()),
+//                                machineReq.getCreateBy(),
                                 tool.getId(),
                                 machineReq.getMchNo()
                         );
@@ -720,5 +722,13 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         }
 
         return response;
+    }
+    // Insert
+    public MachineToolHis insert(MachineToolHis request) {
+        return machineToolHisRepository.save(request);
+    }
+    // Show by Tool ID
+    public List<MachineToolHis> findByToolId(Long toolId) { // เปลี่ยนตรงนี้
+        return machineToolHisRepository.findByToolId(toolId);
     }
 }

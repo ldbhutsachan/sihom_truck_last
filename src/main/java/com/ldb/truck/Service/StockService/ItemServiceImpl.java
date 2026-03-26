@@ -108,7 +108,7 @@ public class ItemServiceImpl {
     }
 
 
-//    public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
+    //    public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
 //    log.info("role:" + role);
 //    log.info("userName:" + userName);
 //    log.info("branchNo:" + branchNo);
@@ -162,150 +162,150 @@ public class ItemServiceImpl {
 //
 //    return response;
 //}
-public DataResponse getItemList(listItemEntity listItemEntity, String userName, String role, String branchNo, String borNo) {
-    log.info("role:" + role);
-    log.info("userName:" + userName);
-    log.info("branchNo:" + branchNo);
-    log.info("borNo:" + borNo);
+    public DataResponse getItemList(listItemEntity listItemEntity, String userName, String role, String branchNo, String borNo) {
+        log.info("role:" + role);
+        log.info("userName:" + userName);
+        log.info("branchNo:" + branchNo);
+        log.info("borNo:" + borNo);
 
-    DataResponse response = new DataResponse();
-    String khid = listItemEntity.getKhid();
+        DataResponse response = new DataResponse();
+        String khid = listItemEntity.getKhid();
 
-    try {
-        List<ItemListView> items;
+        try {
+            List<ItemListView> items;
 
-        if ("PADMIN".equals(role)) {
-            if (listItemEntity.getBorNo() != null && !listItemEntity.getBorNo().trim().isEmpty()) {
-                items = itemListRepository.getAllViewItemsBorNo(listItemEntity.getBorNo(), khid);
+            if ("PADMIN".equals(role)) {
+                if (listItemEntity.getBorNo() != null && !listItemEntity.getBorNo().trim().isEmpty()) {
+                    items = itemListRepository.getAllViewItemsBorNo(listItemEntity.getBorNo(), khid);
+                } else {
+                    items = itemListRepository.getAllViewItemsAdmin();
+                }
             } else {
-                items = itemListRepository.getAllViewItemsAdmin();
+                items = itemListRepository.getAllViewItemsBranchNo(branchNo, borNo, khid);
             }
-        } else {
-            items = itemListRepository.getAllViewItemsBranchNo(branchNo, borNo, khid);
+
+            // map Projection → modelItemList
+            List<modelItemList> resultList = items.stream()
+                    .map(item -> new modelItemList(
+                            item.getItemId(),
+                            item.getItemName(),
+                            item.getUnit(),
+                            item.getImage(),
+                            item.getBorNo(),
+                            item.getBorName(),
+                            item.getSize(),
+                            item.getQty(),
+                            item.getKhid(),
+                            item.getKhno(),
+                            item.getKhname(),
+                            item.getShopId(),
+                            item.getShopName(),
+                            item.getOrderType(),
+                            item.getCurrency(),
+                            item.getExchangeRate(),
+                            item.getPrice()
+                    ))
+                    .collect(Collectors.toList());
+
+            response.setDataResponse(resultList);
+            response.setStatus("00");
+            response.setMessage("Success");
+
+        } catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error Data !!");
+            e.printStackTrace();
         }
 
-        // map Projection → modelItemList
-        List<modelItemList> resultList = items.stream()
-                .map(item -> new modelItemList(
-                        item.getItemId(),
-                        item.getItemName(),
-                        item.getUnit(),
-                        item.getImage(),
-                        item.getBorNo(),
-                        item.getBorName(),
-                        item.getSize(),
-                        item.getQty(),
-                        item.getKhid(),
-                        item.getKhno(),
-                        item.getKhname(),
-                        item.getShopId(),
-                        item.getShopName(),
-                        item.getOrderType(),
-                        item.getCurrency(),
-                        item.getExchangeRate(),
-                        item.getPrice()
-                ))
-                .collect(Collectors.toList());
-
-        response.setDataResponse(resultList);
-        response.setStatus("00");
-        response.setMessage("Success");
-
-    } catch (Exception e) {
-        response.setStatus("EE");
-        response.setMessage("Error Data !!");
-        e.printStackTrace();
+        return response;
     }
 
-    return response;
-}
 
-
-    public DataResponse saveItem(ItemEntity viewItemEntity){
-        log.info("show alert:"+viewItemEntity.getAlertqty());
+    public DataResponse saveItem(ItemEntity viewItemEntity) {
+        log.info("show alert:" + viewItemEntity.getAlertqty());
         DataResponse response = new DataResponse();
         try {
             response.setDataResponse(itemEntityRepository.save(viewItemEntity));
-            if(response.getDataResponse() != null){
+            if (response.getDataResponse() != null) {
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
                 response.setMessage("can't save data!!");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setStatus("EE");
             response.setMessage("Error Data !!");
         }
         return response;
- }
+    }
 
- public DataResponse updateItem(ItemEntity viewItemEntity){
+    public DataResponse updateItem(ItemEntity viewItemEntity) {
         DataResponse response = new DataResponse();
         String url = "http://khounkham.com/images/image.jpg";
         try {
             //====check url path
-                if(viewItemEntity.getImage().equals(url)){
-                    response.setDataResponse(itemEntityRepository.updateItemNoImage(
-                            viewItemEntity.getBrandId(),
-                            viewItemEntity.getSupplierId(),
-                            viewItemEntity.getItem_name(),
-                            viewItemEntity.getUnit(),
-                            viewItemEntity.getSize(),
-                            viewItemEntity.getCurrency(),
-                            viewItemEntity.getExchangeRate(),
-                            viewItemEntity.getGalatyStartDate(),
-                            viewItemEntity.getGalatyEndDate(),
-                            viewItemEntity.getGalatyAmt(),
-                            viewItemEntity.getQty(),
-                            viewItemEntity.getPrice(),
-                            viewItemEntity.getApproveBy(),
-                            viewItemEntity.getApproveDate(),
+            if (viewItemEntity.getImage().equals(url)) {
+                response.setDataResponse(itemEntityRepository.updateItemNoImage(
+                        viewItemEntity.getBrandId(),
+                        viewItemEntity.getSupplierId(),
+                        viewItemEntity.getItem_name(),
+                        viewItemEntity.getUnit(),
+                        viewItemEntity.getSize(),
+                        viewItemEntity.getCurrency(),
+                        viewItemEntity.getExchangeRate(),
+                        viewItemEntity.getGalatyStartDate(),
+                        viewItemEntity.getGalatyEndDate(),
+                        viewItemEntity.getGalatyAmt(),
+                        viewItemEntity.getQty(),
+                        viewItemEntity.getPrice(),
+                        viewItemEntity.getApproveBy(),
+                        viewItemEntity.getApproveDate(),
 
-                            viewItemEntity.getBarcode(),
-                            viewItemEntity.getItemtypeid(),
-                            viewItemEntity.getHouseid(),
-                            viewItemEntity.getAlertqty(),
-                            viewItemEntity.getOrderType(),
-                            viewItemEntity.getItemId()));
-                }else {
-                    response.setDataResponse(itemEntityRepository.updateItem(
-                            viewItemEntity.getBrandId(),
-                            viewItemEntity.getSupplierId(),
-                            viewItemEntity.getItem_name(),
-                            viewItemEntity.getUnit(),
-                            viewItemEntity.getSize(),
-                            viewItemEntity.getCurrency(),
-                            viewItemEntity.getExchangeRate(),
-                            viewItemEntity.getGalatyStartDate(),
-                            viewItemEntity.getGalatyEndDate(),
-                            viewItemEntity.getGalatyAmt(),
-                            viewItemEntity.getQty(),
-                            viewItemEntity.getPrice(),
-                            viewItemEntity.getImage(),
-                            viewItemEntity.getApproveBy(),
-                            viewItemEntity.getApproveDate(),
+                        viewItemEntity.getBarcode(),
+                        viewItemEntity.getItemtypeid(),
+                        viewItemEntity.getHouseid(),
+                        viewItemEntity.getAlertqty(),
+                        viewItemEntity.getOrderType(),
+                        viewItemEntity.getItemId()));
+            } else {
+                response.setDataResponse(itemEntityRepository.updateItem(
+                        viewItemEntity.getBrandId(),
+                        viewItemEntity.getSupplierId(),
+                        viewItemEntity.getItem_name(),
+                        viewItemEntity.getUnit(),
+                        viewItemEntity.getSize(),
+                        viewItemEntity.getCurrency(),
+                        viewItemEntity.getExchangeRate(),
+                        viewItemEntity.getGalatyStartDate(),
+                        viewItemEntity.getGalatyEndDate(),
+                        viewItemEntity.getGalatyAmt(),
+                        viewItemEntity.getQty(),
+                        viewItemEntity.getPrice(),
+                        viewItemEntity.getImage(),
+                        viewItemEntity.getApproveBy(),
+                        viewItemEntity.getApproveDate(),
 
-                            viewItemEntity.getBarcode(),
-                            viewItemEntity.getItemtypeid(),
-                            viewItemEntity.getHouseid(),
-                            viewItemEntity.getAlertqty(),
-                            viewItemEntity.getOrderType(),
-                            viewItemEntity.getItemId()));
-                }
-            if(response.getDataResponse() != null){
+                        viewItemEntity.getBarcode(),
+                        viewItemEntity.getItemtypeid(),
+                        viewItemEntity.getHouseid(),
+                        viewItemEntity.getAlertqty(),
+                        viewItemEntity.getOrderType(),
+                        viewItemEntity.getItemId()));
+            }
+            if (response.getDataResponse() != null) {
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
                 response.setMessage("can't save data!!");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             log.error("Error updating item: " + e.getMessage(), e);
             response.setStatus("EE");
             response.setMessage("Error Data !! : " + e.getMessage());
         }
         return response;
-            }
+    }
 }

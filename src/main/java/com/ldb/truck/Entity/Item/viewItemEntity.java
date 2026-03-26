@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.type.CurrencyType;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.security.Timestamp;
 import java.util.Date;
 
@@ -60,16 +61,16 @@ public class viewItemEntity {
     private String galatyAmt;
 
     @Column(name = "qty")
-    private Integer qty;
+    private BigDecimal qty;
 
     @Column(name = "price")
-    private Float price;
+    private BigDecimal price;
 
     @Column(name = "totalamt")
     private Float totalamt;
 
     @Column(name = "real_price", nullable = false)
-    private Float realPrice;
+    private BigDecimal realPrice;
 
     @Column(name = "image", columnDefinition = "TEXT")
     private String image;

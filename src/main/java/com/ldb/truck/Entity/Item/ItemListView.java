@@ -1,5 +1,7 @@
 package com.ldb.truck.Entity.Item;
 
+import java.math.BigDecimal;
+
 public interface ItemListView {
 
     String getItemId();
@@ -9,7 +11,7 @@ public interface ItemListView {
     String getBorNo();
     String getBorName();
     String getSize();
-    String getQty();
+    BigDecimal getQty();
     String getKhid();
     String getKhno();
     String getKhname();
@@ -18,7 +20,7 @@ public interface ItemListView {
     String getOrderType();
     String getCurrency();
     String getExchangeRate();
-    String getPrice();
+    BigDecimal  getPrice();
 
 
 }

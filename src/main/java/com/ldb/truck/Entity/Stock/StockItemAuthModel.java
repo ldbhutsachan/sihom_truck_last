@@ -5,19 +5,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockItemAuthModel {
     private Integer itemId;
-    private Integer qty;
-    private Float amount;
+    private BigDecimal qty;
+    private BigDecimal amount;
     private Float total;
 
 
 
     private String currency;
-    private Float realPrice;
+    private BigDecimal realPrice;
     private int exchangeRate;
 }

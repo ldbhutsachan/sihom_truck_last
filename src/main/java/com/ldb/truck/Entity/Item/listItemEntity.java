@@ -3,6 +3,7 @@ package com.ldb.truck.Entity.Item;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -18,7 +19,7 @@ public class listItemEntity {
     private String item_name;
 
     @Column(name = "qty")
-    private Integer qty;
+    private BigDecimal qty;
 
     @Column(name = "size", nullable = false)
     private String size; // Size might need renaming if backticks are causing issues

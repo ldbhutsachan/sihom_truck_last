@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -59,8 +60,8 @@ public interface RequestItemRepository extends CrudRepository<RequestItemEbtity,
             @Param("size") Integer size,
             @Param("currency") String currency,
             @Param("exchangeRate") Integer exchangeRate,
-            @Param("qty") Integer qty,
-            @Param("price") Float price,
+            @Param("qty") BigDecimal qty,
+            @Param("price") BigDecimal price,
             @Param("editBy") String editBy,
             @Param("editDate") Date editDate,
             @Param("status") String status,
@@ -112,7 +113,7 @@ int approveRequestItem(
             "WHERE detail_id=:detailId and item_id=:itemId ", nativeQuery = true)
     int approveRequestItemDetails(
 
-            @Param("beforeQty") Integer beforeQty,
+            @Param("beforeQty") BigDecimal beforeQty,
             @Param("detailId") Integer detailId, @Param("itemId") String itemId); // Use String instead of List<Long>
 
 

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Setter
@@ -16,7 +17,7 @@ import java.util.List;
 public class RequestItemHeader {
     private String billNo;
     private String txnDate;
-    private Integer qty;
+    private BigDecimal qty;
     private String amount;
     private String status;
     List<RequestTxnEntity> details;

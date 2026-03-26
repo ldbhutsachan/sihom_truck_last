@@ -803,7 +803,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             }
         });
         // ✅ ดึง tools ทั้งหมด
-        String sqlTools = "SELECT id, mch_no, tool_name, qty, unit FROM tb_machine_tool";
+        String sqlTools = "SELECT id, mch_no, tool_name,original_qty, update_qty, qty, status, unit FROM v_tb_machine_tool";
         List<Map<String, Object>> tools = JdbcTemplate.queryForList(sqlTools);
 
         // ✅ จับคู่ tools เข้ากับ machine แต่ละตัว
@@ -813,9 +813,12 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             List<Machine.Tool> machineTools = tools.stream()
                     .filter(t -> mchNo != null && mchNo.equals(String.valueOf(t.get("mch_no")).trim()))
                     .map(t -> new Machine.Tool(
-                            String.valueOf(t.get("tool_name")),
-                            Integer.parseInt(String.valueOf(t.get("qty"))),
                             Integer.parseInt(String.valueOf(t.get("id"))),
+                            String.valueOf(t.get("tool_name")),
+                            new BigDecimal(String.valueOf(t.get("original_qty"))),
+                            new BigDecimal(String.valueOf(t.get("update_qty"))),
+                            new BigDecimal(String.valueOf(t.get("qty"))),
+                            String.valueOf(t.get("status")),
                             String.valueOf(t.get("mch_no")),
                             String.valueOf(t.get("unit"))
                     ))

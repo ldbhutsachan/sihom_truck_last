@@ -3,6 +3,7 @@ package com.ldb.truck.Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
+import com.ldb.truck.Entity.MerchineHis.MachineToolHis;
 import com.ldb.truck.Model.Borcar.BorCarResponse;
 import com.ldb.truck.Model.Borcar.BorcarReq;
 import com.ldb.truck.Model.Login.Profile.Profile;
@@ -26,6 +27,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("${base_url}")
@@ -399,5 +402,34 @@ public ResponseEntity<MachineReportResposne> updateMachine(
 
     MachineReportResposne result = MACHINE_SERVICE.updateMachine(machineReq);
     return new ResponseEntity<>(result, HttpStatus.OK);
-}
+    }
+
+    //insert Machinetoolhis
+    @PostMapping("/insertMachineToolHis")
+    public ResponseEntity<?> insert(@RequestBody MachineToolHisRequest request) {
+
+        // Check token
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(request.getToken());
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        // Get username from token
+        String userName = userProfiles.get(0).getUserName();
+
+        // Map to entity
+        MachineToolHis entity = new MachineToolHis();
+        entity.setToolId(request.getToolId().longValue()); // cast เป็น Long
+        entity.setQty(request.getQty());
+        entity.setCreateBy(userName);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(MACHINE_SERVICE.insert(entity));
+    }
+    //getmachineToolHis
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getMachineToolHis")
+    public ResponseEntity<?> findByToolId(@RequestBody Map<String, Long> body) { // เปลี่ยนตรงนี้
+        Long toolId = body.get("id");
+        return ResponseEntity.ok(MACHINE_SERVICE.findByToolId(toolId));
+    }
 }

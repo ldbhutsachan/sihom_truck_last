@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,7 +17,7 @@ public class modelItemList {
     private String borNo;
     private String borName;
     private String size;
-    private String qty;
+    private BigDecimal qty;
     private String khid;
     private String khno;
     private String khname;
@@ -24,5 +26,5 @@ public class modelItemList {
     private String orderType;
     private String currency;
     private String exchangeRate;
-    private String price;
+    private BigDecimal price;
 }
