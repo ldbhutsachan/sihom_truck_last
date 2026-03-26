@@ -1043,6 +1043,7 @@ public class StockServiceImpl {
             entity.setQty(item.getQty());
             entity.setRealQty(item.getRealQty());
             entity.setRPrice(item.getPrice());
+            entity.setPrice(item.getPrice()); // ✅ เพิ่มตรงนี้
             entity.setRealPrice(item.getRealPrice());
             entity.setExchangeRate(item.getExchangeRate());
             entity.setRealCurrency(item.getCurrency());
