@@ -32,13 +32,6 @@ public class FaceService {
     //register staff
     public StaffRegisterResponseDTO registerStaff(StaffRegisterRequestDTO dto,
                                                   String fileUrl) throws IOException {
-
-        // เช็ค username ซ้ำ
-//        if (userRepository.existsByUsername(dto.getUsername())) {
-//            throw new RuntimeException("Username นี้ถูกใช้งานแล้ว");
-//        }
-
-        // เช็ค staffCode ซ้ำ
         if (userRepository.existsByStaffCode(dto.getStaffCode())) {
             throw new RuntimeException("Staff Code ນີ້ຖືກໃຊ້ໄປແລ້ວ");
         }
@@ -195,26 +188,21 @@ public class FaceService {
     //check-in and check-out service
     public CheckInResponseDTO checkIn(CheckInRequestDTO dto) {
 
-        // Step 1: หา staff จาก staffCode
         StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
-                .orElseThrow(() -> new RuntimeException("ບໍ່ເຫັນ Staff Code: " + dto.getStaffCode()));
+                .orElseThrow(() -> new RuntimeException("ไม่พบ Staff Code: " + dto.getStaffCode()));
 
-        // Step 2: เช็คว่า staff active อยู่ไหม
         if (!staff.getStatus().equals("ACTIVE")) {
-            throw new RuntimeException("Staff ນີ້ບໍ່ໄດ້ໃຊ້ງານແລ້ວ");
+            throw new RuntimeException("Staff นี้ไม่ได้ใช้งานแล้ว");
         }
 
-        // Step 3: กำหนดช่วงเวลาวันนี้
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay   = startOfDay.plusDays(1).minusSeconds(1);
 
-        // Step 4: หา CHECK_IN ของวันนี้
         Optional<AttendanceLog> existingCheckIn =
                 attendanceLogRepository
                         .findTopByStaff_IdAndCheckTypeAndCheckTimeBetweenOrderByCheckTimeDesc(
                                 staff.getId(), "CHECK_IN", startOfDay, endOfDay);
 
-        // Step 5: หา CHECK_OUT ของวันนี้
         Optional<AttendanceLog> existingCheckOut =
                 attendanceLogRepository
                         .findTopByStaff_IdAndCheckTypeAndCheckTimeBetweenOrderByCheckTimeDesc(
@@ -222,52 +210,36 @@ public class FaceService {
 
         AttendanceLog log;
         String message;
-        String notimessage = "";  // default ว่าง
-
-        LocalTime now = LocalTime.now();  // เวลาปัจจุบัน
+        String notimessage = "";
+        LocalTime now = LocalTime.now();
 
         if (existingCheckIn.isEmpty()) {
-            // ✅ ยังไม่มี CHECK_IN วันนี้เลย → INSERT CHECK_IN ใหม่
             log = new AttendanceLog();
             log.setStaff(staff);
             log.setCheckType("CHECK_IN");
             log.setCheckTime(LocalDateTime.now());
+            log.setIpAddress(dto.getIpAddress());    // ✅
+            log.setMacAddress(dto.getMacAddress());  // ✅
             message = "Check-in ສຳເລັດ";
-
-            // ✅ เช็คว่า check-in หลัง 08:01 ไหม → สาย
-            if (now.isAfter(LocalTime.of(8, 1))) {
-                notimessage = "Check-in Late";
-            } else {
-                notimessage = "Check-in on time";
-            }
+            notimessage = now.isAfter(LocalTime.of(8, 1)) ? "LATE" : "ON-TIME";
 
         } else if (existingCheckOut.isEmpty()) {
-            // ✅ มี CHECK_IN แล้ว แต่ยังไม่มี CHECK_OUT → INSERT CHECK_OUT ใหม่
             log = new AttendanceLog();
             log.setStaff(staff);
             log.setCheckType("CHECK_OUT");
             log.setCheckTime(LocalDateTime.now());
+            log.setIpAddress(dto.getIpAddress());    // ✅
+            log.setMacAddress(dto.getMacAddress());  // ✅
             message = "Check-out ສຳເລັດ";
-
-            // ✅ เช็คว่า check-out ก่อน 17:00 ไหม → ออกก่อนเวลา
-            if (now.isBefore(LocalTime.of(17, 0))) {
-                notimessage = "Check-out before the time";
-            } else {
-                notimessage = "Check-out on time";
-            }
+            notimessage = now.isBefore(LocalTime.of(17, 0)) ? "EARLY" : "ON-TIME";
 
         } else {
-            // ✅ มีทั้ง CHECK_IN และ CHECK_OUT แล้ว → อัปเดตเวลา CHECK_OUT ล่าสุด
             log = existingCheckOut.get();
             log.setCheckTime(LocalDateTime.now());
+            log.setIpAddress(dto.getIpAddress());    // ✅
+            log.setMacAddress(dto.getMacAddress());  // ✅
             message = "Check-out ສຳເລັດ";
-
-            // ✅ เช็คเวลา CHECK_OUT ที่อัปเดตด้วย
-            if (now.isBefore(LocalTime.of(17, 0))) {
-                notimessage = "Check-out before the time";
-            } else {
-                notimessage = "Check-out on time";
-            }
+            notimessage = now.isBefore(LocalTime.of(17, 0)) ? "EARLY" : "ON-TIME";
         }
 
         attendanceLogRepository.save(log);
@@ -348,7 +320,9 @@ public class FaceService {
                     null,
                     null,
                     null,   // checkInStatus
-                    null    // checkOutStatus
+                    null,    // checkOutStatus
+                    log.getIpAddress(),
+                    log.getMacAddress()
             ));
 
             AttendanceDayDTO day = map.get(key);

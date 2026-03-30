@@ -39,6 +39,9 @@ public class StaffEntity {
 
     private String  staffImage;      // ✅ เก็บรูป staff
 
+    private String ipAddress;    // ✅ เพิ่ม
+    private String macAddress;   // ✅ เพิ่ม
+
     // ✅ mappedBy = "staff" ให้ตรงกับชื่อ field ใน FaceRecord
     @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<FaceRecord> faceRecords;

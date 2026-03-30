@@ -18,4 +18,6 @@ public class AttendanceDayDTO {
     private String checkInStatus;    // ✅ ON-TIME / LATE X mins
     private LocalDateTime checkOut;   // ✅ CHECK_OUT แยก field
     private String checkOutStatus;   // ✅ ON-TIME / EARLY X mins/hrs
+    private String ipAddress;
+    private String machineAddress;
 }

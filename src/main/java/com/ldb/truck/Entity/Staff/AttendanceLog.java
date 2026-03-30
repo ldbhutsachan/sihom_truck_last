@@ -29,6 +29,10 @@ public class AttendanceLog {
 
     private LocalDateTime createdAt;
 
+    private String ipAddress;
+
+    private String macAddress;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
