@@ -871,7 +871,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         // ✅ Filter by date
         if (req.getStartDate() != null && !req.getStartDate().isEmpty()
                 && req.getEndDate() != null && !req.getEndDate().isEmpty()) {
-            sb.append(" AND DATE(d.savedate) >= ? AND DATE(d.savedate) <= ? ");
+            sb.append(" AND DATE(d.approvedate) >= ? AND DATE(d.approvedate) <= ? ");
             params.add(req.getStartDate());
             params.add(req.getEndDate());
         }

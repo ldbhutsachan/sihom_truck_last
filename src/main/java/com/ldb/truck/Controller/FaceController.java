@@ -154,13 +154,6 @@ public class FaceController {
             @RequestBody ChangePasswordRequestDTO dto) {
         return ResponseEntity.ok(faceService.changePassword(dto));
     }
-
-    //controller setStuffDay off
-    @CrossOrigin(origins = "*")
-    @PostMapping("/setStuffDay-off")
-    public ResponseEntity<?> setDayOff(@RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(faceService.setDayOff(body));
-    }
     //rquest day off
     @CrossOrigin(origins = "*")
     @PostMapping("/requestDayoff")

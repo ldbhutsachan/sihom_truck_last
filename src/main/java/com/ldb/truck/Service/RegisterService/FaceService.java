@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,7 +30,6 @@ public class FaceService {
     private final AttendanceLogRepository attendanceLogRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final TbBorRepository tbBorRepository;
-    private final StaffDayOffRepository staffDayOffRepository;
 
     //register staff
     public StaffRegisterResponseDTO registerStaff(StaffRegisterRequestDTO dto,
@@ -646,38 +644,38 @@ public class FaceService {
 
     //service set dayy oof for staff
     // StaffService.java — เพิ่ม method
-    public Object setDayOff(Map<String, Object> body) {
-
-        String token = (String) body.get("token");
-        List<String> dayOfWeeks = (List<String>) body.get("dayOfWeeks");
-        Long staffId = Long.parseLong(body.get("staffId").toString());
-
-        // เช็ค HR หรือ ADMIN เท่านั้น
-        StaffEntity requester = userRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
-
-        if (!requester.getRole().equals("ADMIN")
-                && !requester.getRole().equals("HR")) {
-            throw new RuntimeException("ไม่มีสิทธิ์ เฉพาะ ADMIN หรือ HR เท่านั้น");
-        }
-
-        // ✅ ลบ pattern เดิมออกก่อน แล้วบันทึกใหม่
-        staffDayOffRepository.deleteByStaffId(staffId);
-
-        dayOfWeeks.forEach(day -> {
-            StaffDayOff dayOff = new StaffDayOff();
-            dayOff.setStaffId(staffId);
-            dayOff.setDayOfWeek(day.toUpperCase()); // MONDAY, TUESDAY...
-            staffDayOffRepository.save(dayOff);
-        });
-
-        return Map.of(
-                "success", true,
-                "message", "ບັນທຶກວັນພັກສຳເລັດ",
-                "staffId", staffId,
-                "dayOfWeeks", dayOfWeeks
-        );
-    }
+//    public Object setDayOff(Map<String, Object> body) {
+//
+//        String token = (String) body.get("token");
+//        List<String> dayOfWeeks = (List<String>) body.get("dayOfWeeks");
+//        Long staffId = Long.parseLong(body.get("staffId").toString());
+//
+//        // เช็ค HR หรือ ADMIN เท่านั้น
+//        StaffEntity requester = userRepository.findByToken(token)
+//                .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+//
+//        if (!requester.getRole().equals("ADMIN")
+//                && !requester.getRole().equals("HR")) {
+//            throw new RuntimeException("ไม่มีสิทธิ์ เฉพาะ ADMIN หรือ HR เท่านั้น");
+//        }
+//
+//        // ✅ ลบ pattern เดิมออกก่อน แล้วบันทึกใหม่
+//        staffDayOffRepository.deleteByStaffId(staffId);
+//
+//        dayOfWeeks.forEach(day -> {
+//            StaffDayOff dayOff = new StaffDayOff();
+//            dayOff.setStaffId(staffId);
+//            dayOff.setDayOfWeek(day.toUpperCase()); // MONDAY, TUESDAY...
+//            staffDayOffRepository.save(dayOff);
+//        });
+//
+//        return Map.of(
+//                "success", true,
+//                "message", "ບັນທຶກວັນພັກສຳເລັດ",
+//                "staffId", staffId,
+//                "dayOfWeeks", dayOfWeeks
+//        );
+//    }
 
 
     //service request day off
@@ -713,13 +711,21 @@ public class FaceService {
                 throw new RuntimeException("ຊ່ວງທີ່ເລືອກແມ່ນວັນຢຸດທັງໝົດ");
             }
 
-            // Step 6: เช็คซ้อนทับ
+            // Step 6: เช็คซ้อนทับ ทั้ง PENDING และ APPROVED
             List<LeaveRequest> overlapping = leaveRequestRepository
                     .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                             staff.getId(), "APPROVED", endDate, startDate);
 
+            List<LeaveRequest> overlappingPending = leaveRequestRepository
+                    .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                            staff.getId(), "PENDING", endDate, startDate);
+
             if (!overlapping.isEmpty()) {
-                throw new RuntimeException("ช่วงวันที่ขอลาซ้อนทับกับวันลาที่อนุมัติแล้ว");
+                throw new RuntimeException("ຊ່ວງວັນທີຂໍລາຊ້ຳກັບວັນລາທີ່ອະນຸມັດແລ້ວ");
+            }
+
+            if (!overlappingPending.isEmpty()) {
+                throw new RuntimeException("ຊ່ວງວັນທີຂໍລາຊ້ຳກັບຄຳຂໍທີ່ລໍຖ້າອະນຸມັດຢູ່");
             }
 
             // Step 7: เช็คโควต้า
@@ -769,26 +775,17 @@ public class FaceService {
 
         return response;
     }
-
-    //  คำนวณวันทำงานจริง ไม่นับวันหยุด
     private int calculateWorkDays(StaffEntity staff,
                                   LocalDate startDate, LocalDate endDate) {
 
         String schedule = staff.getWorkSchedule() != null
                 ? staff.getWorkSchedule() : "MON_FRI";
 
-        // ✅ ดึง pattern วันหยุดของ staff (ครั้งเดียว ใช้ทุกเดือน)
-        List<String> dayOffPatterns = staffDayOffRepository
-                .findByStaffId(staff.getId())
-                .stream()
-                .map(StaffDayOff::getDayOfWeek)
-                .collect(java.util.stream.Collectors.toList());
-
         int workDays = 0;
         LocalDate current = startDate;
 
         while (!current.isAfter(endDate)) {
-            if (isWorkDay(current, schedule, dayOffPatterns)) {
+            if (isWorkDay(staff, current, schedule)) {
                 workDays++;
             }
             current = current.plusDays(1);
@@ -797,9 +794,7 @@ public class FaceService {
         return workDays;
     }
 
-    // ✅ เช็คว่าวันนั้นเป็นวันทำงานไหม
-    private boolean isWorkDay(LocalDate date, String schedule,
-                              List<String> dayOffPatterns) {
+    private boolean isWorkDay(StaffEntity staff, LocalDate date, String schedule) {
 
         java.time.DayOfWeek day = date.getDayOfWeek();
 
@@ -808,18 +803,31 @@ public class FaceService {
                 return day != java.time.DayOfWeek.SATURDAY
                         && day != java.time.DayOfWeek.SUNDAY;
 
-            case "MON_SAT":
-                return day != java.time.DayOfWeek.SUNDAY;
-
-            case "CUSTOM":
-                // ✅ เช็คว่าวันนั้นตรงกับ pattern วันหยุดไหม
-                return !dayOffPatterns.contains(day.name());
-            // day.name() คืนค่าเป็น "MONDAY", "TUESDAY" ...
+            case "CYCLE":
+                return isCycleWorkDay(staff, date);
 
             default:
                 return day != java.time.DayOfWeek.SATURDAY
                         && day != java.time.DayOfWeek.SUNDAY;
         }
+    }
+
+    private boolean isCycleWorkDay(StaffEntity staff, LocalDate date) {
+
+        LocalDate startDate = staff.getCycleStartDate();
+        if (startDate == null) return true;
+
+        int workDays   = staff.getCycleWorkDays() != null ? staff.getCycleWorkDays() : 24;
+        int offDays    = staff.getCycleOffDays()  != null ? staff.getCycleOffDays()  : 7;
+        int cycleLength = workDays + offDays;
+
+        long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(startDate, date);
+
+        if (daysSinceStart < 0) return true;
+
+        int positionInCycle = (int) (daysSinceStart % cycleLength);
+
+        return positionInCycle < workDays;
     }
 
     private int getLeaveQuota(StaffEntity staff, String leaveType) {
