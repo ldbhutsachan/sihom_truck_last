@@ -2,6 +2,7 @@ package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Model.DataResponse;
+import com.ldb.truck.Model.StaffRequest.LeaveGetRequestDTO;
 import com.ldb.truck.Model.Staffs.*;
 import com.ldb.truck.Service.RegisterService.FaceService;
 import lombok.RequiredArgsConstructor;
@@ -166,5 +167,13 @@ public class FaceController {
     public ResponseEntity<DataResponse> requestLeave(
             @RequestBody LeaveRequestDTO dto) {
         return ResponseEntity.ok(faceService.requestLeave(dto));
+    }
+
+    //get leaveRequest
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getLeaveRequest")
+    public ResponseEntity<DataResponse> getLeave(
+            @RequestBody LeaveGetRequestDTO dto) {
+        return ResponseEntity.ok(faceService.getLeave(dto));
     }
 }

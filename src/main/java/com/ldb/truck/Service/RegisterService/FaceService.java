@@ -4,6 +4,7 @@ import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Staff.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Login.LoginReq;
+import com.ldb.truck.Model.StaffRequest.LeaveGetRequestDTO;
 import com.ldb.truck.Model.Staffs.*;
 import com.ldb.truck.Repository.Staffs.*;
 import com.ldb.truck.Util.PasswordUtil;
@@ -840,5 +841,96 @@ public class FaceService {
                         staffId, leaveType, "APPROVED", startOfYear, endOfYear);
 
         return used.stream().mapToInt(LeaveRequest::getTotalDays).sum();
+    }
+
+    //getLeaveRequest
+    public DataResponse getLeave(LeaveGetRequestDTO dto) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // Step 1: หา requester จาก token
+            StaffEntity requester = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+
+            // Step 2: เช็ค token หมดอายุ
+            if (requester.getTokenExpiredAt() != null
+                    && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token หมดอายุ กรุณา Login ใหม่");
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            // แปลงวันที่ถ้ามี
+            LocalDate startDate = (dto.getStartDate() != null && !dto.getStartDate().isEmpty())
+                    ? LocalDate.parse(dto.getStartDate(), formatter) : null;
+            LocalDate endDate = (dto.getEndDate() != null && !dto.getEndDate().isEmpty())
+                    ? LocalDate.parse(dto.getEndDate(), formatter) : null;
+
+            List<LeaveRequest> leaves;
+
+            // Step 3: USER → ดูได้แค่ของตัวเอง
+            if (requester.getRole().equals("USER")) {
+                leaves = leaveRequestRepository.findByFilters(
+                        requester.getId(),  // ✅ lock staffId เป็นตัวเอง
+                        null,               // borId ไม่ใช้
+                        (dto.getStatus() != null && !dto.getStatus().isEmpty())
+                                ? dto.getStatus() : null,
+                        startDate,
+                        endDate
+                );
+
+            } else {
+                // Step 4: HR/ADMIN → filter ตาม params ทั้งหมด
+                Long staffId = (dto.getStaffId() != null
+                        && !dto.getStaffId().isEmpty()
+                        && !dto.getStaffId().equalsIgnoreCase("all"))
+                        ? Long.parseLong(dto.getStaffId()) : null;
+
+                leaves = leaveRequestRepository.findByFilters(
+                        staffId,
+                        dto.getBorId(),
+                        (dto.getStatus() != null && !dto.getStatus().isEmpty())
+                                ? dto.getStatus() : null,
+                        startDate,
+                        endDate
+                );
+            }
+
+            // Step 5: แปลง Entity → Map
+            List<Map<String, Object>> data = leaves.stream().map(leave -> {
+                Map<String, Object> item = new HashMap<>();
+                item.put("leaveId",   leave.getId());
+                item.put("staffId",   leave.getStaff().getId());
+                item.put("staffCode", leave.getStaff().getStaffCode());
+                item.put("username",  leave.getStaff().getUsername());
+                item.put("staffImage", leave.getStaff().getStaffImage());
+                item.put("borId",     leave.getStaff().getBorId());
+                item.put("leaveType", leave.getLeaveType());
+                item.put("startDate", leave.getStartDate().toString());
+                item.put("endDate",   leave.getEndDate().toString());
+                item.put("totalDays", leave.getTotalDays());
+                item.put("status",    leave.getStatus());
+                item.put("reason",    leave.getReason());
+                item.put("approvedBy", leave.getApprovedBy() != null
+                        ? leave.getApprovedBy().getUsername() : null);
+                item.put("createdAt", leave.getCreatedAt());
+                item.put("updatedAt", leave.getUpdatedAt());
+                return item;
+            }).collect(Collectors.toList());
+
+            response.setStatus("00");
+            response.setMessage("success");
+            response.setDataResponse(data);
+            response.setSumFooter(data.size());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
+
+        return response;
     }
 }
