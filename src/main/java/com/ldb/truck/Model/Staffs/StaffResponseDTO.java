@@ -15,6 +15,10 @@ public class StaffResponseDTO {
     private String role;
     private String status;
     private String staffImage;
+    private String department;   // ✅ เพิ่ม
+    private String position;     // ✅ เพิ่ม
+    private Integer borId;      // ✅ เพิ่ม
+    private String borName;     // ✅ เพิ่ม
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

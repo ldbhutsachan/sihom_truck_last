@@ -1,6 +1,7 @@
 package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.upload.MediaUploadService;
+import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Staffs.*;
 import com.ldb.truck.Service.RegisterService.FaceService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -56,22 +59,25 @@ public class FaceController {
     // ✅ ดูข้อมูล staff (all หรือ by id)
     @CrossOrigin(origins = "*")
     @PostMapping("/getStaff")
-    public ResponseEntity<?> getStaff(@RequestBody StaffQueryRequestDTO dto) {
+    public ResponseEntity<DataResponse> getStaff(@RequestBody StaffQueryRequestDTO dto) {
         return ResponseEntity.ok(faceService.getStaff(dto));
     }
 
     // ✅ อัปเดตข้อมูล staff
     @CrossOrigin(origins = "*")
-    @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<StaffResponseDTO> update(
-            @RequestParam("staffId") String staffId,       // ✅ staffId จาก form-data
-            @RequestParam(value = "username", required = false) String username,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "role", required = false) String role,
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "image", required = false) MultipartFile image,
+    @PostMapping(value = "/updateStaffInfo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DataResponse> update(
+            @RequestParam("staffId") String staffId,
+            @RequestParam(value = "username",   required = false) String username,
+            @RequestParam(value = "phone",      required = false) String phone,
+            @RequestParam(value = "role",       required = false) String role,
+            @RequestParam(value = "status",     required = false) String status,
+            @RequestParam(value = "department", required = false) String department,
+            @RequestParam(value = "position",   required = false) String position,
+            @RequestParam(value = "borId",      required = false) Integer borId,
+            @RequestParam(value = "image",      required = false) MultipartFile image,
             @RequestParam("token") String token
-            ) throws IOException {
+    ) throws IOException {
 
         StaffQueryRequestDTO query = new StaffQueryRequestDTO();
         query.setStaffId(staffId);
@@ -82,8 +88,37 @@ public class FaceController {
         dto.setPhone(phone);
         dto.setRole(role);
         dto.setStatus(status);
+        dto.setDepartment(department);
+        dto.setPosition(position);
+        dto.setBorId(borId);
 
         return ResponseEntity.ok(faceService.updateStaff(query, dto, image));
+    }
+
+    // ✅ API ใหม่ — HR/ADMIN อัปเดตเงินเดือน + work schedule
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/updateStuffBy-HR", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DataResponse> updateSalary(
+            @RequestParam("token") String token,
+            @RequestParam("staffId") String staffId,
+            @RequestParam(value = "baseSalary",     required = false) BigDecimal baseSalary,
+            @RequestParam(value = "workSchedule",   required = false) String workSchedule,
+            @RequestParam(value = "cycleWorkDays",  required = false) Integer cycleWorkDays,
+            @RequestParam(value = "cycleOffDays",   required = false) Integer cycleOffDays,
+            @RequestParam(value = "cycleStartDate", required = false) String cycleStartDate
+    ) {
+        StaffQueryRequestDTO query = new StaffQueryRequestDTO();
+        query.setStaffId(staffId);
+        query.setToken(token);
+
+        StaffUpdateRequestDTO dto = new StaffUpdateRequestDTO();
+        dto.setBaseSalary(baseSalary);
+        dto.setWorkSchedule(workSchedule);
+        dto.setCycleWorkDays(cycleWorkDays);
+        dto.setCycleOffDays(cycleOffDays);
+        dto.setCycleStartDate(cycleStartDate);
+
+        return ResponseEntity.ok(faceService.updateSalarySchedule(query, dto));
     }
 
 
@@ -119,4 +154,17 @@ public class FaceController {
         return ResponseEntity.ok(faceService.changePassword(dto));
     }
 
+    //controller setStuffDay off
+    @CrossOrigin(origins = "*")
+    @PostMapping("/setStuffDay-off")
+    public ResponseEntity<?> setDayOff(@RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(faceService.setDayOff(body));
+    }
+    //rquest day off
+    @CrossOrigin(origins = "*")
+    @PostMapping("/requestDayoff")
+    public ResponseEntity<DataResponse> requestLeave(
+            @RequestBody LeaveRequestDTO dto) {
+        return ResponseEntity.ok(faceService.requestLeave(dto));
+    }
 }

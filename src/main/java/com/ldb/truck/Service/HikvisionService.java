@@ -98,6 +98,7 @@ public class HikvisionService {
         staff.setIpAddress(ipAddress);    // ✅
         staff.setMacAddress(macAddress);  // ✅
 
+
         userRepository.save(staff);
 
         System.out.println("Auto registered — staffCode: " + staffCode

@@ -76,7 +76,7 @@ List<RequestTxnEntity> getRequestBillByBor(
                     "   OR (:uMission = 'APPROVEOID' AND size = 'nammun') " +
 
                     // ALAIAPPROVE
-                    "   OR (:uMission = 'ALAIAPPROVE' AND size = 'item') " +
+                    "   OR (:uMission = 'ALAIAPPROVE' AND bor_no = '145') " +
 
                     // APPROVEINOUT
 //                    "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun' AND size != 'item') " +
@@ -112,12 +112,12 @@ List<RequestTxnEntity> getRequestBillByBor(
                     // APPROVEOID
                     "   OR (:uMission = 'APPROVEOID' AND size = 'nammun') " +
 
-                    // ALAIAPPROVE
+                    // ALAIAPPROVE   bor=145 will show here only cuz all is item
                     "   OR (:uMission = 'ALAIAPPROVE' AND size = 'item') " +
 
                     // APPROVEINOUT
 //                    "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun' AND size != 'item') " +
-                    "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun') " +
+                    "   OR (:uMission = 'APPROVEINOUT' AND size != 'nammun' AND bor_no !='145' ) " +
 
                     // ADMIN
 //                    "   OR (:uMission = 'ADMIN' AND size != 'item') " +

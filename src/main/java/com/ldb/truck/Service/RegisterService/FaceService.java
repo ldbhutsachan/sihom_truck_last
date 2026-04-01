@@ -1,12 +1,11 @@
 package com.ldb.truck.Service.RegisterService;
 
 import com.ldb.truck.Dao.upload.MediaUploadService;
-import com.ldb.truck.Entity.Staff.AttendanceLog;
-import com.ldb.truck.Entity.Staff.StaffEntity;
+import com.ldb.truck.Entity.Staff.*;
+import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Login.LoginReq;
 import com.ldb.truck.Model.Staffs.*;
-import com.ldb.truck.Repository.Staffs.AttendanceLogRepository;
-import com.ldb.truck.Repository.Staffs.UserRepository;
+import com.ldb.truck.Repository.Staffs.*;
 import com.ldb.truck.Util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +28,9 @@ public class FaceService {
     private final UserRepository userRepository;  // ✅ ใช้ UserRepository ที่มีอยู่แล้ว
     private final MediaUploadService mediaUploadService;
     private final AttendanceLogRepository attendanceLogRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
+    private final TbBorRepository tbBorRepository;
+    private final StaffDayOffRepository staffDayOffRepository;
 
     //register staff
     public StaffRegisterResponseDTO registerStaff(StaffRegisterRequestDTO dto,
@@ -75,103 +78,238 @@ public class FaceService {
     }
 
     //getStaff service
-    public Object getStaff(StaffQueryRequestDTO dto) {
+    public DataResponse getStaff(StaffQueryRequestDTO dto) {
 
-        // Step 1: หา requester จาก token
-        StaffEntity requester = userRepository.findByToken(dto.getToken())
-                .orElseThrow(() -> new RuntimeException("Token not found"));
+        DataResponse response = new DataResponse();
 
-        // Step 2: เช็ค token หมดอายุหรือยัง
-        if (requester.getTokenExpiredAt() != null
-                && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
+        try {
+            // Step 1: หา requester จาก token
+            StaffEntity requester = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token not found"));
+
+            // Step 2: เช็ค token หมดอายุหรือยัง
+            if (requester.getTokenExpiredAt() != null
+                    && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
+            }
+
+            // Step 3: ✅ ถ้าไม่ส่ง staff มา → ดูข้อมูลตัวเองเสมอ
+            if (dto.getStaffId() == null || dto.getStaffId().isEmpty()) {
+                response.setStatus("00");
+                response.setMessage("success");
+                response.setDataResponse(mapToDTO(requester));
+                return response;
+            }
+
+            // Step 4: USER → ดูได้แค่ตัวเอง ไม่ว่าจะส่ง staff อะไรมา
+            if (requester.getRole().equals("USER")) {
+                response.setStatus("00");
+                response.setMessage("success");
+                response.setDataResponse(mapToDTO(requester));
+                return response;
+            }
+
+            // Step 5: ADMIN/HR → ดูทั้งหมดหรือคนเดียว
+            if (dto.getStaffId().equalsIgnoreCase("all")) {
+                response.setStatus("00");
+                response.setMessage("success");
+                response.setDataResponse(
+                        userRepository.findAll()
+                                .stream()
+                                .map(this::mapToDTO)
+                                .collect(Collectors.toList())
+                );
+            } else {
+                Long id = Long.parseLong(dto.getStaffId());
+                StaffEntity staff = userRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("ไม่พบ Staff id: " + id));
+                response.setStatus("00");
+                response.setMessage("success");
+                response.setDataResponse(mapToDTO(staff));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
         }
 
-        // Step 3: ถ้า role = USER → ดูได้แค่ข้อมูลตัวเอง
-        if (requester.getRole().equals("USER")) {
-            return mapToDTO(requester);
-        }
-
-        // Step 4: ถ้า role = ADMIN → เช็คว่าจะดูทั้งหมดหรือดูคนเดียว
-        if (dto.getStaffId().equalsIgnoreCase("all")) {
-            // ADMIN ดูทั้งหมด
-            return userRepository.findAll()
-                    .stream()
-                    .map(this::mapToDTO)
-                    .collect(Collectors.toList());
-        } else {
-            // ADMIN ดูคนเดียวตาม id
-            Long id = Long.parseLong(dto.getStaffId());
-            StaffEntity staff = userRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("ไม่พบ Staff id: " + id));
-            return mapToDTO(staff);
-        }
+        return response;
     }
 
     // update staff service
-    public StaffResponseDTO updateStaff(StaffQueryRequestDTO query,
-                                        StaffUpdateRequestDTO dto,
-                                        MultipartFile image) throws IOException {
+    public DataResponse updateStaff(StaffQueryRequestDTO query,
+                                    StaffUpdateRequestDTO dto,
+                                    MultipartFile image) throws IOException {
 
-        // Step 1: หา requester จาก token
-        StaffEntity requester = userRepository.findByToken(query.getToken())
-                .orElseThrow(() -> new RuntimeException("Token not found"));
+        DataResponse response = new DataResponse();
 
-        // Step 2: เช็ค token หมดอายุหรือยัง
-        if (requester.getTokenExpiredAt() != null
-                && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
-        }
+        try {
+            // Step 1: หา requester จาก token
+            StaffEntity requester = userRepository.findByToken(query.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token not found"));
 
-        // Step 3: หา staff ที่จะ update
-        Long id = Long.parseLong(query.getStaffId());
-        StaffEntity staff = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found Staff id: " + id));
-
-        // Step 4: ✅ เช็คว่า token กับ staffId เป็นคนเดียวกันไหม (เฉพาะ USER)
-        if (requester.getRole().equals("USER")) {
-
-            // token กับ staffId ต้องตรงกันในตาราง
-            if (!requester.getId().equals(staff.getId())) {
-                throw new RuntimeException(" Can not update becuase Token and Staff ID not match ");
+            // Step 2: เช็ค token หมดอายุหรือยัง
+            if (requester.getTokenExpiredAt() != null
+                    && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
             }
 
-            // USER ห้ามเปลี่ยน role
-            if (dto.getRole() != null) {
-                throw new RuntimeException("No right to change Role");
+            // Step 3: หา staff ที่จะ update
+            Long id = Long.parseLong(query.getStaffId());
+            StaffEntity staff = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Not found Staff id: " + id));
+
+            // Step 4: เช็ค permission
+            if (requester.getRole().equals("USER")) {
+                if (!requester.getId().equals(staff.getId())) {
+                    throw new RuntimeException("Cannot update because Token and Staff ID not match");
+                }
+                if (dto.getRole() != null) {
+                    throw new RuntimeException("No right to change Role");
+                }
             }
-        }
 
-        // Step 5: อัปเดตข้อมูล
-        if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
-            if (userRepository.existsByUsername(dto.getUsername())
-                    && !dto.getUsername().equals(staff.getUsername())) {
-                throw new RuntimeException("Username has been used");
+            // Step 5: อัปเดตข้อมูล
+            if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
+                if (userRepository.existsByUsername(dto.getUsername())
+                        && !dto.getUsername().equals(staff.getUsername())) {
+                    throw new RuntimeException("Username has been used");
+                }
+                staff.setUsername(dto.getUsername());
             }
-            staff.setUsername(dto.getUsername());
-        }
-        if (dto.getPhone() != null)  staff.setPhone(dto.getPhone());
-        if (dto.getRole() != null)   staff.setRole(dto.getRole());
+            if (dto.getPhone() != null)      staff.setPhone(dto.getPhone());
+            if (dto.getRole() != null)       staff.setRole(dto.getRole());
+            if (dto.getDepartment() != null) staff.setDepartment(dto.getDepartment());
+            if (dto.getPosition() != null)   staff.setPosition(dto.getPosition());
 
-        //if role user keep default status else keep the input
-        if (requester.getRole().equals("USER")){
-            if (dto.getStatus() != null) staff.setStatus(staff.getStatus());
-        }else {
-            if (dto.getStatus() != null) staff.setStatus(dto.getStatus());
+            // USER ไม่สามารถเปลี่ยน status ได้
+            if (requester.getRole().equals("USER")) {
+                if (dto.getStatus() != null) staff.setStatus(staff.getStatus());
+            } else {
+                if (dto.getStatus() != null) staff.setStatus(dto.getStatus());
+            }
+
+            // Step 6: อัปเดตรูปภาพ
+            if (image != null && !image.isEmpty()) {
+                String fileName = mediaUploadService.uploadMedia(image);
+                String fileUrl  = "http://khounkham.com/images/batery/" + fileName;
+                staff.setStaffImage(fileUrl);
+            }
+
+            // Step 7: อัปเดต borId
+            if (dto.getBorId() != null) {
+                staff.setBorId(dto.getBorId());
+            }
+
+            StaffEntity saved = userRepository.save(staff);
+
+            response.setStatus("00");
+            response.setMessage("ອັບເດດຂໍ້ມູນສຳເລັດ");
+            response.setDataResponse(mapToDTO(saved));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
         }
 
-        // Step 6: อัปเดตรูปภาพถ้ามีส่งมา
-        if (image != null && !image.isEmpty()) {
-            String fileName = mediaUploadService.uploadMedia(image);
-            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
-            staff.setStaffImage(fileUrl);
+        return response;
+    }
+
+    public DataResponse updateSalarySchedule(StaffQueryRequestDTO query,
+                                             StaffUpdateRequestDTO dto) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // Step 1: เช็ค token
+            StaffEntity requester = userRepository.findByToken(query.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+
+            if (requester.getTokenExpiredAt() != null
+                    && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token หมดอายุ กรุณา Login ใหม่");
+            }
+
+            // Step 2: เช็ค permission
+            if (!requester.getRole().equals("ADMIN")
+                    && !requester.getRole().equals("HR")) {
+                throw new RuntimeException("ไม่มีสิทธิ์ เฉพาะ HR หรือ ADMIN เท่านั้น");
+            }
+
+            // Step 3: หา staff
+            Long id = Long.parseLong(query.getStaffId());
+            StaffEntity staff = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("ไม่พบ Staff id: " + id));
+
+            // Step 4: อัปเดต baseSalary
+            if (dto.getBaseSalary() != null) {
+                staff.setBaseSalary(dto.getBaseSalary());
+            }
+
+            // Step 5: อัปเดต work schedule
+            if (dto.getWorkSchedule() != null) {
+                staff.setWorkSchedule(dto.getWorkSchedule());
+
+                if (dto.getWorkSchedule().equals("CYCLE")) {
+                    if (dto.getCycleWorkDays() == null)
+                        throw new RuntimeException("กรุณาระบุ cycleWorkDays");
+                    if (dto.getCycleOffDays() == null)
+                        throw new RuntimeException("กรุณาระบุ cycleOffDays");
+                    if (dto.getCycleStartDate() == null)
+                        throw new RuntimeException("กรุณาระบุ cycleStartDate");
+
+                    staff.setCycleWorkDays(dto.getCycleWorkDays());
+                    staff.setCycleOffDays(dto.getCycleOffDays());
+                    staff.setCycleStartDate(
+                            LocalDate.parse(dto.getCycleStartDate(),
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                } else {
+                    staff.setCycleWorkDays(null);
+                    staff.setCycleOffDays(null);
+                    staff.setCycleStartDate(null);
+                }
+            }
+
+            // Step 6: บันทึก
+            StaffEntity saved = userRepository.save(staff);
+
+            // Step 7: ✅ Success response
+            Map<String, Object> data = new HashMap<>();
+            data.put("staffId",        saved.getId());
+            data.put("staffCode",      saved.getStaffCode());
+            data.put("username",       saved.getUsername());
+            data.put("baseSalary",     saved.getBaseSalary());
+            data.put("workSchedule",   saved.getWorkSchedule());
+            data.put("cycleWorkDays",  saved.getCycleWorkDays());
+            data.put("cycleOffDays",   saved.getCycleOffDays());
+            data.put("cycleStartDate", saved.getCycleStartDate());
+
+            response.setStatus("00");
+            response.setMessage("ອັບເດດຂໍ້ມູນເງິນເດືອນສຳເລັດ");
+            response.setDataResponse(data);
+
+        } catch (Exception e) {
+            // ❌ Error response
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
         }
 
-        StaffEntity saved = userRepository.save(staff);
-        return mapToDTO(saved);
+        return response;
     }
     // Helper method แปลง Entity → DTO
     private StaffResponseDTO mapToDTO(StaffEntity staff) {
+        String borName = null;
+        if (staff.getBorId() != null) {
+            borName = tbBorRepository.findById(staff.getBorId())
+                    .map(TbBorEntity::getBName)
+                    .orElse(null);
+        }
         return new StaffResponseDTO(
                 staff.getId(),
                 staff.getStaffCode(),
@@ -180,6 +318,10 @@ public class FaceService {
                 staff.getRole(),
                 staff.getStatus(),
                 staff.getStaffImage(),
+                staff.getDepartment(),
+                staff.getPosition(),
+                staff.getBorId(),   // ✅ ส่ง borId กลับไป
+                borName,            // ✅ ส่งชื่อ Bor กลับไป
                 staff.getCreatedAt(),
                 staff.getUpdatedAt()
         );
@@ -499,5 +641,204 @@ public class FaceService {
                 "ປ່ຽນ Password ສຳເລັດ",
                 null    // ✅ ไม่ส่ง password กลับ เพราะ staff รู้อยู่แล้ว
         );
+    }
+
+    //service set dayy oof for staff
+    // StaffService.java — เพิ่ม method
+    public Object setDayOff(Map<String, Object> body) {
+
+        String token = (String) body.get("token");
+        List<String> dayOfWeeks = (List<String>) body.get("dayOfWeeks");
+        Long staffId = Long.parseLong(body.get("staffId").toString());
+
+        // เช็ค HR หรือ ADMIN เท่านั้น
+        StaffEntity requester = userRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+
+        if (!requester.getRole().equals("ADMIN")
+                && !requester.getRole().equals("HR")) {
+            throw new RuntimeException("ไม่มีสิทธิ์ เฉพาะ ADMIN หรือ HR เท่านั้น");
+        }
+
+        // ✅ ลบ pattern เดิมออกก่อน แล้วบันทึกใหม่
+        staffDayOffRepository.deleteByStaffId(staffId);
+
+        dayOfWeeks.forEach(day -> {
+            StaffDayOff dayOff = new StaffDayOff();
+            dayOff.setStaffId(staffId);
+            dayOff.setDayOfWeek(day.toUpperCase()); // MONDAY, TUESDAY...
+            staffDayOffRepository.save(dayOff);
+        });
+
+        return Map.of(
+                "success", true,
+                "message", "ບັນທຶກວັນພັກສຳເລັດ",
+                "staffId", staffId,
+                "dayOfWeeks", dayOfWeeks
+        );
+    }
+
+
+    //service request day off
+    public DataResponse requestLeave(LeaveRequestDTO dto) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // Step 1: หา staff จาก token
+            StaffEntity staff = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+
+            // Step 2: เช็ค token หมดอายุ
+            if (staff.getTokenExpiredAt() != null
+                    && staff.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token หมดอายุ กรุณา Login ใหม่");
+            }
+
+            // Step 3: แปลงวันที่
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate startDate = LocalDate.parse(dto.getStartDate(), formatter);
+            LocalDate endDate   = LocalDate.parse(dto.getEndDate(), formatter);
+
+            // Step 4: เช็ควันที่
+            if (startDate.isAfter(endDate)) {
+                throw new RuntimeException("วันที่เริ่มต้องไม่เกินวันที่สิ้นสุด");
+            }
+
+            // Step 5: คำนวณ totalDays ตาม work schedule
+            int totalDays = calculateWorkDays(staff, startDate, endDate);
+
+            if (totalDays == 0) {
+                throw new RuntimeException("ຊ່ວງທີ່ເລືອກແມ່ນວັນຢຸດທັງໝົດ");
+            }
+
+            // Step 6: เช็คซ้อนทับ
+            List<LeaveRequest> overlapping = leaveRequestRepository
+                    .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                            staff.getId(), "APPROVED", endDate, startDate);
+
+            if (!overlapping.isEmpty()) {
+                throw new RuntimeException("ช่วงวันที่ขอลาซ้อนทับกับวันลาที่อนุมัติแล้ว");
+            }
+
+            // Step 7: เช็คโควต้า
+            int quota     = getLeaveQuota(staff, dto.getLeaveType());
+            int used      = getLeaveUsed(staff.getId(), dto.getLeaveType(), startDate.getYear());
+            int remaining = quota - used;
+
+            if (!dto.getLeaveType().equals("UNPAID") && totalDays > remaining) {
+                throw new RuntimeException("วันลาไม่พอ คงเหลือ " + remaining + " วัน แต่ขอ " + totalDays + " วัน");
+            }
+
+            // Step 8: บันทึก
+            LeaveRequest leave = new LeaveRequest();
+            leave.setStaff(staff);
+            leave.setLeaveType(dto.getLeaveType());
+            leave.setStartDate(startDate);
+            leave.setEndDate(endDate);
+            leave.setTotalDays(totalDays);
+            leave.setStatus("PENDING");
+            leave.setReason(dto.getReason());
+
+            LeaveRequest saved = leaveRequestRepository.save(leave);
+
+            // Step 9: สร้าง response data
+            Map<String, Object> data = new HashMap<>();
+            data.put("leaveId",       saved.getId());
+            data.put("staffCode",     staff.getStaffCode());
+            data.put("username",      staff.getUsername());
+            data.put("leaveType",     saved.getLeaveType());
+            data.put("startDate",     saved.getStartDate().toString());
+            data.put("endDate",       saved.getEndDate().toString());
+            data.put("totalDays",     saved.getTotalDays());
+            data.put("status",        saved.getStatus());
+            data.put("remainingDays", remaining - totalDays);
+            data.put("createdAt",     saved.getCreatedAt());
+
+            response.setStatus("00");
+            response.setMessage("ສົ່ງຄຳຂໍລາພັກສຳເລັດ ລໍຖ້າການອະນຸມັດ");
+            response.setDataResponse(data);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
+
+        return response;
+    }
+
+    //  คำนวณวันทำงานจริง ไม่นับวันหยุด
+    private int calculateWorkDays(StaffEntity staff,
+                                  LocalDate startDate, LocalDate endDate) {
+
+        String schedule = staff.getWorkSchedule() != null
+                ? staff.getWorkSchedule() : "MON_FRI";
+
+        // ✅ ดึง pattern วันหยุดของ staff (ครั้งเดียว ใช้ทุกเดือน)
+        List<String> dayOffPatterns = staffDayOffRepository
+                .findByStaffId(staff.getId())
+                .stream()
+                .map(StaffDayOff::getDayOfWeek)
+                .collect(java.util.stream.Collectors.toList());
+
+        int workDays = 0;
+        LocalDate current = startDate;
+
+        while (!current.isAfter(endDate)) {
+            if (isWorkDay(current, schedule, dayOffPatterns)) {
+                workDays++;
+            }
+            current = current.plusDays(1);
+        }
+
+        return workDays;
+    }
+
+    // ✅ เช็คว่าวันนั้นเป็นวันทำงานไหม
+    private boolean isWorkDay(LocalDate date, String schedule,
+                              List<String> dayOffPatterns) {
+
+        java.time.DayOfWeek day = date.getDayOfWeek();
+
+        switch (schedule) {
+            case "MON_FRI":
+                return day != java.time.DayOfWeek.SATURDAY
+                        && day != java.time.DayOfWeek.SUNDAY;
+
+            case "MON_SAT":
+                return day != java.time.DayOfWeek.SUNDAY;
+
+            case "CUSTOM":
+                // ✅ เช็คว่าวันนั้นตรงกับ pattern วันหยุดไหม
+                return !dayOffPatterns.contains(day.name());
+            // day.name() คืนค่าเป็น "MONDAY", "TUESDAY" ...
+
+            default:
+                return day != java.time.DayOfWeek.SATURDAY
+                        && day != java.time.DayOfWeek.SUNDAY;
+        }
+    }
+
+    private int getLeaveQuota(StaffEntity staff, String leaveType) {
+        switch (leaveType) {
+            case "SICK":      return staff.getLeaveQuotaSick()      != null ? staff.getLeaveQuotaSick()      : 30;
+            case "PERSONAL":  return staff.getLeaveQuotaPersonal()  != null ? staff.getLeaveQuotaPersonal()  : 7;
+            case "MATERNITY": return staff.getLeaveQuotaMaternity() != null ? staff.getLeaveQuotaMaternity() : 90;
+            case "UNPAID":    return 999;
+            default: throw new RuntimeException("ประเภทวันลาไม่ถูกต้อง: " + leaveType);
+        }
+    }
+
+    private int getLeaveUsed(Long staffId, String leaveType, int year) {
+        LocalDate startOfYear = LocalDate.of(year, 1, 1);
+        LocalDate endOfYear   = LocalDate.of(year, 12, 31);
+
+        List<LeaveRequest> used = leaveRequestRepository
+                .findByStaff_IdAndLeaveTypeAndStatusAndStartDateBetween(
+                        staffId, leaveType, "APPROVED", startOfYear, endOfYear);
+
+        return used.stream().mapToInt(LeaveRequest::getTotalDays).sum();
     }
 }

@@ -867,7 +867,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 "FROM CARS_OFFICE co\n" +
                 "LEFT JOIN v_request_item_fix d ON d.car_id = co.KEY_ID" +
                 " WHERE 1=1 ");
-
+        sb.append(" AND d.status = 'ok' ");
         // ✅ Filter by date
         if (req.getStartDate() != null && !req.getStartDate().isEmpty()
                 && req.getEndDate() != null && !req.getEndDate().isEmpty()) {
