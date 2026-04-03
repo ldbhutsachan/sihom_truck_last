@@ -21,4 +21,8 @@ public interface AttendanceLogRepository extends JpaRepository<AttendanceLog, Lo
     // ✅ ดึง log ทั้งหมดทุกคนตามช่วงวันที่ (ADMIN)
     List<AttendanceLog> findAllByCheckTimeBetweenOrderByCheckTimeAsc(
             LocalDateTime start, LocalDateTime end);
+
+    // ✅ NEW — ดึง CHECK_IN ครั้งแรกของวันที่กำหนด (OrderByCheckTimeAsc)
+    Optional<AttendanceLog> findTopByStaff_IdAndCheckTypeAndCheckTimeBetweenOrderByCheckTimeAsc(
+            Long staffId, String checkType, LocalDateTime start, LocalDateTime end);
 }

@@ -2,6 +2,8 @@ package com.ldb.truck.Controller;
 
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Model.DataResponse;
+import com.ldb.truck.Model.StaffRequest.DailyAttendanceRequestDTO;
+import com.ldb.truck.Model.StaffRequest.LeaveApproveRequestDTO;
 import com.ldb.truck.Model.StaffRequest.LeaveGetRequestDTO;
 import com.ldb.truck.Model.Staffs.*;
 import com.ldb.truck.Service.RegisterService.FaceService;
@@ -169,4 +171,21 @@ public class FaceController {
             @RequestBody LeaveGetRequestDTO dto) {
         return ResponseEntity.ok(faceService.getLeave(dto));
     }
+
+    //approve LeaveReques
+    @CrossOrigin(origins = "*")
+    @PostMapping("/approveLeave")
+    public ResponseEntity<DataResponse> approveLeave(
+            @RequestBody LeaveApproveRequestDTO dto) {
+        return ResponseEntity.ok(faceService.approveLeave(dto));
+    }
+
+    //DailyAttendance controller
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getDailyAttendance")
+    public ResponseEntity<DataResponse> getDailyAttendance(
+            @RequestBody DailyAttendanceRequestDTO dto) {
+        return ResponseEntity.ok(faceService.getDailyAttendance(dto));
+    }
+
 }

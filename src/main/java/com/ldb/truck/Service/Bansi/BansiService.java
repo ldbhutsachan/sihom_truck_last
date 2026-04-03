@@ -9,6 +9,9 @@ import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Repository.Bansi.*;
+import com.ldb.truck.Repository.Staffs.FinanceBillPaymentRepository;
+import com.ldb.truck.Repository.Staffs.FinanceBillRefRepository;
+import com.ldb.truck.Repository.Staffs.FinanceBillRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -76,7 +79,12 @@ public class BansiService {
     private FinancePayHisRepo financePayHisRepo;
     @Autowired
     private SupplierNotPayRepo supplierNotPayRepo;
-
+    @Autowired
+    private  FinanceBillRepository financeBillRepository;
+    @Autowired
+    private  FinanceBillRefRepository financeBillRefRepository;
+    @Autowired
+    private  FinanceBillPaymentRepository financeBillPaymentRepository;
 
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
@@ -91,10 +99,10 @@ public class BansiService {
             }
             String role = userProfiles.get(0).getRole();
 
-            // ตัวอย่าง: ถ้า role SUPERBANSI ให้ bansi = "1"
-            if("SUPERBANSI".equalsIgnoreCase(role)){
+            // ตัวอย่าง: ถ้า role ACCOUNTANT ให้ bansi = "1"
+            if("ACCOUNTANT".equalsIgnoreCase(role)){
                 bansiEntity.setBansi("bansi");
-            } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+            } else if ("FINANCE".equalsIgnoreCase(role)) {
                 bansiEntity.setBansi("accounting");
             } else {
                 bansiEntity.setBansi("");
@@ -141,9 +149,9 @@ public class BansiService {
             existing.setItem_typeid(bansiEntity.getItem_typeid());
 
             String role = userProfiles.get(0).getRole();
-            if ("SUPERBANSI".equalsIgnoreCase(role)) {
+            if ("ACCOUNTANT".equalsIgnoreCase(role)) {
                 existing.setBansi("1");
-            } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+            } else if ("FINANCE".equalsIgnoreCase(role)) {
                 existing.setBansi("2");
             } else {
                 existing.setBansi(bansiEntity.getBansi());
@@ -174,8 +182,9 @@ public class BansiService {
 
             String role = profiles.get(0).getRole();
 
-            if (!"SUPERBANSI".equalsIgnoreCase(role)
-                    && !"SUPERACCOUNT".equalsIgnoreCase(role)
+            if (!"ACCOUNTANT".equalsIgnoreCase(role)
+                    && !"FINANCE".equalsIgnoreCase(role)
+                    && !"AUDITOR".equalsIgnoreCase(role)
                     && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
                 response.setStatus("01");
                 response.setMessage("Access Denied");
@@ -222,9 +231,10 @@ public class BansiService {
 
             String role = userProfiles.get(0).getRole();
 
-            // ถ้า role ไม่ใช่ SUPERBANSI ให้ return 01
-            if (!"SUPERBANSI".equalsIgnoreCase(role)
-                    && !"SUPERACCOUNT".equalsIgnoreCase(role)
+            // ถ้า role ไม่ใช่ ACCOUNTANT ให้ return 01
+            if (!"ACCOUNTANT".equalsIgnoreCase(role)
+                    && !"FINANCE".equalsIgnoreCase(role)
+                    && !"AUDITOR".equalsIgnoreCase(role)
                     && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
                 response.setStatus("01");
                 response.setMessage("No right to save");
@@ -261,8 +271,9 @@ public class BansiService {
             }
 
             String role = userProfiles.get(0).getRole();
-            if (!"SUPERBANSI".equalsIgnoreCase(role)
-                    && !"SUPERACCOUNT".equalsIgnoreCase(role)
+            if (!"ACCOUNTANT".equalsIgnoreCase(role)
+                    && !"FINANCE".equalsIgnoreCase(role)
+                    && !"AUDITOR".equalsIgnoreCase(role)
                     && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
                 result.put("status", "06");
                 result.put("message", "No right to update");
@@ -311,13 +322,14 @@ public class BansiService {
             String role = profiles.get(0).getRole();
 
             // ตรวจ role
-//            if (!"SUPERBANSI".equalsIgnoreCase(role)) {
+//            if (!"ACCOUNTANT".equalsIgnoreCase(role)) {
 //                response.setStatus("01");
 //                response.setMessage("Access Denied");
 //                return response;
 //            }
-            if (!"SUPERBANSI".equalsIgnoreCase(role)
-                    && !"SUPERACCOUNT".equalsIgnoreCase(role)
+            if (!"ACCOUNTANT".equalsIgnoreCase(role)
+                    && !"FINANCE".equalsIgnoreCase(role)
+                    && !"AUDITOR".equalsIgnoreCase(role)
                     && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
                 response.setStatus("01");
                 response.setMessage("Access Denied");
@@ -409,14 +421,15 @@ public class BansiService {
         Profile user = userProfiles.get(0);
         String role = user.getRole();
 
-        if (!"SUPERBANSI".equalsIgnoreCase(role)
-                && !"SUPERACCOUNT".equalsIgnoreCase(role)
+        if (!"ACCOUNTANT".equalsIgnoreCase(role)
+                && !"FINANCE".equalsIgnoreCase(role)
+                && !"AUDITOR".equalsIgnoreCase(role)
                 && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             throw new Exception("No right to insert (role: " + role + ")");
         }
-        if ("SUPERBANSI".equalsIgnoreCase(role)) {
+        if ("ACCOUNTANT".equalsIgnoreCase(role)) {
             entity.setDataType("bansi");
-        } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+        } else if ("FINANCE".equalsIgnoreCase(role)) {
             entity.setDataType("accounting");
         } else {
             entity.setDataType("admin");
@@ -523,14 +536,15 @@ public class BansiService {
         }
         Profile user = userProfiles.get(0);
         String role = user.getRole();
-        if (!"SUPERBANSI".equalsIgnoreCase(role)
-                && !"SUPERACCOUNT".equalsIgnoreCase(role)
+        if (!"ACCOUNTANT".equalsIgnoreCase(role)
+                && !"FINANCE".equalsIgnoreCase(role)
+                && !"AUDITOR".equalsIgnoreCase(role)
                 && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             throw new Exception("No right to update (role: " + role + ")");
         }
-        if ("SUPERBANSI".equalsIgnoreCase(role)) {
+        if ("ACCOUNTANT".equalsIgnoreCase(role)) {
             entity.setDataType("bansi");
-        } else if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
+        } else if ("FINANCE".equalsIgnoreCase(role)) {
             entity.setDataType("accounting");
         } else {
             entity.setDataType("admin");
@@ -652,10 +666,11 @@ public class BansiService {
         log.info("User role: '{}'", role);
 
         boolean isAllowed =
-                "SUPERBANSI".equalsIgnoreCase(role) ||
-                        "SUPERACCOUNT".equalsIgnoreCase(role) ||
+                "ACCOUNTANT".equalsIgnoreCase(role) ||
+                        "FINANCE".equalsIgnoreCase(role) ||
+                        "AUDITOR".equalsIgnoreCase(role) ||
                         "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)||
-                        "BANSIAPPROVE".equalsIgnoreCase(role);
+                        "ACCOUNTANTCHECK".equalsIgnoreCase(role);
         if (!isAllowed) {
             result.setStatus("02");
             result.setMessage("No permission");
@@ -705,26 +720,26 @@ public class BansiService {
         }
 
         if (!"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
-            if ("wait".equals(status) && !"bansiapprove".equalsIgnoreCase(role)) {
+            if ("wait".equals(status) && !"ACCOUNTANTCHECK".equalsIgnoreCase(role)) {
                 throw new Exception("this user can't approve this bill: 'wait'");
             }
-//            else if ("wait-finance".equals(status) && !"superaccount".equalsIgnoreCase(role)) {
-//                throw new Exception("this user can't approve this bill: 'wait-finance'");
-//            }
+            else if ("wait-aditor".equals(status) && !"AUDITOR".equalsIgnoreCase(role)) {
+                throw new Exception("this user can't approve this bill: 'wait-aditor'");
+            }
         }
 
         // อนุมัติขั้นต่อไป
         if ("wait".equals(status) || "".equals(status)) {
             entity.setBasiApproveDate(now);
             entity.setBansiApproveBy(approveBy);
-            entity.setBillStatus("ok");
+            entity.setBillStatus("wait-aditor");
 //            entity.setBillStatus("wait-finance");
         }
-//        else if ("wait-finance".equals(status)) {
-//            entity.setAccountApproveDate(now);
-//            entity.setAccountApproveBy(approveBy);
-//            entity.setBillStatus("ok");
-//        }
+        else if ("wait-aditor".equals(status)) {
+            entity.setAccountApproveDate(now);
+            entity.setAccountApproveBy(approveBy);
+            entity.setBillStatus("ok");
+        }
         else if ("ok".equals(status)) {
             throw new Exception("this bill has done approving (status = ok).");
         } else {
@@ -991,10 +1006,11 @@ public class BansiService {
         if (role != null) role = role.trim();
 
         boolean isAllowed =
-                "SUPERBANSI".equalsIgnoreCase(role) ||
-                        "SUPERACCOUNT".equalsIgnoreCase(role) ||
+                "ACCOUNTANT".equalsIgnoreCase(role) ||
+                        "FINANCE".equalsIgnoreCase(role) ||
+                        "AUDITOR".equalsIgnoreCase(role) ||
                         "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)||
-                        "BANSIAPPROVE".equalsIgnoreCase(role);
+                        "ACCOUNTANTCHECK".equalsIgnoreCase(role);
 
         if (!isAllowed) {
             result.setStatus("02");
@@ -1098,7 +1114,7 @@ public class BansiService {
             String userId = user.getUserId();
 
             // allowed role list
-            List<String> allowed = Arrays.asList("SUPERBANSI", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE","AUDITOR", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to save");
@@ -1141,7 +1157,7 @@ public class BansiService {
             String userId = user.getUserId();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("SUPERBANSI", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE","AUDITOR", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to update");
@@ -1207,7 +1223,7 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("SUPERBANSI", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE","AUDITOR", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right");
@@ -1259,7 +1275,7 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN","AUDITOR","ACCOUNTANT");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1334,7 +1350,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
     Profile user = profileList.get(0);
 
     // 2. Check role
-    List<String> allowedRoles = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
+    List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN","AUDITOR","ACCOUNTANT");
     if (!allowedRoles.contains(user.getRole().toUpperCase())) {
         response.setStatus("01");
         response.setMessage("No permission to insert finance");
@@ -1432,8 +1448,9 @@ public DataResponse insertFinance(FinanceRequestDto req) {
         // ===============================
         // 7. Insert tb_finance_pay (HISTORY)
         // ===============================
-        if (!"SUPERBANSI".equalsIgnoreCase(user.getRole())
-                && !"SUPERACCOUNT".equalsIgnoreCase(user.getRole())
+        if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole())
+                && !"FINANCE".equalsIgnoreCase(user.getRole())
+                && !"AUDITOR".equalsIgnoreCase(user.getRole())
                 && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
 
             if (req.getBillList() != null && !req.getBillList().isEmpty()) {
@@ -1512,7 +1529,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             // ===============================
             // 2. Check role
             // ===============================
-            List<String> allowedRoles = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+            List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN");
             if (!allowedRoles.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No permission to update finance");
@@ -1642,7 +1659,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("SUPERACCOUNT", "FOR_DOCUMENT_ADMIN","SUPERBANSI");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN","AUDITOR","ACCOUNTANT");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1803,10 +1820,11 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             // =========================
             String role = user.getRole() == null ? "" : user.getRole().toUpperCase();
             List<String> allowedRoles = Arrays.asList(
-                    "SUPERACCOUNT",
+                    "FINANCE",
                     "FOR_DOCUMENT_ADMIN",
-                    "SUPERBANSI",
-                    "BANSIAPPROVE"
+                    "ACCOUNTANT",
+                    "AUDITOR",
+                    "ACCOUNTANTCHECK"
             );
 
             if (!allowedRoles.contains(role)) {
@@ -1984,7 +2002,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("SUPERACCOUNT", "SUPERBANSI", "BANSIAPPROVE","FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("FINANCE", "ACCOUNTANT","AUDITOR", "ACCOUNTANTCHECK","FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -2073,10 +2091,11 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             String role = user.getRole() == null ? "" : user.getRole().toUpperCase();
 
             List<String> allowedRoles = Arrays.asList(
-                    "SUPERACCOUNT",
+                    "FINANCE",
                     "FOR_DOCUMENT_ADMIN",
-                    "SUPERBANSI",
-                    "BANSIAPPROVE"
+                    "ACCOUNTANT",
+                    "AUDITOR",
+                    "ACCOUNTANTCHECK"
             );
 
             if (!allowedRoles.contains(role)) {
@@ -2109,15 +2128,349 @@ public DataResponse insertFinance(FinanceRequestDto req) {
     }
 
 
+    //
+    // ════════════════════════════════════════════════════════
+// FINANCE BILL SYSTEM
+// ════════════════════════════════════════════════════════
 
+    // ─── Generate เลขที่ Finance Bill ───────────────────────
+    private synchronized String generateNewFinanceBillNo() {
+        String year = String.valueOf(LocalDateTime.now().getYear());
+        String prefix = "FBILL-" + year + "-";
+        Optional<String> lastNo = financeBillRepository.findLastBillNoByPrefix(prefix);
+        int nextNumber = 1;
+        if (lastNo.isPresent()) {
+            try {
+                String numberPart = lastNo.get().replace(prefix, "");
+                nextNumber = Integer.parseInt(numberPart) + 1;
+            } catch (Exception e) {
+                nextNumber = 1;
+            }
+        }
+        return prefix + String.format("%04d", nextNumber);
+    }
 
+    // ─── 1. CREATE Finance Bill (ACCOUNTANT only) ────────────
+    @Transactional
+    public DataResponse createFinanceBill(FinanceBillRequestDto req) {
+        DataResponse response = new DataResponse();
+        try {
+            // check token
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
 
+            // check role
+            if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole())) {
+                response.setStatus("01");
+                response.setMessage("Only ACCOUNTANT can create Finance Bill");
+                return response;
+            }
 
+            // สร้าง Finance Bill
+            TbFinanceBill bill = new TbFinanceBill();
+            bill.setFinanceBillNo(generateNewFinanceBillNo());
+            bill.setTitle(req.getTitle());
+            bill.setTotalAmount(req.getTotalAmount());
+            bill.setCurrency(req.getCurrency());
+            bill.setExchangeRate(req.getExchangeRate());
+            bill.setRemark(req.getRemark());
+            bill.setBillStatus("DRAFT");
+            bill.setCreatedBy(Long.valueOf(user.getUserId()));
+            bill.setDateCreate(LocalDateTime.now());
+            TbFinanceBill saved = financeBillRepository.save(bill);
 
+            // บันทึก bill_no ที่อ้างอิง
+            if (req.getBillNos() != null && !req.getBillNos().isEmpty()) {
+                for (FinanceBillRequestDto.BillRefDto ref : req.getBillNos()) {
 
+                    // ✅ เช็คยอดคงเหลือก่อน
+                    BigDecimal usedAmount = financeBillRefRepository
+                            .sumUsedAmountByBillNo(ref.getBillNo());
+                    BigDecimal remaining = ref.getOriginalAmount().subtract(usedAmount);
 
+                    if (ref.getAmount().compareTo(remaining) > 0) {
+                        // Rollback ถ้ายอดเกิน
+                        TransactionAspectSupport.currentTransactionStatus()
+                                .setRollbackOnly();
+                        response.setStatus("06");
+                        response.setMessage(
+                                "BillNo " + ref.getBillNo() +
+                                        " ยอดคงเหลือ " + remaining +
+                                        " ไม่พอสำหรับยอดที่ขอ " + ref.getAmount()
+                        );
+                        return response;
+                    }
 
+                    TbFinanceBillRef billRef = new TbFinanceBillRef();
+                    billRef.setFinanceBillId(saved.getId());
+                    billRef.setKeyId(ref.getKeyId());
+                    billRef.setBillNo(ref.getBillNo());
+                    billRef.setOriginalAmount(ref.getOriginalAmount());
+                    billRef.setAmount(ref.getAmount());
+                    financeBillRefRepository.save(billRef);
+                }
+            }
 
+            response.setStatus("00");
+            response.setMessage("Finance Bill created successfully");
+            response.setDataResponse(saved);
 
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error creating Finance Bill: " + e.getMessage());
+        }
+        return response;
+    }
 
+    // ─── 2. GET Finance Bill ─────────────────────────────────
+    public DataResponse getFinanceBills(String token, String status) {
+        DataResponse response = new DataResponse();
+        try {
+            // check token
+            List<Profile> profileList = profileDao.getProfileInfoByToken(token);
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+            String role = user.getRole().toUpperCase();
+
+            // check role
+            List<String> allowed = Arrays.asList(
+                    "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN"
+            );
+            if (!allowed.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("No permission");
+                return response;
+            }
+
+            List<TbFinanceBill> billList;
+
+            // ACCOUNTANT เห็นแค่ของตัวเอง
+            if ("ACCOUNTANT".equals(role)) {
+                billList = (status != null && !status.isEmpty())
+                        ? financeBillRepository.findByCreatedByAndBillStatus(
+                        Long.valueOf(user.getUserId()), status)
+                        : financeBillRepository.findByCreatedBy(
+                        Long.valueOf(user.getUserId()));
+            } else {
+                // Role อื่นเห็นทั้งหมด
+                billList = (status != null && !status.isEmpty())
+                        ? financeBillRepository.findByBillStatus(status)
+                        : financeBillRepository.findAll();
+            }
+
+            // ดึง ref bill_no ของแต่ละ bill มาด้วย
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (TbFinanceBill bill : billList) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("financeBill", bill);
+                map.put("billRefs", financeBillRefRepository
+                        .findByFinanceBillId(bill.getId()));
+                result.add(map);
+            }
+
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
+
+    // ─── 3. APPROVE Finance Bill ─────────────────────────────
+// ACCOUNTANT  → submit DRAFT to PENDING_CHECK
+// ACCOUNTANTCHECK → PENDING_CHECK to PENDING_AUDIT or REJECTED
+// AUDITOR     → PENDING_AUDIT to APPROVED or REJECTED
+    @Transactional
+    public DataResponse approveFinanceBill(FinanceBillApproveDto req) {
+        DataResponse response = new DataResponse();
+        try {
+            // check token
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+            String role = user.getRole().toUpperCase();
+            Long userId = Long.valueOf(user.getUserId());
+            LocalDateTime now = LocalDateTime.now();
+
+            // check role
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR");
+            if (!allowed.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("Role " + role + " ไม่มีสิทธิ์ Approve Finance Bill");
+                return response;
+            }
+
+            // หา bill
+            TbFinanceBill bill = financeBillRepository.findById(req.getId())
+                    .orElse(null);
+            if (bill == null) {
+                response.setStatus("04");
+                response.setMessage("Finance Bill not found: " + req.getId());
+                return response;
+            }
+
+            String currentStatus = bill.getBillStatus();
+            String action = req.getAction().toUpperCase(); // APPROVED | REJECTED
+
+            switch (role) {
+
+                // ACCOUNTANT — submit DRAFT → PENDING_CHECK
+                case "ACCOUNTANT":
+                    if (!"DRAFT".equals(currentStatus)
+                            && !"REJECTED".equals(currentStatus)) {
+                        response.setStatus("02");
+                        response.setMessage("Bill ต้องอยู่ในสถานะ DRAFT หรือ REJECTED");
+                        return response;
+                    }
+                    // เช็คว่าเป็นของตัวเองไหม
+                    if (!bill.getCreatedBy().equals(userId)) {
+                        response.setStatus("03");
+                        response.setMessage("You can only submit your own Finance Bill");
+                        return response;
+                    }
+                    bill.setBillStatus("PENDING_CHECK");
+                    break;
+
+                // ACCOUNTANTCHECK — PENDING_CHECK → PENDING_AUDIT | REJECTED
+                case "ACCOUNTANTCHECK":
+                    if (!"PENDING_CHECK".equals(currentStatus)) {
+                        response.setStatus("02");
+                        response.setMessage("Bill ต้องอยู่ในสถานะ PENDING_CHECK");
+                        return response;
+                    }
+                    bill.setAccountantCheckBy(userId);
+                    bill.setAccountantCheckDate(now);
+                    bill.setAccountantCheckStatus(action);
+                    bill.setAccountantCheckRemark(req.getRemark());
+
+                    if ("APPROVED".equals(action)) {
+                        bill.setBillStatus("PENDING_AUDIT");
+                    } else {
+                        bill.setBillStatus("REJECTED");
+                        bill.setReturnToRole("ACCOUNTANT");
+                        bill.setReturnBy(userId);
+                        bill.setReturnDate(now);
+                        bill.setReturnRemark(req.getRemark());
+                    }
+                    break;
+
+                // AUDITOR — PENDING_AUDIT → APPROVED | REJECTED
+                case "AUDITOR":
+                    if (!"PENDING_AUDIT".equals(currentStatus)) {
+                        response.setStatus("02");
+                        response.setMessage("Bill ต้องอยู่ในสถานะ PENDING_AUDIT");
+                        return response;
+                    }
+                    bill.setAuditorApproveBy(userId);
+                    bill.setAuditorApproveDate(now);
+                    bill.setAuditorApproveStatus(action);
+                    bill.setAuditorApproveRemark(req.getRemark());
+
+                    if ("APPROVED".equals(action)) {
+                        bill.setBillStatus("APPROVED"); // ✅ Final
+                    } else {
+                        bill.setBillStatus("REJECTED");
+                        bill.setReturnToRole("ACCOUNTANTCHECK");
+                        bill.setReturnBy(userId);
+                        bill.setReturnDate(now);
+                        bill.setReturnRemark(req.getRemark());
+                    }
+                    break;
+            }
+
+            financeBillRepository.save(bill);
+            response.setStatus("00");
+            response.setMessage("Action " + action + " by " + role + " successfully");
+            response.setDataResponse(bill);
+
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
+
+    // ─── Check ยอดคงเหลือของ bill_no ─────────────────────────
+    public DataResponse getBillNoSummary(String token, List<String> billNos) {
+        DataResponse response = new DataResponse();
+        try {
+            // check token
+            List<Profile> profileList = profileDao.getProfileInfoByToken(token);
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+
+            // check role
+            List<String> allowed = Arrays.asList(
+                    "ACCOUNTANT", "ACCOUNTANTCHECK",
+                    "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN"
+            );
+            if (!allowed.contains(user.getRole().toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No permission");
+                return response;
+            }
+
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (String billNo : billNos) {
+                // ยอดรวมที่ถูกนำไปใช้ใน Finance Bill แล้ว
+                BigDecimal usedAmount = financeBillRefRepository
+                        .sumUsedAmountByBillNo(billNo);
+
+                // ดึง original_amount จาก ref ล่าสุด
+                List<TbFinanceBillRef> refs = financeBillRefRepository
+                        .findByBillNo(billNo);
+
+                BigDecimal originalAmount = refs.isEmpty()
+                        ? BigDecimal.ZERO
+                        : refs.get(0).getOriginalAmount();
+
+                BigDecimal remaining = originalAmount.subtract(usedAmount);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("billNo", billNo);
+                map.put("originalAmount", originalAmount);  // ยอดเต็ม
+                map.put("usedAmount", usedAmount);           // ยอดที่ใช้ไปแล้ว
+                map.put("remainingAmount", remaining);       // ยอดคงเหลือ
+                map.put("isPaid", remaining.compareTo(BigDecimal.ZERO) <= 0); // จ่ายครบหรือยัง
+
+                result.add(map);
+            }
+
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
 }

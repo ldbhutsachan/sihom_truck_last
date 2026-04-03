@@ -4,6 +4,8 @@ import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Staff.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Login.LoginReq;
+import com.ldb.truck.Model.StaffRequest.DailyAttendanceRequestDTO;
+import com.ldb.truck.Model.StaffRequest.LeaveApproveRequestDTO;
 import com.ldb.truck.Model.StaffRequest.LeaveGetRequestDTO;
 import com.ldb.truck.Model.Staffs.*;
 import com.ldb.truck.Repository.Staffs.*;
@@ -642,42 +644,6 @@ public class FaceService {
         );
     }
 
-    //service set dayy oof for staff
-    // StaffService.java — เพิ่ม method
-//    public Object setDayOff(Map<String, Object> body) {
-//
-//        String token = (String) body.get("token");
-//        List<String> dayOfWeeks = (List<String>) body.get("dayOfWeeks");
-//        Long staffId = Long.parseLong(body.get("staffId").toString());
-//
-//        // เช็ค HR หรือ ADMIN เท่านั้น
-//        StaffEntity requester = userRepository.findByToken(token)
-//                .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
-//
-//        if (!requester.getRole().equals("ADMIN")
-//                && !requester.getRole().equals("HR")) {
-//            throw new RuntimeException("ไม่มีสิทธิ์ เฉพาะ ADMIN หรือ HR เท่านั้น");
-//        }
-//
-//        // ✅ ลบ pattern เดิมออกก่อน แล้วบันทึกใหม่
-//        staffDayOffRepository.deleteByStaffId(staffId);
-//
-//        dayOfWeeks.forEach(day -> {
-//            StaffDayOff dayOff = new StaffDayOff();
-//            dayOff.setStaffId(staffId);
-//            dayOff.setDayOfWeek(day.toUpperCase()); // MONDAY, TUESDAY...
-//            staffDayOffRepository.save(dayOff);
-//        });
-//
-//        return Map.of(
-//                "success", true,
-//                "message", "ບັນທຶກວັນພັກສຳເລັດ",
-//                "staffId", staffId,
-//                "dayOfWeeks", dayOfWeeks
-//        );
-//    }
-
-
     //service request day off
     public DataResponse requestLeave(LeaveRequestDTO dto) {
 
@@ -931,6 +897,249 @@ public class FaceService {
             response.setMessage("success");
             response.setDataResponse(data);
             response.setSumFooter(data.size());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
+
+        return response;
+    }
+
+    //approve leaveRequest
+    public DataResponse approveLeave(LeaveApproveRequestDTO dto) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // Step 1: หา HR จาก token
+            StaffEntity hr = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+
+            // Step 2: เช็ค token หมดอายุ
+            if (hr.getTokenExpiredAt() != null
+                    && hr.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token หมดอายุ กรุณา Login ใหม่");
+            }
+
+            // Step 3: เช็คว่าเป็น HR หรือ ADMIN เท่านั้น
+            if (!hr.getRole().equals("HR") && !hr.getRole().equals("ADMIN")) {
+                throw new RuntimeException("ບໍ່ມີສິດ ສະເພາະ HR ຫຼື ADMIN ເທົ່ານັ້ນ");
+            }
+
+            // Step 4: เช็ค status ที่ส่งมาถูกต้องไหม
+            if (!dto.getStatus().equals("APPROVED")
+                    && !dto.getStatus().equals("REJECTED")) {
+                throw new RuntimeException("status ຕ້ອງເປັນ APPROVED ຫຼື REJECTED ເທົ່ານັ້ນ");
+            }
+
+            // Step 5: หา leave request
+            LeaveRequest leave = leaveRequestRepository.findById(dto.getLeaveId())
+                    .orElseThrow(() -> new RuntimeException("ບໍ່ພົບ Leave Request id: " + dto.getLeaveId()));
+
+            // Step 6: เช็คว่ายัง PENDING อยู่ไหม
+            if (!leave.getStatus().equals("PENDING")) {
+                throw new RuntimeException("Leave Request ນີ້ຖືກດຳເນີນການໄປແລ້ວ status: " + leave.getStatus());
+            }
+
+            // Step 7: อัปเดต status
+            leave.setStatus(dto.getStatus());
+            leave.setApprovedBy(hr);
+
+            // ถ้า REJECTED ให้เก็บเหตุผลด้วย
+            if (dto.getStatus().equals("REJECTED") && dto.getReason() != null) {
+                leave.setReason(dto.getReason());
+            }
+
+            LeaveRequest saved = leaveRequestRepository.save(leave);
+
+            // Step 8: สร้าง response data
+            Map<String, Object> data = new HashMap<>();
+            data.put("leaveId",      saved.getId());
+            data.put("staffId",      saved.getStaff().getId());
+            data.put("staffCode",    saved.getStaff().getStaffCode());
+            data.put("username",     saved.getStaff().getUsername());
+            data.put("staffImage",   saved.getStaff().getStaffImage());
+            data.put("leaveType",    saved.getLeaveType());
+            data.put("startDate",    saved.getStartDate().toString());
+            data.put("endDate",      saved.getEndDate().toString());
+            data.put("totalDays",    saved.getTotalDays());
+            data.put("status",       saved.getStatus());
+            data.put("reason",       saved.getReason());
+            data.put("approvedBy",   hr.getUsername());
+            data.put("updatedAt",    saved.getUpdatedAt());
+
+            response.setStatus("00");
+            response.setMessage(dto.getStatus().equals("APPROVED")
+                    ? "ອະນຸມັດວັນລາພັກສຳເລັດ"
+                    : "ປະຕິເສດວັນລາພັກສຳເລັດ");
+            response.setDataResponse(data);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
+
+        return response;
+    }
+
+    //getDailyAttendance
+    public DataResponse getDailyAttendance(DailyAttendanceRequestDTO dto) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // Step 1: หา requester จาก token
+            StaffEntity requester = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+
+            // Step 2: เช็ค token หมดอายุ
+            if (requester.getTokenExpiredAt() != null
+                    && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token หมดอายุ กรุณา Login ใหม่");
+            }
+
+            // Step 3: กำหนดวันที่
+            LocalDate targetDate = (dto.getDate() != null && !dto.getDate().isEmpty())
+                    ? LocalDate.parse(dto.getDate(),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    : LocalDate.now();
+
+            LocalDateTime startOfDay = targetDate.atStartOfDay();
+            LocalDateTime endOfDay   = targetDate.atTime(23, 59, 59);
+
+            // Step 4: ดึง staff ตาม role + borId
+            List<StaffEntity> staffList;
+
+            if (requester.getRole().equals("USER")) {
+                staffList = new ArrayList<>();
+                staffList.add(requester);
+
+            } else if (requester.getRole().equals("BORLEADER")) {
+                if (dto.getBorId() == null || dto.getBorId().isEmpty()) {
+                    staffList = new ArrayList<>();
+                    staffList.add(requester);
+                } else if (dto.getBorId().equalsIgnoreCase("all")) {
+                    staffList = userRepository.findAllByBorIdAndStatus(
+                            requester.getBorId(), "ACTIVE");
+                } else {
+                    throw new RuntimeException("ບໍ່ມີສິດເບິ່ງຂໍ້ມູນ bor ອື່ນ");
+                }
+            } else {
+                if (dto.getBorId() == null || dto.getBorId().isEmpty()) {
+                    staffList = new ArrayList<>();
+                    staffList.add(requester);
+                } else if (dto.getBorId().equalsIgnoreCase("all")) {
+                    staffList = userRepository.findAllByStatus("ACTIVE");
+                } else {
+                    staffList = userRepository.findAllByBorIdAndStatus(
+                            Integer.parseInt(dto.getBorId()), "ACTIVE");
+                }
+            }
+
+            // ✅ Step 5: โหลด borName ทีเดียว
+            Set<Integer> borIds = staffList.stream()
+                    .map(StaffEntity::getBorId)
+                    .filter(id -> id != null)
+                    .collect(Collectors.toSet());
+
+            Map<Integer, String> borNameMap = new HashMap<>();
+            if (!borIds.isEmpty()) {
+                tbBorRepository.findAllById(borIds)
+                        .forEach(bor -> borNameMap.put(bor.getKeyId(), bor.getBName()));
+            }
+
+            // ✅ Step 6: โหลด attendance logs ทีเดียว
+            List<AttendanceLog> allLogs = attendanceLogRepository
+                    .findAllByCheckTimeBetweenOrderByCheckTimeAsc(startOfDay, endOfDay);
+
+            Map<Long, AttendanceLog> checkInMap  = new HashMap<>();
+            Map<Long, AttendanceLog> checkOutMap = new HashMap<>();
+
+            for (AttendanceLog log : allLogs) {
+                Long staffId = log.getStaff().getId();
+                if (log.getCheckType().equals("CHECK_IN")) {
+                    checkInMap.putIfAbsent(staffId, log);  // เก็บแรกสุด
+                } else if (log.getCheckType().equals("CHECK_OUT")) {
+                    checkOutMap.put(staffId, log);          // เก็บล่าสุด
+                }
+            }
+
+            // Step 7: วนลูปทุก staff — ไม่มี query เพิ่มแล้ว!
+            List<Map<String, Object>> data = new ArrayList<>();
+
+            for (StaffEntity staff : staffList) {
+
+                AttendanceLog checkIn  = checkInMap.get(staff.getId());
+                AttendanceLog checkOut = checkOutMap.get(staff.getId());
+
+                String status;
+                LocalDateTime checkInTime  = null;
+                LocalDateTime checkOutTime = null;
+                String ipAddress  = null;
+                String macAddress = null;
+                LocalDateTime createdAt = null;
+
+                if (checkIn == null) {
+                    status = "ABSENT";
+                } else {
+                    checkInTime  = checkIn.getCheckTime();
+                    ipAddress    = checkIn.getIpAddress();
+                    macAddress   = checkIn.getMacAddress();
+                    createdAt    = checkIn.getCreatedAt();
+
+                    status = checkInTime.toLocalTime()
+                            .isAfter(java.time.LocalTime.of(8, 1))
+                            ? "LATE" : "INTIME";
+
+                    if (checkOut != null) {
+                        checkOutTime = checkOut.getCheckTime();
+                    }
+                }
+
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("staffId",    staff.getId());
+                item.put("staffCode",  staff.getStaffCode());
+                item.put("username",   staff.getUsername());
+                item.put("staffImage", staff.getStaffImage());
+                item.put("borId",      staff.getBorId());
+                item.put("borName",    borNameMap.get(staff.getBorId()));
+                item.put("position",   staff.getPosition());
+                item.put("department", staff.getDepartment());
+                item.put("role",       staff.getRole());
+                item.put("checkIn",    checkInTime  != null ? checkInTime.toString()  : "00");
+                item.put("checkOut",   checkOutTime != null ? checkOutTime.toString() : "00");
+                item.put("status", status);
+                item.put("ipAddress",  ipAddress);
+                item.put("macAddress", macAddress);
+//                item.put("createdAt",  createdAt);
+//                item.put("date",       targetDate.toString());
+
+                data.add(item);
+            }
+
+            // Step 8: สรุป footer
+            long INTIME = data.stream()
+                    .filter(d -> d.get("status").equals("INTIME")).count();
+            long late    = data.stream()
+                    .filter(d -> d.get("status").equals("LATE")).count();
+            long absent  = data.stream()
+                    .filter(d -> d.get("status").equals("ABSENT")).count();
+
+            Map<String, Object> footer = new HashMap<>();
+            footer.put("TOTAL",   data.size());
+            footer.put("INTIME", INTIME);
+            footer.put("LATE",    late);
+            footer.put("ABSENT",  absent);
+
+            response.setStatus("00");
+            response.setMessage("success");
+            response.setDataResponse(data);
+            response.setSumFooter(footer);
 
         } catch (Exception e) {
             e.printStackTrace();

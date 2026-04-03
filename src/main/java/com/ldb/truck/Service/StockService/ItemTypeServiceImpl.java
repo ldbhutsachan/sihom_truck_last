@@ -25,7 +25,7 @@ public class ItemTypeServiceImpl {
             } else {
                 // ตรวจ role เหมือน saveItemType
                 // สร้าง Set ของ role ที่ต้องใช้ bansi_use = "1"
-                Set<String> bansiRoles = Set.of("SUPERBANSI", "BANSIAPPROVE", "SUPERACCOUNT", "FOR_DOCUMENT_ADMIN");
+                Set<String> bansiRoles = Set.of("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FOR_DOCUMENT_ADMIN", "FINANCE");
 
                 if (bansiRoles.contains(role.toUpperCase())) {
                     // เฉพาะ role ในกลุ่มนี้ => bansi_use = "1"

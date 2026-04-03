@@ -555,6 +555,40 @@ public class BansiController {
 
 
 
+    ///
+    // ════════════════════════════════════════════════════════
+// FINANCE BILL - 3 APIs
+// ════════════════════════════════════════════════════════
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/create")
+    public ResponseEntity<DataResponse> createFinanceBill(
+            @RequestBody FinanceBillRequestDto req) {
+        return ResponseEntity.ok(bansiService.createFinanceBill(req));
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/list")
+    public ResponseEntity<DataResponse> getFinanceBills(
+            @RequestParam String token,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(bansiService.getFinanceBills(token, status));
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/approve")
+    public ResponseEntity<DataResponse> approveFinanceBill(
+            @RequestBody FinanceBillApproveDto req) {
+        return ResponseEntity.ok(bansiService.approveFinanceBill(req));
+    }
+
+
+    // ─── Check ยอดคงเหลือของ bill_no ─────────────────────────
+    @PostMapping("/finance-bill/bill-summary")
+    public ResponseEntity<DataResponse> getBillNoSummary(
+            @RequestParam String token,
+            @RequestBody List<String> billNos) {
+        return ResponseEntity.ok(bansiService.getBillNoSummary(token, billNos));
+    }
+
+
 
 
 }
