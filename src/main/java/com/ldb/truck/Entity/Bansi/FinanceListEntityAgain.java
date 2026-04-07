@@ -7,9 +7,8 @@ import javax.persistence.*;
 
 @Entity
 @Data
-@Table(name = "v_accounting_finance")
-public class FinanceListEntity {
-
+@Table(name = "v_accounting_finance_again")
+public class FinanceListEntityAgain {
     @Id
     @Column(name = "key_id")
     @JsonProperty("key_id")
@@ -111,6 +110,17 @@ public class FinanceListEntity {
     @JsonProperty("date_create")
     private String dateCreate;
 
+    @Column(name = "paid_amount")
+    @JsonProperty("paid_amount")
+    private Double paidAmount;
+
+    @Column(name = "remaining_amount")
+    @JsonProperty("remaining_amount")
+    private Double remainingAmount;
+
+    @Transient
+    private String status;  // ← รับค่าจาก request
+
     @Transient
     private String toKen; // สำหรับส่ง token จาก client
 
@@ -119,5 +129,4 @@ public class FinanceListEntity {
 
     @Transient
     private String endDate;
-
 }

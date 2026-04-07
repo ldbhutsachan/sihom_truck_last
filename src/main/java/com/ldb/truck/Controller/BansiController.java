@@ -468,11 +468,19 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // show finaceData controller
+    // show accounting bill for finace
     @CrossOrigin(origins = "*")
     @PostMapping("/getListForFinance.service")
     public ResponseEntity<DataResponse> getListForFinance(@RequestBody FinanceListEntity financeListEntity) {
         DataResponse response = bansiService.getListForFinance(financeListEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // show Accounting bill  for finance again
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getListForFinance.again")
+    public ResponseEntity<DataResponse> getListForFinance(@RequestBody FinanceListEntityAgain financeListEntityAgain) {
+        DataResponse response = bansiService.getFinanceListagian(financeListEntityAgain);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -552,11 +560,6 @@ public class BansiController {
         );
     }
 
-
-
-
-    ///
-    // ════════════════════════════════════════════════════════
 // FINANCE BILL - 3 APIs
 // ════════════════════════════════════════════════════════
     @CrossOrigin(origins = "*")
@@ -568,9 +571,8 @@ public class BansiController {
     @CrossOrigin(origins = "*")
     @PostMapping("/finance-bill/list")
     public ResponseEntity<DataResponse> getFinanceBills(
-            @RequestParam String token,
-            @RequestParam(required = false) String status) {
-        return ResponseEntity.ok(bansiService.getFinanceBills(token, status));
+            @RequestBody FinanceBillListRequest request) {
+        return ResponseEntity.ok(bansiService.getFinanceBills(request));
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/finance-bill/approve")

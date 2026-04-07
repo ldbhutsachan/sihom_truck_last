@@ -2,10 +2,12 @@ package com.ldb.truck.Model.Bansi;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class FinanceBillApproveDto {
     private String toKen;
-    private Long id;        // finance_bill id
+    private List<Long> detailIds; // ✅ เปลี่ยนจาก Long → List<Long>
     private String action;  // APPROVED | REJECTED
     private String remark;
 }

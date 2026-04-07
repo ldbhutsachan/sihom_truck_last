@@ -19,7 +19,7 @@ public interface FinanceListRepository extends JpaRepository<FinanceListEntity, 
                     "AND (:startDate IS NULL OR :startDate = '' OR basi_approve_date >= :startDate) " +
                     "AND (:endDate IS NULL OR :endDate = '' " +
                     "     OR basi_approve_date < DATE_ADD(:endDate, INTERVAL 1 DAY)) " +
-                    "AND COALESCE(pay_status, '') <> 'DONE-PAY' " +
+                    "AND COALESCE(pay_status, '') NOT IN ('IN-PROGRACE', 'DONE-PAY') " +
                     "ORDER BY basi_approve_date DESC",
             nativeQuery = true)
     List<FinanceListEntity> searchFinance(

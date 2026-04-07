@@ -36,7 +36,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
+
+import static java.lang.Long.sum;
 
 @Service
 @Slf4j
@@ -58,7 +61,8 @@ public class BansiService {
     @Autowired
     private ProfileDao profileDao;
     @Autowired
-    private PaymentDetailDao paymentDetailDao;;
+    private PaymentDetailDao paymentDetailDao;
+    ;
     @Autowired
     private MediaUploadService mediaUploadService;
     @Autowired
@@ -67,6 +71,8 @@ public class BansiService {
     private BankRepository bankRepository;
     @Autowired
     private FinanceListRepository financeListRepository;
+    @Autowired
+    private FinanceListRepositoryagain financeListRepositoryagain;
     @Autowired
     private FinanceRepository financeRepository;
     @Autowired
@@ -80,11 +86,11 @@ public class BansiService {
     @Autowired
     private SupplierNotPayRepo supplierNotPayRepo;
     @Autowired
-    private  FinanceBillRepository financeBillRepository;
+    private FinanceBillRepository financeBillRepository;
     @Autowired
-    private  FinanceBillRefRepository financeBillRefRepository;
+    private FinanceBillRefRepository financeBillRefRepository;
     @Autowired
-    private  FinanceBillPaymentRepository financeBillPaymentRepository;
+    private FinanceBillPaymentRepository financeBillPaymentRepository;
 
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
@@ -92,7 +98,7 @@ public class BansiService {
         try {
             // ตรวจ token
             List<Profile> userProfiles = profileDao.getProfileInfoByToken(bansiEntity.getToKen());
-            if(userProfiles.isEmpty()){
+            if (userProfiles.isEmpty()) {
                 response.setStatus("05");
                 response.setMessage("Unauthorized");
                 return response;
@@ -100,7 +106,7 @@ public class BansiService {
             String role = userProfiles.get(0).getRole();
 
             // ตัวอย่าง: ถ้า role ACCOUNTANT ให้ bansi = "1"
-            if("ACCOUNTANT".equalsIgnoreCase(role)){
+            if ("ACCOUNTANT".equalsIgnoreCase(role)) {
                 bansiEntity.setBansi("bansi");
             } else if ("FINANCE".equalsIgnoreCase(role)) {
                 bansiEntity.setBansi("accounting");
@@ -111,7 +117,7 @@ public class BansiService {
             response.setDataResponse(bansiRepository.save(bansiEntity));
             response.setStatus("00");
             response.setMessage("Success");
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("EE");
             response.setMessage("Store Data is Error !!");
@@ -223,7 +229,7 @@ public class BansiService {
         try {
             // ตรวจ token
             List<Profile> userProfiles = profileDao.getProfileInfoByToken(payTypeEntity.getToKen());
-            if(userProfiles.isEmpty()){
+            if (userProfiles.isEmpty()) {
                 response.setStatus("05");
                 response.setMessage("Unauthorized");
                 return response;
@@ -250,7 +256,7 @@ public class BansiService {
             response.setStatus("00");
             response.setMessage("Success");
 
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("EE");
             response.setMessage("Store Data is Error !!");
@@ -405,8 +411,6 @@ public class BansiService {
 
         return prefix + String.format("%04d", number);
     }
-
-
 
 
     // insert payment Detail
@@ -564,8 +568,8 @@ public class BansiService {
         entity.setInternalRemark(req.getInternal_remark() != null ? req.getInternal_remark() : entity.getInternalRemark());
         entity.setTag(req.getTag() != null ? req.getTag() : entity.getTag());
         entity.setDatertimeDate(req.getDatermine_date() != null ? req.getDatermine_date() : entity.getDatertimeDate());
-        entity.setBillStatus(req.getBill_status() !=null ? req.getBill_status() : entity.getBillStatus());
-        entity.setBId(req.getB_id() !=null ? req.getB_id() : entity.getBId());
+        entity.setBillStatus(req.getBill_status() != null ? req.getBill_status() : entity.getBillStatus());
+        entity.setBId(req.getB_id() != null ? req.getB_id() : entity.getBId());
 
         if (req.getDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -645,6 +649,7 @@ public class BansiService {
 
         return saved;
     }
+
     // showing paymentDetail
     public PaymentDetailRes getPaymentDetails(PaymentDetailReq req) {
         PaymentDetailRes result = new PaymentDetailRes();
@@ -669,7 +674,7 @@ public class BansiService {
                 "ACCOUNTANT".equalsIgnoreCase(role) ||
                         "FINANCE".equalsIgnoreCase(role) ||
                         "AUDITOR".equalsIgnoreCase(role) ||
-                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)||
+                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role) ||
                         "ACCOUNTANTCHECK".equalsIgnoreCase(role);
         if (!isAllowed) {
             result.setStatus("02");
@@ -722,8 +727,7 @@ public class BansiService {
         if (!"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)) {
             if ("wait".equals(status) && !"ACCOUNTANTCHECK".equalsIgnoreCase(role)) {
                 throw new Exception("this user can't approve this bill: 'wait'");
-            }
-            else if ("wait-aditor".equals(status) && !"AUDITOR".equalsIgnoreCase(role)) {
+            } else if ("wait-aditor".equals(status) && !"AUDITOR".equalsIgnoreCase(role)) {
                 throw new Exception("this user can't approve this bill: 'wait-aditor'");
             }
         }
@@ -734,13 +738,11 @@ public class BansiService {
             entity.setBansiApproveBy(approveBy);
             entity.setBillStatus("wait-aditor");
 //            entity.setBillStatus("wait-finance");
-        }
-        else if ("wait-aditor".equals(status)) {
+        } else if ("wait-aditor".equals(status)) {
             entity.setAccountApproveDate(now);
             entity.setAccountApproveBy(approveBy);
             entity.setBillStatus("ok");
-        }
-        else if ("ok".equals(status)) {
+        } else if ("ok".equals(status)) {
             throw new Exception("this bill has done approving (status = ok).");
         } else {
             throw new Exception("the bill_status is incorrect : " + status);
@@ -748,8 +750,6 @@ public class BansiService {
 
         return paymentRequestRepository.save(entity);
     }
-
-
 
 
     //save signature
@@ -770,6 +770,7 @@ public class BansiService {
         }
         return response;
     }
+
     //update
     public DataResponse updateSignature(SignatureEntity signatureEntity) {
         DataResponse response = new DataResponse();
@@ -840,7 +841,7 @@ public class BansiService {
 
             Profile user = userProfiles.get(0);
             String role = user.getRole();
-            if(!"HR".equalsIgnoreCase(role)) {
+            if (!"HR".equalsIgnoreCase(role)) {
                 throw new Exception("No right to save (role: " + role + ")");
             }
 
@@ -957,12 +958,12 @@ public class BansiService {
     }
 
     //showing interviewee service
-    public IntervieweeRes getInterviewee(IntervieweeReq req){
+    public IntervieweeRes getInterviewee(IntervieweeReq req) {
         IntervieweeRes result = new IntervieweeRes();
 
         // 🔹 check token
         List<Profile> userProfiles = profileDao.getProfileInfoByToken(req.getToKen());
-        if(userProfiles.isEmpty()){
+        if (userProfiles.isEmpty()) {
             result.setStatus("01");
             result.setMessage("User does not exist");
             return result;
@@ -970,7 +971,7 @@ public class BansiService {
 
         //  check role
         boolean isHR = "HR".equalsIgnoreCase(userProfiles.get(0).getRole());
-        if(!isHR){
+        if (!isHR) {
             result.setStatus("02");
             result.setMessage("This User has no permission");
             return result;
@@ -990,7 +991,7 @@ public class BansiService {
     }
 
     //show ReportAccounting service
-    public ReportAccountingRes reportAccounting(AccountingReportReq req){
+    public ReportAccountingRes reportAccounting(AccountingReportReq req) {
         ReportAccountingRes result = new ReportAccountingRes();
 
         // ตรวจสอบ token
@@ -1009,7 +1010,7 @@ public class BansiService {
                 "ACCOUNTANT".equalsIgnoreCase(role) ||
                         "FINANCE".equalsIgnoreCase(role) ||
                         "AUDITOR".equalsIgnoreCase(role) ||
-                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role)||
+                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role) ||
                         "ACCOUNTANTCHECK".equalsIgnoreCase(role);
 
         if (!isAllowed) {
@@ -1055,9 +1056,15 @@ public class BansiService {
             // ---- SUM RECEIVE ----
             if (type.equals("RECEIVE")) {
                 switch (currency) {
-                    case "USD": sumReceiveUsd += price; break;
-                    case "LAK": sumReceiveLak += price; break;
-                    case "THB": sumReceiveThb += price; break;
+                    case "USD":
+                        sumReceiveUsd += price;
+                        break;
+                    case "LAK":
+                        sumReceiveLak += price;
+                        break;
+                    case "THB":
+                        sumReceiveThb += price;
+                        break;
                 }
                 sumReceiveUsdEquivalent += defaulUSD; // Sum USD equivalent for RECEIVE
 
@@ -1066,9 +1073,15 @@ public class BansiService {
             // ---- SUM PAY ----
             else if (type.equals("PAY")) {
                 switch (currency) {
-                    case "USD": sumPayUsd += price; break;
-                    case "LAK": sumPayLak += price; break;
-                    case "THB": sumPayThb += price; break;
+                    case "USD":
+                        sumPayUsd += price;
+                        break;
+                    case "LAK":
+                        sumPayLak += price;
+                        break;
+                    case "THB":
+                        sumPayThb += price;
+                        break;
                 }
                 sumPayUsdEquivalent += defaulUSD; // Sum USD equivalent for PAY
             }
@@ -1091,7 +1104,7 @@ public class BansiService {
     }
 
     //insertBank
-    public DataResponse saveBankAccount(BankEntity bankEntity){
+    public DataResponse saveBankAccount(BankEntity bankEntity) {
         DataResponse response = new DataResponse();
 
         try {
@@ -1114,7 +1127,7 @@ public class BansiService {
             String userId = user.getUserId();
 
             // allowed role list
-            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE","AUDITOR", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE", "AUDITOR", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to save");
@@ -1139,6 +1152,7 @@ public class BansiService {
             return response;
         }
     }
+
     //update bankAccount
     public DataResponse updateBankAccount(BankEntity bankEntity) {
         DataResponse response = new DataResponse();
@@ -1157,7 +1171,7 @@ public class BansiService {
             String userId = user.getUserId();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE","AUDITOR", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE", "AUDITOR", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to update");
@@ -1223,7 +1237,7 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE","AUDITOR", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "FINANCE", "AUDITOR", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right");
@@ -1260,9 +1274,9 @@ public class BansiService {
 
 
     //show financeList service
-    public DataResponse getListForFinance(FinanceListEntity financeListEntity){
+    public DataResponse getListForFinance(FinanceListEntity financeListEntity) {
         DataResponse response = new DataResponse();
-        try{
+        try {
             // 1) check token
             List<Profile> userProfiles = profileDao.getProfileInfoByToken(financeListEntity.getToKen());
             if (userProfiles.isEmpty()) {
@@ -1275,7 +1289,7 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN","AUDITOR","ACCOUNTANT");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1317,6 +1331,66 @@ public class BansiService {
         return response;
     }
 
+    //financeList again
+    public DataResponse getFinanceListagian(FinanceListEntityAgain financeListEntityAgain) {
+        DataResponse response = new DataResponse();
+        try {
+            // 1) check token
+            List<Profile> userProfiles = profileDao.getProfileInfoByToken(financeListEntityAgain.getToKen());
+            if (userProfiles.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = userProfiles.get(0);
+            String role = user.getRole();
+
+            // 2) check role
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT");
+            if (!allowed.contains(role.toUpperCase())) {
+                response.setStatus("01");
+                response.setMessage("No right to fetch data");
+                return response;
+            }
+
+            // 3) Prepare filter values
+            String supplierId = financeListEntityAgain.getSupplierId() == null
+                    ? null
+                    : String.valueOf(financeListEntityAgain.getSupplierId());
+
+            String payTypeId = financeListEntityAgain.getPayTypeId();
+            String typeOf = financeListEntityAgain.getTypeOf();
+            String currency = financeListEntityAgain.getCurrency();
+            String paystatus = financeListEntityAgain.getStatus();
+
+            String startDate = financeListEntityAgain.getStartDate();
+            String endDate = financeListEntityAgain.getEndDate();
+
+            List<FinanceListEntityAgain> list =
+                    financeListRepositoryagain.searchFinance(
+                            supplierId,
+                            payTypeId,
+                            typeOf,
+                            currency,
+                            paystatus,
+                            startDate,
+                            endDate
+                    );
+
+            response.setStatus("00");
+            response.setMessage("Success showing Finance Data");
+            response.setDataResponse(list);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error retrieving Finance Data");
+        }
+
+        return response;
+    }
+
     // getFinanceBill service
     public String generateFinaceBill() {
         String lastBillNo = financeRepository.findLastFinanceBillNo();
@@ -1336,76 +1410,76 @@ public class BansiService {
         return prefix + String.format("%04d", number);
     }
 
-   //INSERT FINANCEBILL
-@Transactional
-public DataResponse insertFinance(FinanceRequestDto req) {
-    DataResponse response = new DataResponse();
-    // 1. Validate token
-    List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
-    if (profileList.isEmpty()) {
-        response.setStatus("05");
-        response.setMessage("Unauthorized");
-        return response;
-    }
-    Profile user = profileList.get(0);
-
-    // 2. Check role
-    List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN","AUDITOR","ACCOUNTANT");
-    if (!allowedRoles.contains(user.getRole().toUpperCase())) {
-        response.setStatus("01");
-        response.setMessage("No permission to insert finance");
-        return response;
-    }
-
-    try {
-        // 3. Generate financeBill (ensure unique)
-        String financeBill = generateNextFinanceBill();
-        while (existsFinanceBill(financeBill)) {
-            financeBill = generateNextFinanceBill();
+    //INSERT FINANCEBILL
+    @Transactional
+    public DataResponse insertFinance(FinanceRequestDto req) {
+        DataResponse response = new DataResponse();
+        // 1. Validate token
+        List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
+        if (profileList.isEmpty()) {
+            response.setStatus("05");
+            response.setMessage("Unauthorized");
+            return response;
         }
+        Profile user = profileList.get(0);
 
-        // ===============================
-        // 4. Parse & validate amounts
-        // ===============================
-        BigDecimal amountMustPay;
-        BigDecimal pay;
+        // 2. Check role
+        List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT");
+        if (!allowedRoles.contains(user.getRole().toUpperCase())) {
+            response.setStatus("01");
+            response.setMessage("No permission to insert finance");
+            return response;
+        }
 
         try {
-            amountMustPay = (req.getAmountMustPay() != null && !req.getAmountMustPay().trim().isEmpty())
-                    ? new BigDecimal(req.getAmountMustPay().trim())
-                    : BigDecimal.ZERO;
+            // 3. Generate financeBill (ensure unique)
+            String financeBill = generateNextFinanceBill();
+            while (existsFinanceBill(financeBill)) {
+                financeBill = generateNextFinanceBill();
+            }
 
-            pay = (req.getPay() != null && !req.getPay().trim().isEmpty())
-                    ? new BigDecimal(req.getPay().trim())
-                    : BigDecimal.ZERO;
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("Invalid number format (amountMustPay / pay)");
-        }
+            // ===============================
+            // 4. Parse & validate amounts
+            // ===============================
+            BigDecimal amountMustPay;
+            BigDecimal pay;
 
-        // ===============================
-        // 5. Insert tb_finance (MASTER)
-        // ===============================
-        FinanceEntity master = new FinanceEntity();
-        master.setFinanceBill(financeBill);
-        master.setSupplierId(req.getSupplierId());
-        master.setTypeOf(req.getType_of());
-        master.setAmountMustPay(amountMustPay);
-        master.setCurrency(req.getCurrency());
-        master.setPay1(pay);
+            try {
+                amountMustPay = (req.getAmountMustPay() != null && !req.getAmountMustPay().trim().isEmpty())
+                        ? new BigDecimal(req.getAmountMustPay().trim())
+                        : BigDecimal.ZERO;
 
-        // pay status
-        master.setPayStatus(
-                amountMustPay.subtract(pay).compareTo(BigDecimal.ZERO) <= 0
-                        ? "DONE"
-                        : "IN-PROGRESS"
-        );
+                pay = (req.getPay() != null && !req.getPay().trim().isEmpty())
+                        ? new BigDecimal(req.getPay().trim())
+                        : BigDecimal.ZERO;
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Invalid number format (amountMustPay / pay)");
+            }
+
+            // ===============================
+            // 5. Insert tb_finance (MASTER)
+            // ===============================
+            FinanceEntity master = new FinanceEntity();
+            master.setFinanceBill(financeBill);
+            master.setSupplierId(req.getSupplierId());
+            master.setTypeOf(req.getType_of());
+            master.setAmountMustPay(amountMustPay);
+            master.setCurrency(req.getCurrency());
+            master.setPay1(pay);
+
+            // pay status
+            master.setPayStatus(
+                    amountMustPay.subtract(pay).compareTo(BigDecimal.ZERO) <= 0
+                            ? "DONE"
+                            : "IN-PROGRESS"
+            );
 
 
-        // nextDatePay
-        if (req.getNextDatePay() != null && !req.getNextDatePay().isEmpty()) {
-            master.setNextDatePay(req.getNextDatePay());
-        }
-        if (req.getFirstDatePay() != null && !req.getFirstDatePay().isEmpty()) {
+            // nextDatePay
+            if (req.getNextDatePay() != null && !req.getNextDatePay().isEmpty()) {
+                master.setNextDatePay(req.getNextDatePay());
+            }
+            if (req.getFirstDatePay() != null && !req.getFirstDatePay().isEmpty()) {
                 String input = req.getFirstDatePay();
                 if (input.length() == 10) { // yyyy-MM-dd
                     input += " 00:00:00"; // เติมเวลา
@@ -1415,74 +1489,74 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 master.setFirstDatePay(firstDatePay);
             }
 
-        master.setCreateDate(LocalDateTime.now());
-        master.setCreateby(user.getUserName());
+            master.setCreateDate(LocalDateTime.now());
+            master.setCreateby(user.getUserName());
 
-        FinanceEntity savedFinance = financeRepository.save(master);
+            FinanceEntity savedFinance = financeRepository.save(master);
 
-        // ===============================
-        // 6. Insert tb_finance_managelist
-        // ===============================
-        if (req.getBillList() != null && !req.getBillList().isEmpty()) {
+            // ===============================
+            // 6. Insert tb_finance_managelist
+            // ===============================
+            if (req.getBillList() != null && !req.getBillList().isEmpty()) {
 
-            List<FinanceManageListEntity> manageList = new ArrayList<>();
+                List<FinanceManageListEntity> manageList = new ArrayList<>();
 
-            for (String billNo : req.getBillList()) {
+                for (String billNo : req.getBillList()) {
 
-                FinanceManageListEntity d = new FinanceManageListEntity();
-                d.setFinanceBill(financeBill);
-                d.setBillNo(billNo);
-                manageList.add(d);
+                    FinanceManageListEntity d = new FinanceManageListEntity();
+                    d.setFinanceBill(financeBill);
+                    d.setBillNo(billNo);
+                    manageList.add(d);
 
-                int updated = paymentRequestRepository
-                        .updatePayStatusByBillNo(billNo, "DONE-PAY");
+                    int updated = paymentRequestRepository
+                            .updatePayStatusByBillNo(billNo, "DONE-PAY");
 
-                if (updated == 0) {
-                    throw new RuntimeException("BillNo not found: " + billNo);
+                    if (updated == 0) {
+                        throw new RuntimeException("BillNo not found: " + billNo);
+                    }
+                }
+
+                financeManageListRepository.saveAll(manageList);
+            }
+
+            // ===============================
+            // 7. Insert tb_finance_pay (HISTORY)
+            // ===============================
+            if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole())
+                    && !"FINANCE".equalsIgnoreCase(user.getRole())
+                    && !"AUDITOR".equalsIgnoreCase(user.getRole())
+                    && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
+
+                if (req.getBillList() != null && !req.getBillList().isEmpty()) {
+
+                    List<FinanceHisEntity> payHisList = new ArrayList<>();
+
+                    FinanceHisEntity h = new FinanceHisEntity();
+                    h.setFinanceBill(financeBill);
+                    h.setPayAmount(pay);
+                    h.setDatePay(req.getFirstDatePay());
+                    h.setCreateDate(LocalDateTime.now());
+
+                    payHisList.add(h);
+                    financeHisRepository.saveAll(payHisList);
                 }
             }
 
-            financeManageListRepository.saveAll(manageList);
+
+            response.setStatus("00");
+            response.setMessage("Finance saved successfully");
+            response.setDataResponse(savedFinance);
+            return response;
+
+        } catch (Exception e) {
+            // ❗ สำคัญ: rollback ทั้ง transaction
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error saving finance: " + e.getMessage());
+            return response;
         }
-
-        // ===============================
-        // 7. Insert tb_finance_pay (HISTORY)
-        // ===============================
-        if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole())
-                && !"FINANCE".equalsIgnoreCase(user.getRole())
-                && !"AUDITOR".equalsIgnoreCase(user.getRole())
-                && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
-
-            if (req.getBillList() != null && !req.getBillList().isEmpty()) {
-
-                List<FinanceHisEntity> payHisList = new ArrayList<>();
-
-                FinanceHisEntity h = new FinanceHisEntity();
-                h.setFinanceBill(financeBill);
-                h.setPayAmount(pay);
-                h.setDatePay(req.getFirstDatePay());
-                h.setCreateDate(LocalDateTime.now());
-
-                payHisList.add(h);
-                financeHisRepository.saveAll(payHisList);
-            }
-        }
-
-
-        response.setStatus("00");
-        response.setMessage("Finance saved successfully");
-        response.setDataResponse(savedFinance);
-        return response;
-
-    } catch (Exception e) {
-        // ❗ สำคัญ: rollback ทั้ง transaction
-        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-        e.printStackTrace();
-        response.setStatus("EE");
-        response.setMessage("Error saving finance: " + e.getMessage());
-        return response;
     }
-}
 
 
     // helper: generate next financeBill
@@ -1509,7 +1583,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
         return financeRepository.countBill(billNo) > 0;
     }
 
-     // PAY BACK
+    // PAY BACK
     @Transactional
     public DataResponse updateFinancePay(FinanceUpdateDto req) {
         DataResponse response = new DataResponse();
@@ -1564,7 +1638,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 return response;
             }
 
-             // 5. Update pay1 by summing with client pay
+            // 5. Update pay1 by summing with client pay
             // ===============================
             BigDecimal currentPay = finance.getPay1() != null ? finance.getPay1() : BigDecimal.ZERO;
             BigDecimal newPay = currentPay.add(pay); // pay from client
@@ -1659,7 +1733,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN","AUDITOR","ACCOUNTANT");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1695,11 +1769,11 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                 map.put("amountMustPay", first.getAmountMustPay());
                 map.put("pay1", first.getPay1());
                 map.put("nextDatePay", first.getNextDatePay());
-                map.put("typeOf",first.getTypeOf());
+                map.put("typeOf", first.getTypeOf());
                 map.put("payStatus", first.getPayStatus());
                 map.put("currency", first.getCurrency());
                 map.put("createBy", first.getCreateBy());
-                map.put(("create_date"),first.getCreateDate());
+                map.put(("create_date"), first.getCreateDate());
                 // รวม billNo เป็น list
 //                List<String> billNos = list.stream()
 //                        .map(FinanceViewDto::getBillNo)
@@ -1714,7 +1788,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
                             billMap.put("payType", item.getPayType());
                             billMap.put("bankNo", item.getBankNo());
                             billMap.put("bankEnglishName", item.getBankEnglishName());
-                            billMap.put("title",item.getTitle());
+                            billMap.put("title", item.getTitle());
                             return billMap;
                         })
                         .collect(Collectors.toList());
@@ -1723,7 +1797,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
 
                 // คำนวณ paidTotal และ amountNotPayYet
-                double paidTotal = first.getPay1() ;
+                double paidTotal = first.getPay1();
                 double amountNotPayYet = first.getAmountMustPay() - paidTotal;
                 map.put("paidTotal", paidTotal);
                 map.put("amountNotPayYet", amountNotPayYet);
@@ -1771,6 +1845,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         return response;
     }
+
     //show Finace Pay detail
     public DataResponse getFinancePayByBill(FinanceHistDto financeHistDto) {
         DataResponse response = new DataResponse();
@@ -2002,7 +2077,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("FINANCE", "ACCOUNTANT","AUDITOR", "ACCOUNTANTCHECK","FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("FINANCE", "ACCOUNTANT", "AUDITOR", "ACCOUNTANTCHECK", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -2066,6 +2141,7 @@ public DataResponse insertFinance(FinanceRequestDto req) {
 
         return response;
     }
+
     //itemforaccounting service
     // itemforaccounting service
     public DataResponse findItemforaccounting(SupplierNotPayReq req) {
@@ -2154,75 +2230,109 @@ public DataResponse insertFinance(FinanceRequestDto req) {
     @Transactional
     public DataResponse createFinanceBill(FinanceBillRequestDto req) {
         DataResponse response = new DataResponse();
+
         try {
-            // check token
+            // 1. Validate Token
             List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
             if (profileList.isEmpty()) {
                 response.setStatus("05");
                 response.setMessage("Unauthorized");
                 return response;
             }
+
             Profile user = profileList.get(0);
 
-            // check role
-            if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole())) {
+            // 2. Validate Role (FIXED)
+            if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole()) &&
+                    !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
+
                 response.setStatus("01");
-                response.setMessage("Only ACCOUNTANT can create Finance Bill");
+                response.setMessage("Only ACCOUNTANT or ADMIN can create Finance Bill");
                 return response;
             }
 
-            // สร้าง Finance Bill
+            // 3. Create Finance Bill
             TbFinanceBill bill = new TbFinanceBill();
             bill.setFinanceBillNo(generateNewFinanceBillNo());
             bill.setTitle(req.getTitle());
             bill.setTotalAmount(req.getTotalAmount());
             bill.setCurrency(req.getCurrency());
             bill.setExchangeRate(req.getExchangeRate());
-            bill.setRemark(req.getRemark());
-            bill.setBillStatus("DRAFT");
-            bill.setCreatedBy(Long.valueOf(user.getUserId()));
-            bill.setDateCreate(LocalDateTime.now());
-            TbFinanceBill saved = financeBillRepository.save(bill);
 
-            // บันทึก bill_no ที่อ้างอิง
+            // clean remark (" " → null)
+            String remark = req.getRemark();
+            if (remark != null && remark.trim().isEmpty()) {
+                remark = null;
+            }
+            bill.setRemark(remark);
+            TbFinanceBill saved = financeBillRepository.save(bill);
+            // 4. Process Bill References
             if (req.getBillNos() != null && !req.getBillNos().isEmpty()) {
+
                 for (FinanceBillRequestDto.BillRefDto ref : req.getBillNos()) {
 
-                    // ✅ เช็คยอดคงเหลือก่อน
+                    // ---- validate input ----
+                    if (ref.getAmount() == null || ref.getOriginalAmount() == null) {
+                        throw new RuntimeException("Amount or OriginalAmount cannot be null");
+                    }
+
+                    // ---- get used amount ----
                     BigDecimal usedAmount = financeBillRefRepository
-                            .sumUsedAmountByBillNo(ref.getBillNo());
-                    BigDecimal remaining = ref.getOriginalAmount().subtract(usedAmount);
+                            .sumApprovedAmountByBillNo(ref.getBillNo());
+
+                    if (usedAmount == null) {
+                        usedAmount = BigDecimal.ZERO;
+                    }
+
+                    // ---- calculate remaining ----
+                     BigDecimal remaining = ref.getOriginalAmount().subtract(usedAmount);
+
 
                     if (ref.getAmount().compareTo(remaining) > 0) {
-                        // Rollback ถ้ายอดเกิน
-                        TransactionAspectSupport.currentTransactionStatus()
-                                .setRollbackOnly();
+                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+
                         response.setStatus("06");
                         response.setMessage(
                                 "BillNo " + ref.getBillNo() +
-                                        " ยอดคงเหลือ " + remaining +
-                                        " ไม่พอสำหรับยอดที่ขอ " + ref.getAmount()
+                                        " ຍອດທີ່ສະເໜີ " + ref.getAmount() +
+                                        " ຫຼາຍກວ່າຍອດຄົງເຫຼືອ " + remaining
                         );
                         return response;
                     }
 
+                    // ---- insert ref ----
                     TbFinanceBillRef billRef = new TbFinanceBillRef();
                     billRef.setFinanceBillId(saved.getId());
                     billRef.setKeyId(ref.getKeyId());
                     billRef.setBillNo(ref.getBillNo());
                     billRef.setOriginalAmount(ref.getOriginalAmount());
                     billRef.setAmount(ref.getAmount());
+                    billRef.setBillStatus("PENDING_CHECK");
+                    billRef.setCreatedBy(Long.valueOf(user.getUserId()));
+                    billRef.setDateCreate(LocalDateTime.now());
+
                     financeBillRefRepository.save(billRef);
+
+                    // ---- update pay status (after success insert) ----
+                    int updated = paymentRequestRepository
+                            .updatePayStatusByBillNo(ref.getBillNo(), "IN-PROGRACE");
+
+                    if (updated == 0) {
+                        throw new RuntimeException("BillNo not found: " + ref.getBillNo());
+                    }
                 }
             }
 
+            // 5. Success Response
             response.setStatus("00");
             response.setMessage("Finance Bill created successfully");
             response.setDataResponse(saved);
 
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            e.printStackTrace();
+
+            log.error("Error creating Finance Bill", e);
+
             response.setStatus("EE");
             response.setMessage("Error creating Finance Bill: " + e.getMessage());
         }
@@ -2230,55 +2340,191 @@ public DataResponse insertFinance(FinanceRequestDto req) {
     }
 
     // ─── 2. GET Finance Bill ─────────────────────────────────
-    public DataResponse getFinanceBills(String token, String status) {
+    public DataResponse getFinanceBills(FinanceBillListRequest request) {
+
         DataResponse response = new DataResponse();
+
         try {
-            // check token
-            List<Profile> profileList = profileDao.getProfileInfoByToken(token);
+
+            // =========================
+            // 1. CHECK TOKEN
+            List<Profile> profileList = profileDao.getProfileInfoByToken(request.getToken());
+
             if (profileList.isEmpty()) {
                 response.setStatus("05");
                 response.setMessage("Unauthorized");
                 return response;
             }
+
             Profile user = profileList.get(0);
             String role = user.getRole().toUpperCase();
 
-            // check role
+            // =========================
+            // 2. CHECK ROLE
+            // =========================
             List<String> allowed = Arrays.asList(
-                    "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN"
+                    "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR",
+                    "FINANCE", "FOR_DOCUMENT_ADMIN"
             );
+
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");
                 return response;
             }
 
-            List<TbFinanceBill> billList;
+            // =========================
+            // 3. PARSE DATE (optional)
+            // =========================
+            LocalDateTime startDateTime = null;
+            LocalDateTime endDateTime = null;
 
-            // ACCOUNTANT เห็นแค่ของตัวเอง
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            if (request.getStartDate() != null && !request.getStartDate().isEmpty()) {
+                startDateTime = LocalDate.parse(request.getStartDate(), formatter).atStartOfDay();
+            }
+            if (request.getEndDate() != null && !request.getEndDate().isEmpty()) {
+                endDateTime = LocalDate.parse(request.getEndDate(), formatter).atTime(23, 59, 59);
+            }
+
+            // =========================
+            // 4. GET REF LIST
+            // =========================
+            Long userId = Long.valueOf(user.getUserId());
+            String status = request.getBillStatus();
+
+            List<TbFinanceBillRef> billList;
+
             if ("ACCOUNTANT".equals(role)) {
                 billList = (status != null && !status.isEmpty())
-                        ? financeBillRepository.findByCreatedByAndBillStatus(
-                        Long.valueOf(user.getUserId()), status)
-                        : financeBillRepository.findByCreatedBy(
-                        Long.valueOf(user.getUserId()));
+                        ? financeBillRefRepository.findByCreatedByAndBillStatus(userId, status)
+                        : financeBillRefRepository.findByCreatedBy(userId);
             } else {
-                // Role อื่นเห็นทั้งหมด
                 billList = (status != null && !status.isEmpty())
-                        ? financeBillRepository.findByBillStatus(status)
-                        : financeBillRepository.findAll();
+                        ? financeBillRefRepository.findByBillStatus(status)
+                        : financeBillRefRepository.findAll();
             }
 
-            // ดึง ref bill_no ของแต่ละ bill มาด้วย
+            // =========================
+            // 5. FILTER BY DATE
+            // =========================
+            final LocalDateTime finalStart = startDateTime;
+            final LocalDateTime finalEnd = endDateTime;
+
+            if (finalStart != null || finalEnd != null) {
+                billList = billList.stream()
+                        .filter(ref -> {
+                            LocalDateTime created = ref.getDateCreate();
+                            if (created == null) return true;
+                            if (finalStart != null && created.isBefore(finalStart)) return false;
+                            if (finalEnd != null && created.isAfter(finalEnd)) return false;
+                            return true;
+                        })
+                        .collect(Collectors.toList());
+            }
+
+            // =========================
+            // 6. FETCH FINANCE BILLS
+            // =========================
+            List<Long> billIds = billList.stream()
+                    .map(TbFinanceBillRef::getFinanceBillId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            Map<Long, TbFinanceBill> billMap = financeBillRepository.findAllById(billIds)
+                    .stream()
+                    .collect(Collectors.toMap(TbFinanceBill::getId, b -> b));
+
+            // =========================
+            // 6.5 COLLECT USER IDs → GET NAMES
+            Set<Long> userIds = new HashSet<>();
+            for (TbFinanceBillRef ref : billList) {
+                if (ref.getCreatedBy() != null) userIds.add(ref.getCreatedBy());
+                if (ref.getAccountantCheckBy() != null) userIds.add(ref.getAccountantCheckBy());
+                if (ref.getAuditorApproveBy() != null) userIds.add(ref.getAuditorApproveBy());
+                if (ref.getFinanceApproveBy() != null) userIds.add(ref.getFinanceApproveBy());
+                if (ref.getReturnBy() != null) userIds.add(ref.getReturnBy());
+            }
+
+            Map<Long, String> userNameMap = profileDao.getUserNameMapByIds(new ArrayList<>(userIds));
+
+            // =========================
+            // 7. GROUP refs → details ใต้ financeBill
+            Map<Long, List<TbFinanceBillRef>> groupedRefs = billList.stream()
+                    .collect(Collectors.groupingBy(TbFinanceBillRef::getFinanceBillId));
+
             List<Map<String, Object>> result = new ArrayList<>();
-            for (TbFinanceBill bill : billList) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("financeBill", bill);
-                map.put("billRefs", financeBillRefRepository
-                        .findByFinanceBillId(bill.getId()));
-                result.add(map);
+
+            for (Map.Entry<Long, List<TbFinanceBillRef>> entry : groupedRefs.entrySet()) {
+                Long billId = entry.getKey();
+                List<TbFinanceBillRef> refs = entry.getValue();
+                TbFinanceBill bill = billMap.get(billId);
+
+                if (bill == null) continue;
+
+                // ✅ build details ก่อน
+                List<Map<String, Object>> detailList = new ArrayList<>();
+                for (TbFinanceBillRef ref : refs) {
+                    Map<String, Object> detail = new LinkedHashMap<>();
+                    detail.put("detailId", ref.getId());
+                    detail.put("financeBillId", ref.getFinanceBillId());
+                    detail.put("billId", ref.getKeyId());
+                    detail.put("billNo", ref.getBillNo());
+                    detail.put("originalAmount", clean(ref.getOriginalAmount()));
+                    detail.put("amount", clean(ref.getAmount()));
+                    detail.put("billStatus", ref.getBillStatus());
+                    detail.put("createdBy", ref.getCreatedBy());
+                    detail.put("createdByName", userNameMap.getOrDefault(ref.getCreatedBy(), "-"));
+                    detail.put("dateCreate", ref.getDateCreate());
+                    detail.put("accountantCheckBy", ref.getAccountantCheckBy());
+                    detail.put("accountantCheckByName", userNameMap.getOrDefault(ref.getAccountantCheckBy(), "-"));
+                    detail.put("accountantCheckDate", ref.getAccountantCheckDate());
+                    detail.put("accountantCheckStatus", ref.getAccountantCheckStatus());
+                    detail.put("accountantCheckRemark", ref.getAccountantCheckRemark());
+                    detail.put("auditorApproveBy", ref.getAuditorApproveBy());
+                    detail.put("auditorApproveByName", userNameMap.getOrDefault(ref.getAuditorApproveBy(), "-"));
+                    detail.put("auditorApproveDate", ref.getAuditorApproveDate());
+                    detail.put("auditorApproveStatus", ref.getAuditorApproveStatus());
+                    detail.put("auditorApproveRemark", ref.getAuditorApproveRemark());
+                    detail.put("financeApproveBy", ref.getFinanceApproveBy());
+                    detail.put("financeApproveByName", userNameMap.getOrDefault(ref.getFinanceApproveBy(), "-"));
+                    detail.put("financeApproveDate", ref.getFinanceApproveDate());
+                    detail.put("financeApproveStatus", ref.getFinanceApproveStatus());
+                    detail.put("financeApproveRemark", ref.getFinanceApproveRemark());
+                    detail.put("returnBy", ref.getReturnBy());
+                    detail.put("returnByName", userNameMap.getOrDefault(ref.getReturnBy(), "-"));
+                    detail.put("returnDate", ref.getReturnDate());
+                    detail.put("returnRemark", ref.getReturnRemark());
+                    detail.put("returnToRole", ref.getReturnToRole());
+                    detailList.add(detail);
+                }
+
+                // ✅ sum originalAmount จาก refs
+                BigDecimal totalAmount = refs.stream()
+                        .map(TbFinanceBillRef::getOriginalAmount)
+                        .filter(a -> a != null)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                // build financeBill
+                Map<String, Object> billData = new LinkedHashMap<>();
+                billData.put("id", bill.getId());
+                billData.put("financeBillNo", bill.getFinanceBillNo());
+                billData.put("title", bill.getTitle());
+                billData.put("totalAmount", clean(totalAmount)); // sum original amount instead of default value
+                billData.put("currency", bill.getCurrency());
+                billData.put("exchangeRate", clean(bill.getExchangeRate()));
+                billData.put("remark", bill.getRemark());
+                billData.put("details", detailList);
+
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("financeBill", billData);
+                result.add(item);
             }
 
+            // =========================
+            // 8. RETURN
+            // =========================
             response.setStatus("00");
             response.setMessage("Success");
             response.setDataResponse(result);
@@ -2288,18 +2534,25 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             response.setStatus("EE");
             response.setMessage("Error: " + e.getMessage());
         }
+
         return response;
     }
 
+
+    // HELPER — ตัด trailing zeros
+    private BigDecimal clean(BigDecimal value) {
+        if (value == null) return null;
+        return new BigDecimal(value.stripTrailingZeros().toPlainString());
+    }
+
     // ─── 3. APPROVE Finance Bill ─────────────────────────────
-// ACCOUNTANT  → submit DRAFT to PENDING_CHECK
-// ACCOUNTANTCHECK → PENDING_CHECK to PENDING_AUDIT or REJECTED
-// AUDITOR     → PENDING_AUDIT to APPROVED or REJECTED
     @Transactional
     public DataResponse approveFinanceBill(FinanceBillApproveDto req) {
         DataResponse response = new DataResponse();
         try {
-            // check token
+            // =========================
+            // 1. CHECK TOKEN
+            // =========================
             List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
             if (profileList.isEmpty()) {
                 response.setStatus("05");
@@ -2311,96 +2564,170 @@ public DataResponse insertFinance(FinanceRequestDto req) {
             Long userId = Long.valueOf(user.getUserId());
             LocalDateTime now = LocalDateTime.now();
 
-            // check role
-            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR");
+            // =========================
+            // 2. CHECK ROLE
+            // =========================
+            List<String> allowed = Arrays.asList("FINANCE", "ACCOUNTANTCHECK", "AUDITOR");
             if (!allowed.contains(role)) {
                 response.setStatus("01");
-                response.setMessage("Role " + role + " ไม่มีสิทธิ์ Approve Finance Bill");
+                response.setMessage("Role " + role + " No right to Approve Finance Bill");
                 return response;
             }
 
-            // หา bill
-            TbFinanceBill bill = financeBillRepository.findById(req.getId())
-                    .orElse(null);
-            if (bill == null) {
+            // =========================
+            // 3. VALIDATE detailIds
+            // =========================
+            if (req.getDetailIds() == null || req.getDetailIds().isEmpty()) {
                 response.setStatus("04");
-                response.setMessage("Finance Bill not found: " + req.getId());
+                response.setMessage("detailIds ບໍ່ສາມາດຫວ່າງໄດ້");
                 return response;
             }
 
-            String currentStatus = bill.getBillStatus();
-            String action = req.getAction().toUpperCase(); // APPROVED | REJECTED
+            String action = req.getAction().toUpperCase();
 
-            switch (role) {
+            // =========================
+            // 4. LOOP EACH detailId
+            // =========================
+            List<Map<String, Object>> resultList = new ArrayList<>();
 
-                // ACCOUNTANT — submit DRAFT → PENDING_CHECK
-                case "ACCOUNTANT":
-                    if (!"DRAFT".equals(currentStatus)
-                            && !"REJECTED".equals(currentStatus)) {
-                        response.setStatus("02");
-                        response.setMessage("Bill ต้องอยู่ในสถานะ DRAFT หรือ REJECTED");
-                        return response;
+            for (Long detailId : req.getDetailIds()) {
+
+                Map<String, Object> itemResult = new LinkedHashMap<>();
+                itemResult.put("detailId", detailId);
+
+                try {
+                    // FIND BILL REF
+                    TbFinanceBillRef bill = financeBillRefRepository.findById(detailId).orElse(null);
+                    if (bill == null) {
+                        itemResult.put("status", "04");
+                        itemResult.put("message", "ຫາໃນ tb_finance_bill_ref ບໍ່ເຫັນ id: " + detailId);
+                        resultList.add(itemResult);
+                        continue; // ← ข้ามไป id ถัดไป
                     }
-                    // เช็คว่าเป็นของตัวเองไหม
-                    if (!bill.getCreatedBy().equals(userId)) {
-                        response.setStatus("03");
-                        response.setMessage("You can only submit your own Finance Bill");
-                        return response;
-                    }
-                    bill.setBillStatus("PENDING_CHECK");
-                    break;
 
-                // ACCOUNTANTCHECK — PENDING_CHECK → PENDING_AUDIT | REJECTED
-                case "ACCOUNTANTCHECK":
-                    if (!"PENDING_CHECK".equals(currentStatus)) {
-                        response.setStatus("02");
-                        response.setMessage("Bill ต้องอยู่ในสถานะ PENDING_CHECK");
-                        return response;
-                    }
-                    bill.setAccountantCheckBy(userId);
-                    bill.setAccountantCheckDate(now);
-                    bill.setAccountantCheckStatus(action);
-                    bill.setAccountantCheckRemark(req.getRemark());
+                    // CHECK originalAmount
+                    List<TbFinanceBillRef> allRefs = financeBillRefRepository.findByBillNo(bill.getBillNo());
+                    boolean inconsistent = allRefs.stream()
+                            .anyMatch(r -> r.getOriginalAmount() == null ||
+                                    r.getOriginalAmount().compareTo(bill.getOriginalAmount()) != 0);
 
-                    if ("APPROVED".equals(action)) {
-                        bill.setBillStatus("PENDING_AUDIT");
-                    } else {
-                        bill.setBillStatus("REJECTED");
-                        bill.setReturnToRole("ACCOUNTANT");
+                    if (inconsistent) {
+                        itemResult.put("status", "03");
+                        itemResult.put("message", "original_amount ຂອງ bill_no=" + bill.getBillNo() + " ບໍ່ຕົງກັນ");
+                        resultList.add(itemResult);
+                        continue;
+                    }
+
+                    // CALCULATE PAID / REMAINING
+                    BigDecimal paidAmount = financeBillRefRepository.sumApprovedAmountByBillNo(bill.getBillNo());
+                    BigDecimal totalAmount = bill.getOriginalAmount();
+                    BigDecimal remaining = totalAmount.subtract(paidAmount);
+
+                    String currentStatus = bill.getBillStatus();
+
+                    if ("RETURN".equals(action)) {
+                        if ("APPROVED".equals(currentStatus)) {
+                            itemResult.put("status", "02");
+                            itemResult.put("message", "Can't Return ANYMORE CUZ BILL=APPROVED id: " + detailId);
+                            resultList.add(itemResult);
+                            continue;
+                        }
+                        bill.setBillStatus("PENDING_CHECK");
                         bill.setReturnBy(userId);
                         bill.setReturnDate(now);
                         bill.setReturnRemark(req.getRemark());
-                    }
-                    break;
 
-                // AUDITOR — PENDING_AUDIT → APPROVED | REJECTED
-                case "AUDITOR":
-                    if (!"PENDING_AUDIT".equals(currentStatus)) {
-                        response.setStatus("02");
-                        response.setMessage("Bill ต้องอยู่ในสถานะ PENDING_AUDIT");
-                        return response;
-                    }
-                    bill.setAuditorApproveBy(userId);
-                    bill.setAuditorApproveDate(now);
-                    bill.setAuditorApproveStatus(action);
-                    bill.setAuditorApproveRemark(req.getRemark());
-
-                    if ("APPROVED".equals(action)) {
-                        bill.setBillStatus("APPROVED"); // ✅ Final
                     } else {
-                        bill.setBillStatus("REJECTED");
-                        bill.setReturnToRole("ACCOUNTANTCHECK");
-                        bill.setReturnBy(userId);
-                        bill.setReturnDate(now);
-                        bill.setReturnRemark(req.getRemark());
+                        switch (role) {
+                            case "ACCOUNTANTCHECK":
+                                if (!"PENDING_CHECK".equals(currentStatus)) {
+                                    itemResult.put("status", "02");
+                                    itemResult.put("message", "CAN APPROVE ONLY BILL= PENDING_CHECK id: " + detailId);
+                                    resultList.add(itemResult);
+                                    continue;
+                                }
+                                bill.setAccountantCheckBy(userId);
+                                bill.setAccountantCheckDate(now);
+                                bill.setAccountantCheckStatus(action);
+                                bill.setAccountantCheckRemark(req.getRemark());
+                                if ("APPROVED".equals(action)) bill.setBillStatus("PENDING_AUDIT");
+                                break;
+
+                            case "AUDITOR":
+                                if (!"PENDING_AUDIT".equals(currentStatus)) {
+                                    itemResult.put("status", "02");
+                                    itemResult.put("message", "CAN APPROVE ONLY BILL= PENDING_AUDIT id: " + detailId);
+                                    resultList.add(itemResult);
+                                    continue;
+                                }
+                                bill.setAuditorApproveBy(userId);
+                                bill.setAuditorApproveDate(now);
+                                bill.setAuditorApproveStatus(action);
+                                bill.setAuditorApproveRemark(req.getRemark());
+                                if ("APPROVED".equals(action)) bill.setBillStatus("PENDING_FINANCE");
+                                break;
+
+                            case "FINANCE":
+                                if (!"PENDING_FINANCE".equals(currentStatus)) {
+                                    itemResult.put("status", "02");
+                                    itemResult.put("message", "CAN APPROVE ONLY BILL= PENDING_FINANCE id: " + detailId);
+                                    resultList.add(itemResult);
+                                    continue;
+                                }
+                                if ("APPROVED".equals(action) && bill.getAmount().compareTo(remaining) > 0) {
+                                    itemResult.put("status", "03");
+                                    itemResult.put("message", "ຍອດ amount=" + clean(bill.getAmount()) +
+                                            " ຫຼາຍກວ່າຍອດເຫຼືອ remaining=" + clean(remaining) +
+                                            " ຂອງ bill_no=" + bill.getBillNo());
+                                    resultList.add(itemResult);
+                                    continue;
+                                }
+                                bill.setFinanceApproveBy(userId);
+                                bill.setFinanceApproveDate(now);
+                                bill.setFinanceApproveStatus(action);
+                                bill.setFinanceApproveRemark(req.getRemark());
+                                if ("APPROVED".equals(action)) {
+                                    bill.setBillStatus("APPROVED");
+                                    // คำนวณ remaining หลัง approve ครั้งนี้
+                                    BigDecimal remainingAfterApprove = remaining.subtract(bill.getAmount());
+
+                                    System.out.println(">>> remainingAfterApprove: " + remainingAfterApprove);
+
+                                    if (remainingAfterApprove.compareTo(BigDecimal.ZERO) == 0) {
+                                        // remaining = 0 → DONE-PAY
+                                        int updated = paymentRequestRepository
+                                                .updatePayStatusByBillNo(bill.getBillNo(), "DONE-PAY");
+                                        if (updated == 0) {
+                                            throw new RuntimeException("BillNo not found in Tb_accounting: " + bill.getBillNo());
+                                        }
+                                        System.out.println(">>> pay_status updated to DONE-PAY for billNo: " + bill.getBillNo());
+                                    } else {
+                                        // remaining > 0 → ยังมียอดเหลือ ไม่ update
+                                        System.out.println(">>> remaining still: " + remainingAfterApprove + " skip update pay_status");
+                                    }
+                                }
+                                break;
+                        }
                     }
-                    break;
+
+                    // SAVE
+                    financeBillRefRepository.save(bill);
+                    itemResult.put("status", "00");
+                    itemResult.put("message", "Action " + action + " by " + role + " successfully");
+
+                } catch (Exception ex) {
+                    itemResult.put("status", "EE");
+                    itemResult.put("message", "Error: " + ex.getMessage());
+                }
+                resultList.add(itemResult);
             }
 
-            financeBillRepository.save(bill);
+            // =========================
+            // 5. RETURN ALL RESULTS
+            // =========================
             response.setStatus("00");
-            response.setMessage("Action " + action + " by " + role + " successfully");
-            response.setDataResponse(bill);
+            response.setMessage("Process completed");
+            response.setDataResponse(resultList);
 
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();

@@ -410,6 +410,7 @@ public class MachineController {
     }
 
     //insert Machinetoolhis
+    @CrossOrigin(origins = "*")
     @PostMapping("/insertMachineToolHis")
     public ResponseEntity<?> insert(@RequestBody MachineToolHisRequest request) {
 

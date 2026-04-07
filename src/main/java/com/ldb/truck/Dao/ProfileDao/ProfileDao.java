@@ -16,7 +16,10 @@ import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @Repository
@@ -76,5 +79,40 @@ public class ProfileDao {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Map<Long, String> getUserNameMapByIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return new HashMap<>();
+
+        try {
+            // สร้าง IN clause -> ?,?,?
+            String placeholders = userIds.stream()
+                    .map(id -> "?")
+                    .collect(Collectors.joining(","));
+
+            String SQL = "SELECT b.KEY_ID as userId, b.USER_LOGIN as staffId " +
+                    "FROM LOGIN b " +
+                    "WHERE b.KEY_ID IN (" + placeholders + ")";
+
+            log.info(">>> SQL getUserNameMapByIds: " + SQL);
+            log.info(">>> userIds to query: " + userIds);
+
+            List<Map<String, Object>> rows = EBankJdbcTemplate.queryForList(SQL, userIds.toArray());
+
+            log.info(">>> rows found: " + rows.size());
+            rows.forEach(row -> log.info(">>> row: " + row));
+
+            Map<Long, String> result = new HashMap<>();
+            for (Map<String, Object> row : rows) {
+                Long userId = Long.valueOf(row.get("userId").toString()); // ← KEY_ID
+                String name = row.get("staffId") != null ? row.get("staffId").toString() : "-";
+                result.put(userId, name);
+            }
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new HashMap<>();
+        }
     }
 }
