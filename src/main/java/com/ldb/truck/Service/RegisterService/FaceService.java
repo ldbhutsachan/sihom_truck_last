@@ -585,8 +585,8 @@ public class FaceService {
         }
 
         // Step 3: เช็คว่าเป็น ADMIN
-        if (!admin.getRole().equals("ADMIN")) {
-            throw new RuntimeException("only ADMIN can reset");
+        if (!admin.getRole().equals("ADMIN") ||(!admin.getRole().equals("HR")) ||(!admin.getRole().equals("BORLEADER"))) {
+            throw new RuntimeException("ONLY ADMIN OR HR OR BORLEADER CAN RESET PASSWORD");
         }
 
         // Step 4: หา staff ที่จะ reset

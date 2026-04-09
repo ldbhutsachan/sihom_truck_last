@@ -404,6 +404,8 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
                 tr.setLeanGiaNextday(rs.getString("leanGiaNextday"));
                 tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
                 tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
+                tr.setKongnam_STATUS(rs.getString("kongnam_STATUS"));
+                tr.setLeanFuengThaiy_STATUS(rs.getString("leanFuengThaiy_STATUS"));
                 tr.setBorNo(rs.getString("borNo"));
                 tr.setBorName(rs.getString("borName"));
                 // =======================================================
@@ -700,6 +702,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     //add new
                     tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
                     tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
+                    tr.setKongnam_STATUS((rs.getString("kongnam_STATUS")));
+                    tr.setLeanFuengThaiy_STATUS(rs.getString("leanFuengThaiy_STATUS"));
                     tr.setBorNo(rs.getString("borNo"));
                     tr.setBorName(rs.getString("borName"));
                     return tr ;
