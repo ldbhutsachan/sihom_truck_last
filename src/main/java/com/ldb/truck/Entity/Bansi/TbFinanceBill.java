@@ -34,4 +34,16 @@ public class TbFinanceBill {
     @Column(name = "remark")
     private String remark;
 
+    @Column(name = "bill_type")
+    private String billType;
+
+    @Column(name = "supplierid")
+    private Long supplierid;
+
+    @Column(name = "supplier_name")
+    private String supplierName;
+
+
+
+
 }

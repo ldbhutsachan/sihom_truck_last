@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,5 +17,14 @@ public interface FinanceBillRepository extends JpaRepository<TbFinanceBill, Long
     // Generate เลขที่ล่าสุดของปีนั้น
     @Query("SELECT MAX(f.financeBillNo) FROM TbFinanceBill f WHERE f.financeBillNo LIKE :prefix%")
     Optional<String> findLastBillNoByPrefix(@Param("prefix") String prefix);
+
+    // ✅ filter ตาม billType
+    List<TbFinanceBill> findByBillType(String billType);
+
+    // ✅ filter ตาม supplierId
+    List<TbFinanceBill> findBySupplierid(Long supplierid);
+
+    // ✅ filter ตาม billType + supplierId
+    List<TbFinanceBill> findByBillTypeAndSupplierid(String billType, Long supplierid);
 
 }

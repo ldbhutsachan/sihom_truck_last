@@ -5,6 +5,7 @@ import com.ldb.truck.Dao.Bansi.PaymentDetailDao;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Bansi.*;
+import com.ldb.truck.Entity.Supplier.SupplierEntity;
 import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Profile.Profile;
@@ -12,6 +13,7 @@ import com.ldb.truck.Repository.Bansi.*;
 import com.ldb.truck.Repository.Staffs.FinanceBillPaymentRepository;
 import com.ldb.truck.Repository.Staffs.FinanceBillRefRepository;
 import com.ldb.truck.Repository.Staffs.FinanceBillRepository;
+import com.ldb.truck.Repository.SupplierEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -91,6 +93,8 @@ public class BansiService {
     private FinanceBillRefRepository financeBillRefRepository;
     @Autowired
     private FinanceBillPaymentRepository financeBillPaymentRepository;
+    @Autowired
+    private SupplierEntityRepository supplierEntityRepository;
 
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
@@ -2250,14 +2254,33 @@ public class BansiService {
                 response.setMessage("Only ACCOUNTANT or ADMIN can create Finance Bill");
                 return response;
             }
+            //3
+            String supplierName = "-";
+            if (req.getSupplierId() != null) {
+                try {
+                    List<SupplierEntity> supplierList = supplierEntityRepository
+                            .getSupplierBySupplierId(req.getSupplierId().intValue());
 
-            // 3. Create Finance Bill
+                    if (!supplierList.isEmpty()) {
+                        supplierName = supplierList.get(0).getSupplierName(); // ชื่อ field ใน SupplierEntity
+                        log.info(">>> supplierName: " + supplierName);
+                    } else {
+                        log.warn(">>> Supplier not found for id: " + req.getSupplierId());
+                    }
+                } catch (Exception e) {
+                    log.warn(">>> Cannot get supplier: " + e.getMessage());
+                }
+            }
+            // 4. Create Finance Bill
             TbFinanceBill bill = new TbFinanceBill();
             bill.setFinanceBillNo(generateNewFinanceBillNo());
             bill.setTitle(req.getTitle());
             bill.setTotalAmount(req.getTotalAmount());
             bill.setCurrency(req.getCurrency());
             bill.setExchangeRate(req.getExchangeRate());
+            bill.setBillType(req.getBllType());
+            bill.setSupplierid(req.getSupplierId());
+            bill.setSupplierName(supplierName);
 
             // clean remark (" " → null)
             String remark = req.getRemark();
@@ -2436,8 +2459,30 @@ public class BansiService {
                     .stream()
                     .collect(Collectors.toMap(TbFinanceBill::getId, b -> b));
 
+            // ✅ FILTER billType และ supplierId จาก TbFinanceBill
+            if (request.getBillType() != null && !request.getBillType().isEmpty()) {
+                billMap = billMap.entrySet().stream()
+                        .filter(e -> request.getBillType()
+                                .equalsIgnoreCase(e.getValue().getBillType()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            }
+
+            if (request.getSupplierId() != null) {
+                billMap = billMap.entrySet().stream()
+                        .filter(e -> request.getSupplierId()
+                                .equals(e.getValue().getSupplierid()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            }
+
+            // ✅ filter billList ให้ตรงกับ billMap ที่ filter แล้ว
+            final Map<Long, TbFinanceBill> filteredBillMap = billMap;
+            billList = billList.stream()
+                    .filter(ref -> filteredBillMap.containsKey(ref.getFinanceBillId()))
+                    .collect(Collectors.toList());
+
             // =========================
             // 6.5 COLLECT USER IDs → GET NAMES
+            // =========================
             Set<Long> userIds = new HashSet<>();
             for (TbFinanceBillRef ref : billList) {
                 if (ref.getCreatedBy() != null) userIds.add(ref.getCreatedBy());
@@ -2447,10 +2492,13 @@ public class BansiService {
                 if (ref.getReturnBy() != null) userIds.add(ref.getReturnBy());
             }
 
-            Map<Long, String> userNameMap = profileDao.getUserNameMapByIds(new ArrayList<>(userIds));
+            Map<Long, String> userNameMap = userIds.isEmpty()
+                    ? new HashMap<>()
+                    : profileDao.getUserNameMapByIds(new ArrayList<>(userIds));
 
             // =========================
             // 7. GROUP refs → details ใต้ financeBill
+            // =========================
             Map<Long, List<TbFinanceBillRef>> groupedRefs = billList.stream()
                     .collect(Collectors.groupingBy(TbFinanceBillRef::getFinanceBillId));
 
@@ -2459,11 +2507,11 @@ public class BansiService {
             for (Map.Entry<Long, List<TbFinanceBillRef>> entry : groupedRefs.entrySet()) {
                 Long billId = entry.getKey();
                 List<TbFinanceBillRef> refs = entry.getValue();
-                TbFinanceBill bill = billMap.get(billId);
+                TbFinanceBill bill = filteredBillMap.get(billId);
 
                 if (bill == null) continue;
 
-                // ✅ build details ก่อน
+                // build details
                 List<Map<String, Object>> detailList = new ArrayList<>();
                 for (TbFinanceBillRef ref : refs) {
                     Map<String, Object> detail = new LinkedHashMap<>();
@@ -2500,18 +2548,21 @@ public class BansiService {
                     detailList.add(detail);
                 }
 
-                // ✅ sum originalAmount จาก refs
+                // sum originalAmount จาก refs
                 BigDecimal totalAmount = refs.stream()
                         .map(TbFinanceBillRef::getOriginalAmount)
                         .filter(a -> a != null)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                // build financeBill
+                // build financeBill ✅ เพิ่ม billType, supplierId, supplierName
                 Map<String, Object> billData = new LinkedHashMap<>();
                 billData.put("id", bill.getId());
                 billData.put("financeBillNo", bill.getFinanceBillNo());
                 billData.put("title", bill.getTitle());
-                billData.put("totalAmount", clean(totalAmount)); // sum original amount instead of default value
+                billData.put("billType", bill.getBillType());
+                billData.put("supplierId", bill.getSupplierid());
+                billData.put("supplierName",bill.getSupplierName());
+                billData.put("totalAmount", clean(totalAmount));
                 billData.put("currency", bill.getCurrency());
                 billData.put("exchangeRate", clean(bill.getExchangeRate()));
                 billData.put("remark", bill.getRemark());

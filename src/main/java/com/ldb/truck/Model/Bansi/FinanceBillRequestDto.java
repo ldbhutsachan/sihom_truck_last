@@ -9,6 +9,8 @@ import java.util.List;
 public class FinanceBillRequestDto {
     private String toKen;
     private String title;
+    private String bllType;
+    private Long supplierId;
     private BigDecimal totalAmount;
     private String currency;
     private BigDecimal exchangeRate;
