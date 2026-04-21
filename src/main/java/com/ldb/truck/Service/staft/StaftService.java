@@ -3,6 +3,10 @@ package com.ldb.truck.Service.staft;
 import com.ldb.truck.Controller.BatteryController;
 import com.ldb.truck.Dao.Customer.ImpCustomerDao;
 import com.ldb.truck.Dao.ProfileDao.ProfileDao;
+import com.ldb.truck.Entity.Staff.AttendanceAdjustment;
+import com.ldb.truck.Entity.Staff.AttendanceLog;
+import com.ldb.truck.Entity.Staff.StaffEntity;
+import com.ldb.truck.Model.DataResponse;
 import com.ldb.truck.Model.Login.Messages;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Login.Report.Bialieng.sumFooterGroup2;
@@ -11,6 +15,11 @@ import com.ldb.truck.Model.Login.Report.sumFooterGroup;
 import com.ldb.truck.Model.Login.ReportStaff.*;
 import com.ldb.truck.Model.Login.ResFromDateReq;
 import com.ldb.truck.Model.Login.staft.*;
+import com.ldb.truck.Model.Staffs.AdjustmentApproveDTO;
+import com.ldb.truck.Model.Staffs.AdjustmentRequestDTO;
+import com.ldb.truck.Repository.Staffs.AttendanceAdjustmentRepository;
+import com.ldb.truck.Repository.Staffs.AttendanceLogRepository;
+import com.ldb.truck.Repository.Staffs.UserRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
@@ -18,8 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +38,12 @@ public class StaftService {
 
     @Autowired
     ProfileDao profileDao;
+    @Autowired
+    AttendanceAdjustmentRepository adjustmentRepository;
+    @Autowired
+     AttendanceLogRepository attendanceLogRepository;
+    @Autowired
+    UserRepository userRepository;
 
     private static final Logger logger = LogManager.getLogger(StaftService.class);
     @Autowired
@@ -505,8 +522,4 @@ public AmountthatPaidStaffRes AmountThatPaidStaffServiece (StaffPaymentReq staff
         }
         return result;
     }
-    //=============staff detailsby keyId==========
-
-
-
 }

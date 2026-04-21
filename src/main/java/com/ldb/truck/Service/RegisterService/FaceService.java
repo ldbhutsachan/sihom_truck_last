@@ -32,6 +32,8 @@ public class FaceService {
     private final AttendanceLogRepository attendanceLogRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final TbBorRepository tbBorRepository;
+    private final DepartmentRepository departmentRepository;
+    private final PositionRepository positionRepository;
 
     //register staff
     public StaffRegisterResponseDTO registerStaff(StaffRegisterRequestDTO dto,
@@ -123,7 +125,7 @@ public class FaceService {
             } else {
                 Long id = Long.parseLong(dto.getStaffId());
                 StaffEntity staff = userRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("ไม่พบ Staff id: " + id));
+                        .orElseThrow(() -> new RuntimeException("Not found Staff id: " + id));
                 response.setStatus("00");
                 response.setMessage("success");
                 response.setDataResponse(mapToDTO(staff));
@@ -182,8 +184,10 @@ public class FaceService {
             }
             if (dto.getPhone() != null)      staff.setPhone(dto.getPhone());
             if (dto.getRole() != null)       staff.setRole(dto.getRole());
-            if (dto.getDepartment() != null) staff.setDepartment(dto.getDepartment());
-            if (dto.getPosition() != null)   staff.setPosition(dto.getPosition());
+            if (dto.getDeptId() != null) staff.setDept_id(dto.getDeptId());
+            if (dto.getPosId() != null)   staff.setPos_id(dto.getPosId());
+            if(dto.getGender() != null)  staff.setGender(dto.getGender());
+            if(dto.getAddress() != null)  staff.setAddress(dto.getAddress());
 
             // USER ไม่สามารถเปลี่ยน status ได้
             if (requester.getRole().equals("USER")) {
@@ -274,7 +278,25 @@ public class FaceService {
                     staff.setCycleStartDate(null);
                 }
             }
-
+            //update department and position
+            if (dto.getDeptId() != null) {
+                staff.setDept_id(dto.getDeptId());
+            }
+            if (dto.getPosId() != null) {
+                staff.setPos_id(dto.getPosId());
+            }
+            if (dto.getGender() != null) {
+                staff.setGender(dto.getGender());
+            }
+            if (dto.getAddress() != null) {
+                staff.setAddress(dto.getAddress());
+            }
+            // เพิ่มใน updateSalarySchedule
+            if (dto.getStartWorkDate() != null) {
+                staff.setStartwork_date(
+                        LocalDate.parse(dto.getStartWorkDate(),
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            }
             // Step 6: บันทึก
             StaffEntity saved = userRepository.save(staff);
 
@@ -305,12 +327,29 @@ public class FaceService {
     }
     // Helper method แปลง Entity → DTO
     private StaffResponseDTO mapToDTO(StaffEntity staff) {
+
         String borName = null;
+        String department = null;
+        String positionName = null;
+
         if (staff.getBorId() != null) {
             borName = tbBorRepository.findById(staff.getBorId())
                     .map(TbBorEntity::getBName)
                     .orElse(null);
         }
+
+        if (staff.getDept_id() != null) {
+            department = departmentRepository.findById(staff.getDept_id())
+                    .map(Department::getDeptName)
+                    .orElse(null);
+        }
+
+        if (staff.getPos_id() != null) {
+            positionName = positionRepository.findById(staff.getPos_id())
+                    .map(Position::getPosName)
+                    .orElse(null);
+        }
+
         return new StaffResponseDTO(
                 staff.getId(),
                 staff.getStaffCode(),
@@ -319,10 +358,16 @@ public class FaceService {
                 staff.getRole(),
                 staff.getStatus(),
                 staff.getStaffImage(),
-                staff.getDepartment(),
-                staff.getPosition(),
-                staff.getBorId(),   // ✅ ส่ง borId กลับไป
-                borName,            // ✅ ส่งชื่อ Bor กลับไป
+                staff.getBorId(),
+                borName,
+                staff.getDept_id(),
+                department,
+                staff.getPos_id(),
+                positionName,
+                staff.getGender(),
+                staff.getAddress(),
+                staff.getStartwork_date(),
+                staff.getBaseSalary(),
                 staff.getCreatedAt(),
                 staff.getUpdatedAt()
         );
@@ -408,7 +453,7 @@ public class FaceService {
         // Step 2: เช็ค token หมดอายุหรือยัง
         if (requester.getTokenExpiredAt() != null
                 && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
+            throw new RuntimeException("Token is Expired, You can Login again");
         }
 
         // Step 3: เช็ค permission

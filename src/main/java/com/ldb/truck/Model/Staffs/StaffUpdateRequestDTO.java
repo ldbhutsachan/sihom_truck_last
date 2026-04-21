@@ -10,10 +10,13 @@ public class StaffUpdateRequestDTO {
     private String phone;
     private String role;
     private String status;
-    private String department;   // ✅ เพิ่ม
-    private String position;     // ✅ เพิ่ม
+    private Long  deptId;
+    private Long  posId;
     private Integer borId;
-    // ✅ เพิ่ม work schedule
+    private String gender;
+    private String address;
+    private String startWorkDate;
+    // add work schedule
     private BigDecimal baseSalary;
     private String  workSchedule;
     private Integer cycleWorkDays;

@@ -3,6 +3,8 @@ package com.ldb.truck.Model.Staffs;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -14,11 +16,19 @@ public class StaffResponseDTO {
     private String phone;
     private String role;
     private String status;
-    private String staffImage;
-    private String department;   // ✅ เพิ่ม
-    private String position;     // ✅ เพิ่ม
-    private Integer borId;      // ✅ เพิ่ม
-    private String borName;     // ✅ เพิ่ม
+    private String position;
+    private Integer borId;
+    private String borName;
+    private Long deptId;
+    private String departmentName;
+    private Long PosId;
+    private String positionNAME;
+    private String gender;
+    private String address;
+    private LocalDate startworkDate;
+    private BigDecimal salary;
+
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

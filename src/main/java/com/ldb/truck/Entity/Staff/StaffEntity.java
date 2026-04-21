@@ -4,6 +4,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,6 +49,11 @@ public class StaffEntity {
     private String position;     // ตำแหน่ง (null ได้)
 
     private Integer borId;
+    private Long  dept_id;
+    private Long  pos_id;
+    private String gender;
+    private String address;
+    private LocalDate  startwork_date;
 
     // ✅ เพิ่ม base salary
     @Column(precision = 15, scale = 2)

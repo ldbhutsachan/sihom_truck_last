@@ -809,7 +809,7 @@ public class StockServiceImpl {
                     itemSize = "\n AND borkey ='145'";   // SHOW ONLY DATA FROM lAP 21 K
                     break;
                 case "FIELDAPPROVE":
-                    itemSize = "\n AND size = 'item' AND (place_buy = 'field' OR place_buy = '' OR place_buy IS NULL)";
+                    itemSize = "\n AND size = 'item' AND borkey !='145' AND (place_buy = 'field' OR place_buy = '' OR place_buy IS NULL)";
                     break;
                 default:
                     itemSize = "";   // กัน error กรณี role อื่น

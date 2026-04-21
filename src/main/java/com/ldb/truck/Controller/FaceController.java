@@ -75,11 +75,14 @@ public class FaceController {
             @RequestParam(value = "phone",      required = false) String phone,
             @RequestParam(value = "role",       required = false) String role,
             @RequestParam(value = "status",     required = false) String status,
-            @RequestParam(value = "department", required = false) String department,
-            @RequestParam(value = "position",   required = false) String position,
+            @RequestParam(value = "deptId", required = false) Long  deptId,
+            @RequestParam(value = "posId",   required = false) Long  posId,
             @RequestParam(value = "borId",      required = false) Integer borId,
             @RequestParam(value = "image",      required = false) MultipartFile image,
-            @RequestParam("token") String token
+            @RequestParam("token") String token,
+            @RequestParam(value = "gender",      required = false) String gender,
+            @RequestParam(value = "address",      required = false) String address
+
     ) throws IOException {
 
         StaffQueryRequestDTO query = new StaffQueryRequestDTO();
@@ -91,9 +94,11 @@ public class FaceController {
         dto.setPhone(phone);
         dto.setRole(role);
         dto.setStatus(status);
-        dto.setDepartment(department);
-        dto.setPosition(position);
+        dto.setDeptId(deptId);
+        dto.setPosId(posId);
         dto.setBorId(borId);
+        dto.setGender(gender);
+        dto.setAddress(address);
 
         return ResponseEntity.ok(faceService.updateStaff(query, dto, image));
     }
@@ -108,7 +113,12 @@ public class FaceController {
             @RequestParam(value = "workSchedule",   required = false) String workSchedule,
             @RequestParam(value = "cycleWorkDays",  required = false) Integer cycleWorkDays,
             @RequestParam(value = "cycleOffDays",   required = false) Integer cycleOffDays,
-            @RequestParam(value = "cycleStartDate", required = false) String cycleStartDate
+            @RequestParam(value = "cycleStartDate", required = false) String cycleStartDate,
+            @RequestParam(value = "deptId", required = false) Long  deptId,
+            @RequestParam(value = "posId",   required = false) Long  posId,
+            @RequestParam(value = "gender",      required = false) String gender,
+            @RequestParam(value = "address",      required = false) String address,
+            @RequestParam(value = "startWorkDate", required = false) String startWorkDate
     ) {
         StaffQueryRequestDTO query = new StaffQueryRequestDTO();
         query.setStaffId(staffId);
@@ -120,6 +130,11 @@ public class FaceController {
         dto.setCycleWorkDays(cycleWorkDays);
         dto.setCycleOffDays(cycleOffDays);
         dto.setCycleStartDate(cycleStartDate);
+        dto.setDeptId(deptId);
+        dto.setPosId(posId);
+        dto.setGender(gender);
+        dto.setAddress(address);
+        dto.setStartWorkDate(startWorkDate);
 
         return ResponseEntity.ok(faceService.updateSalarySchedule(query, dto));
     }
