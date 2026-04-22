@@ -188,6 +188,12 @@ public class FaceService {
             if (dto.getPosId() != null)   staff.setPos_id(dto.getPosId());
             if(dto.getGender() != null)  staff.setGender(dto.getGender());
             if(dto.getAddress() != null)  staff.setAddress(dto.getAddress());
+            if(dto.getBirthDate() !=null) {
+                staff.setBirth_date(
+                        LocalDate.parse(dto.getBirthDate(),
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+
+            }
 
             // USER ไม่สามารถเปลี่ยน status ได้
             if (requester.getRole().equals("USER")) {
@@ -207,6 +213,7 @@ public class FaceService {
             if (dto.getBorId() != null) {
                 staff.setBorId(dto.getBorId());
             }
+
 
             StaffEntity saved = userRepository.save(staff);
 
@@ -297,6 +304,12 @@ public class FaceService {
                         LocalDate.parse(dto.getStartWorkDate(),
                                 DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             }
+            if(dto.getBirthDate() !=null) {
+                staff.setBirth_date(
+                        LocalDate.parse(dto.getBirthDate(),
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+
+            }
             // Step 6: บันทึก
             StaffEntity saved = userRepository.save(staff);
 
@@ -369,6 +382,7 @@ public class FaceService {
                 positionName,
                 staff.getGender(),
                 staff.getAddress(),
+                staff.getBirth_date(),
                 staff.getStartwork_date(),
                 staff.getBaseSalary(),
                 staff.getCreatedAt(),
@@ -408,9 +422,10 @@ public class FaceService {
             log = new AttendanceLog();
             log.setStaff(staff);
             log.setCheckType("CHECK_IN");
-            log.setCheckTime(LocalDateTime.now());
-            log.setIpAddress(dto.getIpAddress());    // ✅
-            log.setMacAddress(dto.getMacAddress());  // ✅
+//            log.setCheckTime(LocalDateTime.now());
+            log.setCheckTime(LocalDateTime.now().minusMinutes(2));
+            log.setIpAddress(dto.getIpAddress());
+            log.setMacAddress(dto.getMacAddress());
             message = "Check-in ສຳເລັດ";
             notimessage = now.isAfter(LocalTime.of(8, 1)) ? "LATE" : "ON-TIME";
 
@@ -419,8 +434,8 @@ public class FaceService {
             log.setStaff(staff);
             log.setCheckType("CHECK_OUT");
             log.setCheckTime(LocalDateTime.now());
-            log.setIpAddress(dto.getIpAddress());    // ✅
-            log.setMacAddress(dto.getMacAddress());  // ✅
+            log.setIpAddress(dto.getIpAddress());
+            log.setMacAddress(dto.getMacAddress());
             message = "Check-out ສຳເລັດ";
             notimessage = now.isBefore(LocalTime.of(17, 0)) ? "EARLY" : "ON-TIME";
 

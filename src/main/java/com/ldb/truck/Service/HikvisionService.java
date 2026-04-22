@@ -33,7 +33,7 @@ public class HikvisionService {
                 root = root.get(0);
             }
 
-            // ✅ ดึง ipAddress และ macAddress จาก root
+            //  ดึง ipAddress และ macAddress จาก root
             String ipAddress  = root.path("ipAddress").asText();
             String macAddress = root.path("macAddress").asText();
             String dateTime   = root.path("dateTime").asText();

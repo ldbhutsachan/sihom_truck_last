@@ -26,6 +26,8 @@ public class StaffResponseDTO {
     private String positionNAME;
     private String gender;
     private String address;
+    private LocalDate birthDate;
+
     private LocalDate startworkDate;
     private BigDecimal salary;
 

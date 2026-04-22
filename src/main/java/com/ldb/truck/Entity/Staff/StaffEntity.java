@@ -61,6 +61,7 @@ public class StaffEntity {
     private String gender;
     private String address;
     private LocalDate  startwork_date;
+    private LocalDate  birth_date;
 
     // ✅ เพิ่ม base salary
     @Column(precision = 15, scale = 2)
