@@ -22,6 +22,9 @@ public class StaffEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(nullable = false, unique = true)
+    private String lao_name;
+
     @Column(unique = true)
     private String staffCode;
 
@@ -45,12 +48,16 @@ public class StaffEntity {
     private String ipAddress;
     private String macAddress;
 
-    private String department;   // แผนก (null ได้)
-    private String position;     // ตำแหน่ง (null ได้)
 
     private Integer borId;
-    private Long  dept_id;
-    private Long  pos_id;
+//    private Long  dept_id;
+    @Column(name = "dept_id")
+    private Long dept_id;
+
+    @Column(name = "pos_id")
+    private Long pos_id;
+//    private Long  pos_id;
+
     private String gender;
     private String address;
     private LocalDate  startwork_date;

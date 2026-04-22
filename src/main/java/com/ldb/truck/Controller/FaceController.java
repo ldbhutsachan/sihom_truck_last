@@ -59,14 +59,14 @@ public class FaceController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ ดูข้อมูล staff (all หรือ by id)
+    //  ดูข้อมูล staff (all หรือ by id)
     @CrossOrigin(origins = "*")
     @PostMapping("/getStaff")
     public ResponseEntity<DataResponse> getStaff(@RequestBody StaffQueryRequestDTO dto) {
         return ResponseEntity.ok(faceService.getStaff(dto));
     }
 
-    // ✅ อัปเดตข้อมูล staff
+    //  อัปเดตข้อมูล staff
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/updateStaffInfo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DataResponse> update(
@@ -151,12 +151,11 @@ public class FaceController {
     //getAttendance
     @CrossOrigin(origins = "*")
     @PostMapping("/getCheckIn-CheckOutData")
-    public ResponseEntity<AttendanceResponseDTO> getAttendance(
+    public ResponseEntity<DataResponse> getAttendance(
             @RequestBody AttendanceRequestDTO dto) {
         return ResponseEntity.ok(faceService.getAttendance(dto));
     }
-
-    // ✅ ADMIN reset password
+    //  ADMIN reset password
     @CrossOrigin(origins = "*")
     @PostMapping("/reset-password")
     public ResponseEntity<PasswordResponseDTO> resetPassword(

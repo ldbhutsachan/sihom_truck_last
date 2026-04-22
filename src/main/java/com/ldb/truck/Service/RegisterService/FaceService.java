@@ -328,8 +328,8 @@ public class FaceService {
     // Helper method แปลง Entity → DTO
     private StaffResponseDTO mapToDTO(StaffEntity staff) {
 
-        String borName = null;
-        String department = null;
+        String borName      = null;
+        String deptName     = null;
         String positionName = null;
 
         if (staff.getBorId() != null) {
@@ -338,12 +338,14 @@ public class FaceService {
                     .orElse(null);
         }
 
+        // ✅ ใช้ getDept_id() ตามชื่อจริงใน Entity
         if (staff.getDept_id() != null) {
-            department = departmentRepository.findById(staff.getDept_id())
+            deptName = departmentRepository.findById(staff.getDept_id())
                     .map(Department::getDeptName)
                     .orElse(null);
         }
 
+        // ✅ ใช้ getPos_id() ตามชื่อจริงใน Entity
         if (staff.getPos_id() != null) {
             positionName = positionRepository.findById(staff.getPos_id())
                     .map(Position::getPosName)
@@ -354,6 +356,7 @@ public class FaceService {
                 staff.getId(),
                 staff.getStaffCode(),
                 staff.getUsername(),
+                staff.getLao_name(),
                 staff.getPhone(),
                 staff.getRole(),
                 staff.getStatus(),
@@ -361,7 +364,7 @@ public class FaceService {
                 staff.getBorId(),
                 borName,
                 staff.getDept_id(),
-                department,
+                deptName,
                 staff.getPos_id(),
                 positionName,
                 staff.getGender(),
@@ -444,90 +447,181 @@ public class FaceService {
     }
 
     //attendanceService
-    public AttendanceResponseDTO getAttendance(AttendanceRequestDTO dto) {
+    public DataResponse getAttendance(AttendanceRequestDTO dto) {
 
-        // Step 1: หา requester จาก token แทน staffCode
-        StaffEntity requester = userRepository.findByToken(dto.getToken())
-                .orElseThrow(() -> new RuntimeException("Token Not found"));
+        DataResponse response = new DataResponse();
 
-        // Step 2: เช็ค token หมดอายุหรือยัง
-        if (requester.getTokenExpiredAt() != null
-                && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token is Expired, You can Login again");
-        }
+        try {
+            // Step 1: หา requester จาก token
+            StaffEntity requester = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token Not found"));
 
-        // Step 3: เช็ค permission
-        if (requester.getRole().equals("USER")
-                && dto.getStaffCode().equalsIgnoreCase("all")) {
-            throw new RuntimeException("Only ADMIN can see all");
-        }
-
-        if (requester.getRole().equals("USER")
-                && !dto.getStaffCode().equals(requester.getStaffCode())) {
-            throw new RuntimeException("No right to see other Staff");
-        }
-
-        // Step 4: กำหนดช่วงวันที่
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        LocalDateTime startDateTime = (dto.getStartDate() != null)
-                ? LocalDate.parse(dto.getStartDate(), formatter).atStartOfDay()
-                : LocalDate.now().withDayOfMonth(1).atStartOfDay();
-
-        LocalDateTime endDateTime = (dto.getEndDate() != null)
-                ? LocalDate.parse(dto.getEndDate(), formatter).atTime(23, 59, 59)
-                : LocalDate.now().atTime(23, 59, 59);
-
-        // Step 5: ดึง logs
-        List<AttendanceLog> logs;
-
-        if (dto.getStaffCode().equalsIgnoreCase("all")) {
-            logs = attendanceLogRepository
-                    .findAllByCheckTimeBetweenOrderByCheckTimeAsc(startDateTime, endDateTime);
-        } else {
-            StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
-                    .orElseThrow(() -> new RuntimeException("Not found Staff Code: " + dto.getStaffCode()));
-            logs = attendanceLogRepository
-                    .findByStaff_IdAndCheckTimeBetweenOrderByCheckTimeAsc(
-                            staff.getId(), startDateTime, endDateTime);
-        }
-
-        // Step 6: จัดกลุ่มตาม staff + วันที่ แล้วแยก CHECK_IN / CHECK_OUT
-        Map<String, AttendanceDayDTO> map = new LinkedHashMap<>();
-
-        for (AttendanceLog log : logs) {
-            String key = log.getStaff().getStaffCode()
-                    + "_" + log.getCheckTime().toLocalDate();
-
-            map.putIfAbsent(key, new AttendanceDayDTO(
-                    log.getId(),
-                    log.getStaff().getId(),
-                    log.getStaff().getStaffCode(),
-                    log.getStaff().getUsername(),
-                    log.getCheckTime().toLocalDate(),
-                    null,
-                    null,
-                    null,   // checkInStatus
-                    null,    // checkOutStatus
-                    log.getIpAddress(),
-                    log.getMacAddress()
-            ));
-
-            AttendanceDayDTO day = map.get(key);
-
-            if (log.getCheckType().equals("CHECK_IN")) {
-                day.setCheckIn(log.getCheckTime());
-                day.setCheckInStatus(calculateCheckInStatus(log.getCheckTime()));
-            } else {
-                day.setCheckOut(log.getCheckTime());
-                day.setCheckOutStatus(calculateCheckOutStatus(log.getCheckTime()));
+            // Step 2: เช็ค token หมดอายุ
+            if (requester.getTokenExpiredAt() != null
+                    && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token is Expired, Please Login again");
             }
+
+            // Step 3: เช็ค permission
+            if (requester.getRole().equals("USER")
+                    && dto.getStaffCode().equalsIgnoreCase("all")) {
+                throw new RuntimeException("Only ADMIN can see all");
+            }
+            if (requester.getRole().equals("USER")
+                    && !dto.getStaffCode().equals(requester.getStaffCode())) {
+                throw new RuntimeException("No right to see other Staff");
+            }
+
+            // Step 4: กำหนดช่วงวันที่
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            LocalDateTime startDateTime = (dto.getStartDate() != null)
+                    ? LocalDate.parse(dto.getStartDate(), formatter).atStartOfDay()
+                    : LocalDate.now().withDayOfMonth(1).atStartOfDay();
+
+            LocalDateTime endDateTime = (dto.getEndDate() != null)
+                    ? LocalDate.parse(dto.getEndDate(), formatter).atTime(23, 59, 59)
+                    : LocalDate.now().atTime(23, 59, 59);
+
+            // Step 5: ดึง logs
+            List<AttendanceLog> logs;
+            if (dto.getStaffCode().equalsIgnoreCase("all")) {
+                logs = attendanceLogRepository
+                        .findAllByCheckTimeBetweenOrderByCheckTimeAsc(
+                                startDateTime, endDateTime);
+            } else {
+                StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
+                        .orElseThrow(() -> new RuntimeException(
+                                "Not found Staff Code: " + dto.getStaffCode()));
+                logs = attendanceLogRepository
+                        .findByStaff_IdAndCheckTimeBetweenOrderByCheckTimeAsc(
+                                staff.getId(), startDateTime, endDateTime);
+            }
+
+            // ✅ Step 6: โหลด borName ทีเดียว
+            Set<Integer> borIds = logs.stream()
+                    .map(log -> log.getStaff().getBorId())
+                    .filter(id -> id != null)
+                    .collect(Collectors.toSet());
+
+            Map<Integer, String> borNameMap = new HashMap<>();
+            if (!borIds.isEmpty()) {
+                tbBorRepository.findAllById(borIds)
+                        .forEach(bor -> borNameMap.put(bor.getKeyId(), bor.getBName()));
+            }
+
+            // ✅ Step 7: โหลด department ทีเดียว
+            Set<Long> deptIds = logs.stream()
+                    .map(log -> log.getStaff().getDept_id())
+                    .filter(id -> id != null)
+                    .collect(Collectors.toSet());
+
+            Map<Long, String> deptNameMap = new HashMap<>();
+            if (!deptIds.isEmpty()) {
+                departmentRepository.findAllById(deptIds)
+                        .forEach(dept -> deptNameMap.put(dept.getId(), dept.getDeptName()));
+            }
+
+            // ✅ Step 8: โหลด position ทีเดียว
+            Set<Long> posIds = logs.stream()
+                    .map(log -> log.getStaff().getPos_id())
+                    .filter(id -> id != null)
+                    .collect(Collectors.toSet());
+
+            Map<Long, String> posNameMap = new HashMap<>();
+            if (!posIds.isEmpty()) {
+                positionRepository.findAllById(posIds)
+                        .forEach(pos -> posNameMap.put(pos.getId(), pos.getPosName()));
+            }
+
+            // ✅ Step 9: จัดกลุ่ม logs ตาม staffId + วันที่
+            Map<String, Map<String, Object>> dayMap = new LinkedHashMap<>();
+
+            for (AttendanceLog log : logs) {
+                String key = log.getStaff().getId()
+                        + "_" + log.getCheckTime().toLocalDate();
+
+                dayMap.putIfAbsent(key, createDayEntry(log));
+
+                Map<String, Object> day = dayMap.get(key);
+
+                if (log.getCheckType().equals("CHECK_IN")) {
+                    day.put("checkIn",       log.getCheckTime().toString());
+                    day.put("checkInStatus", calculateCheckInStatus(log.getCheckTime()));
+                    day.put("ipAddress",     log.getIpAddress());
+                    day.put("macAddress",    log.getMacAddress());
+                } else {
+                    day.put("checkOut",       log.getCheckTime().toString());
+                    day.put("checkOutStatus", calculateCheckOutStatus(log.getCheckTime()));
+                }
+            }
+
+            // ✅ Step 10: จัดกลุ่มตาม Staff
+            Map<Long, Map<String, Object>> staffMap = new LinkedHashMap<>();
+
+            for (AttendanceLog log : logs) {
+                Long staffId = log.getStaff().getId();
+
+                if (!staffMap.containsKey(staffId)) {
+                    Map<String, Object> staffItem = new LinkedHashMap<>();
+                    staffItem.put("staffId",    log.getStaff().getId());
+                    staffItem.put("staffCode",  log.getStaff().getStaffCode());
+                    staffItem.put("username",   log.getStaff().getUsername());
+                    staffItem.put("laoname",   log.getStaff().getLao_name());
+                    staffItem.put("staffImage", log.getStaff().getStaffImage());
+                    staffItem.put("borId",      log.getStaff().getBorId());
+                    staffItem.put("borName",    borNameMap.get(log.getStaff().getBorId()));
+                    staffItem.put("deptId",     log.getStaff().getDept_id());
+                    staffItem.put("department", deptNameMap.get(log.getStaff().getDept_id()));
+                    staffItem.put("posId",      log.getStaff().getPos_id());
+                    staffItem.put("position",   posNameMap.get(log.getStaff().getPos_id()));
+                    staffItem.put("attendanLog", new ArrayList<>());
+                    staffMap.put(staffId, staffItem);
+                }
+            }
+
+            // ✅ Step 11: ใส่ day entries เข้าไปใน staffMap
+            for (Map.Entry<String, Map<String, Object>> entry : dayMap.entrySet()) {
+                Long staffId = Long.parseLong(entry.getKey().split("_")[0]);
+                Map<String, Object> staffItem = staffMap.get(staffId);
+                if (staffItem != null) {
+                    ((List<Map<String, Object>>) staffItem.get("attendanLog"))
+                            .add(entry.getValue());
+                }
+            }
+
+            List<Map<String, Object>> result = new ArrayList<>(staffMap.values());
+
+            response.setStatus("00");
+            response.setMessage("Success Fetching Data");
+            response.setDataResponse(result);
+            response.setSumFooter(result.size());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
         }
 
-        List<AttendanceDayDTO> result = new ArrayList<>(map.values());
-        return new AttendanceResponseDTO(true, "Success Fetching Data", result);
+        return response;
     }
-    // ✅ คำนวณ CHECK_IN status
+
+    // Helper method สร้าง day entry
+    private Map<String, Object> createDayEntry(AttendanceLog log) {
+        Map<String, Object> day = new LinkedHashMap<>();
+        day.put("id",             log.getId());
+        day.put("date",           log.getCheckTime().toLocalDate().toString());
+        day.put("checkIn",        "00");
+        day.put("checkInStatus",  "00");
+        day.put("checkOut",       "00");
+        day.put("checkOutStatus", "00");
+        day.put("ipAddress",      null);
+        day.put("macAddress",     null);
+        return day;
+    }
+
+    //  คำนวณ CHECK_IN status
     private String calculateCheckInStatus(LocalDateTime checkInTime) {
 
         LocalTime checkIn = checkInTime.toLocalTime();
@@ -1086,7 +1180,7 @@ public class FaceService {
                 }
             }
 
-            // ✅ Step 5: โหลด borName ทีเดียว
+            //  Step 5: โหลด borName ทีเดียว
             Set<Integer> borIds = staffList.stream()
                     .map(StaffEntity::getBorId)
                     .filter(id -> id != null)
@@ -1098,7 +1192,30 @@ public class FaceService {
                         .forEach(bor -> borNameMap.put(bor.getKeyId(), bor.getBName()));
             }
 
-            // ✅ Step 6: โหลด attendance logs ทีเดียว
+            //  Step 7: โหลด department ทีเดียว
+            Set<Long> deptIds = staffList.stream()
+                    .map(StaffEntity::getDept_id)
+                    .filter(id -> id != null)
+                    .collect(Collectors.toSet());
+
+            Map<Long, String> deptNameMap = new HashMap<>();
+            if (!deptIds.isEmpty()) {
+                departmentRepository.findAllById(deptIds)
+                        .forEach(dept -> deptNameMap.put(dept.getId(), dept.getDeptName()));
+            }
+
+            //  Step 8: โหลด position ทีเดียว
+            Set<Long> posIds = staffList.stream()
+                    .map(StaffEntity::getPos_id)
+                    .filter(id -> id != null)
+                    .collect(Collectors.toSet());
+
+            Map<Long, String> posNameMap = new HashMap<>();
+            if (!posIds.isEmpty()) {
+                positionRepository.findAllById(posIds)
+                        .forEach(pos -> posNameMap.put(pos.getId(), pos.getPosName()));
+            }
+            //  Step 6: โหลด attendance logs ทีเดียว
             List<AttendanceLog> allLogs = attendanceLogRepository
                     .findAllByCheckTimeBetweenOrderByCheckTimeAsc(startOfDay, endOfDay);
 
@@ -1150,11 +1267,16 @@ public class FaceService {
                 item.put("staffId",    staff.getId());
                 item.put("staffCode",  staff.getStaffCode());
                 item.put("username",   staff.getUsername());
+                item.put("laoName",    staff.getLao_name());
                 item.put("staffImage", staff.getStaffImage());
                 item.put("borId",      staff.getBorId());
                 item.put("borName",    borNameMap.get(staff.getBorId()));
-                item.put("position",   staff.getPosition());
-                item.put("department", staff.getDepartment());
+//                item.put("position",   staff.getPosition());
+//                item.put("department", staff.getDepartment());
+                item.put("deptId",      staff.getDept_id());
+                item.put("department",  deptNameMap.get(staff.getPos_id()));
+                item.put("posId",       staff.getPos_id());
+                item.put("position",       posNameMap.get(staff.getPos_id()));
                 item.put("role",       staff.getRole());
                 item.put("checkIn",    checkInTime  != null ? checkInTime.toString()  : "00");
                 item.put("checkOut",   checkOutTime != null ? checkOutTime.toString() : "00");

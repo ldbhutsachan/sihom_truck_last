@@ -68,7 +68,7 @@ public class DepartmentController {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/adjustment/get")
-    public ResponseEntity<DataResponse> getAdjustment(  // ✅ เปลี่ยนชื่อ method
+    public ResponseEntity<DataResponse> getAdjustment(  //  method
                                                         @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(departmentService.getAdjustments(body));
     }

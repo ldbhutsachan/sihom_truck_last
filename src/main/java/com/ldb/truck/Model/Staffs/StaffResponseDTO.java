@@ -13,10 +13,11 @@ public class StaffResponseDTO {
     private Long id;
     private String staffCode;
     private String username;
+    private String laoName;
     private String phone;
     private String role;
     private String status;
-    private String position;
+    private String staffImage;
     private Integer borId;
     private String borName;
     private Long deptId;
