@@ -82,7 +82,8 @@ public class FaceController {
             @RequestParam("token") String token,
             @RequestParam(value = "gender",      required = false) String gender,
             @RequestParam(value = "address",      required = false) String address,
-            @RequestParam(value = "birthDate", required = false) String birthDate
+            @RequestParam(value = "birthDate", required = false) String birthDate,
+            @RequestParam(value = "laoName",   required = false) String laoName
 
     ) throws IOException {
 
@@ -101,6 +102,7 @@ public class FaceController {
         dto.setGender(gender);
         dto.setAddress(address);
         dto.setBirthDate(birthDate);
+        dto.setLaoname(laoName);
 
         return ResponseEntity.ok(faceService.updateStaff(query, dto, image));
     }
@@ -121,7 +123,10 @@ public class FaceController {
             @RequestParam(value = "gender",      required = false) String gender,
             @RequestParam(value = "address",      required = false) String address,
             @RequestParam(value = "startWorkDate", required = false) String startWorkDate,
-            @RequestParam(value = "birthDate", required = false) String birthDate
+            @RequestParam(value = "birthDate", required = false) String birthDate,
+            @RequestParam(value = "laoName",   required = false) String laoName,
+            @RequestParam(value = "username",   required = false) String username
+
     ) {
         StaffQueryRequestDTO query = new StaffQueryRequestDTO();
         query.setStaffId(staffId);
@@ -139,6 +144,8 @@ public class FaceController {
         dto.setAddress(address);
         dto.setStartWorkDate(startWorkDate);
         dto.setBirthDate(birthDate);
+        dto.setLaoname(laoName);
+        dto.setUsername(username);
 
         return ResponseEntity.ok(faceService.updateSalarySchedule(query, dto));
     }

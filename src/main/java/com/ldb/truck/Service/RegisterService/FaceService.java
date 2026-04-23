@@ -178,21 +178,21 @@ public class FaceService {
             if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
                 if (userRepository.existsByUsername(dto.getUsername())
                         && !dto.getUsername().equals(staff.getUsername())) {
-                    throw new RuntimeException("Username has been used");
+                    throw new RuntimeException("This Username has been used");
                 }
                 staff.setUsername(dto.getUsername());
             }
+            if (dto.getLaoname() != null)      staff.setLao_name(dto.getLaoname());
             if (dto.getPhone() != null)      staff.setPhone(dto.getPhone());
             if (dto.getRole() != null)       staff.setRole(dto.getRole());
             if (dto.getDeptId() != null) staff.setDept_id(dto.getDeptId());
             if (dto.getPosId() != null)   staff.setPos_id(dto.getPosId());
             if(dto.getGender() != null)  staff.setGender(dto.getGender());
             if(dto.getAddress() != null)  staff.setAddress(dto.getAddress());
-            if(dto.getBirthDate() !=null) {
+            if (dto.getBirthDate() != null && !dto.getBirthDate().isBlank()) {
                 staff.setBirth_date(
                         LocalDate.parse(dto.getBirthDate(),
                                 DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-
             }
 
             // USER ไม่สามารถเปลี่ยน status ได้
@@ -299,16 +299,24 @@ public class FaceService {
                 staff.setAddress(dto.getAddress());
             }
             // เพิ่มใน updateSalarySchedule
-            if (dto.getStartWorkDate() != null) {
+            if (dto.getStartWorkDate() != null && !dto.getStartWorkDate().isBlank()) {
                 staff.setStartwork_date(
                         LocalDate.parse(dto.getStartWorkDate(),
                                 DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             }
-            if(dto.getBirthDate() !=null) {
+
+            if (dto.getBirthDate() != null && !dto.getBirthDate().isBlank()) {
                 staff.setBirth_date(
                         LocalDate.parse(dto.getBirthDate(),
                                 DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-
+            }
+            if (dto.getLaoname() != null)      staff.setLao_name(dto.getLaoname());
+            if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
+                if (userRepository.existsByUsername(dto.getUsername())
+                        && !dto.getUsername().equals(staff.getUsername())) {
+                    throw new RuntimeException("This Username has been used");
+                }
+                staff.setUsername(dto.getUsername());
             }
             // Step 6: บันทึก
             StaffEntity saved = userRepository.save(staff);

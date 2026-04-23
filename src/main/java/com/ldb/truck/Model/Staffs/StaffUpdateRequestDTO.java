@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 @Data
 public class StaffUpdateRequestDTO {
     private String username;
+    private String laoname;
     private String phone;
     private String role;
     private String status;
