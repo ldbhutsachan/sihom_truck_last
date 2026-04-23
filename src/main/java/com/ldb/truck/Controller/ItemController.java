@@ -428,11 +428,11 @@ public class ItemController {
             String role = userProfiles.get(0).getRole();
             String branchno = userProfiles.get(0).getBranchNo();
 
-            // ✅ ใช้ borNo จาก client ถ้ามี
+            //  ใช้ borNo จาก client ถ้ามี
             String borNo = brandReq.getBorNo();
             log.info("borNo from client: " + borNo);
 
-            // ✅ ถ้า client ไม่ส่งมา (null หรือ "") ให้ fallback เป็นของ userProfiles
+            //  ถ้า client ไม่ส่งมา (null หรือ "") ให้ fallback เป็นของ userProfiles
             if (borNo == null || borNo.trim().isEmpty()) {
                 borNo = userProfiles.get(0).getBorNo();
                 log.info("borNo fallback from user profile: " + borNo);

@@ -107,61 +107,7 @@ public class ItemServiceImpl {
         return response;
     }
 
-
-    //    public DataResponse getItemList(viewItemEntity viewItemEntity, String userName, String role, String branchNo, String borNo) {
-//    log.info("role:" + role);
-//    log.info("userName:" + userName);
-//    log.info("branchNo:" + branchNo);
-//    log.info("borNo:" + borNo);
-//
-//    DataResponse response = new DataResponse();
-//    String khid = viewItemEntity.getKhid();
-//
-//    try {
-//        List<viewItemEntity> items;
-//
-//        if ("PADMIN".equals(role)) {
-//            if (viewItemEntity.getBorNo() != null && !viewItemEntity.getBorNo().trim().isEmpty()) {
-//                items = viewItemEntityRepository.getAllViewItemsBorNo(viewItemEntity.getBorNo(), khid);
-//            } else {
-//                items = viewItemEntityRepository.getAllViewItemsAdmin();
-//            }
-//        } else {
-//            items = viewItemEntityRepository.getAllViewItemsBranchNo(branchNo, borNo, khid);
-//        }
-//
-//        List<ItemListModel> resultList = items.stream()
-//                .map(item -> new ItemListModel(
-//                        item.getItemId(),
-//                        item.getItem_name(), // ✅ ใช้ camelCase
-//                        item.getPrice(),
-//                        item.getInqty(),
-//                        item.getImage(),
-//                        item.getBorNo(),
-//                        item.getBorName(),
-//                        item.getItemtype_Name(),
-//                        item.getQty(),
-//                        item.getUnit(),
-//                        item.getSize(),
-//                        item.getKhid(),
-//                        item.getKhno(),
-//                        item.getKhname()
-//                ))
-//                .collect(Collectors.toList());
-//
-//
-//        response.setDataResponse(resultList);
-//        response.setStatus("00");
-//        response.setMessage("Success");
-//
-//    } catch (Exception e) {
-//        response.setStatus("EE");
-//        response.setMessage("Error Data !!");
-//        e.printStackTrace();
-//    }
-//
-//    return response;
-//}
+    //service getItemList
     public DataResponse getItemList(listItemEntity listItemEntity, String userName, String role, String branchNo, String borNo) {
         log.info("role:" + role);
         log.info("userName:" + userName);
