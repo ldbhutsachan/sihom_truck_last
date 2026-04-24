@@ -253,8 +253,29 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setImage(resp.getImage());
                  machine.setDate_in(resp.getDate_in());
                  machine.setRemark(resp.getRemark());
+                 machine.setMachine_mileage_now(resp.getMachine_mileage_now());
+                 machine.setMachine_mileage_next(resp.getMachine_mileage_next());
+                 machine.setMachine_mileage_status(resp.getMachine_mileage_status());
+                 machine.setDateChangeLeean(resp.getDateChangeLeean());
+                 machine.setDateChangeLeeanNext(resp.getDateChangeLeeanNext());
+                 machine.setChangeleean_status(resp.getChangeleean_status());
+                 machine.setDateleanGia(resp.getDateleanGia());
+                 machine.setDateleanGiaNextday(resp.getDateleanGiaNextday());
+                 machine.setLeangia_status(resp.getLeangia_status());
+                 machine.setDateleanFuengThaiy(resp.getDateleanFuengThaiy());
+                 machine.setFuengthaiy_status(resp.getFuengthaiy_status());
+                 machine.setStartdate_kongnam(resp.getStartdate_kongnam());
+                 machine.setEnddate_kongnam(resp.getEnddate_kongnam());
+                 machine.setKongnam_status(resp.getKongnam_status());
+                 machine.setEngineoil_date(resp.getEngineoil_date());
+                 machine.setEngineoil_nextdate(resp.getEngineoil_nextdate());
+                 machine.setEngineoil_status(resp.getEngineoil_status());
+                 machine.setHydraulic_date(resp.getHydraulic_date());
+                 machine.setHydraulic_nextdate(resp.getHydraulic_nextdate());
+                 machine.setHydraulic_status(resp.getHydraulic_status());
+                 machine.setNotifyStatus(resp.getNotifyStatus());
 
-                 // ✅ เพิ่มตรงนี้เพื่อ map tools ด้วย
+                 //  เพิ่มตรงนี้เพื่อ map tools ด้วย
                  machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
 
                  //ກຳນົດ limit monitor

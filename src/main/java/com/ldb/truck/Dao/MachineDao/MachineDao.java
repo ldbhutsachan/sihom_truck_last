@@ -698,55 +698,56 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
     try {
         String conMchNo;
         String conAdmin;
-        String conOrder = "\nORDER BY a.key_id DESC";
+        String conOrder = "\nORDER BY key_id DESC";
 
-        // ✅ เงื่อนไขตาม merNo
+        //  เงื่อนไขตาม merNo
         if (merNo == null || merNo.isEmpty()) {
             conMchNo = "";
         } else {
-            conMchNo = "\nAND a.mch_no = '" + merNo + "' ";
+            conMchNo = "\nAND mch_no = '" + merNo + "' ";
         }
 
-        // ✅ เงื่อนไขตาม borNo หรือ role
+        //  เงื่อนไขตาม borNo หรือ role
         String reqBorNo = machineRPReq.getBorNo();
         if (reqBorNo != null && !reqBorNo.isEmpty()) {
-            conAdmin = "\nAND a.borNo='" + reqBorNo + "' ";
+            conAdmin = "\nAND borNo='" + reqBorNo + "' ";
         } else if (!"PADMIN".equals(role) && !"HR".equals(role)) {
-            conAdmin = "\nAND a.borNo='" + borNo + "' ";
+            conAdmin = "\nAND borNo='" + borNo + "' ";
         } else {
             conAdmin = "";
         }
 
-        // ✅ SQL หลัก
-        sb.append("SELECT a.key_id,\n")
-                .append("    a.mch_no,\n")
-                .append("    a.mch_name, a.price,a.currency,\n")
-                .append("    a.mch_branch_name,\n")
-                .append("    a.mch_model,\n")
-                .append("    a.mch_product_year,\n")
-                .append("    a.create_date,\n")
-                .append("    a.create_by,\n")
-                .append("    c.USER_LOGIN,\n")
-                .append("    c.ROLE,\n")
-                .append("    a.status,\n")
-                .append("    a.borNo,\n")
-                .append("    b.b_name AS borname,\n")
-                .append("    b.location AS borlocationnaem,\n")
-                .append("    a.time_fix,\n")
-                .append("    a.time_fix_monitor,\n")
-                .append("    a.time_oil_fix,\n")
-                .append("    a.time_oil_fix_mo,\n")
-                .append("    a.image, a.date_in, a.remark,\n")
-                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.mch_no = a.mch_no),0) AS all_used_hours,\n")
-                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no),0) AS last_engine_hours,\n")
-                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no),0) AS last_hydraulic_hours,\n")
-                .append("(a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
-                .append("(a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
-
-                .append("FROM tb_bors b\n")
-                .append("INNER JOIN tb_machine a ON b.key_id = a.borNo\n")
-                .append("LEFT JOIN LOGIN c ON a.create_by = c.KEY_ID\n")
-                .append("WHERE 1 = 1 ");
+        //  SQL หลัก
+//        sb.append("SELECT a.key_id,\n")
+//                .append("    a.mch_no,\n")
+//                .append("    a.mch_name, a.price,a.currency,\n")
+//                .append("    a.mch_branch_name,\n")
+//                .append("    a.mch_model,\n")
+//                .append("    a.mch_product_year,\n")
+//                .append("    a.create_date,\n")
+//                .append("    a.create_by,\n")
+//                .append("    c.USER_LOGIN,\n")
+//                .append("    c.ROLE,\n")
+//                .append("    a.status,\n")
+//                .append("    a.borNo,\n")
+//                .append("    b.b_name AS borname,\n")
+//                .append("    b.location AS borlocationnaem,\n")
+//                .append("    a.time_fix,\n")
+//                .append("    a.time_fix_monitor,\n")
+//                .append("    a.time_oil_fix,\n")
+//                .append("    a.time_oil_fix_mo,\n")
+//                .append("    a.image, a.date_in, a.remark,\n")
+//                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.mch_no = a.mch_no),0) AS all_used_hours,\n")
+//                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no),0) AS last_engine_hours,\n")
+//                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no),0) AS last_hydraulic_hours,\n")
+//                .append("(a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
+//                .append("(a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
+//
+//                .append("FROM tb_bors b\n")
+//                .append("INNER JOIN tb_machine a ON b.key_id = a.borNo\n")
+//                .append("LEFT JOIN LOGIN c ON a.create_by = c.KEY_ID\n")
+//                .append("WHERE 1 = 1 ");
+        sb.append("SELECT * FROM v_tbmachine WHERE 1 = 1");
 
         sb.append(conMchNo);
         sb.append(conAdmin);
@@ -755,7 +756,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         String sql = sb.toString();
         log.info("SQL Query => {}", sql);
 
-        // ✅ ดึงข้อมูลจาก tb_machine
+        //  ดึงข้อมูลจาก tb_machine
         List<Machine> machines = JdbcTemplate.query(sql, new RowMapper<Machine>() {
             @Override
             public Machine mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -800,6 +801,27 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setImage(rs.getString("image"));
                 tr.setDate_in(rs.getString("date_in"));
                 tr.setRemark(rs.getString("remark"));
+                tr.setMachine_mileage_now(rs.getString("machine_mileage_now"));
+                tr.setMachine_mileage_next(rs.getString("machine_mileage_next"));
+                tr.setMachine_mileage_status(rs.getString("machine_mileage_status"));
+                tr.setDateChangeLeean(rs.getString("dateChangeLeean"));
+                tr.setDateChangeLeeanNext(rs.getString("dateChangeLeeanNext"));
+                tr.setChangeleean_status(rs.getString("changeleean_status"));
+                tr.setDateleanGia(rs.getString("dateleanGia"));
+                tr.setDateleanGiaNextday(rs.getString("dateleanGiaNextday"));
+                tr.setLeangia_status(rs.getString("leangia_status"));
+                tr.setDateleanFuengThaiy(rs.getString("dateleanFuengThaiy"));
+                tr.setFuengthaiy_status(rs.getString("fuengthaiy_status"));
+                tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
+                tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
+                tr.setKongnam_status(rs.getString("kongnam_status"));
+                tr.setEngineoil_date(rs.getString("engineoil_date"));
+                tr.setEngineoil_nextdate(rs.getString("engineoil_nextdate"));
+                tr.setEngineoil_status(rs.getString("engineoil_status"));
+                tr.setHydraulic_date(rs.getString("hydraulic_date"));
+                tr.setHydraulic_nextdate(rs.getString("hydraulic_nextdate"));
+                tr.setHydraulic_status(rs.getString("hydraulic_status"));
+                tr.setNotifyStatus(rs.getString("notifyStatus"));
 
                 return tr;
             }
