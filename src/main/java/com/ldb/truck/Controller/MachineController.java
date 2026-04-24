@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -279,8 +280,21 @@ public class MachineController {
             @RequestParam(value = "mchBranchName", required = false) String mchBranchName,
             @RequestParam(value = "mchModel", required = false) String mchModel,
             @RequestParam(value = "mchProductYear", required = false) String mchProductYear,
-//        @RequestParam(value = "date_in", required = false) String date_in // for insert like text
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date_in  // for insert date_in in local Datetime
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date_in,  // for insert date_in in local Datetime
+            @RequestParam(value = "machine_mileage_now", required = false) BigDecimal machine_mileage_now,
+            @RequestParam(value = "machine_mileage_next", required = false) BigDecimal machine_mileage_next,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeean,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeeanNext,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateleanGia,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateleanGiaNextday,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateleanFuengThaiy,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startdate_kongnam,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate enddate_kongnam,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate engineoil_date,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate engineoil_nextdate,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hydraulic_date,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hydraulic_nextdate
+
     ) {
         MachineReportResposne result = new MachineReportResposne();
         try {
@@ -300,6 +314,19 @@ public class MachineController {
             machineReq.setMchModel(mchModel);
             machineReq.setMchProductYear(mchProductYear);
             machineReq.setDate_in(date_in);
+            machineReq.setMachine_mileage_now(machine_mileage_now);
+            machineReq.setMachine_mileage_next(machine_mileage_next);
+            machineReq.setDateChangeLeean(dateChangeLeean);
+            machineReq.setDateChangeLeeanNext(dateChangeLeeanNext);
+            machineReq.setDateleanGia(dateleanGia);
+            machineReq.setDateleanGiaNextday(dateleanGiaNextday);
+            machineReq.setDateleanFuengThaiy(dateleanFuengThaiy);
+            machineReq.setStartdate_kongnam(startdate_kongnam);
+            machineReq.setEnddate_kongnam(enddate_kongnam);
+            machineReq.setEngineoil_date(engineoil_date);
+            machineReq.setEngineoil_nextdate(engineoil_nextdate);
+            machineReq.setHydraulic_date(hydraulic_date);
+            machineReq.setHydraulic_nextdate(hydraulic_nextdate);
 
             // แปลง JSON string ของ tools เป็น List<ToolReq>
             if (toolsJson != null && !toolsJson.isEmpty()) {
@@ -357,8 +384,20 @@ public class MachineController {
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             @RequestParam(value = "date_in", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate date_in
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date_in,
+            @RequestParam(value = "machine_mileage_now", required = false) BigDecimal machine_mileage_now,
+            @RequestParam(value = "machine_mileage_next", required = false) BigDecimal machine_mileage_next,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeean,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeeanNext,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateleanGia,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateleanGiaNextday,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateleanFuengThaiy,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startdate_kongnam,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate enddate_kongnam,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate engineoil_date,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate engineoil_nextdate,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hydraulic_date,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hydraulic_nextdate
 
 
     ) throws Exception {
@@ -381,6 +420,19 @@ public class MachineController {
         machineReq.setMchProductYear(mchProductYear);
         machineReq.setRemark(remark);
         machineReq.setDate_in(date_in);
+        machineReq.setMachine_mileage_now(machine_mileage_now);
+        machineReq.setMachine_mileage_next(machine_mileage_next);
+        machineReq.setDateChangeLeean(dateChangeLeean);
+        machineReq.setDateChangeLeeanNext(dateChangeLeeanNext);
+        machineReq.setDateleanGia(dateleanGia);
+        machineReq.setDateleanGiaNextday(dateleanGiaNextday);
+        machineReq.setDateleanFuengThaiy(dateleanFuengThaiy);
+        machineReq.setStartdate_kongnam(startdate_kongnam);
+        machineReq.setEnddate_kongnam(enddate_kongnam);
+        machineReq.setEngineoil_date(engineoil_date);
+        machineReq.setEngineoil_nextdate(engineoil_nextdate);
+        machineReq.setHydraulic_date(hydraulic_date);
+        machineReq.setHydraulic_nextdate(hydraulic_nextdate);
 
         if (toolsJson != null && !toolsJson.isEmpty()) {
             ObjectMapper mapper = new ObjectMapper();

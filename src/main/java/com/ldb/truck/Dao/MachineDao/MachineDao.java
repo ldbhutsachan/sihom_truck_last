@@ -1118,12 +1118,21 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
     @Override
     public int saveMachine(MachineReq machineReq) {
         try {
-            String imageUrl = machineReq.getImage(); // ใช้ URL แทน byte[]
+            String imageUrl = machineReq.getImage();
 
             String sql = "INSERT INTO tb_machine (" +
                     "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, time_oil_fix, time_oil_fix_mo, image,price, currency, date_in" +
-                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "create_date, create_by, status, borNo, time_fix, time_fix_monitor, " +
+                    "time_oil_fix, time_oil_fix_mo, image, price, currency, date_in, " +
+                    "machine_mileage_now, machine_mileage_next, " +
+                    "dateChangeLeean, dateChangeLeeanNext, " +
+                    "dateleanGia, dateleanGiaNextday, " +
+                    "dateleanFuengThaiy, " +
+                    "startdate_kongnam, enddate_kongnam, " +
+                    "engineoil_date, engineoil_nextdate, " +
+                    "hydraulic_date, hydraulic_nextdate" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
                     machineReq.getMchNo(),
@@ -1139,10 +1148,24 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                     machineReq.getTime_fix_monitor(),
                     machineReq.getTime_oil_fix(),
                     machineReq.getTime_oil_fix_mo(),
-                    imageUrl, // <-- URL image2
+                    imageUrl,
                     machineReq.getPrice(),
                     machineReq.getCurrency(),
-                    machineReq.getDate_in()
+                    machineReq.getDate_in(),
+                    // fields ใหม่
+                    machineReq.getMachine_mileage_now(),
+                    machineReq.getMachine_mileage_next(),
+                    machineReq.getDateChangeLeean(),
+                    machineReq.getDateChangeLeeanNext(),
+                    machineReq.getDateleanGia(),
+                    machineReq.getDateleanGiaNextday(),
+                    machineReq.getDateleanFuengThaiy(),
+                    machineReq.getStartdate_kongnam(),
+                    machineReq.getEnddate_kongnam(),
+                    machineReq.getEngineoil_date(),
+                    machineReq.getEngineoil_nextdate(),
+                    machineReq.getHydraulic_date(),
+                    machineReq.getHydraulic_nextdate()
             );
 
         } catch (Exception e) {
@@ -1198,7 +1221,6 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
 //    return 0;
 //}
 
-
     @Override
     public int updateMachine(MachineReq machineReq) {
         try {
@@ -1247,30 +1269,116 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             sql.append("time_oil_fix = ?, ");
             params.add(machineReq.getTime_oil_fix());
 
-            // ✅ เพิ่ม image เฉพาะกรณีที่มีการอัปโหลดไฟล์ใหม่
+            sql.append("time_oil_fix_mo = ?, ");
+            params.add(machineReq.getTime_oil_fix_mo());
+
+            // image เฉพาะกรณีที่มีการอัปโหลดไฟล์ใหม่
             if (machineReq.getImage() != null && !machineReq.getImage().isEmpty()) {
                 sql.append("image = ?, ");
                 params.add(machineReq.getImage());
             }
-            // ✅ date_in เฉพาะถ้ามี
+
+            //  date_in เฉพาะถ้ามี
             if (machineReq.getDate_in() != null) {
                 sql.append("date_in = ?, ");
                 params.add(machineReq.getDate_in());
             }
-            // ✅ remark เฉพาะถ้ามี
+
+            //  remark เฉพาะถ้ามี
             if (machineReq.getRemark() != null && !machineReq.getRemark().isEmpty()) {
                 sql.append("remark = ?, ");
                 params.add(machineReq.getRemark());
             }
 
-            sql.append("time_oil_fix_mo = ? ");
-            params.add(machineReq.getTime_oil_fix_mo());
+            //  machine_mileage_now
+            if (machineReq.getMachine_mileage_now() != null) {
+                sql.append("machine_mileage_now = ?, ");
+                params.add(machineReq.getMachine_mileage_now());
+            }
 
-            sql.append("WHERE key_id = ?");
+            //  machine_mileage_next
+            if (machineReq.getMachine_mileage_next() != null) {
+                sql.append("machine_mileage_next = ?, ");
+                params.add(machineReq.getMachine_mileage_next());
+            }
+
+            //  dateChangeLeean
+            if (machineReq.getDateChangeLeean() != null) {
+                sql.append("dateChangeLeean = ?, ");
+                params.add(machineReq.getDateChangeLeean());
+            }
+
+            //  dateChangeLeeanNext
+            if (machineReq.getDateChangeLeeanNext() != null) {
+                sql.append("dateChangeLeeanNext = ?, ");
+                params.add(machineReq.getDateChangeLeeanNext());
+            }
+
+            //  dateleanGia
+            if (machineReq.getDateleanGia() != null) {
+                sql.append("dateleanGia = ?, ");
+                params.add(machineReq.getDateleanGia());
+            }
+
+            // dateleanGiaNextday
+            if (machineReq.getDateleanGiaNextday() != null) {
+                sql.append("dateleanGiaNextday = ?, ");
+                params.add(machineReq.getDateleanGiaNextday());
+            }
+
+            //  dateleanFuengThaiy
+            if (machineReq.getDateleanFuengThaiy() != null) {
+                sql.append("dateleanFuengThaiy = ?, ");
+                params.add(machineReq.getDateleanFuengThaiy());
+            }
+
+            //  startdate_kongnam
+            if (machineReq.getStartdate_kongnam() != null) {
+                sql.append("startdate_kongnam = ?, ");
+                params.add(machineReq.getStartdate_kongnam());
+            }
+
+            // enddate_kongnam
+            if (machineReq.getEnddate_kongnam() != null) {
+                sql.append("enddate_kongnam = ?, ");
+                params.add(machineReq.getEnddate_kongnam());
+            }
+
+            //  engineoil_date
+            if (machineReq.getEngineoil_date() != null) {
+                sql.append("engineoil_date = ?, ");
+                params.add(machineReq.getEngineoil_date());
+            }
+
+            // engineoil_nextdate
+            if (machineReq.getEngineoil_nextdate() != null) {
+                sql.append("engineoil_nextdate = ?, ");
+                params.add(machineReq.getEngineoil_nextdate());
+            }
+
+            //  hydraulic_date
+            if (machineReq.getHydraulic_date() != null) {
+                sql.append("hydraulic_date = ?, ");
+                params.add(machineReq.getHydraulic_date());
+            }
+
+            // hydraulic_nextdate
+            if (machineReq.getHydraulic_nextdate() != null) {
+                sql.append("hydraulic_nextdate = ?, ");
+                params.add(machineReq.getHydraulic_nextdate());
+            }
+
+            // ลบ comma ท้ายสุดออก
+            String sqlStr = sql.toString().trim();
+            if (sqlStr.endsWith(",")) {
+                sqlStr = sqlStr.substring(0, sqlStr.length() - 1);
+            }
+
+            sqlStr += " WHERE key_id = ?";
             params.add(machineReq.getKeyId());
 
-            int result = JdbcTemplate.update(sql.toString(), params.toArray());
-            log.info("SQL : {}", sql);
+            int result = JdbcTemplate.update(sqlStr, params.toArray());
+            log.info("SQL : {}", sqlStr);
             log.info("ຈຳນວນແຖວທີ່ອັບເດັບ: {}", result);
             return result;
 
