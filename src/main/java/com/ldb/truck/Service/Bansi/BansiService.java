@@ -1293,7 +1293,7 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT","ACCOUNTANTCHECK");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -2757,6 +2757,7 @@ public class BansiService {
                                         System.out.println(">>> remaining still: " + remainingAfterApprove + " skip update pay_status");
                                     }
                                 }
+
                                 break;
                         }
                     }

@@ -3247,6 +3247,8 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
                 "WHERE a.key_id = ? AND a.stock_status = 'OLD-STOCK' " +
                 "LIMIT 1";
 
+        log.info("=====> checkStockBtBorNo borNo: {}", borNo); // ✅ เพิ่ม
+
         try {
             StockCheckModel result = EBankJdbcTemplate.queryForObject(
                     sql,
@@ -3257,49 +3259,69 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
                         tr.setBorName(rs.getString("b_name"));
                         tr.setKhId(rs.getString("khid"));
                         tr.setKhName(rs.getString("khname"));
+                        log.info("=====> found stock khid: {}", tr.getKhId()); // ✅ เพิ่ม
                         return tr;
                     }
             );
             return Optional.ofNullable(result);
         } catch (EmptyResultDataAccessException e) {
+            log.info("=====> EmptyResult for borNo: {}", borNo); // ✅ เพิ่ม
             return Optional.empty();
         } catch (Exception e) {
+            log.info("=====> Exception: {}", e.getMessage()); // ✅ เพิ่ม
             return Optional.empty();
         }
     }
-    public int updateItemToOldStock(String khNo, String usingStatus,int amt,String billNo, String itemId) {
+    public int updateItemToOldStock(String khNo, String usingStatus, int amt, String billNo, Integer itemId) {
         String sql = "UPDATE request_item_details " +
-                "SET transfer_old_no = ?, using_status = ? , using_amt=? " +
+                "SET old_stock_house = ?, " +
+                "using_status = ?, " +
+                "using_amt = ? " +
                 "WHERE bill_no = ? AND item_id = ?";
 
+        log.info("=====> updateItemToOldStock khNo: {}, usingStatus: {}, amt: {}, billNo: {}, itemId: {}",
+                khNo, usingStatus, amt, billNo, itemId);
+
         try {
-            return EBankJdbcTemplate.update(sql, khNo, usingStatus,amt,billNo, itemId);
+            int result = EBankJdbcTemplate.update(sql, khNo, usingStatus, amt, billNo, itemId);
+            log.info("=====> update result: {}", result);
+            return result;
         } catch (Exception e) {
+            log.info("=====> update error: {}", e.getMessage());
             e.printStackTrace();
-            return 0; // return 0 if update fails
+            return 0;
         }
     }
     //move data to stock
     public int moveToOldStock(ItemMoveReq itemMoveReq) {
         Optional<StockCheckModel> billInfo = callToRequestItemBtBillNo(itemMoveReq.getBillNo());
-        if (billInfo.isEmpty()) return 5; // bill not found
+        if (billInfo.isEmpty()) return -5;
 
         String borNo = billInfo.get().getKeyNo();
+        log.info("=====> borNo: {}", borNo); // ✅
+
         Optional<StockCheckModel> stockInfo = checkStockBtBorNo(borNo);
-        if (stockInfo.isEmpty()) return 1; // stock not found
+        log.info("=====> stockInfo isEmpty: {}", stockInfo.isEmpty()); // ✅
+        if (stockInfo.isEmpty()) return -1;
+
+        String oldStockKhId = stockInfo.get().getKhId();
+        log.info("=====> oldStockKhId: {}", oldStockKhId); // ✅
 
         int updatedCount = 0;
         if (itemMoveReq.getItemMoveList() != null) {
             for (itemInfo item : itemMoveReq.getItemMoveList()) {
-                updatedCount += updateItemToOldStock(
-                        borNo,
+                int result = updateItemToOldStock(
+                        oldStockKhId,
                         "OLD-STOCK",
                         item.getAmt(),
                         itemMoveReq.getBillNo(),
                         item.getItemNo()
                 );
+                log.info("=====> update result for itemNo {}: {}", item.getItemNo(), result); // ✅
+                updatedCount += result;
             }
         }
+        log.info("=====> total updatedCount: {}", updatedCount); // ✅
         return updatedCount;
     }
 
@@ -3309,11 +3331,11 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             int check = moveToOldStock(itemMoveReq);
 
             switch (check) {
-                case 5:
+                case -5:
                     response.setStatus("NF");
                     response.setMessage("Bill not found");
                     break;
-                case 1:
+                case -1:
                     response.setStatus("NS");
                     response.setMessage("Stock not found for borNo");
                     break;
