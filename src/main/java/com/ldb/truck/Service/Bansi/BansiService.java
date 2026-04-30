@@ -1351,7 +1351,7 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT","ACCOUNTANTCHECK");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1428,7 +1428,7 @@ public class BansiService {
         Profile user = profileList.get(0);
 
         // 2. Check role
-        List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT");
+        List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT","ACCOUNTANTCHECK");
         if (!allowedRoles.contains(user.getRole().toUpperCase())) {
             response.setStatus("01");
             response.setMessage("No permission to insert finance");
@@ -1529,6 +1529,7 @@ public class BansiService {
             if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole())
                     && !"FINANCE".equalsIgnoreCase(user.getRole())
                     && !"AUDITOR".equalsIgnoreCase(user.getRole())
+                    && !",\"ACCOUNTANTCHECK\"".equalsIgnoreCase(user.getRole())
                     && !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
 
                 if (req.getBillList() != null && !req.getBillList().isEmpty()) {
@@ -1737,7 +1738,7 @@ public class BansiService {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT","ACCOUNTANTCHECK");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");

@@ -2420,7 +2420,6 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                 return response;
             }
         }
-
         // ===== approve items
         int updatedRows = 0;
         for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
@@ -2430,14 +2429,11 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                     stockItemDetailsReq.getStatus(), // status
                     "ok",                            // usingStatus
                     new Date(),                      // usingDate
-                    stockItemDetailsReq.getKhid(),   //old_stock_house
                     stockItemDetailsReq.getUserId(), // usingBy (คนเดียวกับ approveBy)
                     item.getItemId(),                // itemId
                     stockItemDetailsReq.getBillNo()  // billNo
             );
         }
-
-
         if (updatedRows > 0) {
             response.setStatus("00");
             response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງສໍາເລັດ");
@@ -2451,9 +2447,9 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
         response.setStatus("EE");
         response.setMessage("Error while updating request details.");
     }
-
     return response;
 }
+
 
     public DataResponse getRequestKey(){
         //RequestGenKeyRepository
@@ -2473,6 +2469,7 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
         }
         return response;
     }
+
 public DataResponse checkKeyOrder(){
         //RequestGenKeyRepository
         DataResponse response = new DataResponse();
@@ -3212,119 +3209,8 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         });
 
     }
-    public Optional<StockCheckModel> callToRequestItemBtBillNo(String billNo) {
-        String sql = "select \n" +
-                "h.key_id\t,h.b_name\n" +
-                "from item_inventory a\n" +
-                "left join stock_house g on a.houseid = g.khid\n" +
-                "join tb_bors h on h.key_id = g.key_id\n" +
-                "join request_item_details i on a.item_id=i.item_id\n" +
-                "where i.bill_no= ? limit 1  ";
 
-        try {
-            StockCheckModel result = EBankJdbcTemplate.queryForObject(
-                    sql,
-                    new Object[]{billNo},
-                    (rs, rowNum) -> {
-                        StockCheckModel tr = new StockCheckModel();
-                        tr.setKeyNo(rs.getString("key_id"));
-                        tr.setBorName(rs.getString("b_name"));
-                        return tr;
-                    }
-            );
-            return Optional.ofNullable(result);
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-
-    public Optional<StockCheckModel> checkStockBtBorNo(String borNo) {
-        String sql = "SELECT a.key_id, b.b_name, a.khid, a.khname, a.stock_status " +
-                "FROM stock_house a " +
-                "INNER JOIN tb_bors b ON a.key_id = b.key_id " +
-                "WHERE a.key_id = ? AND a.stock_status = 'OLD-STOCK' " +
-                "LIMIT 1";
-
-        log.info("=====> checkStockBtBorNo borNo: {}", borNo); // ✅ เพิ่ม
-
-        try {
-            StockCheckModel result = EBankJdbcTemplate.queryForObject(
-                    sql,
-                    new Object[]{borNo},
-                    (rs, rowNum) -> {
-                        StockCheckModel tr = new StockCheckModel();
-                        tr.setKeyNo(rs.getString("key_id"));
-                        tr.setBorName(rs.getString("b_name"));
-                        tr.setKhId(rs.getString("khid"));
-                        tr.setKhName(rs.getString("khname"));
-                        log.info("=====> found stock khid: {}", tr.getKhId()); // ✅ เพิ่ม
-                        return tr;
-                    }
-            );
-            return Optional.ofNullable(result);
-        } catch (EmptyResultDataAccessException e) {
-            log.info("=====> EmptyResult for borNo: {}", borNo); // ✅ เพิ่ม
-            return Optional.empty();
-        } catch (Exception e) {
-            log.info("=====> Exception: {}", e.getMessage()); // ✅ เพิ่ม
-            return Optional.empty();
-        }
-    }
-    public int updateItemToOldStock(String khNo, String usingStatus, int amt, String billNo, Integer itemId) {
-        String sql = "UPDATE request_item_details " +
-                "SET old_stock_house = ?, " +
-                "using_status = ?, " +
-                "using_amt = ? " +
-                "WHERE bill_no = ? AND item_id = ?";
-
-        log.info("=====> updateItemToOldStock khNo: {}, usingStatus: {}, amt: {}, billNo: {}, itemId: {}",
-                khNo, usingStatus, amt, billNo, itemId);
-
-        try {
-            int result = EBankJdbcTemplate.update(sql, khNo, usingStatus, amt, billNo, itemId);
-            log.info("=====> update result: {}", result);
-            return result;
-        } catch (Exception e) {
-            log.info("=====> update error: {}", e.getMessage());
-            e.printStackTrace();
-            return 0;
-        }
-    }
     //move data to stock
-    public int moveToOldStock(ItemMoveReq itemMoveReq) {
-        Optional<StockCheckModel> billInfo = callToRequestItemBtBillNo(itemMoveReq.getBillNo());
-        if (billInfo.isEmpty()) return -5;
-
-        String borNo = billInfo.get().getKeyNo();
-        log.info("=====> borNo: {}", borNo); // ✅
-
-        Optional<StockCheckModel> stockInfo = checkStockBtBorNo(borNo);
-        log.info("=====> stockInfo isEmpty: {}", stockInfo.isEmpty()); // ✅
-        if (stockInfo.isEmpty()) return -1;
-
-        String oldStockKhId = stockInfo.get().getKhId();
-        log.info("=====> oldStockKhId: {}", oldStockKhId); // ✅
-
-        int updatedCount = 0;
-        if (itemMoveReq.getItemMoveList() != null) {
-            for (itemInfo item : itemMoveReq.getItemMoveList()) {
-                int result = updateItemToOldStock(
-                        oldStockKhId,
-                        "OLD-STOCK",
-                        item.getAmt(),
-                        itemMoveReq.getBillNo(),
-                        item.getItemNo()
-                );
-                log.info("=====> update result for itemNo {}: {}", item.getItemNo(), result); // ✅
-                updatedCount += result;
-            }
-        }
-        log.info("=====> total updatedCount: {}", updatedCount); // ✅
-        return updatedCount;
-    }
-
     public MoveItemResponse moveItemToStock(ItemMoveReq itemMoveReq) {
         MoveItemResponse response = new MoveItemResponse();
         try {
@@ -3352,5 +3238,80 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             response.setMessage("Error processing data: " + e.getMessage());
         }
         return response;
+    }
+    public int moveToOldStock(ItemMoveReq itemMoveReq) {
+        //  Query เดียวแทน 2 Query
+        Optional<StockCheckModel> stockInfo = getOldStockKhIdByBillNo(itemMoveReq.getBillNo());
+        if (stockInfo.isEmpty()) return -1;
+
+        String oldStockKhId = stockInfo.get().getKhId();
+        log.info("=====> oldStockKhId: {}", oldStockKhId);
+
+        if (itemMoveReq.getItemMoveList() == null || itemMoveReq.getItemMoveList().isEmpty()) return 0;
+
+        //  Batch Update แทนการวนลูป
+        int updatedCount = batchUpdateItemToOldStock(
+                oldStockKhId,
+                "OLD-STOCK",
+                itemMoveReq.getBillNo(),
+                itemMoveReq.getItemMoveList()
+        );
+
+        log.info("=====> total updatedCount: {}", updatedCount);
+        return updatedCount;
+    }
+    //  รวม 2 Query เป็น 1 Query
+    public Optional<StockCheckModel> getOldStockKhIdByBillNo(String billNo) {
+        String sql = "SELECT h.key_id, h.b_name, s.khid, s.khname " +
+                "FROM request_item_details i " +
+                "JOIN item_inventory a ON a.item_id = i.item_id " +
+                "JOIN stock_house g ON a.houseid = g.khid " +
+                "JOIN tb_bors h ON h.key_id = g.key_id " +
+                "JOIN stock_house s ON s.key_id = h.key_id AND s.stock_status = 'OLD-STOCK' " +
+                "WHERE i.bill_no = ? LIMIT 1";
+
+        try {
+            StockCheckModel result = EBankJdbcTemplate.queryForObject(
+                    sql,
+                    new Object[]{billNo},
+                    (rs, rowNum) -> {
+                        StockCheckModel tr = new StockCheckModel();
+                        tr.setKeyNo(rs.getString("key_id"));
+                        tr.setBorName(rs.getString("b_name"));
+                        tr.setKhId(rs.getString("khid"));
+                        tr.setKhName(rs.getString("khname"));
+                        return tr;
+                    }
+            );
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            log.info("=====> Bill not found or no OLD-STOCK for billNo: {}", billNo);
+            return Optional.empty();
+        } catch (Exception e) {
+            log.info("=====> Exception: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+    // Batch Update ทีเดียวทุก item
+    public int batchUpdateItemToOldStock(String khNo, String usingStatus,
+                                         String billNo, List<itemInfo> items) {
+        String sql = "UPDATE request_item_details " +
+                "SET old_stock_house = ?, " +
+                "using_status = ?, " +
+                "using_amt = ? " +
+                "WHERE bill_no = ? AND item_id = ?";
+
+        List<Object[]> batchArgs = items.stream()
+                .map(item -> new Object[]{khNo, usingStatus, item.getAmt(), billNo, item.getItemNo()})
+                .collect(Collectors.toList());
+
+        try {
+            int[] results = EBankJdbcTemplate.batchUpdate(sql, batchArgs);
+            return Arrays.stream(results).sum();
+        } catch (Exception e) {
+            log.info("=====> batch update error: {}", e.getMessage());
+            e.printStackTrace();
+            return 0;
+        }
     }
 }

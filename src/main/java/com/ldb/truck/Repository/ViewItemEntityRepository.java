@@ -48,7 +48,7 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
     @Transactional
     @Query(value =
             "SELECT * " +
-                    "FROM v_items\n" +
+                    "FROM v_items1\n" +
                     "WHERE 1=1\n" +
                     "AND (:itemId IS NULL OR item_id = :itemId)\n" +
                     "AND (:borNo IS NULL OR bor_no = :borNo)\n" +
@@ -66,14 +66,6 @@ public interface ViewItemEntityRepository extends CrudRepository<viewItemEntity,
             @Param("startDate") String startDate,
             @Param("endDate") String endDate
     );
-
-
-
-//    @Transactional
-//    @Query(value = "SELECT * FROM v_items WHERE bor_no = :borNo and khid =:khid ORDER BY item_name ASC", nativeQuery = true)
-//    List<viewItemEntity> getAllViewItemsBorNo(@Param("borNo") String borNo,@Param("khid") String khid);
-
-
 
     @Transactional
     @Query(value = "SELECT * FROM v_items WHERE item_id =:item_id ORDER BY item_name asc", nativeQuery = true)
