@@ -7,8 +7,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -18,88 +20,116 @@ public class PaymentDetailDao {
     private final JdbcTemplate jdbcTemplate;
 
     // 🔹 ดึงข้อมูลหลักจาก tb_accounting (filter ตามตัวเลือก)
-    public List<PaymentDetailModel> findPaymentDetails(String startDate, String endDate,Long itemTypeid, Long req_id, Long pid, String role) {
-        String sql = "SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, a.date, a.datermine_date, a.date_create, a.data_type, " +
-                "a.reference, a.reference_number, a.remark, a.internal_remark, a.tag, a.file, s.supplier_name, a.supplierid, a.bill_status, " +
-                "pt.pid as payId, pt.type_name,pt.type_pay as type_of, rt.req_id, rt.req_name, rt.bansi, it.itemTypeid, it.itemtype_Name, l.USER_LOGIN, l.role, " +
-                "a.basi_approve_date, a.bansi_approveby, " +
-                "a.returnby, a.return_date,b.account_name, b.account_no, b.bank_name, b.bank_name_lao " +  // ← ใส่ space หลัง a.return_date
-                "FROM tb_accounting a " +
-                "INNER JOIN pay_type pt ON a.pay_typeid = pt.pid " +
-                "LEFT JOIN LOGIN l ON a.user_id = l.KEY_ID " +
-                "LEFT JOIN supplier s ON a.supplierid = s.supplierid " +
-                "LEFT JOIN request_item_type rt ON pt.req_id = rt.req_id " +
-                "LEFT JOIN item_type it ON rt.item_typeid = it.itemTypeid " +
-                "LEFT JOIN tb_bank b ON a.b_id = b.b_id";
+    public List<PaymentDetailModel> findPaymentDetailsCursor(
+            PaymentDetailReq req, String role, int size) {
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, ");
+        sql.append("a.date, a.datermine_date, a.date_create, a.data_type, ");
+        sql.append("a.reference, a.reference_number, a.remark, a.internal_remark, ");
+        sql.append("a.tag, a.file, s.supplier_name, a.supplierid, a.bill_status, ");
+        sql.append("pt.pid as payId, pt.type_name, pt.type_pay as type_of, ");
+        sql.append("rt.req_id, rt.req_name, it.itemTypeid, it.itemtype_Name, ");
+        sql.append("l.USER_LOGIN, a.basi_approve_date, a.bansi_approveby, ");
+        sql.append("a.returnby, a.return_date, b.account_name, b.account_no, ");
+        sql.append("b.bank_name, b.bank_name_lao ");
+        sql.append("FROM tb_accounting a ");
+        sql.append("INNER JOIN pay_type pt ON a.pay_typeid = pt.pid ");
+        sql.append("LEFT JOIN LOGIN l ON a.user_id = l.KEY_ID ");
+        sql.append("LEFT JOIN supplier s ON a.supplierid = s.supplierid ");
+        sql.append("LEFT JOIN request_item_type rt ON pt.req_id = rt.req_id ");
+        sql.append("LEFT JOIN item_type it ON rt.item_typeid = it.itemTypeid ");
+        sql.append("LEFT JOIN tb_bank b ON a.b_id = b.b_id ");
 
         List<Object> params = new ArrayList<>();
         List<String> conditions = new ArrayList<>();
 
-        // 🔹 filter วันที่
-        if (startDate != null && !startDate.isEmpty() &&
-                endDate != null && !endDate.isEmpty()) {
-
-            conditions.add("DATE(a.date_create) BETWEEN ? AND ?");
-            params.add(startDate);
-            params.add(endDate);
+        // 🔹 filter ปกติ
+        if (req.getStartDate() != null && !req.getStartDate().isEmpty()
+                && req.getEndDate() != null && !req.getEndDate().isEmpty()) {
+            conditions.add("a.date_create BETWEEN ? AND ?");
+            params.add(req.getStartDate() + " 00:00:00");
+            params.add(req.getEndDate() + " 23:59:59");
         }
 
-        if (itemTypeid != null) {
+        if (req.getItemTypeid() != null) {
             conditions.add("it.itemTypeid = ?");
-            params.add(itemTypeid);
+            params.add(req.getItemTypeid());
         }
-        if (req_id != null) {
+
+        if (req.getReq_id() != null) {
             conditions.add("rt.req_id = ?");
-            params.add(req_id);
+            params.add(req.getReq_id());
         }
-        if (pid != null) {
+
+        if (req.getPid() != null) {
             conditions.add("pt.pid = ?");
-            params.add(pid);
+            params.add(req.getPid());
         }
 
-        // 🔹 Filter role: ดูทุกคนที่มี role เท่ากับ role ของผู้ใช้
-//        if ("SUPERACCOUNT".equalsIgnoreCase(role) || "SUPERBANSI".equalsIgnoreCase(role)) {
-//            conditions.add("l.role = ?");
-//            params.add(role.toUpperCase()); // role ต้อง match กับ column l.role
-//        }
-//        if ("BANSIAPPROVE".equalsIgnoreCase(role)) {
-//            conditions.add("a.bill_status = ?");
-//            params.add("wait");
-//        }
-//
-//        if ("SUPERACCOUNT".equalsIgnoreCase(role)) {
-//            conditions.add("a.bill_status = ?");
-//            params.add("wait-finance");
-//        }
+        if (req.getBillNo() != null && !req.getBillNo().isEmpty()) {
+            conditions.add("a.bill_No = ?");
+            params.add(req.getBillNo());
+        }
+        if (req.getBillStatus() != null && !req.getBillStatus().isEmpty()) {
+            conditions.add("a.bill_status = ?");
+            params.add(req.getBillStatus());
+        }
 
 
-        // PADMIN เห็นทุกอย่าง → ไม่ต้อง filter
+        //  cursor logic (สำคัญสุด)
+        if (req.getLastDate() != null && req.getLastKeyId() != null) {
+            conditions.add("(a.date < ? OR (a.date = ? AND a.key_id < ?))");
+            params.add(req.getLastDate());
+            params.add(req.getLastDate());
+            params.add(req.getLastKeyId());
+        }
 
-//        if (!conditions.isEmpty()) {
-//            sql += " WHERE " + String.join(" AND ", conditions);
-//        }
-        // 🔹 รวม WHERE
         if (!conditions.isEmpty()) {
-            sql += " WHERE " + String.join(" AND ", conditions);
+            sql.append(" WHERE ").append(String.join(" AND ", conditions));
         }
 
-        sql += " ORDER BY a.date DESC";
+        //  order ต้องตรงกับ cursor
+        sql.append(" ORDER BY a.date DESC, a.key_id DESC ");
+        sql.append(" LIMIT ?");
 
-        log.info("SQL: {} , params: {}", sql, params);
+        params.add(size);
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapPaymentDetail(rs), params.toArray());
+        List<PaymentDetailModel> mainList = jdbcTemplate.query(
+                sql.toString(),
+                (rs, rowNum) -> mapPaymentDetailBase(rs),
+                params.toArray()
+        );
+
+        // 🔥 batch load list items
+        if (mainList.isEmpty()) return mainList;
+
+        List<String> billNos = mainList.stream()
+                .map(PaymentDetailModel::getBillNo)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<String, List<PaymentDetailListModel>> itemMap =
+                findListItemsByBillNos(billNos);
+
+        for (PaymentDetailModel m : mainList) {
+            m.setListItems(itemMap.getOrDefault(m.getBillNo(), new ArrayList<>()));
+        }
+
+        return mainList;
     }
 
 
 
     // 🔹 Mapper สำหรับ PaymentDetailModel
-    private PaymentDetailModel mapPaymentDetail(java.sql.ResultSet rs) throws java.sql.SQLException {
+    private PaymentDetailModel mapPaymentDetailBase(ResultSet rs) throws SQLException {
         PaymentDetailModel model = new PaymentDetailModel();
+
         model.setKeyId(rs.getLong("key_id"));
         model.setBillNo(rs.getString("bill_No"));
         model.setBill_status(rs.getString("bill_status"));
         model.setDate_create(rs.getString("date_create"));
-//        model.setBansi(rs.getString("bansi"));
         model.setTitle(rs.getString("title"));
         model.setCurrency(rs.getString("currency"));
         model.setExchangeRate(rs.getDouble("exchange_rate"));
@@ -110,16 +140,10 @@ public class PaymentDetailDao {
         model.setRemark(rs.getString("remark"));
         model.setInternalRemark(rs.getString("internal_remark"));
         model.setTag(rs.getString("tag"));
-//        model.setFile(rs.getString("file"));
+
         String fileStr = rs.getString("file");
-        model.setFile(fileStr); // เก็บเหมือนเดิม
-        if (fileStr != null && !fileStr.isEmpty()) {
-            // แยกเป็น list ตาม comma
-            List<String> fileList = Arrays.asList(fileStr.split(","));
-            model.setFileList(fileList);
-        } else {
-            model.setFileList(new ArrayList<>()); // ถ้าไม่มีไฟล์
-        }
+        model.setFile(fileStr);
+        model.setFileList(fileStr != null ? Arrays.asList(fileStr.split(",")) : new ArrayList<>());
 
         model.setPayId(rs.getLong("payId"));
         model.setPaytype(rs.getString("type_name"));
@@ -130,29 +154,30 @@ public class PaymentDetailDao {
         model.setBigProject(rs.getString("itemtype_Name"));
         model.setSupplierid(rs.getString("supplierid"));
         model.setSupplier_name(rs.getString("supplier_name"));
-        model.setData_type(rs.getString("data_type"));
         model.setUser(rs.getString("USER_LOGIN"));
+
         model.setBansi_approveby(rs.getString("bansi_approveby"));
         model.setBasi_approve_date(rs.getString("basi_approve_date"));
         model.setReturnby(rs.getString("returnby"));
         model.setReturn_date(rs.getString("return_date"));
+
         model.setAccount_name(rs.getString("account_name"));
         model.setAccount_no(rs.getString("account_no"));
         model.setBank_name(rs.getString("bank_name"));
         model.setBank_lao_name(rs.getString("bank_name_lao"));
 
-        //  เติม listItems จาก tb_accounting_list
-        model.setListItems(findListItemsByBillNo(model.getBillNo()));
-
         return model;
     }
 
     //  ดึงข้อมูล list item ตาม billNo
-    public List<PaymentDetailListModel> findListItemsByBillNo(String billNo) {
-        String sql = "SELECT id, key_id, bill_No, list_name, qty, unit, price, usd_price, reduce, reduce_status, tax, tax_status " +
-                "FROM tb_accounting_list WHERE bill_No = ?";
+    public Map<String, List<PaymentDetailListModel>> findListItemsByBillNos(List<String> billNos) {
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+        String inSql = String.join(",", Collections.nCopies(billNos.size(), "?"));
+
+        String sql = "SELECT id, key_id, bill_No, list_name, qty, unit, price, usd_price, reduce, reduce_status, tax, tax_status " +
+                "FROM tb_accounting_list WHERE bill_No IN (" + inSql + ")";
+
+        List<PaymentDetailListModel> items = jdbcTemplate.query(sql, billNos.toArray(), (rs, rowNum) -> {
             PaymentDetailListModel item = new PaymentDetailListModel();
             item.setId(rs.getLong("id"));
             item.setKeyId(rs.getLong("key_id"));
@@ -167,7 +192,9 @@ public class PaymentDetailDao {
             item.setTax(rs.getDouble("tax"));
             item.setTaxStatus(rs.getString("tax_status"));
             return item;
-        }, billNo);
+        });
+
+        return items.stream().collect(Collectors.groupingBy(PaymentDetailListModel::getBill_No));
     }
     // query interviewee
     public List<IntervieweeModel> findInterviewees(String status, String startDate, String endDate) {

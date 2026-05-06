@@ -581,15 +581,37 @@ public class BansiController {
         return ResponseEntity.ok(bansiService.approveFinanceBill(req));
     }
 
-
-    // ─── Check ยอดคงเหลือของ bill_no ─────────────────────────
-    @PostMapping("/finance-bill/bill-summary")
-    public ResponseEntity<DataResponse> getBillNoSummary(
+    // ─── ACCOUNTANT ขอแก้ไข amount ───────────────────────────
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/ref/request-update")
+    public ResponseEntity<DataResponse> requestUpdateRefAmount(
+            @RequestBody FinanceBillRefUpdateRequestDto req) {
+        return ResponseEntity.ok(bansiService.requestUpdateRefAmount(req));
+    }
+    // ─── GET: ดูรายการ Request ที่รอ ADMIN Approve ────────────
+    @CrossOrigin(origins = "*")
+    @GetMapping("/get-finance/update-requests")
+    public ResponseEntity<DataResponse> getUpdateRequests(
             @RequestParam String token,
-            @RequestBody List<String> billNos) {
-        return ResponseEntity.ok(bansiService.getBillNoSummary(token, billNos));
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(bansiService.getUpdateRequests(token, status));
+    }
+    // ─── ADMIN Approve / Reject ───────────────────────────────
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/ref/approve-update")
+    public ResponseEntity<DataResponse> approveUpdateRefAmount(
+            @RequestBody FinanceBillRefApproveDto req) {
+        return ResponseEntity.ok(bansiService.approveUpdateRefAmount(req));
     }
 
+    // ─── ดู History ──────────────────────────────────────────
+    @CrossOrigin(origins = "*")
+    @GetMapping("/get-finance/update-history")
+    public ResponseEntity<DataResponse> getUpdateRefHistory(
+            @RequestParam String token,
+            @RequestParam(required = false) String financeBillNo) {
+        return ResponseEntity.ok(bansiService.getUpdateRefHistory(token, financeBillNo));
+    }
 
 
 

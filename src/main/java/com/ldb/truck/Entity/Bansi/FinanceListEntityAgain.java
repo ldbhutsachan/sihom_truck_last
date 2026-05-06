@@ -114,6 +114,10 @@ public class FinanceListEntityAgain {
     @JsonProperty("paid_amount")
     private Double paidAmount;
 
+    @Column(name = "next_pay_date")
+    @JsonProperty("next_pay_date")
+    private String nextPayDate;
+
     @Column(name = "remaining_amount")
     @JsonProperty("remaining_amount")
     private Double remainingAmount;

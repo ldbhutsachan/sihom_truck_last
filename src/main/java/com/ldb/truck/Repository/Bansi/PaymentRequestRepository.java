@@ -25,6 +25,17 @@ public interface PaymentRequestRepository extends JpaRepository<PaymentRequestEn
             "WHERE bill_No = :billNo",
             nativeQuery = true)
     int updatePayStatusByBillNo(@Param("billNo") String billNo,
-                                @Param("status") String status);
+                                @Param("status") String status
+                                );
+
+    //UPDATE ONLY next_pay_date
+    @Modifying
+    @Query(value = "UPDATE tb_accounting " +
+            "SET next_pay_date =:nextDatePay " +
+            "WHERE bill_No = :billNo",
+            nativeQuery = true)
+    int updateNextPayDate(@Param("billNo") String billNo,
+                                @Param("nextDatePay") String nextDatePay
+    );
 }
 
