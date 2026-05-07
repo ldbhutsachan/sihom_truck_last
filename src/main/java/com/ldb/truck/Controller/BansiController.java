@@ -612,6 +612,13 @@ public class BansiController {
             @RequestParam(required = false) String financeBillNo) {
         return ResponseEntity.ok(bansiService.getUpdateRefHistory(token, financeBillNo));
     }
+    //report income outcome
+    @CrossOrigin(origins = "*")
+    @PostMapping("/get-finance/balance-report")
+    public ResponseEntity<DataResponse> getFinanceBalanceReport(
+            @RequestBody FinanceBalanceReportRequest req) {
+        return ResponseEntity.ok(bansiService.getFinanceBalanceReport(req));
+    }
 
 
 

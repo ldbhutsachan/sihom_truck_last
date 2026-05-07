@@ -97,6 +97,8 @@ public class BansiService {
     private SupplierEntityRepository supplierEntityRepository;
     @Autowired
     private FinanceBillRefUpdateRequestRepository refUpdateRequestRepository;
+    @Autowired
+    private FinanceBalanceSummaryRepository financeBalanceSummaryRepository;
 
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
@@ -3167,4 +3169,514 @@ public class BansiService {
         return response;
     }
 
+    // ─── Finance Balance Report ───────────────────────────────
+    public DataResponse getFinanceBalanceReport(FinanceBalanceReportRequest req) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+
+            // =====================================================
+            // 1. CHECK TOKEN
+            // =====================================================
+
+            List<Profile> profileList =
+                    profileDao.getProfileInfoByToken(req.getToken());
+
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+
+            Profile user = profileList.get(0);
+            String role = user.getRole().toUpperCase();
+
+            // =====================================================
+            // 2. CHECK ROLE
+            // =====================================================
+
+            List<String> allowed = Arrays.asList(
+                    "ACCOUNTANT",
+                    "ACCOUNTANTCHECK",
+                    "AUDITOR",
+                    "FINANCE",
+                    "FOR_DOCUMENT_ADMIN"
+            );
+
+            if (!allowed.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("No permission");
+                return response;
+            }
+
+            // =====================================================
+            // 3. PARSE DATE
+            // =====================================================
+
+            LocalDate startDate = null;
+            LocalDate endDate = null;
+
+            if (req.getStartDate() != null
+                    && !req.getStartDate().isEmpty()) {
+
+                startDate = LocalDate.parse(
+                        req.getStartDate(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                );
+            }
+
+            if (req.getEndDate() != null
+                    && !req.getEndDate().isEmpty()) {
+
+                endDate = LocalDate.parse(
+                        req.getEndDate(),
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                );
+            }
+
+            // =====================================================
+            // 4. QUERY
+            // =====================================================
+
+            List<VFinanceBalanceSummary> list =
+                    financeBalanceSummaryRepository.findByFilter(
+                            req.getSupplierId(),
+                            req.getBigProjectId(),
+                            req.getSmallProjectId(),
+                            req.getPayTypeId(),
+                            (req.getBillType() != null
+                                    && !req.getBillType().isEmpty())
+                                    ? req.getBillType()
+                                    : null,
+                            (req.getCurrency() != null
+                                    && !req.getCurrency().isEmpty())
+                                    ? req.getCurrency()
+                                    : null,
+                            startDate,
+                            endDate
+                    );
+
+            // =====================================================
+            // 5. GROUP BY SUPPLIER
+            // =====================================================
+
+            Map<Long, List<VFinanceBalanceSummary>> groupedBySupplier =
+                    list.stream()
+                            .collect(Collectors.groupingBy(
+                                    VFinanceBalanceSummary::getSupplierid,
+                                    LinkedHashMap::new,
+                                    Collectors.toList()
+                            ));
+
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (Map.Entry<Long, List<VFinanceBalanceSummary>> entry
+                    : groupedBySupplier.entrySet()) {
+
+                List<VFinanceBalanceSummary> rows = entry.getValue();
+
+                // =================================================
+                // IMPORTANT SORT
+                // =================================================
+
+                rows.sort(
+                        Comparator.comparing(
+                                        (VFinanceBalanceSummary r) ->
+                                                r.getCurrency() != null
+                                                        ? r.getCurrency()
+                                                        : ""
+                                )
+                                .thenComparing(
+                                        VFinanceBalanceSummary::getFinanceApproveDate,
+                                        Comparator.nullsLast(
+                                                Comparator.naturalOrder()
+                                        )
+                                )
+                                .thenComparing(
+                                        VFinanceBalanceSummary::getRowNum,
+                                        Comparator.nullsLast(
+                                                Comparator.naturalOrder()
+                                        )
+                                )
+                );
+
+                VFinanceBalanceSummary first = rows.get(0);
+
+                // =================================================
+                // INCOME MAPS
+                // =================================================
+
+                Map<String, BigDecimal> incomeOpeningByCurrency =
+                        new LinkedHashMap<>();
+
+                Map<String, BigDecimal> incomeByCurrency =
+                        new LinkedHashMap<>();
+
+                Map<String, BigDecimal> incomeClosingByCurrency =
+                        new LinkedHashMap<>();
+
+                // =================================================
+                // OUTCOME MAPS
+                // =================================================
+
+                Map<String, BigDecimal> outcomeOpeningByCurrency =
+                        new LinkedHashMap<>();
+
+                Map<String, BigDecimal> outcomeByCurrency =
+                        new LinkedHashMap<>();
+
+                Map<String, BigDecimal> outcomeClosingByCurrency =
+                        new LinkedHashMap<>();
+
+                // =================================================
+                // DETAILS
+                // =================================================
+
+                List<Map<String, Object>> detailList =
+                        new ArrayList<>();
+
+                for (VFinanceBalanceSummary row : rows) {
+
+                    String cur =
+                            row.getCurrency() != null
+                                    ? row.getCurrency().toUpperCase()
+                                    : "UNKNOWN";
+
+                    BigDecimal opening =
+                            row.getOpeningBalance() != null
+                                    ? row.getOpeningBalance()
+                                    : BigDecimal.ZERO;
+
+                    BigDecimal income =
+                            row.getIncome() != null
+                                    ? row.getIncome()
+                                    : BigDecimal.ZERO;
+
+                    BigDecimal outcome =
+                            row.getOutcome() != null
+                                    ? row.getOutcome()
+                                    : BigDecimal.ZERO;
+
+                    BigDecimal closing =
+                            row.getClosingBalance() != null
+                                    ? row.getClosingBalance()
+                                    : BigDecimal.ZERO;
+
+                    // =============================================
+                    // RECEIVE = INCOME
+                    // =============================================
+
+                    if ("RECEIVE".equalsIgnoreCase(row.getBillType())) {
+
+                        // first opening
+                        incomeOpeningByCurrency.putIfAbsent(
+                                cur,
+                                opening
+                        );
+
+                        // total income
+                        incomeByCurrency.merge(
+                                cur,
+                                income,
+                                BigDecimal::add
+                        );
+
+                        // last closing
+                        incomeClosingByCurrency.put(
+                                cur,
+                                closing
+                        );
+                    }
+
+                    // =============================================
+                    // PAY = OUTCOME
+                    // =============================================
+
+                    else if ("PAY".equalsIgnoreCase(row.getBillType())) {
+
+                        // first opening
+                        outcomeOpeningByCurrency.putIfAbsent(
+                                cur,
+                                opening
+                        );
+
+                        // total outcome
+                        outcomeByCurrency.merge(
+                                cur,
+                                outcome,
+                                BigDecimal::add
+                        );
+
+                        // last closing
+                        outcomeClosingByCurrency.put(
+                                cur,
+                                closing
+                        );
+                    }
+
+                    // =============================================
+                    // DETAIL ROW
+                    // =============================================
+
+                    Map<String, Object> detail =
+                            new LinkedHashMap<>();
+
+                    detail.put("billType",
+                            row.getBillType());
+
+                    detail.put("currency",
+                            row.getCurrency());
+
+                    detail.put("bigProjectId",
+                            row.getBigProjectId());
+
+                    detail.put("bigProject",
+                            row.getBigProject());
+
+                    detail.put("smallProjectId",
+                            row.getSmallProjectId());
+
+                    detail.put("smallProject",
+                            row.getSmallProject());
+
+                    detail.put("payTypeId",
+                            row.getPayTypeId());
+
+                    detail.put("payType",
+                            row.getPayType());
+
+                    detail.put("financeApproveDate",
+                            row.getFinanceApproveDate());
+
+                    detail.put("dateIn",
+                            row.getDateIn());
+
+                    detail.put("dateOut",
+                            row.getDateOut());
+
+                    detail.put("openingBalance",
+                            clean(row.getOpeningBalance()));
+
+                    detail.put("income",
+                            clean(row.getIncome()));
+
+                    detail.put("outcome",
+                            clean(row.getOutcome()));
+
+                    detail.put("closingBalance",
+                            clean(row.getClosingBalance()));
+
+                    detailList.add(detail);
+                }
+
+                // =================================================
+                // BUILD INCOME FOOTER
+                // =================================================
+
+                Map<String, Object> incomeFooter =
+                        new LinkedHashMap<>();
+
+                incomeFooter.put(
+                        "totalLAKIncome",
+                        clean(incomeByCurrency.getOrDefault(
+                                "LAK",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                incomeFooter.put(
+                        "totalTHBIncome",
+                        clean(incomeByCurrency.getOrDefault(
+                                "THB",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                incomeFooter.put(
+                        "totalUSDIncome",
+                        clean(incomeByCurrency.getOrDefault(
+                                "USD",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                incomeFooter.put(
+                        "incomeLAKOpening",
+                        clean(incomeOpeningByCurrency.getOrDefault(
+                                "LAK",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                incomeFooter.put(
+                        "incomeTHBOpening",
+                        clean(incomeOpeningByCurrency.getOrDefault(
+                                "THB",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                incomeFooter.put(
+                        "incomeUSDOpening",
+                        clean(incomeOpeningByCurrency.getOrDefault(
+                                "USD",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                incomeFooter.put(
+                        "incomeLAKClosing",
+                        clean(incomeClosingByCurrency.getOrDefault(
+                                "LAK",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                incomeFooter.put(
+                        "incomeTHBClosing",
+                        clean(incomeClosingByCurrency.getOrDefault(
+                                "THB",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                incomeFooter.put(
+                        "incomeUSDClosing",
+                        clean(incomeClosingByCurrency.getOrDefault(
+                                "USD",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                // =================================================
+                // BUILD OUTCOME FOOTER
+                // =================================================
+
+                Map<String, Object> outcomeFooter =
+                        new LinkedHashMap<>();
+
+                outcomeFooter.put(
+                        "totalLAKOutcome",
+                        clean(outcomeByCurrency.getOrDefault(
+                                "LAK",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                outcomeFooter.put(
+                        "totalTHBOutcome",
+                        clean(outcomeByCurrency.getOrDefault(
+                                "THB",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                outcomeFooter.put(
+                        "totalUSDOutcome",
+                        clean(outcomeByCurrency.getOrDefault(
+                                "USD",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                outcomeFooter.put(
+                        "outcomeLAKOpening",
+                        clean(outcomeOpeningByCurrency.getOrDefault(
+                                "LAK",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                outcomeFooter.put(
+                        "outcomeTHBOpening",
+                        clean(outcomeOpeningByCurrency.getOrDefault(
+                                "THB",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                outcomeFooter.put(
+                        "outcomeUSDOpening",
+                        clean(outcomeOpeningByCurrency.getOrDefault(
+                                "USD",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                outcomeFooter.put(
+                        "outcomeLAKClosing",
+                        clean(outcomeClosingByCurrency.getOrDefault(
+                                "LAK",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                outcomeFooter.put(
+                        "outcomeTHBClosing",
+                        clean(outcomeClosingByCurrency.getOrDefault(
+                                "THB",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                outcomeFooter.put(
+                        "outcomeUSDClosing",
+                        clean(outcomeClosingByCurrency.getOrDefault(
+                                "USD",
+                                BigDecimal.ZERO
+                        ))
+                );
+
+                // =================================================
+                // SUPPLIER ROW
+                // =================================================
+
+                Map<String, Object> supplierMap =
+                        new LinkedHashMap<>();
+
+                supplierMap.put(
+                        "supplierid",
+                        first.getSupplierid()
+                );
+
+                supplierMap.put(
+                        "supplierName",
+                        first.getSupplierName()
+                );
+
+                supplierMap.put(
+                        "income",
+                        incomeFooter
+                );
+
+                supplierMap.put(
+                        "outcome",
+                        outcomeFooter
+                );
+
+                supplierMap.put(
+                        "details",
+                        detailList
+                );
+
+                result.add(supplierMap);
+            }
+
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(result);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            response.setStatus("EE");
+            response.setMessage(
+                    "Error: " + e.getMessage()
+            );
+        }
+
+        return response;
+    }
 }
