@@ -619,7 +619,4 @@ public class BansiController {
             @RequestBody FinanceBalanceReportRequest req) {
         return ResponseEntity.ok(bansiService.getFinanceBalanceReport(req));
     }
-
-
-
 }

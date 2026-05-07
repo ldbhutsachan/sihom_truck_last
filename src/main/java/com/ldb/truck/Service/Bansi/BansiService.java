@@ -576,7 +576,8 @@ public class BansiService {
         entity.setInternalRemark(req.getInternal_remark() != null ? req.getInternal_remark() : entity.getInternalRemark());
         entity.setTag(req.getTag() != null ? req.getTag() : entity.getTag());
         entity.setDatertimeDate(req.getDatermine_date() != null ? req.getDatermine_date() : entity.getDatertimeDate());
-        entity.setBillStatus(req.getBill_status() != null ? req.getBill_status() : entity.getBillStatus());
+//        entity.setBillStatus(req.getBill_status() != null ? req.getBill_status() : entity.getBillStatus());
+        entity.setBillStatus("wait");
         entity.setBId(req.getB_id() != null ? req.getB_id() : entity.getBId());
 
         if (req.getDate() != null) {
