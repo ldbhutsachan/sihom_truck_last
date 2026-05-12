@@ -48,7 +48,7 @@ public class FaceService {
             newToken = UUID.randomUUID().toString().replace("-", "");
         } while (userRepository.findByToken(newToken).isPresent());
 
-        // ✅ Hash password ก่อนเก็บลง DB
+        //  Hash password ก่อนเก็บลง DB
         String plainPassword = dto.getPassword();  // เก็บ plain ไว้ก่อน response กลับ
         String hashedPassword = PasswordUtil.hashPassword(plainPassword);
 
@@ -337,7 +337,7 @@ public class FaceService {
             response.setDataResponse(data);
 
         } catch (Exception e) {
-            // ❌ Error response
+            //  Error response
             e.printStackTrace();
             response.setStatus("01");
             response.setMessage(e.getMessage());

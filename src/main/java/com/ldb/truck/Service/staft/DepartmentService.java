@@ -334,7 +334,7 @@ public class DepartmentService {
         return response;
     }
 
-    // ✅ HR อนุมัติ/ปฏิเสธ
+    // HR อนุมัติ/ปฏิเสธ
     public DataResponse approveAdjustment(AdjustmentApproveDTO dto) {
 
         DataResponse response = new DataResponse();
@@ -403,7 +403,7 @@ public class DepartmentService {
                         newLog.setStaff(staff);
                         newLog.setCheckType("CHECK_IN");
                         newLog.setCheckTime(adjustment.getCheckInTime());
-                        newLog.setIpAddress(staff.getIpAddress());
+//                        newLog.setIpAddress(staff.getIpAddress());
                         newLog.setMacAddress(staff.getMacAddress());
                         newLog.setRemark("Adjusted by " + hr.getUsername());
                         attendanceLogRepository.save(newLog);
@@ -427,7 +427,7 @@ public class DepartmentService {
                         newLog.setStaff(staff);
                         newLog.setCheckType("CHECK_OUT");
                         newLog.setCheckTime(adjustment.getCheckOutTime());
-                        newLog.setIpAddress(staff.getIpAddress());
+//                        newLog.setIpAddress(staff.getIpAddress());
                         newLog.setMacAddress(staff.getMacAddress());
                         newLog.setRemark("Adjusted by " + hr.getUsername());
                         attendanceLogRepository.save(newLog);
@@ -462,7 +462,7 @@ public class DepartmentService {
         return response;
     }
 
-    // ✅ ดูรายการ Adjustment Request
+    //  ดูรายการ Adjustment Request
     public DataResponse getAdjustments(Map<String, Object> body) {
 
         DataResponse response = new DataResponse();

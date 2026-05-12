@@ -22,7 +22,7 @@ public class HikvisionService {
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
 
-    // ✅ Default password เดียวกันทุกคน
+    //  Default password เดียวกันทุกคน
     private static final String DEFAULT_PASSWORD = "1234";
 
     public Object processEvent(String rawData) {
@@ -60,14 +60,14 @@ public class HikvisionService {
 
             if (existingStaff.isEmpty()) {
                 System.out.println("Auto Register: " + staffCode);
-                autoRegisterStaff(staffCode, name, ipAddress, macAddress);  // ✅ ส่ง ip, mac
+                autoRegisterStaff(staffCode, name, macAddress);  //  ส่ง ip, mac
             }
 
             // Check-in / Check-out พร้อมส่ง ip, mac
             CheckInRequestDTO dto = new CheckInRequestDTO();
             dto.setStaffCode(staffCode);
-            dto.setIpAddress(ipAddress);    // ✅
-            dto.setMacAddress(macAddress);  // ✅
+            dto.setIpAddress(ipAddress);
+            dto.setMacAddress(macAddress);
 
             return faceService.checkIn(dto);
 
@@ -78,7 +78,7 @@ public class HikvisionService {
     }
 
     private void autoRegisterStaff(String staffCode, String name,
-                                   String ipAddress, String macAddress) {
+                                   String macAddress) {
 
         String hashedPassword = PasswordUtil.hashPassword(DEFAULT_PASSWORD);
 
@@ -95,14 +95,14 @@ public class HikvisionService {
         staff.setStatus("ACTIVE");
         staff.setToken(token);
         staff.setTokenExpiredAt(LocalDateTime.now().plusMonths(5));
-        staff.setIpAddress(ipAddress);    // ✅
-        staff.setMacAddress(macAddress);  // ✅
+//        staff.setIpAddress(ipAddress);
+        staff.setMacAddress(macAddress);
 
 
         userRepository.save(staff);
 
         System.out.println("Auto registered — staffCode: " + staffCode
-                + " | ip: " + ipAddress
+//                + " | ip: " + ipAddress
                 + " | mac: " + macAddress);
     }
 }

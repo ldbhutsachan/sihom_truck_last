@@ -4,7 +4,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,8 +44,9 @@ public class StaffEntity {
 
     private String staffImage;
 
-    private String ipAddress;
+//    private String ipAddress;
     private String macAddress;
+    private String work_place;
 
 
     private Integer borId;
