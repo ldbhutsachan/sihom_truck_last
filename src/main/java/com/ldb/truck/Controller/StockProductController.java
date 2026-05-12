@@ -707,18 +707,66 @@ public ResponseEntity<?> approveOrderItemAuth(@RequestBody StockItemAuthReq stoc
     }
     @CrossOrigin(origins = "*")
     @PostMapping("/getBorAll.service")
-    public ResponseEntity<?> getBorAll (@RequestBody BorEntityReq borEntityReq){
-        DataResponse response  = new DataResponse();
-        List<Profile> users = profileDao.getProfileInfoByToken(borEntityReq.getToKen());
-        String uMission = users.get(0).getStaff_id();
+    public ResponseEntity<?> getBorAll(@RequestBody BorEntityReq borEntityReq) {
 
+        DataResponse response = new DataResponse();
 
         try {
-            response = stockService.getBorAll(borEntityReq, uMission);
-        }catch (Exception e){
+            String token = borEntityReq.getToKen();
+
+            if (token == null || token.isEmpty()) {
+                response.setStatus("EE");
+                response.setMessage("Token is missing");
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+
+            // =========================
+            // 1. GET FROM LOGIN TABLE
+            // =========================
+            List<Profile> loginUsers = profileDao.getProfileInfoByToken(token);
+            Profile loginUser = (loginUsers != null && !loginUsers.isEmpty())
+                    ? loginUsers.get(0)
+                    : null;
+
+            // =========================
+            // 2. GET FROM STAFF TABLE
+            // =========================
+            List<Profile> staffUsers = profileDao.getStaffInfoByToken(token);
+            Profile staffUser = (staffUsers != null && !staffUsers.isEmpty())
+                    ? staffUsers.get(0)
+                    : null;
+
+            // =========================
+            // 3. VALIDATE TOKEN
+            // =========================
+            if (loginUser == null && staffUser == null) {
+                response.setStatus("EE");
+                response.setMessage("Token not found in LOGIN and STAFF tables");
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+
+            // =========================
+            // 4. RESOLVE DATA
+            // =========================
+            String staffId = (loginUser != null)
+                    ? loginUser.getStaff_id()
+                    : staffUser.getStaff_id();
+
+            String role = (staffUser != null)
+                    ? staffUser.getRole()
+                    : loginUser.getRole();
+
+            // =========================
+            // 5. CALL SERVICE
+            // =========================
+            response = stockService.getBorAll(borEntityReq, staffId, role);
+
+        } catch (Exception e) {
+            log.error("Error in getBorAll: {}", e.getMessage(), e);
             response.setStatus("EE");
             response.setMessage("Data Error !!");
         }
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     @CrossOrigin(origins = "*")

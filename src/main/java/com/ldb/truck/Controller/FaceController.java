@@ -107,7 +107,7 @@ public class FaceController {
         return ResponseEntity.ok(faceService.updateStaff(query, dto, image));
     }
 
-    // ✅ API ใหม่ — HR/ADMIN อัปเดตเงินเดือน + work schedule
+    //  API ใหม่ — HR/ADMIN อัปเดตเงินเดือน + work schedule
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/updateStuffBy-HR", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DataResponse> updateSalary(

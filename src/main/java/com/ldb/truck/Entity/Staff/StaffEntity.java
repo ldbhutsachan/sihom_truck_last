@@ -68,9 +68,10 @@ public class StaffEntity {
     private BigDecimal baseSalary = BigDecimal.ZERO;
 
     // ✅ เพิ่ม leave quota แต่ละประเภท
-    private Integer leaveQuotaSick      = 30;
-    private Integer leaveQuotaPersonal  = 7;
-    private Integer leaveQuotaMaternity = 90;
+    private Integer leaveQuotaSick      = 15;
+    private Integer leaveQuotaAnnual  = 15;
+    private Integer leaveQuotaCasual    = 3;
+    private Integer leaveQuotaAccident  = 30;
 
     private String    workSchedule;     // MON_FRI หรือ CYCLE
     private Integer   cycleWorkDays;    // เช่น 24

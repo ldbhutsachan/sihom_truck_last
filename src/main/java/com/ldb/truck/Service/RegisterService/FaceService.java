@@ -814,12 +814,12 @@ public class FaceService {
         try {
             // Step 1: หา staff จาก token
             StaffEntity staff = userRepository.findByToken(dto.getToken())
-                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+                    .orElseThrow(() -> new RuntimeException("Token nout found"));
 
             // Step 2: เช็ค token หมดอายุ
             if (staff.getTokenExpiredAt() != null
                     && staff.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
-                throw new RuntimeException("Token หมดอายุ กรุณา Login ใหม่");
+                throw new RuntimeException("Token is expired please Login again");
             }
 
             // Step 3: แปลงวันที่
@@ -829,7 +829,7 @@ public class FaceService {
 
             // Step 4: เช็ควันที่
             if (startDate.isAfter(endDate)) {
-                throw new RuntimeException("วันที่เริ่มต้องไม่เกินวันที่สิ้นสุด");
+                throw new RuntimeException("ວັນທີ່ເລີ່ມຕົ້ນຕ້ອງບໍ່ເກີນວັນທີ່ສີ້ນສຸດຂອງການລາ");
             }
 
             // Step 5: คำนวณ totalDays ตาม work schedule
@@ -856,15 +856,18 @@ public class FaceService {
                 throw new RuntimeException("ຊ່ວງວັນທີຂໍລາຊ້ຳກັບຄຳຂໍທີ່ລໍຖ້າອະນຸມັດຢູ່");
             }
 
-            // Step 7: เช็คโควต้า
-            int quota     = getLeaveQuota(staff, dto.getLeaveType());
+            // Step 7: เช็คโควต้า + กฎแต่ละประเภท
+            validateLeaveRequest(staff, dto.getLeaveType(), totalDays, startDate);
+
+            int quota     = getLeaveQuota(dto.getLeaveType());
             int used      = getLeaveUsed(staff.getId(), dto.getLeaveType(), startDate.getYear());
             int remaining = quota - used;
 
-            if (!dto.getLeaveType().equals("UNPAID") && totalDays > remaining) {
-                throw new RuntimeException("วันลาไม่พอ คงเหลือ " + remaining + " วัน แต่ขอ " + totalDays + " วัน");
+            if (!dto.getLeaveType().equals("UNPAID")
+                    && !dto.getLeaveType().equals("MATERNITY")
+                    && totalDays > remaining) {
+                throw new RuntimeException("ວັນລາບໍ່ພໍ ຄົງເຫຼືອ " + remaining + " ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
             }
-
             // Step 8: บันทึก
             LeaveRequest leave = new LeaveRequest();
             leave.setStaff(staff);
@@ -957,14 +960,109 @@ public class FaceService {
 
         return positionInCycle < workDays;
     }
-
-    private int getLeaveQuota(StaffEntity staff, String leaveType) {
+    private void validateLeaveRequest(StaffEntity staff,
+                                      String leaveType,
+                                      int totalDays,
+                                      LocalDate startDate) {
         switch (leaveType) {
-            case "SICK":      return staff.getLeaveQuotaSick()      != null ? staff.getLeaveQuotaSick()      : 30;
-            case "PERSONAL":  return staff.getLeaveQuotaPersonal()  != null ? staff.getLeaveQuotaPersonal()  : 7;
-            case "MATERNITY": return staff.getLeaveQuotaMaternity() != null ? staff.getLeaveQuotaMaternity() : 90;
-            case "UNPAID":    return 999;
-            default: throw new RuntimeException("ประเภทวันลาไม่ถูกต้อง: " + leaveType);
+
+            case "ANNUAL":
+                // ครั้งละไม่เกิน 5 วัน
+                if (totalDays > 5) {
+                    throw new RuntimeException(
+                            "ລາພັກປະຈຳປີຄັ້ງລະໄດ້ບໍ່ເກີນ 5 ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
+                }
+                break;
+
+            case "CASUAL":
+                // ครั้งละไม่เกิน 3 วัน
+                if (totalDays > 3) {
+                    throw new RuntimeException(
+                            "ລາກິດຄັ້ງລະໄດ້ບໍ່ເກີນ 3 ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
+                }
+                // ไม่เกิน 3 ครั้ง/ปี
+                int casualCount = getLeaveCount(staff.getId(), "CASUAL", startDate.getYear());
+                if (casualCount >= 3) {
+                    throw new RuntimeException(
+                            "ລາກິດໄດ້ສູງສຸດ 3 ຄັ້ງ/ປີ ໃຊ້ໄປແລ້ວ " + casualCount + " ຄັ້ງ");
+                }
+                break;
+
+            case "MATERNITY":
+                // ครั้งละไม่เกิน 105 วัน
+                if (totalDays > 105) {
+                    throw new RuntimeException(
+                            "ລາເກີດລູກຄັ້ງລະໄດ້ບໍ່ເກີນ 105 ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
+                }
+                // ไม่เกิน 1 ครั้ง/ปี
+                int maternityCount = getLeaveCount(staff.getId(), "MATERNITY", startDate.getYear());
+                if (maternityCount >= 1) {
+                    throw new RuntimeException(
+                            "ລາເກີດລູກໄດ້ສູງສຸດ 1 ຄັ້ງ/ປີ");
+                }
+                break;
+
+            case "MISCARRIAGE":
+                // ครั้งละไม่เกิน 30 วัน
+                if (totalDays > 30) {
+                    throw new RuntimeException(
+                            "ລາຫຼຸລູກຄັ້ງລະໄດ້ບໍ່ເກີນ 30 ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
+                }
+                // ไม่เกิน 3 ครั้ง/ปี
+                int miscarriageCount = getLeaveCount(staff.getId(), "MISCARRIAGE", startDate.getYear());
+                if (miscarriageCount >= 3) {
+                    throw new RuntimeException(
+                            "ລາຫຼຸລູກໄດ້ສູງສຸດ 3 ຄັ້ງ/ປີ");
+                }
+                break;
+
+            case "PERSONAL":
+                // ครั้งละไม่เกิน 5 วัน
+                if (totalDays > 5) {
+                    throw new RuntimeException(
+                            "ລາສ່ວນຕົວຄັ້ງລະໄດ້ບໍ່ເກີນ 5 ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
+                }
+                // ไม่เกิน 10 ครั้ง/ปี
+//                int personalCount = getLeaveCount(staff.getId(), "PERSONAL", startDate.getYear());
+//                if (personalCount >= 10) {
+//                    throw new RuntimeException(
+//                            "ລາສ່ວນຕົວໄດ້ສູງສຸດ 10 ຄັ້ງ/ປີ");
+//                }
+                break;
+
+            case "SICK":
+            case "ACCIDENT":
+            case "UNPAID":
+                // ไม่มีกฎครั้งละ
+                break;
+
+            default:
+                throw new RuntimeException("ປະເພດການລາບໍ່ຖືກຕ້ອງ: " + leaveType);
+        }
+    }
+    // นับจำนวนครั้งที่ลาในปีนั้น (สำหรับ CASUAL)
+    private int getLeaveCount(Long staffId, String leaveType, int year) {
+        LocalDate startOfYear = LocalDate.of(year, 1, 1);
+        LocalDate endOfYear   = LocalDate.of(year, 12, 31);
+
+        List<LeaveRequest> leaves = leaveRequestRepository
+                .findByStaff_IdAndLeaveTypeAndStatusAndStartDateBetween(
+                        staffId, leaveType, "APPROVED", startOfYear, endOfYear);
+
+        return leaves.size();  // นับจำนวนครั้ง
+    }
+
+    private int getLeaveQuota(String leaveType) {
+        switch (leaveType) {
+            case "SICK":        return 15;
+            case "ANNUAL":      return 15;
+            case "CASUAL":      return 9;    // 3 ครั้ง x 3 วัน
+            case "ACCIDENT":    return 30;
+            case "MATERNITY":   return 105;
+            case "MISCARRIAGE": return 30;
+            case "PERSONAL":    return 5;
+            case "UNPAID":      return 999;
+            default: throw new RuntimeException("ປະເພດການລາບໍ່ຖືກຕ້ອງ: " + leaveType);
         }
     }
 
@@ -1008,7 +1106,7 @@ public class FaceService {
             // Step 3: USER → ดูได้แค่ของตัวเอง
             if (requester.getRole().equals("USER")) {
                 leaves = leaveRequestRepository.findByFilters(
-                        requester.getId(),  // ✅ lock staffId เป็นตัวเอง
+                        requester.getId(),  // lock staffId เป็นตัวเอง
                         null,               // borId ไม่ใช้
                         (dto.getStatus() != null && !dto.getStatus().isEmpty())
                                 ? dto.getStatus() : null,

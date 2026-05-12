@@ -2649,31 +2649,42 @@ public DataResponse checkKeyOrder(){
     //======make bor start =====
     //view_borRepository
 
-    public DataResponse getBorAll(BorEntityReq borEntityReq, String uMission){
-        String keyId = borEntityReq.getKeyId();
+    public DataResponse getBorAll(BorEntityReq borEntityReq, String staffId, String role) {
+        String keyId   = borEntityReq.getKeyId();
         String typeBor = borEntityReq.getTypeBor();
-        log.info("role start:"+keyId);
+
         DataResponse response = new DataResponse();
-       try {
-           if("MANAGE".equals(uMission)){
-               response.setDataResponse((view_borRepository.getBor4HR(typeBor)));
-           }
-           if(keyId.isEmpty() || keyId.equals("all") || keyId.equals("all")){
-               response.setDataResponse(view_borRepository.getBorViewEntityAll(typeBor));
-           }else {
-               response.setDataResponse(view_borRepository.findBykeyId(keyId,typeBor));
-           }
-            if(response.getDataResponse() != null){
+
+        try {
+            // 🔧 FIX: ใช้ if-else if เพื่อป้องกัน logic ทับกัน (overwrite)
+            if ("MANAGE".equals(staffId)) {
+                // กรณี staffId = "MANAGE" → ดึงข้อมูลสำหรับ HR
+                response.setDataResponse(view_borRepository.getBor4HR(typeBor));
+
+            } else if (keyId == null || keyId.isEmpty() || keyId.equals("all")) {
+                // 🔧 FIX: เพิ่มการตรวจ null ก่อน .isEmpty() เพื่อป้องกัน NullPointerException
+                response.setDataResponse(view_borRepository.getBorViewEntityAll(typeBor, role));
+
+            } else {
+                response.setDataResponse(view_borRepository.findBykeyId(keyId, typeBor));
+            }
+
+            if (response.getDataResponse() != null
+                    && response.getDataResponse() instanceof List
+                    && !((List<?>) response.getDataResponse()).isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
                 response.setMessage("Data not found");
             }
-        }catch (Exception e){
+
+        } catch (Exception e) {
+            log.error("Error in getBorAll: {}", e.getMessage(), e); // 🔧 FIX: ใช้ log.error แทน e.printStackTrace()
             response.setStatus("EE");
             response.setMessage("Error Data");
         }
+
         return response;
     }
     public DataResponse saveBoEntity(BorEntityReqSave borEntity, String userId) {
