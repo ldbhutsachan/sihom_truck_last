@@ -24,6 +24,7 @@ public class StaffResponseDTO {
     private String departmentName;
     private Long PosId;
     private String positionNAME;
+    private String workPlace;
     private String gender;
     private String address;
     private LocalDate birthDate;

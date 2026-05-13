@@ -96,7 +96,7 @@ public class FaceService {
                 throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
             }
 
-            // Step 3: ✅ ถ้าไม่ส่ง staff มา → ดูข้อมูลตัวเองเสมอ
+            // Step 3:  ถ้าไม่ส่ง staff มา → ดูข้อมูลตัวเองเสมอ
             if (dto.getStaffId() == null || dto.getStaffId().isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("success");
@@ -388,6 +388,7 @@ public class FaceService {
                 deptName,
                 staff.getPos_id(),
                 positionName,
+                staff.getWork_place(),
                 staff.getGender(),
                 staff.getAddress(),
                 staff.getBirth_date(),

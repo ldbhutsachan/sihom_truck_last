@@ -3112,14 +3112,15 @@ public class BansiService {
 
             List<TbFinanceBillRefUpdateRequest> historyList;
 
-            // ACCOUNTANT เห็นแค่ของตัวเอง
-            if ("ACCOUNTANT".equals(role)) {
-                historyList = refUpdateRequestRepository
-                        .findByRequestBy(Long.valueOf(user.getUserId()));
-            } else if (financeBillNo != null && !financeBillNo.isEmpty()) {
+             if (financeBillNo != null && !financeBillNo.isEmpty()) {
                 historyList = refUpdateRequestRepository
                         .findByFinanceBillNo(financeBillNo);
             } else {
+                 // ACCOUNTANT เห็นแค่ของตัวเอง
+                 if ("ACCOUNTANT".equals(role)) {
+                     historyList = refUpdateRequestRepository
+                             .findByRequestBy(Long.valueOf(user.getUserId()));
+                 }
                 historyList = refUpdateRequestRepository.findAll();
             }
 
