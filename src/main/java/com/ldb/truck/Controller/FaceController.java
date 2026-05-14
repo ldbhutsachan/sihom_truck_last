@@ -174,7 +174,7 @@ public class FaceController {
         return ResponseEntity.ok(faceService.resetPassword(dto));
     }
 
-    // ✅ Staff เปลี่ยน password ตัวเอง
+    //  Staff เปลี่ยน password ตัวเอง
     @CrossOrigin(origins = "*")
     @PostMapping("/change-password")
     public ResponseEntity<PasswordResponseDTO> changePassword(

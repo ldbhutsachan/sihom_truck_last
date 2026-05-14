@@ -32,7 +32,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 
     //  เพิ่มใหม่ทั้งหมด ──────────────────────────────
 
-    // ✅ NEW — Query รวมทุก filter
+    //  NEW — Query รวมทุก filter
     @Query("SELECT l FROM LeaveRequest l WHERE " +
             "(:staffId IS NULL OR l.staff.id = :staffId) AND " +
             "(:borId IS NULL OR l.staff.borId = :borId) AND " +
@@ -47,4 +47,14 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("startDate") LocalDate startDate,
             @Param("endDate")   LocalDate endDate
     );
+
+    //  NEW — ดึง leave requests ของวันที่กำหนด (APPROVED หรือ PENDING)
+    @Query("SELECT l FROM LeaveRequest l WHERE " +
+            "l.staff.id IN :staffIds AND " +
+            "l.status IN ('APPROVED', 'PENDING') AND " +
+            "l.startDate <= :targetDate AND " +
+            "l.endDate >= :targetDate")
+    List<LeaveRequest> findByStaffIdsAndDate(
+            @Param("staffIds") List<Long> staffIds,
+            @Param("targetDate") LocalDate targetDate);
 }

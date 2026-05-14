@@ -34,7 +34,9 @@ public class LeaveRequest {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private Integer totalDays;
+    private Double  totalDays;
+
+    private String halfDay;
 
     @Column(nullable = false)
     private String status = "PENDING";  // PENDING, APPROVED, REJECTED

@@ -9,4 +9,5 @@ public class LeaveRequestDTO {
     private String startDate;       // "2026-04-01"
     private String endDate;         // "2026-04-03"
     private String reason;          // เหตุผล (optional)
+    private String halfDay;         //  เพิ่มใหม่ — "MORNING", "AFTERNOON", null=เต็มวัน
 }
