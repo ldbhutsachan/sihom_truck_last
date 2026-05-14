@@ -1,0 +1,242 @@
+package com.ldb.truck.Service.RegisterService;
+
+import com.ldb.truck.Entity.Staff.StaffEntity;
+import com.ldb.truck.Model.DataResponse;
+import com.ldb.truck.Repository.Staffs.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Consumer;
+
+@Service
+@RequiredArgsConstructor
+public class ExcelImportService {
+
+    private final UserRepository userRepository;
+
+    // เพิ่ม @Transactional
+    // ถ้า error กลางคัน → rollback ทั้งหมด
+    @Transactional
+    public DataResponse importStaffFromExcel(String token, MultipartFile file) {
+
+        DataResponse response = new DataResponse();
+
+        try {
+            // Step 1: เช็ค token
+            StaffEntity requester = userRepository.findByToken(token)
+                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+
+            if (requester.getTokenExpiredAt() != null
+                    && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token not found Please Login again");
+            }
+
+            // Step 2: เช็ค HR/ADMIN
+            if (!requester.getRole().equals("ADMIN")
+                    && !requester.getRole().equals("HR")) {
+                throw new RuntimeException("ບໍ່ມີສິດ ສະເພາະ HR ຫຼື ADMIN ເທົ່ານັ້ນ");
+            }
+
+            // Step 3: เช็คไฟล์
+            String filename = file.getOriginalFilename();
+            if (filename == null
+                    || (!filename.endsWith(".xlsx")
+                    && !filename.endsWith(".xls"))) {
+                throw new RuntimeException(
+                        "ກະລຸນາອັບໂຫລດໄຟລ໌ Excel (.xlsx, .xls) ເທົ່ານັ້ນ");
+            }
+
+            // เช็คขนาดไฟล์
+            if (file.getSize() > 10 * 1024 * 1024) {
+                throw new RuntimeException("ໄຟລ໌ໃຫຍ່ເກີນໄປ ສູງສຸດ 10MB");
+            }
+
+            // Step 4: อ่าน Excel
+            Workbook workbook = new XSSFWorkbook(file.getInputStream());
+            Sheet sheet = workbook.getSheetAt(0);
+
+            List<Map<String, Object>> updatedList = new ArrayList<>();
+            List<Map<String, Object>> skippedList = new ArrayList<>();
+            List<Map<String, Object>> errorList   = new ArrayList<>();
+            List<StaffEntity> toUpdate            = new ArrayList<>();
+
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                try {
+                    String staffCode = getCellValue(row, 0);
+                    if (staffCode == null || staffCode.isEmpty()) continue;
+
+                    Optional<StaffEntity> optStaff =
+                            userRepository.findByStaffCode(staffCode);
+
+                    if (optStaff.isEmpty()) {
+                        Map<String, Object> skip = new LinkedHashMap<>();
+                        skip.put("row",       i + 1);
+                        skip.put("staffCode", staffCode);
+                        skip.put("reason",    "ບໍ່ພົບ Staff Code: " + staffCode);
+                        skippedList.add(skip);
+                        continue;
+                    }
+
+                    StaffEntity staff = optStaff.get();
+
+                    setIfNotEmpty(staff::setUsername,  getCellValue(row, 1));
+                    setIfNotEmpty(staff::setLao_name,  getCellValue(row, 2));
+                    setIfNotEmpty(staff::setPhone,     getCellValue(row, 3));
+                    setIfNotEmpty(staff::setGender,    getCellValue(row, 4));
+
+                    String birthDate = getCellValue(row, 5);
+                    if (birthDate != null && !birthDate.isEmpty())
+                        staff.setBirth_date(LocalDate.parse(birthDate, dateFormatter));
+
+                    setIfNotEmpty(staff::setAddress, getCellValue(row, 6));
+                    setIfNotEmpty(staff::setStatus,  getCellValue(row, 7));
+
+                    String borId = getCellValue(row, 8);
+                    if (borId != null && !borId.isEmpty())
+                        staff.setBorId(Integer.parseInt(borId));
+
+                    String deptId = getCellValue(row, 9);
+                    if (deptId != null && !deptId.isEmpty())
+                        staff.setDept_id(Long.parseLong(deptId));
+
+                    String posId = getCellValue(row, 10);
+                    if (posId != null && !posId.isEmpty())
+                        staff.setPos_id(Long.parseLong(posId));
+
+                    String salary = getCellValue(row, 11);
+                    if (salary != null && !salary.isEmpty())
+                        staff.setBaseSalary(new BigDecimal(salary));
+
+                    String quotaSick = getCellValue(row, 12);
+                    if (quotaSick != null && !quotaSick.isEmpty())
+                        staff.setLeaveQuotaSick(Integer.parseInt(quotaSick));
+
+                    String quotaAnnual = getCellValue(row, 13);
+                    if (quotaAnnual != null && !quotaAnnual.isEmpty())
+                        staff.setLeaveQuotaAnnual(Integer.parseInt(quotaAnnual));
+
+                    String quotaCasual = getCellValue(row, 14);
+                    if (quotaCasual != null && !quotaCasual.isEmpty())
+                        staff.setLeaveQuotaCasual(Integer.parseInt(quotaCasual));
+
+                    String quotaAccident = getCellValue(row, 15);
+                    if (quotaAccident != null && !quotaAccident.isEmpty())
+                        staff.setLeaveQuotaAccident(Integer.parseInt(quotaAccident));
+
+                    String startWorkDate = getCellValue(row, 16);
+                    if (startWorkDate != null && !startWorkDate.isEmpty())
+                        staff.setStartwork_date(
+                                LocalDate.parse(startWorkDate, dateFormatter));
+
+                    String workSchedule = getCellValue(row, 17);
+                    if (workSchedule != null && !workSchedule.isEmpty()) {
+                        staff.setWorkSchedule(workSchedule);
+                        if (workSchedule.equals("CYCLE")) {
+                            String cwd = getCellValue(row, 18);
+                            String cod = getCellValue(row, 19);
+                            String csd = getCellValue(row, 20);
+                            if (cwd != null && !cwd.isEmpty())
+                                staff.setCycleWorkDays(Integer.parseInt(cwd));
+                            if (cod != null && !cod.isEmpty())
+                                staff.setCycleOffDays(Integer.parseInt(cod));
+                            if (csd != null && !csd.isEmpty())
+                                staff.setCycleStartDate(
+                                        LocalDate.parse(csd, dateFormatter));
+                        } else {
+                            staff.setCycleWorkDays(null);
+                            staff.setCycleOffDays(null);
+                            staff.setCycleStartDate(null);
+                        }
+                    }
+
+                    toUpdate.add(staff);  // เก็บไว้ก่อน
+
+                    Map<String, Object> updated = new LinkedHashMap<>();
+                    updated.put("row",       i + 1);
+                    updated.put("staffCode", staffCode);
+                    updated.put("username",  staff.getUsername());
+                    updatedList.add(updated);
+
+                } catch (Exception rowError) {
+                    Map<String, Object> error = new LinkedHashMap<>();
+                    error.put("row",    i + 1);
+                    error.put("reason", rowError.getMessage());
+                    errorList.add(error);
+                }
+            }
+
+            workbook.close();
+
+            //  Save ทีเดียว
+            userRepository.saveAll(toUpdate);
+
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("totalUpdated", updatedList.size());
+            data.put("totalSkipped", skippedList.size());
+            data.put("totalError",   errorList.size());
+            data.put("updated",      updatedList);
+            data.put("skipped",      skippedList);
+            data.put("errors",       errorList);
+
+            response.setStatus("00");
+            response.setMessage("ນຳເຂົ້າຂໍ້ມູນສຳເລັດ");
+            response.setDataResponse(data);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
+
+        return response;
+    }
+
+    //  Helper — ดึงค่าจาก cell
+    private String getCellValue(Row row, int colIndex) {
+        Cell cell = row.getCell(colIndex);
+        if (cell == null) return null;
+
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getLocalDateTimeCellValue()
+                            .toLocalDate().toString();
+                }
+                double val = cell.getNumericCellValue();
+                if (val == Math.floor(val)) {
+                    return String.valueOf((long) val);
+                }
+                return String.valueOf(val);
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case BLANK:
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    // ✅ Helper — set ถ้าไม่ว่าง
+    private void setIfNotEmpty(Consumer<String> setter, String value) {
+        if (value != null && !value.isEmpty()) {
+            setter.accept(value);
+        }
+    }
+}
