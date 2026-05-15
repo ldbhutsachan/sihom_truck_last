@@ -57,4 +57,15 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequest> findByStaffIdsAndDate(
             @Param("staffIds") List<Long> staffIds,
             @Param("targetDate") LocalDate targetDate);
+
+    //  NEW — ดึง leave requests ในช่วงวันที่
+    @Query("SELECT l FROM LeaveRequest l WHERE " +
+            "l.staff.id IN :staffIds AND " +
+            "l.status IN ('APPROVED', 'PENDING') AND " +
+            "l.startDate <= :endDate AND " +
+            "l.endDate >= :startDate")
+    List<LeaveRequest> findByStaffIdsAndDateRange(
+            @Param("staffIds")  List<Long> staffIds,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate")   LocalDate endDate);
 }

@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -499,16 +500,20 @@ public class FaceService {
             // Step 4: กำหนดช่วงวันที่
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-            LocalDateTime startDateTime = (dto.getStartDate() != null)
-                    ? LocalDate.parse(dto.getStartDate(), formatter).atStartOfDay()
-                    : LocalDate.now().withDayOfMonth(1).atStartOfDay();
+            LocalDate startDate = (dto.getStartDate() != null)
+                    ? LocalDate.parse(dto.getStartDate(), formatter)
+                    : LocalDate.now().withDayOfMonth(1);
 
-            LocalDateTime endDateTime = (dto.getEndDate() != null)
-                    ? LocalDate.parse(dto.getEndDate(), formatter).atTime(23, 59, 59)
-                    : LocalDate.now().atTime(23, 59, 59);
+            LocalDate endDate = (dto.getEndDate() != null)
+                    ? LocalDate.parse(dto.getEndDate(), formatter)
+                    : LocalDate.now();
 
-            // Step 5: ดึง logs
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime   = endDate.atTime(23, 59, 59);
+
+            // Step 5: ดึง logs ก่อน
             List<AttendanceLog> logs;
+
             if (dto.getStaffCode().equalsIgnoreCase("all")) {
                 logs = attendanceLogRepository
                         .findAllByCheckTimeBetweenOrderByCheckTimeAsc(
@@ -522,7 +527,21 @@ public class FaceService {
                                 staff.getId(), startDateTime, endDateTime);
             }
 
-            // ✅ Step 6: โหลด borName ทีเดียว
+            //  Step 6: ดึง staffList จาก userRepository แทน
+            List<StaffEntity> staffList;
+
+            if (dto.getStaffCode().equalsIgnoreCase("all")) {
+                //  ดึงทุก staff ที่ ACTIVE แทนครับ
+                staffList = userRepository.findAllByStatus("ACTIVE");
+            } else {
+                StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
+                        .orElseThrow(() -> new RuntimeException(
+                                "Not found Staff Code: " + dto.getStaffCode()));
+                staffList = new ArrayList<>();
+                staffList.add(staff);
+            }
+
+            // Step 7: โหลด borName ทีเดียว
             Set<Integer> borIds = logs.stream()
                     .map(log -> log.getStaff().getBorId())
                     .filter(id -> id != null)
@@ -534,7 +553,7 @@ public class FaceService {
                         .forEach(bor -> borNameMap.put(bor.getKeyId(), bor.getBName()));
             }
 
-            // ✅ Step 7: โหลด department ทีเดียว
+            // Step 8: โหลด department ทีเดียว
             Set<Long> deptIds = logs.stream()
                     .map(log -> log.getStaff().getDept_id())
                     .filter(id -> id != null)
@@ -546,7 +565,7 @@ public class FaceService {
                         .forEach(dept -> deptNameMap.put(dept.getId(), dept.getDeptName()));
             }
 
-            // ✅ Step 8: โหลด position ทีเดียว
+            // Step 9: โหลด position ทีเดียว
             Set<Long> posIds = logs.stream()
                     .map(log -> log.getStaff().getPos_id())
                     .filter(id -> id != null)
@@ -558,7 +577,71 @@ public class FaceService {
                         .forEach(pos -> posNameMap.put(pos.getId(), pos.getPosName()));
             }
 
-            // ✅ Step 9: จัดกลุ่ม logs ตาม staffId + วันที่
+            //  Step 10: โหลด leave requests ช่วงวันที่นั้น ทีเดียว
+            List<Long> staffIds = staffList.stream()
+                    .map(StaffEntity::getId)
+                    .collect(Collectors.toList());
+
+            // Step 10: โหลด leave requests ช่วงวันที่นั้น ทีเดียว
+            Map<Long, Map<LocalDate, List<LeaveRequest>>> leaveMap = new HashMap<>();
+
+            if (!staffIds.isEmpty()) {
+                leaveRequestRepository
+                        .findByStaffIdsAndDateRange(staffIds, startDate, endDate)
+                        .forEach(leave -> {
+                            Long sid = leave.getStaff().getId();
+                            StaffEntity leaveStaff = leave.getStaff();
+
+                            // หา staff จาก staffList
+                            StaffEntity staffForSchedule = staffList.stream()
+                                    .filter(s -> s.getId().equals(sid))
+                                    .findFirst()
+                                    .orElse(leaveStaff);
+
+                            //  คำนวณวันทำงานจริงใน leave period
+                            long workDaysInLeave = 0;
+                            LocalDate tmp = leave.getStartDate();
+                            while (!tmp.isAfter(leave.getEndDate())) {
+                                if (isWorkDay(staffForSchedule, tmp,
+                                        staffForSchedule.getWorkSchedule() != null
+                                                ? staffForSchedule.getWorkSchedule()
+                                                : "MON_FRI")) {
+                                    workDaysInLeave++;
+                                }
+                                tmp = tmp.plusDays(1);
+                            }
+
+                            // daysPerWorkDay = totalDays / workDaysInLeave
+                            double daysPerWorkDay = workDaysInLeave > 0
+                                    ? leave.getTotalDays() / workDaysInLeave
+                                    : 0;
+
+                            LocalDate current = leave.getStartDate();
+                            while (!current.isAfter(leave.getEndDate())) {
+                                LocalDate day = current;
+
+                                //  ข้ามวันหยุด
+                                if (!isWorkDay(staffForSchedule, day,
+                                        staffForSchedule.getWorkSchedule() != null
+                                                ? staffForSchedule.getWorkSchedule()
+                                                : "MON_FRI")) {
+                                    current = current.plusDays(1);
+                                    continue;  //  ไม่เพิ่มวันหยุดเข้า leaveMap
+                                }
+
+                                final double dailyDays = daysPerWorkDay;
+
+                                leaveMap
+                                        .computeIfAbsent(sid, k -> new HashMap<>())
+                                        .computeIfAbsent(day, k -> new ArrayList<>())
+                                        .add(leave);
+
+                                current = current.plusDays(1);
+                            }
+                        });
+            }
+
+            // Step 11: จัดกลุ่ม logs ตาม staffId + วันที่
             Map<String, Map<String, Object>> dayMap = new LinkedHashMap<>();
 
             for (AttendanceLog log : logs) {
@@ -580,31 +663,88 @@ public class FaceService {
                 }
             }
 
-            // ✅ Step 10: จัดกลุ่มตาม Staff
+            LocalDate cur = startDate;
+            while (!cur.isAfter(endDate)) {
+                for (StaffEntity staff : staffList) {
+                    String key = staff.getId() + "_" + cur;
+
+                    if (!dayMap.containsKey(key)) {
+                        List<LeaveRequest> leavesOnDay = leaveMap
+                                .getOrDefault(staff.getId(), new HashMap<>())
+                                .getOrDefault(cur, new ArrayList<>());
+
+                        if (!leavesOnDay.isEmpty()) {
+                            boolean allApproved = leavesOnDay.stream()
+                                    .allMatch(l -> "APPROVED".equals(l.getStatus()));
+
+                            //  คำนวณ totalDays ต่อวันนี้
+                            double totalForToday = leavesOnDay.stream()
+                                    .mapToDouble(l -> {
+                                        // นับวันทำงานจริงใน leave period
+                                        long workDays = 0;
+                                        LocalDate t = l.getStartDate();
+                                        while (!t.isAfter(l.getEndDate())) {
+                                            if (isWorkDay(staff, t,
+                                                    staff.getWorkSchedule() != null
+                                                            ? staff.getWorkSchedule()
+                                                            : "MON_FRI")) {
+                                                workDays++;
+                                            }
+                                            t = t.plusDays(1);
+                                        }
+                                        return workDays > 0
+                                                ? l.getTotalDays() / workDays
+                                                : 0;
+                                    })
+                                    .sum();
+
+                            Map<String, Object> leaveDay = new LinkedHashMap<>();
+                            leaveDay.put("date",          cur.toString());
+                            leaveDay.put("checkIn",        "00");
+                            leaveDay.put("checkInStatus",  allApproved
+                                    ? "ON_LEAVE" : "PENDING_LEAVE");
+                            leaveDay.put("checkOut",       "00");
+                            leaveDay.put("checkOutStatus", "00");
+                            leaveDay.put("ipAddress",      null);
+                            leaveDay.put("macAddress",     null);
+                            leaveDay.put("leaveType",      leavesOnDay.get(0).getLeaveType());
+                            leaveDay.put("leaveStatus",    allApproved ? "APPROVED" : "PENDING");
+                            leaveDay.put("totalDays",      totalForToday);
+                            leaveDay.put("halfDay",        leavesOnDay.size() > 1
+                                    ? "FULL_DAY" : leavesOnDay.get(0).getHalfDay());
+
+                            dayMap.put(key, leaveDay);
+                        }
+                    }
+                }
+                cur = cur.plusDays(1);
+            }
+
+            // Step 13: จัดกลุ่มตาม Staff
             Map<Long, Map<String, Object>> staffMap = new LinkedHashMap<>();
 
             for (AttendanceLog log : logs) {
                 Long staffId = log.getStaff().getId();
-
                 if (!staffMap.containsKey(staffId)) {
-                    Map<String, Object> staffItem = new LinkedHashMap<>();
-                    staffItem.put("staffId",    log.getStaff().getId());
-                    staffItem.put("staffCode",  log.getStaff().getStaffCode());
-                    staffItem.put("username",   log.getStaff().getUsername());
-                    staffItem.put("laoname",   log.getStaff().getLao_name());
-                    staffItem.put("staffImage", log.getStaff().getStaffImage());
-                    staffItem.put("borId",      log.getStaff().getBorId());
-                    staffItem.put("borName",    borNameMap.get(log.getStaff().getBorId()));
-                    staffItem.put("deptId",     log.getStaff().getDept_id());
-                    staffItem.put("department", deptNameMap.get(log.getStaff().getDept_id()));
-                    staffItem.put("posId",      log.getStaff().getPos_id());
-                    staffItem.put("position",   posNameMap.get(log.getStaff().getPos_id()));
-                    staffItem.put("attendanLog", new ArrayList<>());
-                    staffMap.put(staffId, staffItem);
+                    staffMap.put(staffId, createStaffItem(
+                            log.getStaff(), borNameMap, deptNameMap, posNameMap));
                 }
             }
 
-            // ✅ Step 11: ใส่ day entries เข้าไปใน staffMap
+            //  เพิ่ม staff ที่มีแต่ใบลา (ไม่มี log) เข้า staffMap ด้วย
+            for (StaffEntity staff : staffList) {
+                if (!staffMap.containsKey(staff.getId())) {
+                    Map<LocalDate, List<LeaveRequest>> staffLeaveMap =
+                            leaveMap.getOrDefault(staff.getId(), new HashMap<>());
+
+                    if (!staffLeaveMap.isEmpty()) {
+                        staffMap.put(staff.getId(), createStaffItem(
+                                staff, borNameMap, deptNameMap, posNameMap));
+                    }
+                }
+            }
+
+            // Step 14: ใส่ day entries เข้าไปใน staffMap
             for (Map.Entry<String, Map<String, Object>> entry : dayMap.entrySet()) {
                 Long staffId = Long.parseLong(entry.getKey().split("_")[0]);
                 Map<String, Object> staffItem = staffMap.get(staffId);
@@ -629,6 +769,27 @@ public class FaceService {
         }
 
         return response;
+    }
+
+    //  Helper — สร้าง staff item
+    private Map<String, Object> createStaffItem(StaffEntity staff,
+                                                Map<Integer, String> borNameMap,
+                                                Map<Long, String> deptNameMap,
+                                                Map<Long, String> posNameMap) {
+        Map<String, Object> staffItem = new LinkedHashMap<>();
+        staffItem.put("staffId",     staff.getId());
+        staffItem.put("staffCode",   staff.getStaffCode());
+        staffItem.put("username",    staff.getUsername());
+        staffItem.put("laoName",     staff.getLao_name());
+        staffItem.put("staffImage",  staff.getStaffImage());
+        staffItem.put("borId",       staff.getBorId());
+        staffItem.put("borName",     borNameMap.get(staff.getBorId()));
+        staffItem.put("deptId",      staff.getDept_id());
+        staffItem.put("department",  deptNameMap.get(staff.getDept_id()));
+        staffItem.put("posId",       staff.getPos_id());
+        staffItem.put("position",    posNameMap.get(staff.getPos_id()));
+        staffItem.put("attendanLog", new ArrayList<>());
+        return staffItem;
     }
 
     // Helper method สร้าง day entry
@@ -1474,16 +1635,70 @@ public class FaceService {
             Map<Long, List<LeaveRequest>> leaveMap = new HashMap<>();
 
             if (!staffIds.isEmpty()) {
-
                 leaveRequestRepository
                         .findByStaffIdsAndDate(staffIds, targetDate)
                         .forEach(leave -> {
 
-                            leaveMap.computeIfAbsent(
-                                    leave.getStaff().getId(),
-                                    k -> new ArrayList<>()
-                            ).add(leave);
+                            Long sid = leave.getStaff().getId();
 
+                            // หา staff จริง
+                            StaffEntity leaveStaff = staffList.stream()
+                                    .filter(s -> s.getId().equals(sid))
+                                    .findFirst()
+                                    .orElse(leave.getStaff());
+
+                            String schedule = leaveStaff.getWorkSchedule() != null
+                                    ? leaveStaff.getWorkSchedule()
+                                    : "MON_FRI";
+
+                            // query date ต้องเป็นวันทำงานก่อน
+                            boolean isTargetWorkDay =
+                                    isWorkDay(leaveStaff, targetDate, schedule);
+
+                            if (!isTargetWorkDay) {
+                                return;
+                            }
+
+                            // นับจำนวนวันทำงานทั้งหมดในช่วงลา
+                            long workDaysInLeave = 0;
+
+                            LocalDate current = leave.getStartDate();
+
+                            while (!current.isAfter(leave.getEndDate())) {
+
+                                if (isWorkDay(leaveStaff, current, schedule)) {
+                                    workDaysInLeave++;
+                                }
+
+                                current = current.plusDays(1);
+                            }
+
+                            // กันหาร 0
+                            if (workDaysInLeave <= 0) {
+                                return;
+                            }
+
+                            // กระจายวันลาเฉพาะวันทำงาน
+                            double daysPerWorkDay =
+                                    leave.getTotalDays() / workDaysInLeave;
+
+                            // copy object
+                            LeaveRequest dailyLeave = new LeaveRequest();
+
+                            dailyLeave.setStaff(leave.getStaff());
+                            dailyLeave.setLeaveType(leave.getLeaveType());
+                            dailyLeave.setStartDate(leave.getStartDate());
+                            dailyLeave.setEndDate(leave.getEndDate());
+
+                            // สำคัญ
+                            dailyLeave.setTotalDays(daysPerWorkDay);
+
+                            dailyLeave.setHalfDay(leave.getHalfDay());
+                            dailyLeave.setStatus(leave.getStatus());
+                            dailyLeave.setReason(leave.getReason());
+
+                            leaveMap.computeIfAbsent(sid, k -> new ArrayList<>())
+                                    .add(dailyLeave);
                         });
             }
 
@@ -1586,32 +1801,41 @@ public class FaceService {
                 // LEAVE INFO
                 if (!leaves.isEmpty()) {
 
-                    double totalLeaveDays = leaves.stream()
-                            .mapToDouble(LeaveRequest::getTotalDays)
-                            .sum();
+                    double totalLeaveDays = leaves.isEmpty()
+                            ? 0
+                            : leaves.get(0).getTotalDays();
+
                     boolean allApproved = leaves.stream()
                             .allMatch(l ->
                                     "APPROVED".equals(l.getStatus()));
+
                     item.put("leaveType",
                             leaves.get(0).getLeaveType());
+
                     item.put("leaveStatus",
                             allApproved
                                     ? "APPROVED"
                                     : "PENDING");
+
                     item.put("leaveStart",
                             leaves.get(0)
                                     .getStartDate()
                                     .toString());
+
                     item.put("leaveEnd",
                             leaves.get(0)
                                     .getEndDate()
                                     .toString());
+
                     item.put("totalDays", totalLeaveDays);
+
                     item.put("halfDay",
                             leaves.size() > 1
                                     ? "FULL_DAY"
                                     : leaves.get(0).getHalfDay());
+
                 } else {
+
                     item.put("leaveType", null);
                     item.put("leaveStatus", null);
                     item.put("leaveStart", null);
