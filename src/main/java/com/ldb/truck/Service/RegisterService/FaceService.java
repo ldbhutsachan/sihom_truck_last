@@ -78,7 +78,7 @@ public class FaceService {
                 saved.getId(),
                 saved.getStaffCode(),
                 saved.getUsername(),
-                plainPassword,      // ✅ ส่ง plain password กลับให้ client รู้
+                plainPassword,      //  ส่ง plain password กลับให้ client รู้
                 saved.getCreatedAt()
         );
     }
@@ -99,7 +99,7 @@ public class FaceService {
                 throw new RuntimeException("Token หมดอายุแล้ว กรุณา Login ใหม่");
             }
 
-            // Step 3:  ถ้าไม่ส่ง staff มา → ดูข้อมูลตัวเองเสมอ
+            // Step 3: ถ้าไม่ส่ง staffId มา → ดูข้อมูลตัวเองเสมอ
             if (dto.getStaffId() == null || dto.getStaffId().isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("success");
@@ -107,7 +107,7 @@ public class FaceService {
                 return response;
             }
 
-            // Step 4: USER → ดูได้แค่ตัวเอง ไม่ว่าจะส่ง staff อะไรมา
+            // Step 4: USER → ดูได้แค่ตัวเอง
             if (requester.getRole().equals("USER")) {
                 response.setStatus("00");
                 response.setMessage("success");
@@ -115,20 +115,49 @@ public class FaceService {
                 return response;
             }
 
-            // Step 5: ADMIN/HR → ดูทั้งหมดหรือคนเดียว
+            // Step 5: ADMIN/HR/BORLEADER → ดูทั้งหมดหรือคนเดียว
             if (dto.getStaffId().equalsIgnoreCase("all")) {
+
+                //  เช็ค filter
+                boolean hasBorId  = dto.getBorId() != null && !dto.getBorId().isEmpty();
+                boolean hasDeptId = dto.getDeptId() != null && !dto.getDeptId().isEmpty();
+
+                List<StaffEntity> staffList;
+
+                if (hasBorId && hasDeptId) {
+                    // เปลี่ยนชื่อ method
+                    staffList = userRepository.findAllByBorIdAndDeptId(
+                            Integer.parseInt(dto.getBorId()),
+                            Long.parseLong(dto.getDeptId()));
+
+                } else if (hasBorId) {
+                    staffList = userRepository.findAllByBorId(
+                            Integer.parseInt(dto.getBorId()));
+
+                } else if (hasDeptId) {
+                    //  เปลี่ยนชื่อ method
+                    staffList = userRepository.findAllByDeptId(
+                            Long.parseLong(dto.getDeptId()));
+
+                } else {
+                    staffList = userRepository.findAll();
+                }
+
                 response.setStatus("00");
                 response.setMessage("success");
                 response.setDataResponse(
-                        userRepository.findAll()
-                                .stream()
+                        staffList.stream()
                                 .map(this::mapToDTO)
                                 .collect(Collectors.toList())
                 );
+                response.setSumFooter(staffList.size());
+
             } else {
+                // ดูคนเดียวตาม id
                 Long id = Long.parseLong(dto.getStaffId());
                 StaffEntity staff = userRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Not found Staff id: " + id));
+                        .orElseThrow(() -> new RuntimeException(
+                                "Not found Staff id: " + id));
                 response.setStatus("00");
                 response.setMessage("success");
                 response.setDataResponse(mapToDTO(staff));
@@ -529,12 +558,36 @@ public class FaceService {
                                 staff.getId(), startDateTime, endDateTime);
             }
 
-            //  Step 6: ดึง staffList จาก userRepository แทน
+            // Step 6: ดึง staffList
             List<StaffEntity> staffList;
 
             if (dto.getStaffCode().equalsIgnoreCase("all")) {
-                //  ดึงทุก staff ที่ ACTIVE แทนครับ
-                staffList = userRepository.findAllByStatus("ACTIVE");
+
+                boolean hasBorId       = dto.getBorId()       != null && !dto.getBorId().isEmpty()
+                        && !dto.getBorId().equalsIgnoreCase("all");
+                boolean hasSchedule    = dto.getWorkSchedule() != null
+                        && !dto.getWorkSchedule().isEmpty();
+
+                if (hasBorId && hasSchedule) {
+                    //  filter ทั้ง borId และ workSchedule
+                    staffList = userRepository.findAllByBorIdAndStatusAndWorkSchedule(
+                            Integer.parseInt(dto.getBorId()), "ACTIVE", dto.getWorkSchedule());
+
+                } else if (hasBorId) {
+                    //  filter แค่ borId
+                    staffList = userRepository.findAllByBorIdAndStatus(
+                            Integer.parseInt(dto.getBorId()), "ACTIVE");
+
+                } else if (hasSchedule) {
+                    //  filter แค่ workSchedule
+                    staffList = userRepository.findAllByStatusAndWorkSchedule(
+                            "ACTIVE", dto.getWorkSchedule());
+
+                } else {
+                    // ดูทั้งหมด
+                    staffList = userRepository.findAllByStatus("ACTIVE");
+                }
+
             } else {
                 StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
                         .orElseThrow(() -> new RuntimeException(
@@ -543,9 +596,10 @@ public class FaceService {
                 staffList.add(staff);
             }
             // Step 7: โหลด borName ทีเดียว
-            Set<Integer> borIds = logs.stream()
-                    .map(log -> log.getStaff().getBorId())
-                    .filter(id -> id != null)
+            //  เปลี่ยนจาก logs → staffList
+            Set<Integer> borIds = staffList.stream()
+                    .map(StaffEntity::getBorId)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
             Map<Integer, String> borNameMap = new HashMap<>();
@@ -555,9 +609,10 @@ public class FaceService {
             }
 
             // Step 8: โหลด department ทีเดียว
-            Set<Long> deptIds = logs.stream()
-                    .map(log -> log.getStaff().getDept_id())
-                    .filter(id -> id != null)
+            //  เปลี่ยนจาก logs → staffList
+            Set<Long> deptIds = staffList.stream()
+                    .map(StaffEntity::getDept_id)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
             Map<Long, String> deptNameMap = new HashMap<>();
@@ -566,10 +621,11 @@ public class FaceService {
                         .forEach(dept -> deptNameMap.put(dept.getId(), dept.getDeptName()));
             }
 
-            // Step 9: โหลด position ทีเดียว
-            Set<Long> posIds = logs.stream()
-                    .map(log -> log.getStaff().getPos_id())
-                    .filter(id -> id != null)
+             // Step 9: โหลด position ทีเดียว
+            //  เปลี่ยนจาก logs → staffList
+            Set<Long> posIds = staffList.stream()
+                    .map(StaffEntity::getPos_id)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
             Map<Long, String> posNameMap = new HashMap<>();
@@ -642,12 +698,22 @@ public class FaceService {
                         });
             }
 
-            // Step 11: จัดกลุ่ม logs ตาม staffId + วันที่
+            //  สร้าง Set ของ staffId จาก staffList
+            Set<Long> staffIdSet = staffList.stream()
+                    .map(StaffEntity::getId)
+                    .collect(Collectors.toSet());
+
+             // Step 11: จัดกลุ่ม logs ตาม staffId + วันที่
             Map<String, Map<String, Object>> dayMap = new LinkedHashMap<>();
 
             for (AttendanceLog log : logs) {
-                String key = log.getStaff().getId()
-                        + "_" + log.getCheckTime().toLocalDate();
+
+                Long staffId = log.getStaff().getId();
+
+                //  ข้าม log ของ staff ที่ไม่อยู่ใน staffList
+                if (!staffIdSet.contains(staffId)) continue;
+
+                String key = staffId + "_" + log.getCheckTime().toLocalDate();
 
                 dayMap.putIfAbsent(key, createDayEntry(log));
 
@@ -724,11 +790,10 @@ public class FaceService {
             // Step 13: จัดกลุ่มตาม Staff
             Map<Long, Map<String, Object>> staffMap = new LinkedHashMap<>();
 
-            for (AttendanceLog log : logs) {
-                Long staffId = log.getStaff().getId();
-                if (!staffMap.containsKey(staffId)) {
-                    staffMap.put(staffId, createStaffItem(
-                            log.getStaff(), borNameMap, deptNameMap, posNameMap));
+            for (StaffEntity staff : staffList) {
+                if (!staffMap.containsKey(staff.getId())) {
+                    staffMap.put(staff.getId(), createStaffItem(
+                            staff, borNameMap, deptNameMap, posNameMap));
                 }
             }
 
@@ -1507,50 +1572,65 @@ public class FaceService {
             LocalDateTime startOfDay = targetDate.atStartOfDay();
             LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
 
-            // Step 4: ดึง staff ตาม role + borId
+
+            // Step 4: ดึง staff ตาม role + borId + deptId
             List<StaffEntity> staffList;
+            //เตรียม filter values
+            boolean hasBorId  = dto.getBorId()  != null && !dto.getBorId().isEmpty()
+                    && !dto.getBorId().equalsIgnoreCase("all");
+            boolean hasDeptId = dto.getDeptId() != null && !dto.getDeptId().isEmpty();
 
             if (requester.getRole().equals("USER")) {
-
                 staffList = new ArrayList<>();
                 staffList.add(requester);
 
             } else if (requester.getRole().equals("BORLEADER")) {
 
                 if (dto.getBorId() == null || dto.getBorId().isEmpty()) {
-
                     staffList = new ArrayList<>();
                     staffList.add(requester);
 
                 } else if (dto.getBorId().equalsIgnoreCase("all")) {
-
-                    staffList = userRepository.findAllByBorIdAndStatus(
-                            requester.getBorId(),
-                            "ACTIVE"
-                    );
-
+                    // BORLEADER ดูได้แค่ bor ตัวเอง
+                    if (hasDeptId) {
+                        staffList = userRepository.findAllByBorIdAndDeptId(
+                                requester.getBorId(),
+                                Long.parseLong(dto.getDeptId()));
+                    } else {
+                        staffList = userRepository.findAllByBorIdAndStatus(
+                                requester.getBorId(), "ACTIVE");
+                    }
                 } else {
-
                     throw new RuntimeException("ບໍ່ມີສິດເບິ່ງຂໍ້ມູນ bor ອື່ນ");
                 }
 
             } else {
-
+                // ADMIN / HR
                 if (dto.getBorId() == null || dto.getBorId().isEmpty()) {
-
                     staffList = new ArrayList<>();
                     staffList.add(requester);
 
                 } else if (dto.getBorId().equalsIgnoreCase("all")) {
 
-                    staffList = userRepository.findAllByStatus("ACTIVE");
+                    if (hasDeptId) {
+                        //  ทุก bor + filter deptId
+                        staffList = userRepository.findAllByDeptId(
+                                Long.parseLong(dto.getDeptId()));
+                    } else {
+                        staffList = userRepository.findAllByStatus("ACTIVE");
+                    }
 
                 } else {
-
-                    staffList = userRepository.findAllByBorIdAndStatus(
-                            Integer.parseInt(dto.getBorId()),
-                            "ACTIVE"
-                    );
+                    // filter borId
+                    if (hasDeptId) {
+                        // filter ทั้ง borId และ deptId
+                        staffList = userRepository.findAllByBorIdAndDeptId(
+                                Integer.parseInt(dto.getBorId()),
+                                Long.parseLong(dto.getDeptId()));
+                    } else {
+                        staffList = userRepository.findAllByBorIdAndStatus(
+                                Integer.parseInt(dto.getBorId()), "ACTIVE");
+                    }
                 }
             }
 

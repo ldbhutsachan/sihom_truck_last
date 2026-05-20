@@ -2,6 +2,8 @@ package com.ldb.truck.Repository.Staffs;
 
 import com.ldb.truck.Entity.Staff.StaffEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -38,4 +40,14 @@ public interface UserRepository extends JpaRepository<StaffEntity, Long> {
     // NEW — ดึง staff ตาม workSchedule
     List<StaffEntity> findAllByStatusAndWorkSchedule(
             String status, String workSchedule);
+
+    // NEW — filter deptId
+    @Query("SELECT s FROM StaffEntity s WHERE s.dept_id = :deptId")
+    List<StaffEntity> findAllByDeptId(@Param("deptId") Long deptId);
+
+    @Query("SELECT s FROM StaffEntity s WHERE s.borId = :borId AND s.dept_id = :deptId")
+    List<StaffEntity> findAllByBorIdAndDeptId(
+            @Param("borId")  Integer borId,
+            @Param("deptId") Long deptId);
+
 }
