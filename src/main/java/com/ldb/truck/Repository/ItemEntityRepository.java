@@ -113,12 +113,12 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
     @Query(value = "UPDATE item_inventory as i SET " +
            // "i.unit =i.unit + :unit, " +
             "i.qty =i.qty + :qty ," +
-//            "i.price=:amount," +
+            "i.price=:amount," +
             "i.currency=:ccy, i.real_price=:realPriceData " +
             "\n WHERE i.item_id =:itemId ",nativeQuery = true)
     int updateStockInItem(
             Integer qty,
-//            Float amount,
+            Float amount,
             String ccy,
             Float realPriceData,
             Integer itemId

@@ -2047,7 +2047,7 @@ public class StockServiceImpl {
             // Update inventory
             itemEntityRepository.updateStockInItem(
                     qty,
-//                    amount,
+                    amount,
                      ccy, realPriceData, itemNo);
 
             // Update order details

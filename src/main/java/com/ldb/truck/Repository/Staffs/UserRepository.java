@@ -31,4 +31,11 @@ public interface UserRepository extends JpaRepository<StaffEntity, Long> {
 
     //  NEW — ดึง staff ตาม borId ทั้งหมด
     List<StaffEntity> findAllByBorId(Integer borId);
+    // NEW — ดึง staff ตาม borId และ workSchedule
+    List<StaffEntity> findAllByBorIdAndStatusAndWorkSchedule(
+            Integer borId, String status, String workSchedule);
+
+    // NEW — ดึง staff ตาม workSchedule
+    List<StaffEntity> findAllByStatusAndWorkSchedule(
+            String status, String workSchedule);
 }

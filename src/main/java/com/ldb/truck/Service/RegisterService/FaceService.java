@@ -10,6 +10,7 @@ import com.ldb.truck.Model.StaffRequest.LeaveGetRequestDTO;
 import com.ldb.truck.Model.Staffs.*;
 import com.ldb.truck.Repository.Staffs.*;
 import com.ldb.truck.Util.PasswordUtil;
+import com.ldb.truck.Util.WorkScheduleUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class FaceService {
     private final TbBorRepository tbBorRepository;
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
+    private final WorkScheduleUtil workScheduleUtil;
 
     //register staff
     public StaffRegisterResponseDTO registerStaff(StaffRegisterRequestDTO dto,
@@ -540,7 +542,6 @@ public class FaceService {
                 staffList = new ArrayList<>();
                 staffList.add(staff);
             }
-
             // Step 7: โหลด borName ทีเดียว
             Set<Integer> borIds = logs.stream()
                     .map(log -> log.getStaff().getBorId())
@@ -602,7 +603,7 @@ public class FaceService {
                             long workDaysInLeave = 0;
                             LocalDate tmp = leave.getStartDate();
                             while (!tmp.isAfter(leave.getEndDate())) {
-                                if (isWorkDay(staffForSchedule, tmp,
+                                if (workScheduleUtil.isWorkDay(staffForSchedule, tmp,
                                         staffForSchedule.getWorkSchedule() != null
                                                 ? staffForSchedule.getWorkSchedule()
                                                 : "MON_FRI")) {
@@ -621,7 +622,7 @@ public class FaceService {
                                 LocalDate day = current;
 
                                 //  ข้ามวันหยุด
-                                if (!isWorkDay(staffForSchedule, day,
+                                if (!workScheduleUtil.isWorkDay(staffForSchedule, day,
                                         staffForSchedule.getWorkSchedule() != null
                                                 ? staffForSchedule.getWorkSchedule()
                                                 : "MON_FRI")) {
@@ -684,7 +685,7 @@ public class FaceService {
                                         long workDays = 0;
                                         LocalDate t = l.getStartDate();
                                         while (!t.isAfter(l.getEndDate())) {
-                                            if (isWorkDay(staff, t,
+                                            if (workScheduleUtil.isWorkDay(staff, t,
                                                     staff.getWorkSchedule() != null
                                                             ? staff.getWorkSchedule()
                                                             : "MON_FRI")) {
@@ -788,6 +789,10 @@ public class FaceService {
         staffItem.put("department",  deptNameMap.get(staff.getDept_id()));
         staffItem.put("posId",       staff.getPos_id());
         staffItem.put("position",    posNameMap.get(staff.getPos_id()));
+        staffItem.put("work_schedule",staff.getWorkSchedule());
+        staffItem.put("cycle_work_days",staff.getCycleWorkDays());
+        staffItem.put("cycle_off_days",staff.getCycleOffDays());
+        staffItem.put("cycle_start_date",staff.getCycleStartDate());
         staffItem.put("attendanLog", new ArrayList<>());
         return staffItem;
     }
@@ -909,7 +914,9 @@ public class FaceService {
         }
 
         // Step 3: เช็คว่าเป็น ADMIN
-        if (!admin.getRole().equals("ADMIN") ||(!admin.getRole().equals("HR")) ||(!admin.getRole().equals("BORLEADER"))) {
+        if (!admin.getRole().equals("ADMIN")
+                && !admin.getRole().equals("HR")
+                && !admin.getRole().equals("BORLEADER")) {
             throw new RuntimeException("ONLY ADMIN OR HR OR BORLEADER CAN RESET PASSWORD");
         }
 
@@ -1006,7 +1013,9 @@ public class FaceService {
                             "ການລາເຄີ່ງວັນ startDate ແລະ endDate ຕ້ອງເປັນວັນດຽວກັນ");
                 }
                 // เช็คว่าวันนั้นเป็นวันทำงานไหม
-                boolean isWorkDay = isWorkDay(staff, startDate,
+                boolean isWorkDay = workScheduleUtil.isWorkDay(
+                        staff,
+                        startDate,
                         staff.getWorkSchedule() != null
                                 ? staff.getWorkSchedule() : "MON_FRI");
 
@@ -1018,7 +1027,7 @@ public class FaceService {
 
             } else {
                 // ลาเต็มวัน
-                totalDays = calculateWorkDays(staff, startDate, endDate);
+                totalDays = workScheduleUtil.calculateWorkDays(staff, startDate, endDate);
 
                 if (totalDays == 0) {
                     throw new RuntimeException("ຊ່ວງທີ່ເລືອກແມ່ນວັນຢຸດທັງໝົດ");
@@ -1034,7 +1043,7 @@ public class FaceService {
                     .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                             staff.getId(), "PENDING", endDate, startDate);
 
-// ✅ รวม overlapping ทั้งหมด
+//  รวม overlapping ทั้งหมด
             List<LeaveRequest> allOverlapping = new ArrayList<>();
             allOverlapping.addAll(overlapping);
             allOverlapping.addAll(overlappingPending);
@@ -1127,60 +1136,60 @@ public class FaceService {
 
         return response;
     }
-    private double  calculateWorkDays(StaffEntity staff,
-                                  LocalDate startDate, LocalDate endDate) {
+//    private double  calculateWorkDays(StaffEntity staff,
+//                                  LocalDate startDate, LocalDate endDate) {
+//
+//        String schedule = staff.getWorkSchedule() != null
+//                ? staff.getWorkSchedule() : "MON_FRI";
+//
+//        double  workDays = 0;
+//        LocalDate current = startDate;
+//
+//        while (!current.isAfter(endDate)) {
+//            if (workScheduleUtil.isWorkDay(staff, current, schedule)) {
+//                workDays++;
+//            }
+//            current = current.plusDays(1);
+//        }
+//
+//        return workDays;
+//    }
 
-        String schedule = staff.getWorkSchedule() != null
-                ? staff.getWorkSchedule() : "MON_FRI";
-
-        double  workDays = 0;
-        LocalDate current = startDate;
-
-        while (!current.isAfter(endDate)) {
-            if (isWorkDay(staff, current, schedule)) {
-                workDays++;
-            }
-            current = current.plusDays(1);
-        }
-
-        return workDays;
-    }
-
-    private boolean isWorkDay(StaffEntity staff, LocalDate date, String schedule) {
-
-        java.time.DayOfWeek day = date.getDayOfWeek();
-
-        switch (schedule) {
-            case "MON_FRI":
-                return day != java.time.DayOfWeek.SATURDAY
-                        && day != java.time.DayOfWeek.SUNDAY;
-
-            case "CYCLE":
-                return isCycleWorkDay(staff, date);
-
-            default:
-                return day != java.time.DayOfWeek.SATURDAY
-                        && day != java.time.DayOfWeek.SUNDAY;
-        }
-    }
-
-    private boolean isCycleWorkDay(StaffEntity staff, LocalDate date) {
-
-        LocalDate startDate = staff.getCycleStartDate();
-        if (startDate == null) return true;
-
-        int workDays   = staff.getCycleWorkDays() != null ? staff.getCycleWorkDays() : 24;
-        int offDays    = staff.getCycleOffDays()  != null ? staff.getCycleOffDays()  : 7;
-        int cycleLength = workDays + offDays;
-
-        long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(startDate, date);
-
-        if (daysSinceStart < 0) return true;
-
-        int positionInCycle = (int) (daysSinceStart % cycleLength);
-
-        return positionInCycle < workDays;
-    }
+//    private boolean isWorkDay(StaffEntity staff, LocalDate date, String schedule) {
+//
+//        java.time.DayOfWeek day = date.getDayOfWeek();
+//
+//        switch (schedule) {
+//            case "MON_FRI":
+//                return day != java.time.DayOfWeek.SATURDAY
+//                        && day != java.time.DayOfWeek.SUNDAY;
+//
+//            case "CYCLE":
+//                return isCycleWorkDay(staff, date);
+//
+//            default:
+//                return day != java.time.DayOfWeek.SATURDAY
+//                        && day != java.time.DayOfWeek.SUNDAY;
+//        }
+//    }
+//
+//    private boolean isCycleWorkDay(StaffEntity staff, LocalDate date) {
+//
+//        LocalDate startDate = staff.getCycleStartDate();
+//        if (startDate == null) return true;
+//
+//        int workDays   = staff.getCycleWorkDays() != null ? staff.getCycleWorkDays() : 24;
+//        int offDays    = staff.getCycleOffDays()  != null ? staff.getCycleOffDays()  : 7;
+//        int cycleLength = workDays + offDays;
+//
+//        long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(startDate, date);
+//
+//        if (daysSinceStart < 0) return true;
+//
+//        int positionInCycle = (int) (daysSinceStart % cycleLength);
+//
+//        return positionInCycle < workDays;
+//    }
     private void validateLeaveRequest(StaffEntity staff,
                                       String leaveType,
                                       double totalDays,
@@ -1653,7 +1662,7 @@ public class FaceService {
 
                             // query date ต้องเป็นวันทำงานก่อน
                             boolean isTargetWorkDay =
-                                    isWorkDay(leaveStaff, targetDate, schedule);
+                                    workScheduleUtil.isWorkDay(leaveStaff, targetDate, schedule);
 
                             if (!isTargetWorkDay) {
                                 return;
@@ -1666,7 +1675,7 @@ public class FaceService {
 
                             while (!current.isAfter(leave.getEndDate())) {
 
-                                if (isWorkDay(leaveStaff, current, schedule)) {
+                                if (workScheduleUtil.isWorkDay(leaveStaff, current, schedule)) {
                                     workDaysInLeave++;
                                 }
 
@@ -1769,7 +1778,18 @@ public class FaceService {
 
                 } else {
 
-                    status = "ABSENT";
+                    //  เช็คว่าเป็นวันหยุดตาม schedule ไหม
+                    String schedule = staff.getWorkSchedule() != null
+                            ? staff.getWorkSchedule() : "MON_FRI";
+
+                    boolean isWorkDay = workScheduleUtil.isWorkDay(
+                            staff, targetDate, schedule);
+
+                    if (!isWorkDay) {
+                        status = "DAY_OFF";  //  วันหยุดตาม schedule
+                    } else {
+                        status = "ABSENT";   //  วันทำงานแต่ไม่มา
+                    }
                 }
                 // STAFF INFO
                 item.put("staffId", staff.getId());
@@ -1852,20 +1872,18 @@ public class FaceService {
                     .count();
             long late = data.stream()
                     .filter(d ->
-                            "LATE".equals(d.get("status")))
-                    .count();
+                            "LATE".equals(d.get("status"))).count();
             long absent = data.stream()
                     .filter(d ->
-                            "ABSENT".equals(d.get("status")))
-                    .count();
+                            "ABSENT".equals(d.get("status"))).count();
             long onLeave = data.stream()
                     .filter(d ->
-                            "ON_LEAVE".equals(d.get("status")))
-                    .count();
+                            "ON_LEAVE".equals(d.get("status"))).count();
             long pendingLeave = data.stream()
                     .filter(d ->
-                            "PENDING_LEAVE".equals(d.get("status")))
-                    .count();
+                            "PENDING_LEAVE".equals(d.get("status"))).count();
+            long dayOff       = data.stream()
+                    .filter(d -> "DAY_OFF".equals(d.get("status"))).count();
             Map<String, Object> footer =
                     new LinkedHashMap<>();
             footer.put("TOTAL", data.size());
@@ -1874,6 +1892,7 @@ public class FaceService {
             footer.put("ABSENT", absent);
             footer.put("ON_LEAVE", onLeave);
             footer.put("PENDING_LEAVE", pendingLeave);
+            footer.put("DAY_OFF",       dayOff);
             response.setStatus("00");
             response.setMessage("success");
             response.setDataResponse(data);
