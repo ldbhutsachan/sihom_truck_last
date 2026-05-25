@@ -317,7 +317,10 @@ public class FaceService {
                     staff.setCycleStartDate(null);
                 }
             }
-            //update department and position
+            //update department and position, borId
+            if (dto.getBorId() != null) {
+                staff.setBorId(dto.getBorId());
+            }
             if (dto.getDeptId() != null) {
                 staff.setDept_id(dto.getDeptId());
             }

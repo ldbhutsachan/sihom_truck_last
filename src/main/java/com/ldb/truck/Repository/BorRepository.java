@@ -18,9 +18,9 @@ public interface BorRepository extends CrudRepository<BorViewEntity,Long> {
     @Query(value = "SELECT * FROM v_bor " +
             "WHERE type_bor = :typeBor " +
             "AND ( " +
-            "   (:role IN ('ADMIN', 'USER') AND type = 'HRM') " +
+            "   (:role IN ('ADMIN', 'HR', 'BORLEADER', 'USER') AND type = 'HRM') " +
             "   OR " +
-            "   (:role NOT IN ('ADMIN', 'USER') AND type != 'HRM') " +
+            "   (:role NOT IN ('ADMIN', 'HR', 'BORLEADER', 'USER') AND type != 'HRM') " +
             ")",
             nativeQuery = true)
     List<BorViewEntity> getBorViewEntityAll(
