@@ -13,4 +13,6 @@ public class StaffLoginResponseDTO {
     private String token;
     private String role;
     private LocalDateTime tokenExpiredAt;
+    private String borNo;
+    private String departmentNo;
 }

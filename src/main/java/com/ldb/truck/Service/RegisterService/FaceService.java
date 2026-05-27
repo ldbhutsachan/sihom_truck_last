@@ -931,7 +931,7 @@ public class FaceService {
         StaffEntity staff = userRepository.findByUsername(dto.getUser())
                 .orElseThrow(() -> new RuntimeException("Not found Username"));
 
-        // Step 2: ✅ เช็ค password ด้วย PasswordUtil
+        // Step 2:  เช็ค password ด้วย PasswordUtil
         if (!PasswordUtil.verifyPassword(dto.getPassword(), staff.getPasswordHash())) {
             throw new RuntimeException("Incorrect Password");
         }
@@ -960,9 +960,10 @@ public class FaceService {
                 staff.getUsername(),
                 newToken,
                 staff.getRole(),
-                newExpiredAt
+                newExpiredAt,
+                String.valueOf(staff.getBorId()),
+                String.valueOf(staff.getDept_id())
         ));
-
         return result;
     }
 

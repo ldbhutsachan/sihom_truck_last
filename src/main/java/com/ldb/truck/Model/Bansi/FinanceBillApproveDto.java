@@ -11,4 +11,5 @@ public class FinanceBillApproveDto {
     private String action;  // APPROVED | REJECTED
     private String remark;
     private String nextPayDate;
+    private String exchangeRate;
 }

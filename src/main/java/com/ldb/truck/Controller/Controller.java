@@ -567,7 +567,7 @@ public class Controller {
         try {
             System.out.println("============================>login service<============================================");
 
-            // ✅ เช็คว่าจะ login ระบบไหน
+            //  เช็คว่าจะ login ระบบไหน
             if ("CHECK-INOUT".equalsIgnoreCase(loginReq.getSystem())) {
                 // ระบบใหม่ → Face Detection
                 return faceService.login(loginReq);
