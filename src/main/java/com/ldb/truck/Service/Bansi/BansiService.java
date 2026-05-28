@@ -448,7 +448,8 @@ public class BansiService {
         }
         // set user_id from token
         entity.setUserId(Long.valueOf(user.getUserId()));
-        entity.setPayTypeId(req.getPay_typeid());
+//        entity.setPayTypeId(req.getPay_typeid());
+        entity.setPayTypeGroupId(req.getPay_type_groupid());
         entity.setSupplierId(req.getSupplierid());
         entity.setTitle(req.getTitle());
         entity.setCurrency(req.getCurrency());
@@ -471,25 +472,6 @@ public class BansiService {
         entity.setDateCreate(LocalDate.now());
         entity.setBillStatus("wait");
         entity.setBId(req.getB_id());
-
-//        MultipartFile[] files = req.getFiles(); // รับหลายไฟล์จาก @RequestParam("files") MultipartFile[]
-//        List<String> fileUrls = new ArrayList<>();
-//
-//        if (files != null && files.length > 0) {
-//            for (MultipartFile file : files) {
-//                if (!file.isEmpty()) {
-//                    String uploadedFileName = mediaUploadService.uploadMedia(file);
-//                    String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
-//                    fileUrls.add(fileUrl);
-//                }
-//            }
-//            // แปลง List เป็น JSON string
-//            ObjectMapper mapper = new ObjectMapper();
-//            String filesJson = mapper.writeValueAsString(fileUrls);
-//            entity.setFile(filesJson);
-//        } else {
-//            entity.setFile("[]"); // ไม่มีไฟล์
-//        }
         MultipartFile[] files = req.getFile();
         if (files != null && files.length > 0) {
             List<String> fileUrls = new ArrayList<>();
@@ -565,7 +547,8 @@ public class BansiService {
         // entity.setBillNo(...) //
 
         // update fields อื่น ๆ
-        entity.setPayTypeId(req.getPay_typeid() != null ? req.getPay_typeid() : entity.getPayTypeId());
+//        entity.setPayTypeId(req.getPay_typeid() != null ? req.getPay_typeid() : entity.getPayTypeId());
+        entity.setPayTypeGroupId(req.getPay_type_groupid() !=null ? req.getPay_type_groupid() : entity.getPayTypeGroupId());
         entity.setSupplierId(req.getSupplierid() != null ? req.getSupplierid() : entity.getSupplierId());
         entity.setTitle(req.getTitle() != null ? req.getTitle() : entity.getTitle());
         entity.setCurrency(req.getCurrency() != null ? req.getCurrency() : entity.getCurrency());
@@ -580,48 +563,44 @@ public class BansiService {
         entity.setBillStatus("wait");
         entity.setBId(req.getB_id() != null ? req.getB_id() : entity.getBId());
 
+
         if (req.getDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             Date parsedDate = sdf.parse(req.getDate());
             entity.setDate(sdf.format(parsedDate));
         }
-        //  Upload file (ใช้ service เดิม)
-//        MultipartFile file = req.getFile();
-//        if (file != null && !file.isEmpty()) {
-//            String uploadedFileName = mediaUploadService.uploadMedia(file);
-//            String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
-//            entity.setFile(fileUrl);
-//            log.info("✅ Updated file uploaded: {}", fileUrl);
-//        } else {
-//            log.info("ℹ️ No new file uploaded. Keep old file: {}", entity.getFile());
-//        }
         // Upload files (ใช้ service เดิม แต่รองรับหลายไฟล์)
-        MultipartFile[] files = req.getFile(); // DTO ต้องมี getFiles()
+        MultipartFile[] files = req.getFile();
+
         if (files != null && files.length > 0) {
-            List<String> fileUrls = new ArrayList<>();
 
-            // ถ้า entity มีไฟล์เก่าอยู่แล้ว ให้เก็บไว้ก่อน
-            if (entity.getFile() != null && !entity.getFile().isEmpty()) {
-                // แยก string เดิมเป็น list
-                String[] existingFiles = entity.getFile().split(",");
-                fileUrls.addAll(Arrays.asList(existingFiles));
-            }
+            List<String> newFileUrls = new ArrayList<>();
+            boolean hasValidFile = false;
 
-            // upload ไฟล์ใหม่ทั้งหมด
+            // ตรวจสอบว่ามีไฟล์ที่ไม่ว่างจริง ๆ หรือไม่
             for (MultipartFile f : files) {
-                if (!f.isEmpty()) {
+                if (f != null && !f.isEmpty()) {
+                    hasValidFile = true;
+
                     String uploadedFileName = mediaUploadService.uploadMedia(f);
                     String fileUrl = "http://khounkham.com/images/batery/" + uploadedFileName;
-                    fileUrls.add(fileUrl);
-                    log.info("✅ Uploaded new file: {}", fileUrl);
+                    newFileUrls.add(fileUrl);
+
+                    log.info(" Uploaded new file: {}", fileUrl);
                 }
             }
 
-            // เซตค่าไฟล์รวมทั้งหมดกลับไปที่ entity
-            entity.setFile(String.join(",", fileUrls));
+            // ถ้ามีไฟล์ใหม่จริง ๆ ให้แทนที่ไฟล์เก่า
+            if (hasValidFile) {
+                entity.setFile(String.join(",", newFileUrls));
+                log.info(" Files replaced. Old files removed.");
+            } else {
+                log.info("ℹ No valid files uploaded. Keeping old files.");
+            }
 
         } else {
-            log.info("ℹ️ No new files uploaded. Keep old files: {}", entity.getFile());
+            // ไม่มีไฟล์ส่งมา → เก็บไฟล์เก่าไว้
+            log.info("ℹ No files field sent or empty. Keeping old files: {}", entity.getFile());
         }
 
 

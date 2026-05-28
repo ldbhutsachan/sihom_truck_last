@@ -10,6 +10,7 @@ public class PaymentDetailReq {
     private Long itemTypeid;
     private Long req_id;
     private Long pid;
+    private Long gid;
     private String billNo;
     private String billStatus;
 

@@ -109,7 +109,7 @@ public class BansiController {
     @PostMapping("/insertPaymentDetail")
     public ResponseEntity<?> insertPaymentRequest(
             @RequestParam("toKen") String token,
-            @RequestParam("pay_typeid") Long payTypeId,
+//            @RequestParam("pay_typeid") Long payTypeId,
             @RequestParam("supplierid") Long supplierId,
             @RequestParam("billNo") String billNo,
             @RequestParam("title") String title,
@@ -125,14 +125,15 @@ public class BansiController {
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
 //            @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "file", required = false) MultipartFile[] files,
-            @RequestParam("b_id") Long bId
+            @RequestParam("b_id") Long bId,
+            @RequestParam("pay_type_groupid") Long pay_type_groupid
     ) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             PaymentRequestDto dto = new PaymentRequestDto();
 
             dto.setToKen(token);
-            dto.setPay_typeid(payTypeId);
+//            dto.setPay_typeid(payTypeId);
             dto.setSupplierid(supplierId);
             dto.setBillNo(billNo);
             dto.setTitle(title);
@@ -147,6 +148,7 @@ public class BansiController {
             dto.setDatermine_date(datermine_date);
             dto.setFile(files);
             dto.setB_id(bId);
+            dto.setPay_type_groupid(pay_type_groupid);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
@@ -171,7 +173,7 @@ public class BansiController {
     public ResponseEntity<?> updatePaymentRequest(
             @RequestParam("billNo") String billNo,  // เปลี่ยนจาก keyId
             @RequestParam("toKen") String token,
-            @RequestParam(value = "pay_typeid", required = false) Long payTypeId,
+//            @RequestParam(value = "pay_typeid", required = false) Long payTypeId,
             @RequestParam(value = "supplierid", required = false) Long supplierId,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "currency", required = false) String currency,
@@ -187,14 +189,15 @@ public class BansiController {
             @RequestParam(value = "bill_status", required = false) String bill_status,
 //            @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "file", required = false) MultipartFile[] files,
-            @RequestParam("b_id") Long bId
+            @RequestParam("b_id") Long bId,
+            @RequestParam("pay_type_groupid") Long pay_type_groupid
     ) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             PaymentRequestDto dto = new PaymentRequestDto();
 
             dto.setToKen(token);
-            dto.setPay_typeid(payTypeId);
+//            dto.setPay_typeid(payTypeId);
             dto.setSupplierid(supplierId);
             dto.setTitle(title);
             dto.setCurrency(currency);
@@ -209,6 +212,7 @@ public class BansiController {
             dto.setBill_status(bill_status);
             dto.setFile(files);
             dto.setB_id(bId);
+            dto.setPay_type_groupid(pay_type_groupid);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(

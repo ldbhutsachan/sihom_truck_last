@@ -30,6 +30,7 @@ public class PaymentRequestDto {
     private MultipartFile[] file;
 
     private Long b_id;
+    private Long pay_type_groupid;
 
     private List<ToolDto> tools;
 

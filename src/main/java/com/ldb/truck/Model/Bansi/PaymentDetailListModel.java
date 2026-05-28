@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class PaymentDetailListModel {
+
     private Long id;
     private Long keyId;
     private String listName;
@@ -16,4 +17,8 @@ public class PaymentDetailListModel {
     private Double tax;
     private String taxStatus;
     private String bill_No;
+
+    // ==================== เพิ่ม field ใหม่ ====================
+    private Long gid;
+    private String groupName;
 }

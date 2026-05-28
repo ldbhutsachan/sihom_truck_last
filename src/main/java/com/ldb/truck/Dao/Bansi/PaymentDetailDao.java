@@ -20,10 +20,9 @@ public class PaymentDetailDao {
     private final JdbcTemplate jdbcTemplate;
 
     // 🔹 ดึงข้อมูลหลักจาก tb_accounting (filter ตามตัวเลือก)
-    public List<PaymentDetailModel> findPaymentDetailsCursor(
-            PaymentDetailReq req, String role, int size) {
-
+    public List<PaymentDetailModel> findPaymentDetailsCursor(PaymentDetailReq req, String role, int size) {
         StringBuilder sql = new StringBuilder();
+
         sql.append("SELECT a.key_id, a.bill_No, a.title, a.currency, a.exchange_rate, ");
         sql.append("a.date, a.datermine_date, a.date_create, a.data_type, ");
         sql.append("a.reference, a.reference_number, a.remark, a.internal_remark, ");
@@ -32,9 +31,18 @@ public class PaymentDetailDao {
         sql.append("rt.req_id, rt.req_name, it.itemTypeid, it.itemtype_Name, ");
         sql.append("l.USER_LOGIN, a.basi_approve_date, a.bansi_approveby, ");
         sql.append("a.returnby, a.return_date, b.account_name, b.account_no, ");
-        sql.append("b.bank_name, b.bank_name_lao ");
+        sql.append("b.bank_name, b.bank_name_lao, ");
+
+        // ==================== เพิ่มตรงนี้ ====================
+        sql.append("pg.gid, pg.group_name ");
+
         sql.append("FROM tb_accounting a ");
-        sql.append("INNER JOIN pay_type pt ON a.pay_typeid = pt.pid ");
+//        sql.append("INNER JOIN pay_type pt ON a.pay_typeid = pt.pid ");
+        sql.append("INNER JOIN pay_type_group pg ON a.pay_type_groupid = pg.gid ");
+
+        // ==================== เพิ่ม JOIN ตรงนี้ ====================
+        sql.append("LEFT JOIN pay_type pt ON pg.pid = pt.pid ");
+
         sql.append("LEFT JOIN LOGIN l ON a.user_id = l.KEY_ID ");
         sql.append("LEFT JOIN supplier s ON a.supplierid = s.supplierid ");
         sql.append("LEFT JOIN request_item_type rt ON pt.req_id = rt.req_id ");
@@ -44,9 +52,9 @@ public class PaymentDetailDao {
         List<Object> params = new ArrayList<>();
         List<String> conditions = new ArrayList<>();
 
-        // 🔹 filter ปกติ
-        if (req.getStartDate() != null && !req.getStartDate().isEmpty()
-                && req.getEndDate() != null && !req.getEndDate().isEmpty()) {
+        // ==================== เงื่อนไข Filter เดิม ====================
+        if (req.getStartDate() != null && !req.getStartDate().isEmpty() &&
+                req.getEndDate() != null && !req.getEndDate().isEmpty()) {
             conditions.add("a.date_create BETWEEN ? AND ?");
             params.add(req.getStartDate() + " 00:00:00");
             params.add(req.getEndDate() + " 23:59:59");
@@ -67,17 +75,23 @@ public class PaymentDetailDao {
             params.add(req.getPid());
         }
 
+        // ==================== เพิ่ม Filter ตาม gid ตรงนี้ ====================
+        if (req.getGid() != null) {
+            conditions.add("pg.gid = ?");
+            params.add(req.getGid());
+        }
+
         if (req.getBillNo() != null && !req.getBillNo().isEmpty()) {
             conditions.add("a.bill_No = ?");
             params.add(req.getBillNo());
         }
+
         if (req.getBillStatus() != null && !req.getBillStatus().isEmpty()) {
             conditions.add("a.bill_status = ?");
             params.add(req.getBillStatus());
         }
 
-
-        //  cursor logic (สำคัญสุด)
+        // ==================== Cursor Logic ====================
         if (req.getLastDate() != null && req.getLastKeyId() != null) {
             conditions.add("(a.date < ? OR (a.date = ? AND a.key_id < ?))");
             params.add(req.getLastDate());
@@ -89,10 +103,8 @@ public class PaymentDetailDao {
             sql.append(" WHERE ").append(String.join(" AND ", conditions));
         }
 
-        //  order ต้องตรงกับ cursor
         sql.append(" ORDER BY a.date DESC, a.key_id DESC ");
         sql.append(" LIMIT ?");
-
         params.add(size);
 
         List<PaymentDetailModel> mainList = jdbcTemplate.query(
@@ -101,7 +113,7 @@ public class PaymentDetailDao {
                 params.toArray()
         );
 
-        // 🔥 batch load list items
+        // batch load list items (เหมือนเดิม)
         if (mainList.isEmpty()) return mainList;
 
         List<String> billNos = mainList.stream()
@@ -110,8 +122,7 @@ public class PaymentDetailDao {
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<String, List<PaymentDetailListModel>> itemMap =
-                findListItemsByBillNos(billNos);
+        Map<String, List<PaymentDetailListModel>> itemMap = findListItemsByBillNos(billNos);
 
         for (PaymentDetailModel m : mainList) {
             m.setListItems(itemMap.getOrDefault(m.getBillNo(), new ArrayList<>()));
@@ -155,16 +166,20 @@ public class PaymentDetailDao {
         model.setSupplierid(rs.getString("supplierid"));
         model.setSupplier_name(rs.getString("supplier_name"));
         model.setUser(rs.getString("USER_LOGIN"));
-
         model.setBansi_approveby(rs.getString("bansi_approveby"));
         model.setBasi_approve_date(rs.getString("basi_approve_date"));
         model.setReturnby(rs.getString("returnby"));
         model.setReturn_date(rs.getString("return_date"));
-
         model.setAccount_name(rs.getString("account_name"));
         model.setAccount_no(rs.getString("account_no"));
         model.setBank_name(rs.getString("bank_name"));
         model.setBank_lao_name(rs.getString("bank_name_lao"));
+
+        // ==================== เพิ่มตรงนี้ ====================
+        // รับค่า gid และ group_name จาก pay_type_group
+        Long gid = rs.getObject("gid") != null ? rs.getLong("gid") : null;
+        model.setGid(gid);
+        model.setGroupName(rs.getString("group_name"));
 
         return model;
     }
