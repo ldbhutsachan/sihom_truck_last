@@ -28,6 +28,10 @@ public class AccountingReportModel {
 
     private String payType;
 
+    private String payTypeGroupid;
+
+    private String payTypeGroupName;
+
     private String typeOf;
 
     private String supplierName;

@@ -315,6 +315,7 @@ public class PaymentDetailDao {
             String big_project_id,
             String small_project_id,
             String pay_type_id,
+            String gid,
             String type_of_pay,
             String startDate,
             String endDate,
@@ -333,6 +334,7 @@ public class PaymentDetailDao {
                 "big_project_id", big_project_id,
                 "small_project_id", small_project_id,
                 "pay_type_id", pay_type_id,
+                "gid", gid,
                 "type_of", type_of_pay
         );
 
@@ -368,50 +370,62 @@ public class PaymentDetailDao {
         return jdbcTemplate.query(sql, params.toArray(), (rs, rowNum) -> {
             AccountingReportModel model = new AccountingReportModel();
 
-            model.setKeyId(rs.getInt("key_id"));
-            model.setBansiId(rs.getInt("Bansi_id"));
-            model.setDate_create(rs.getDate("date_create"));
-            model.setBasi_approve_date(rs.getDate("basi_approve_date"));
-            model.setBigProjectId(rs.getInt("big_project_id"));
+            model.setKeyId(getIntSafe(rs, "key_id"));
+            model.setBansiId(getIntSafe(rs, "Bansi_id"));
+            model.setBigProjectId(getIntSafe(rs, "big_project_id"));
+            model.setSmallProjectId(getIntSafe(rs, "small_project_id"));
+            model.setPayTypeId(getIntSafe(rs, "pay_type_id"));
+
             model.setBigProject(rs.getString("big_project"));
-            model.setSmallProjectId(rs.getInt("small_project_id"));
             model.setSmallProject(rs.getString("small_project"));
-            model.setPayTypeId(rs.getInt("pay_type_id"));
             model.setPayType(rs.getString("pay_type"));
+            model.setPayTypeGroupid(rs.getString("pay_typegroup_id"));
+            model.setPayTypeGroupName(rs.getString("pay_typegroup_name"));
             model.setTypeOf(rs.getString("type_of"));
             model.setSupplierName(rs.getString("supplier_name"));
             model.setBunsiName(rs.getString("BunsiName"));
             model.setTitle(rs.getString("title"));
             model.setExchangeRate(rs.getString("exchange_rate"));
-            model.setDatermineDate(rs.getDate("datermine_date"));
             model.setReferenceNumber(rs.getString("reference_number"));
             model.setReference(rs.getString("reference"));
             model.setRemark(rs.getString("remark"));
             model.setInternalRemark(rs.getString("internal_remark"));
             model.setTag(rs.getString("tag"));
-//            model.setFile(rs.getString("file"));
-            String fileStr = rs.getString("file");
-            model.setFile(fileStr); // เก็บเหมือนเดิม
-            if (fileStr != null && !fileStr.isEmpty()) {
-                // แยกเป็น list ตาม comma
-                List<String> fileList = Arrays.asList(fileStr.split(","));
-                model.setFileList(fileList);
-            } else {
-                model.setFileList(new ArrayList<>()); // ถ้าไม่มีไฟล์
-            }
             model.setBillNo(rs.getString("bill_No"));
             model.setBill_status(rs.getString("bill_status"));
             model.setCurrency(rs.getString("currency"));
-            model.setPrice(rs.getDouble("price"));
-            model.setUsd_price(rs.getDouble("usd_price"));
             model.setRole(rs.getString("role"));
             model.setBank_account_name(rs.getString("bank_account_name"));
             model.setBank_account_no(rs.getString("bank_account_no"));
             model.setBank_name(rs.getString("bank_name"));
 
+            // วันที่
+            model.setDate_create(rs.getDate("date_create"));
+            model.setBasi_approve_date(rs.getDate("basi_approve_date"));
+            model.setDatermineDate(rs.getDate("datermine_date"));
+
+            // ตัวเลข (ใช้ helper method)
+            model.setPrice(getDoubleSafe(rs, "price"));
+            model.setUsd_price(getDoubleSafe(rs, "usd_price"));
+
+            // File
+            String fileStr = rs.getString("file");
+            model.setFile(fileStr);
+            model.setFileList((fileStr != null && !fileStr.isEmpty())
+                    ? Arrays.asList(fileStr.split(","))
+                    : new ArrayList<>());
 
             return model;
         });
+    }
+    private int getIntSafe(ResultSet rs, String column) throws SQLException {
+        int value = rs.getInt(column);
+        return rs.wasNull() ? 0 : value;
+    }
+
+    private double getDoubleSafe(ResultSet rs, String column) throws SQLException {
+        double value = rs.getDouble(column);
+        return rs.wasNull() ? 0.0 : value;
     }
 
 

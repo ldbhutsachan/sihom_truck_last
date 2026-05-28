@@ -1013,6 +1013,7 @@ public class BansiService {
                 req.getBig_project_id(),
                 req.getSmall_project_id(),
                 req.getPay_type_id(),
+                req.getGid(),
                 req.getType_of_pay(),
                 req.getStartDate(),
                 req.getEndDate(),
