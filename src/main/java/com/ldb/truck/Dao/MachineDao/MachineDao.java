@@ -819,6 +819,14 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
                 tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
                 // ถ้า column เป็น NULL จะได้ 0 แทน
+                tr.setAll_dig_metters(
+                        rs.getObject("all_dig_metters") != null ?
+                                ((BigDecimal) rs.getObject("all_dig_metters")).intValue() : 0
+                );
+                tr.setAll_oil_liter(
+                        rs.getObject("all_oil_liter") != null ?
+                                ((BigDecimal) rs.getObject("all_oil_liter")).intValue() : 0
+                );
                 tr.setAll_Used_Hours(
                         rs.getObject("all_used_hours") != null ?
                                 ((BigDecimal) rs.getObject("all_used_hours")).intValue() : 0

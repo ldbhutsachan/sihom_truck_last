@@ -275,6 +275,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setTime_oil_fix(resp.getTime_oil_fix());
                  machine.setTime_oil_fix_mo(resp.getTime_oil_fix_mo());
 
+                 machine.setAll_dig_metters(resp.getAll_dig_metters());
+                 machine.setAll_oil_liter(resp.getAll_oil_liter());
                  machine.setAll_Used_Hours(resp.getAll_Used_Hours());
                  machine.setLast_engine_Hours(resp.getLast_engine_Hours());
                  machine.setLast_hydraulic_Hours(resp.getLast_hydraulic_Hours());

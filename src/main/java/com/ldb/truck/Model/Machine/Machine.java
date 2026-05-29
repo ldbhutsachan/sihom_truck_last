@@ -30,6 +30,8 @@ public class Machine {
     private String borName;
     private String borLocationName;
 
+    private double all_dig_metters;
+    private double all_oil_liter;
     private Integer all_Used_Hours;
     private Integer last_engine_Hours;
     private Integer time_fix;
