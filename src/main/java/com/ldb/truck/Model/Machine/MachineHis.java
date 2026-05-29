@@ -2,6 +2,7 @@ package com.ldb.truck.Model.Machine;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -12,6 +13,9 @@ public class MachineHis {
     private Date createDate; // create_date datetime
     private String createBy; // create_by varchar(100)
     private String timeTotal; // time_close varchar(10)
+    private Double digMetter;
+    private Double oilLiter;
+    private Integer hole;
     private Date txnDate; // txn_date date
     private Integer status; // status int(11)
     private String borNo;

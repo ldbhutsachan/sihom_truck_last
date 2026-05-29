@@ -2,6 +2,7 @@ package com.ldb.truck.Model.Machine;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -17,6 +18,10 @@ public class MachineHisReq {
    // private Integer timeTotal; // time_total int(11)
 
     private String timeClose; // time_close varchar(10)
+    private BigDecimal digMetter;
+    private BigDecimal oilLiter;
+    private Integer hole;
+
 
     private Date txnDate; // txn_date date
 

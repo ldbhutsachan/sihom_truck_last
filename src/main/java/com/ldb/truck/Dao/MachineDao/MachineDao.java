@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -457,7 +458,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     StringBuilder sb = new StringBuilder();
 
     Integer keyId = machineHisReq.getKeyId();
-//    Integer status = machineHisReq.getStatus();
+    Integer hole =  machineHisReq.getHole();
     String mchNo = machineHisReq.getMchNo();
     String startDate = machineHisReq.getStartDate();
     String endDate = machineHisReq.getEndDate();
@@ -465,33 +466,29 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     String conOrder = "\n ORDER BY a.key_id DESC";
     String conBorNo = "";
     String conKeyId = "";
-//    String conStatus = "";
     String conMchNo = "";
+    String conHole = "";
     String conDate = "";
 
-    // ✅ เงื่อนไข status
-//    if (status != null) {
-//        conStatus = "\n AND a.status = " + status;
-//    }
-//    if (status != null && status != 0) { // สมมติ 0 หมายถึง "all"
-//        conStatus = "\n AND a.status = " + status;
-//    }
-
-
-    // ✅ เงื่อนไข keyId
+    //  เงื่อนไข keyId
     if (keyId != null) {
         conKeyId = "\n AND a.key_id = " + keyId;
     }
 
-    // ✅ เงื่อนไข borNo (จาก parameter borNo)
+    //  เงื่อนไข borNo (จาก parameter borNo)
     if (borNo != null && !borNo.trim().isEmpty()) {
         conBorNo = "\n AND b.borNo = '" + borNo + "'";
     }
 
-    // ✅ เงื่อนไข mchNo (จาก body request)
+    //  เงื่อนไข mchNo (จาก body request)
     if (mchNo != null && !mchNo.trim().isEmpty()) {
         conMchNo = "\n AND a.mch_no = '" + mchNo + "'";
     }
+    //  เงื่อนไข hole
+    if (hole != null) {
+        conHole = "\n AND a.hole = '" + hole + "'";
+    }
+
     //query by startDate and endDate
     if (startDate != null && !startDate.isEmpty()) {
         conDate += "\n AND a.txn_date >= '" + startDate + "'";
@@ -500,9 +497,10 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
         conDate += "\n AND a.txn_date <= '" + endDate + "'";
     }
 
-    // ✅ สร้าง SQL หลัก
+    //  สร้าง SQL หลัก
     sb.append("SELECT \n")
             .append("a.key_id, a.mch_no,a.status, a.status2, a.create_date, a.create_by,chanage_by,change_date,change_by2,change_date2," +
+                    "a.dig_metter,a.oil_liter, a.hole, " +
                     " d.USER_LOGIN AS USER_LOGIN, a.time_total, a.txn_date, a.status,\n")
             .append("b.mch_name, b.mch_branch_name, b.mch_model, b.mch_product_year,\n")
             .append("c.key_id borNo, c.b_name borName\n")
@@ -512,10 +510,11 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
             .append("INNER JOIN LOGIN d ON a.create_by = d.key_id\n")
             .append("WHERE 1=1");
 
-    // ✅ append เงื่อนไขตามค่าที่มี
+    //  append เงื่อนไขตามค่าที่มี
     sb.append(conBorNo);
     sb.append(conMchNo);
     sb.append(conKeyId);
+    sb.append(conHole);
 //    sb.append(conStatus);
     sb.append(conDate);
     sb.append(conOrder);
@@ -535,6 +534,9 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                 tr.setCreateDate(rs.getTimestamp("create_date"));
                 tr.setCreateBy(rs.getString("USER_LOGIN"));
                 tr.setTimeTotal(rs.getString("time_total"));
+                tr.setDigMetter(rs.getDouble("dig_metter"));
+                tr.setOilLiter(rs.getDouble("oil_liter"));
+                tr.setHole(rs.getInt("hole"));
                 tr.setTxnDate(rs.getDate("txn_date"));
                 tr.setStatus(rs.getInt("status"));
                 tr.setBorNo(rs.getString("borNo"));
@@ -554,53 +556,119 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     return null;
 }
 
-
-
     @Override
-    public int saveMachinedaily(MachineHisReq machineHisReq,String userId) {
-        MerchineHisEntity entity = new MerchineHisEntity();
-        entity.setMchNo(machineHisReq.getMchNo());
-        entity.setCreateDate(new Date());
-        entity.setCreateBy(userId);
-        log.info("👉 Saving MachineHis with createBy = " + userId);
-        entity.setTime_total(machineHisReq.getTimeClose());
-        entity.setTxnDate(machineHisReq.getTxnDate());
-        entity.setStatus(1); // Assuming '1' means active or a specific status
-        entity.setStatus2(1);
-
+    @Transactional
+    public int saveMachinedaily(MachineHisReq machineHisReq, String userId) {
         try {
+            // 1. บันทึกประวัติลง tb_machine_his
+            MerchineHisEntity entity = new MerchineHisEntity();
+            entity.setMchNo(machineHisReq.getMchNo());
+            entity.setCreateDate(new Date());
+            entity.setCreateBy(userId);
+            entity.setTime_total(machineHisReq.getTimeClose());
+            entity.setDigMetter(machineHisReq.getDigMetter());
+            entity.setOilLiter(machineHisReq.getOilLiter());
+            entity.setTxnDate(machineHisReq.getTxnDate());
+            entity.setHole(machineHisReq.getHole());
+            entity.setStatus(1);
+            entity.setStatus2(1);
+
             MERCHIN_HIS_REPOSITORY.save(entity);
-            return 1; // Return 0 for success
+
+            // 2. อัพเดท machine_mileage_now ด้วย SQL (ใช้ JdbcTemplate ที่มีอยู่)
+            String sql = "UPDATE tb_machine " +
+                    "SET machine_mileage_now = IFNULL(machine_mileage_now, 0) + ? " +
+                    "WHERE mch_no = ?";
+
+            int updated = JdbcTemplate.update(
+                    sql,
+                    machineHisReq.getTimeClose() != null ? machineHisReq.getTimeClose() : 0.0,
+                    machineHisReq.getMchNo()
+            );
+
+            if (updated > 0) {
+                log.info(" Updated machine_mileage_now successfully | mchNo: {} | +{} hours",
+                        machineHisReq.getMchNo(), machineHisReq.getTimeClose());
+            } else {
+                log.warn("⚠️ No rows updated for mchNo: {}", machineHisReq.getMchNo());
+            }
+
+            return 1;
+
         } catch (Exception e) {
             e.printStackTrace();
-            return -1; // Return -1 for failure
+            log.error("Failed to save machine daily for mchNo: {}", machineHisReq.getMchNo(), e);
+            return -1;
         }
     }
 
     @Override
+    @Transactional
     public int updateMachinedaily(MachineHisReq machineHisReq) {
-        // Find the existing entity by its machine number or ID (adjust as necessary)
-        Optional<MerchineHisEntity> optionalEntity = MERCHIN_HIS_REPOSITORY.findByKeyId(machineHisReq.getKeyId());
+        try {
+            // 1. ค้นหา record เก่า
+            Optional<MerchineHisEntity> optionalEntity =
+                    MERCHIN_HIS_REPOSITORY.findByKeyId(machineHisReq.getKeyId());
 
-        if (optionalEntity.isPresent()) {
-            MerchineHisEntity entity = optionalEntity.get();
-            entity.setMchNo(machineHisReq.getMchNo());
-            entity.setTime_total(machineHisReq.getTimeClose());
-            entity.setTxnDate(machineHisReq.getTxnDate());
-            entity.setStatus(machineHisReq.getStatus()); // set status = 1 because just update
-            entity.setStatus2(machineHisReq.getStatus());// set status2 = 1 because just update
-            try {
-                MERCHIN_HIS_REPOSITORY.save(entity); // Save the updated entity
-                return 1; //  success
-            } catch (Exception e) {
-                e.printStackTrace();
-                return -1; // Return -1 for failure
+            if (optionalEntity.isEmpty()) {
+                return 2; // ไม่พบข้อมูล
             }
-        } else {
-            return 2; // Return 1 if the entity does not exist
+
+            MerchineHisEntity entity = optionalEntity.get();
+
+            // ===== แปลง String เป็น Double =====
+            Double oldTimeTotal = parseToDouble(entity.getTime_total());
+            Double newTimeTotal = parseToDouble(machineHisReq.getTimeClose());
+
+            // 2. อัพเดทข้อมูลใน entity (เก็บเป็น String)
+            entity.setMchNo(machineHisReq.getMchNo());
+            entity.setTime_total(String.valueOf(newTimeTotal));   // หรือใช้ format ถ้าต้องการ
+            entity.setDigMetter(machineHisReq.getDigMetter());
+            entity.setOilLiter(machineHisReq.getOilLiter());
+            entity.setHole(machineHisReq.getHole());
+            entity.setTxnDate(machineHisReq.getTxnDate());
+            entity.setStatus(machineHisReq.getStatus());
+            entity.setStatus2(machineHisReq.getStatus());
+
+            // 3. บันทึกการแก้ไขประวัติ
+            MERCHIN_HIS_REPOSITORY.save(entity);
+
+            // 4. ปรับ machine_mileage_now ใน tb_machine
+            double diff = newTimeTotal - oldTimeTotal;
+
+            if (diff != 0) {
+                String sql = "UPDATE tb_machine " +
+                        "SET machine_mileage_now = IFNULL(machine_mileage_now, 0) + ? " +
+                        "WHERE mch_no = ?";
+
+                int updated = JdbcTemplate.update(sql, diff, machineHisReq.getMchNo());
+
+                if (updated > 0) {
+                    log.info(" Updated machine_mileage_now (diff: {}) | mchNo: {}",
+                            diff, machineHisReq.getMchNo());
+                }
+            }
+
+            return 1; // สำเร็จ
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("❌ Failed to update machine daily for keyId: {}", machineHisReq.getKeyId(), e);
+            return -1;
         }
     }
 
+    // Helper method แปลง String เป็น Double
+    private Double parseToDouble(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
 
 
     @Override
@@ -716,37 +784,6 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         } else {
             conAdmin = "";
         }
-
-        //  SQL หลัก
-//        sb.append("SELECT a.key_id,\n")
-//                .append("    a.mch_no,\n")
-//                .append("    a.mch_name, a.price,a.currency,\n")
-//                .append("    a.mch_branch_name,\n")
-//                .append("    a.mch_model,\n")
-//                .append("    a.mch_product_year,\n")
-//                .append("    a.create_date,\n")
-//                .append("    a.create_by,\n")
-//                .append("    c.USER_LOGIN,\n")
-//                .append("    c.ROLE,\n")
-//                .append("    a.status,\n")
-//                .append("    a.borNo,\n")
-//                .append("    b.b_name AS borname,\n")
-//                .append("    b.location AS borlocationnaem,\n")
-//                .append("    a.time_fix,\n")
-//                .append("    a.time_fix_monitor,\n")
-//                .append("    a.time_oil_fix,\n")
-//                .append("    a.time_oil_fix_mo,\n")
-//                .append("    a.image, a.date_in, a.remark,\n")
-//                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.mch_no = a.mch_no),0) AS all_used_hours,\n")
-//                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no),0) AS last_engine_hours,\n")
-//                .append("COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no),0) AS last_hydraulic_hours,\n")
-//                .append("(a.time_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Monitor,\n")
-//                .append("(a.time_oil_fix - COALESCE((SELECT SUM(ss.time_total) FROM tb_machine_his ss WHERE ss.status2=1 AND ss.mch_no = a.mch_no), 0)) AS timeTotal_Oil_Monitor\n")
-//
-//                .append("FROM tb_bors b\n")
-//                .append("INNER JOIN tb_machine a ON b.key_id = a.borNo\n")
-//                .append("LEFT JOIN LOGIN c ON a.create_by = c.KEY_ID\n")
-//                .append("WHERE 1 = 1 ");
         sb.append("SELECT * FROM v_tbmachine WHERE 1 = 1");
 
         sb.append(conMchNo);

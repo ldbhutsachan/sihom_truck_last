@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
@@ -169,29 +170,58 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
     return response;
 }
 
-    public MachineHisResponse getMachineHis(MachineHisReq machineHisReq,String borNo){
+    public MachineHisResponse getMachineHis(MachineHisReq machineHisReq, String borNo) {
         MachineHisResponse response = new MachineHisResponse();
         try {
             List<MachineHis> rspList = machineInterface.getMachineHis(machineHisReq, borNo);
+
             if (rspList != null && !rspList.isEmpty()) {
+
+                double totalDigMetter = 0;
+                double totalOilLiter = 0;
+                BigDecimal totalTimeTotal = BigDecimal.ZERO;
+
+                for (MachineHis item : rspList) {
+                    if (item.getDigMetter() != null) {
+                        totalDigMetter += item.getDigMetter();           // ใช้ +=
+                    }
+                    if (item.getOilLiter() != null) {
+                        totalOilLiter += item.getOilLiter();
+                    }
+                    if (item.getTimeTotal() != null && !item.getTimeTotal().isEmpty()) {
+                        try {
+                            totalTimeTotal = totalTimeTotal.add(new BigDecimal(item.getTimeTotal()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
                 response.setData(rspList);
+                response.setTotalDigMetter(totalDigMetter);      // เปลี่ยนเป็น double
+                response.setTotalOilLiter(totalOilLiter);        // เปลี่ยนเป็น double
+                response.setTotalTimeTotal(totalTimeTotal);
                 response.setMessage("OK");
                 response.setStatus("00");
+
             } else {
                 response.setData(null);
+                response.setTotalDigMetter(0.0);
+                response.setTotalOilLiter(0.0);
+                response.setTotalTimeTotal(BigDecimal.ZERO);
                 response.setMessage("Do not data not found !!!!!");
                 response.setStatus("00");
             }
+
         } catch (Exception e) {
             response.setData(null);
             response.setMessage("Error !!!!!");
             response.setStatus("05");
             e.printStackTrace();
         }
-
-        return  response;
-
+        return response;
     }
+
     public MachineStockDetailsResponse getRequestItemList(MachineStockDetailsReq machineHisReq,String borNo){
         MachineStockDetailsResponse response = new MachineStockDetailsResponse();
 
