@@ -1082,7 +1082,8 @@ public Messages saveVicicleHeader(
             @RequestParam("leanGiaNextday") String  leanGiaNextday,
             //add new
             @RequestParam("startdate_kongnam") String  startdate_kongnam,
-            @RequestParam("enddate_kongnam") String  enddate_kongnam
+            @RequestParam("enddate_kongnam") String  enddate_kongnam,
+            @RequestParam("borNo") String  borNo
 
     ){
         log.info("===================================save header==================================================");
@@ -1145,6 +1146,7 @@ public Messages saveVicicleHeader(
             //add new
             data.setStartdate_kongnam(startdate_kongnam);
             data.setEnddate_kongnam(enddate_kongnam);
+            data.setBorNo(borNo);
 //            log.error("******file lenght"+files);
 //            log.error(data);
 //            String fileName = "";
