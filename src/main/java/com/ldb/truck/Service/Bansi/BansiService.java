@@ -3155,9 +3155,7 @@ public class BansiService {
     public DataResponse getFinanceBalanceReport(FinanceBalanceReportRequest req) {
         DataResponse response = new DataResponse();
         try {
-            // =====================================================
             // 1. CHECK TOKEN
-            // =====================================================
             List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToken());
             if (profileList.isEmpty()) {
                 response.setStatus("05");
@@ -3167,9 +3165,7 @@ public class BansiService {
             Profile user = profileList.get(0);
             String role = user.getRole().toUpperCase();
 
-            // =====================================================
             // 2. CHECK ROLE
-            // =====================================================
             List<String> allowed = Arrays.asList(
                     "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN"
             );
@@ -3179,9 +3175,7 @@ public class BansiService {
                 return response;
             }
 
-            // =====================================================
             // 3. PARSE DATE
-            // =====================================================
             LocalDate startDate = null;
             LocalDate endDate = null;
             if (req.getStartDate() != null && !req.getStartDate().isEmpty()) {
@@ -3191,23 +3185,17 @@ public class BansiService {
                 endDate = LocalDate.parse(req.getEndDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             }
 
-            // =====================================================
             // 4. QUERY
-            // =====================================================
             List<VFinanceBalanceSummary> list = financeBalanceSummaryRepository.findByFilter(
                     req.getSupplierId(),
                     req.getBigProjectId(),
                     req.getSmallProjectId(),
-                    req.getPayTypeId(),
-                    (req.getBillType() != null && !req.getBillType().isEmpty()) ? req.getBillType() : null,
                     (req.getCurrency() != null && !req.getCurrency().isEmpty()) ? req.getCurrency() : null,
                     startDate,
                     endDate
             );
 
-            // =====================================================
             // 5. GROUP BY SUPPLIER
-            // =====================================================
             Map<Long, List<VFinanceBalanceSummary>> groupedBySupplier = list.stream()
                     .collect(Collectors.groupingBy(
                             VFinanceBalanceSummary::getSupplierid,
@@ -3217,73 +3205,53 @@ public class BansiService {
 
             List<Map<String, Object>> result = new ArrayList<>();
 
-            // =====================================================
-            // GLOBAL ACCUMULATOR (สำหรับ sumFooter)
-            // =====================================================
-            Map<String, BigDecimal> globalIncome = new LinkedHashMap<>();
-            Map<String, BigDecimal> globalOutcome = new LinkedHashMap<>();
-
-            String[] incomeKeys = {
-                    "totalLAKIncome", "totalTHBIncome", "totalUSDIncome",
-                    "incomeLAKOpening", "incomeTHBOpening", "incomeUSDOpening",
-                    "incomeLAKClosing", "incomeTHBClosing", "incomeUSDClosing"
-            };
-            String[] outcomeKeys = {
-                    "totalLAKOutcome", "totalTHBOutcome", "totalUSDOutcome",
-                    "outcomeLAKOpening", "outcomeTHBOpening", "outcomeUSDOpening",
-                    "outcomeLAKClosing", "outcomeTHBClosing", "outcomeUSDClosing"
-            };
-
-            for (String key : incomeKeys) globalIncome.put(key, BigDecimal.ZERO);
-            for (String key : outcomeKeys) globalOutcome.put(key, BigDecimal.ZERO);
+            // GLOBAL ACCUMULATORS
+            Map<String, BigDecimal> gIncomeByCurrency = new LinkedHashMap<>();
+            Map<String, BigDecimal> gOutcomeByCurrency = new LinkedHashMap<>();
+            Map<String, BigDecimal> gOpeningByCurrency = new LinkedHashMap<>();
+            Map<String, BigDecimal> gClosingByCurrency = new LinkedHashMap<>();
 
             for (Map.Entry<Long, List<VFinanceBalanceSummary>> entry : groupedBySupplier.entrySet()) {
                 List<VFinanceBalanceSummary> rows = entry.getValue();
 
-                // =================================================
-                // IMPORTANT SORT
-                // =================================================
-                rows.sort(Comparator.comparing(
-                                        (VFinanceBalanceSummary r) -> r.getCurrency() != null ? r.getCurrency() : ""
-                                )
-                                .thenComparing(VFinanceBalanceSummary::getFinanceApproveDate, Comparator.nullsLast(Comparator.naturalOrder()))
-                                .thenComparing(VFinanceBalanceSummary::getRowNum, Comparator.nullsLast(Comparator.naturalOrder()))
+                // SORT
+                rows.sort(Comparator
+                        .comparing((VFinanceBalanceSummary r) -> r.getCurrency() != null ? r.getCurrency() : "")
+                        .thenComparing(VFinanceBalanceSummary::getFinanceApproveDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(VFinanceBalanceSummary::getRowNum, Comparator.nullsLast(Comparator.naturalOrder()))
                 );
 
                 VFinanceBalanceSummary first = rows.get(0);
 
-                // =================================================
-                // MAPS สำหรับคำนวณ Footer ต่อ Supplier
-                // =================================================
-                Map<String, BigDecimal> incomeClosingByCurrency = new LinkedHashMap<>();
-                Map<String, BigDecimal> outcomeClosingByCurrency = new LinkedHashMap<>();
+                // PER SUPPLIER ACCUMULATORS
+                Map<String, BigDecimal> incomeByCurrency = new LinkedHashMap<>();
+                Map<String, BigDecimal> outcomeByCurrency = new LinkedHashMap<>();
+                Map<String, BigDecimal> openingByCurrency = new LinkedHashMap<>();
+                Map<String, BigDecimal> closingByCurrency = new LinkedHashMap<>();
 
-                List<Map<String, Object>> detailList = new ArrayList<>();
+                List<Map<String, Object>> detailList = new ArrayList<>();   // ← เริ่มสร้าง details
 
                 for (VFinanceBalanceSummary row : rows) {
                     String cur = row.getCurrency() != null ? row.getCurrency().toUpperCase() : "UNKNOWN";
 
                     BigDecimal opening = clean(row.getOpeningBalance());
-                    BigDecimal income = clean(row.getIncome());
+                    BigDecimal income  = clean(row.getIncome());
                     BigDecimal outcome = clean(row.getOutcome());
                     BigDecimal closing = clean(row.getClosingBalance());
 
-                    if ("RECEIVE".equalsIgnoreCase(row.getBillType())) {
-                        incomeClosingByCurrency.put(cur, closing);
-                    } else if ("PAY".equalsIgnoreCase(row.getBillType())) {
-                        outcomeClosingByCurrency.put(cur, closing);
-                    }
+                    // SUM ทุก openingBalance (ตามที่คุณต้องการ)
+                    openingByCurrency.merge(cur, opening, BigDecimal::add);
+                    incomeByCurrency.merge(cur, income, BigDecimal::add);
+                    outcomeByCurrency.merge(cur, outcome, BigDecimal::add);
+                    closingByCurrency.put(cur, closing);
 
-                    // DETAIL ROW
+                    // ==================== สร้าง DETAIL ROW ====================
                     Map<String, Object> detail = new LinkedHashMap<>();
-                    detail.put("billType", row.getBillType());
                     detail.put("currency", row.getCurrency());
                     detail.put("bigProjectId", row.getBigProjectId());
                     detail.put("bigProject", row.getBigProject());
                     detail.put("smallProjectId", row.getSmallProjectId());
                     detail.put("smallProject", row.getSmallProject());
-                    detail.put("payTypeId", row.getPayTypeId());
-                    detail.put("payType", row.getPayType());
                     detail.put("financeApproveDate", row.getFinanceApproveDate());
                     detail.put("dateIn", row.getDateIn());
                     detail.put("dateOut", row.getDateOut());
@@ -3291,72 +3259,82 @@ public class BansiService {
                     detail.put("income", income);
                     detail.put("outcome", outcome);
                     detail.put("closingBalance", closing);
-                    detailList.add(detail);
+
+                    detailList.add(detail);   // ← เพิ่มเข้า details
                 }
 
-                // =================================================
-                // INCOME FOOTER ต่อ Supplier (แบบใหม่)
-                // =================================================
-                Map<String, Object> incomeFooter = new LinkedHashMap<>();
-                incomeFooter.put("totalLAKIncome", BigDecimal.ZERO);
-                incomeFooter.put("totalTHBIncome", BigDecimal.ZERO);
-                incomeFooter.put("totalUSDIncome", BigDecimal.ZERO);
-                incomeFooter.put("incomeLAKOpening", clean(incomeClosingByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
-                incomeFooter.put("incomeTHBOpening", clean(incomeClosingByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
-                incomeFooter.put("incomeUSDOpening", clean(incomeClosingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
-                incomeFooter.put("incomeLAKClosing", clean(incomeClosingByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
-                incomeFooter.put("incomeTHBClosing", clean(incomeClosingByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
-                incomeFooter.put("incomeUSDClosing", clean(incomeClosingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+                // Build maps สำหรับ supplier
+                Map<String, Object> openingMap = new LinkedHashMap<>();
+                openingMap.put("LAKOpening", clean(openingByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+                openingMap.put("THBOpening", clean(openingByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+                openingMap.put("USDOpening", clean(openingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
 
-                // =================================================
-                // OUTCOME FOOTER ต่อ Supplier (แบบใหม่)
-                // =================================================
-                Map<String, Object> outcomeFooter = new LinkedHashMap<>();
-                outcomeFooter.put("totalLAKOutcome", BigDecimal.ZERO);
-                outcomeFooter.put("totalTHBOutcome", BigDecimal.ZERO);
-                outcomeFooter.put("totalUSDOutcome", BigDecimal.ZERO);
-                outcomeFooter.put("outcomeLAKOpening", clean(outcomeClosingByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
-                outcomeFooter.put("outcomeTHBOpening", clean(outcomeClosingByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
-                outcomeFooter.put("outcomeUSDOpening", clean(outcomeClosingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
-                outcomeFooter.put("outcomeLAKClosing", clean(outcomeClosingByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
-                outcomeFooter.put("outcomeTHBClosing", clean(outcomeClosingByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
-                outcomeFooter.put("outcomeUSDClosing", clean(outcomeClosingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+                Map<String, Object> closingMap = new LinkedHashMap<>();
+                closingMap.put("LAKClosing", clean(closingByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+                closingMap.put("THBClosing", clean(closingByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+                closingMap.put("USDClosing", clean(closingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
 
-                // =================================================
-                // SUM ไปยัง GLOBAL
-                // =================================================
-                for (String key : incomeKeys) {
-                    BigDecimal val = (BigDecimal) incomeFooter.get(key);
-                    globalIncome.put(key, globalIncome.get(key).add(val));
-                }
-                for (String key : outcomeKeys) {
-                    BigDecimal val = (BigDecimal) outcomeFooter.get(key);
-                    globalOutcome.put(key, globalOutcome.get(key).add(val));
+                Map<String, Object> incomeMap = new LinkedHashMap<>();
+                incomeMap.put("totalLAKIncome", clean(incomeByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+                incomeMap.put("totalTHBIncome", clean(incomeByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+                incomeMap.put("totalUSDIncome", clean(incomeByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+                Map<String, Object> outcomeMap = new LinkedHashMap<>();
+                outcomeMap.put("totalLAKOutcome", clean(outcomeByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+                outcomeMap.put("totalTHBOutcome", clean(outcomeByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+                outcomeMap.put("totalUSDOutcome", clean(outcomeByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+                // Global Accumulator
+                for (String cur : new String[]{"LAK", "THB", "USD"}) {
+                    gIncomeByCurrency.merge(cur, incomeByCurrency.getOrDefault(cur, BigDecimal.ZERO), BigDecimal::add);
+                    gOutcomeByCurrency.merge(cur, outcomeByCurrency.getOrDefault(cur, BigDecimal.ZERO), BigDecimal::add);
+                    gOpeningByCurrency.merge(cur, openingByCurrency.getOrDefault(cur, BigDecimal.ZERO), BigDecimal::add);
+                    gClosingByCurrency.merge(cur, closingByCurrency.getOrDefault(cur, BigDecimal.ZERO), BigDecimal::add);
                 }
 
-                // =================================================
                 // SUPPLIER ROW
-                // =================================================
                 Map<String, Object> supplierMap = new LinkedHashMap<>();
                 supplierMap.put("supplierid", first.getSupplierid());
                 supplierMap.put("supplierName", first.getSupplierName());
                 supplierMap.put("datesearch", req.getEndDate());
-                supplierMap.put("income", incomeFooter);
-                supplierMap.put("outcome", outcomeFooter);
-                supplierMap.put("details", detailList);
+                supplierMap.put("opening", openingMap);
+                supplierMap.put("closing", closingMap);
+                supplierMap.put("income", incomeMap);
+                supplierMap.put("outcome", outcomeMap);
+                supplierMap.put("details", detailList);     // ← ตรงนี้คือส่วน details
 
                 result.add(supplierMap);
             }
 
-            // =====================================================
-            // GLOBAL SUM FOOTER (รวมจากทุก Supplier)
-            // =====================================================
-            Map<String, Object> sumOutAndIn = new LinkedHashMap<>();
-            sumOutAndIn.put("income", globalIncome);
-            sumOutAndIn.put("outcome", globalOutcome);
+            // GLOBAL FOOTER (คงเดิม)
+            Map<String, Object> globalOpening = new LinkedHashMap<>();
+            globalOpening.put("totalLAKOpening", clean(gOpeningByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+            globalOpening.put("totalTHBOpening", clean(gOpeningByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+            globalOpening.put("totalUSDOpening", clean(gOpeningByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+            Map<String, Object> globalClosing = new LinkedHashMap<>();
+            globalClosing.put("totalLAKClosing", clean(gClosingByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+            globalClosing.put("totalTHBClosing", clean(gClosingByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+            globalClosing.put("totalUSDClosing", clean(gClosingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+            Map<String, Object> globalIncome = new LinkedHashMap<>();
+            globalIncome.put("totalLAKIncome", clean(gIncomeByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+            globalIncome.put("totalTHBIncome", clean(gIncomeByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+            globalIncome.put("totalUSDIncome", clean(gIncomeByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+            Map<String, Object> globalOutcome = new LinkedHashMap<>();
+            globalOutcome.put("totalLAKOutcome", clean(gOutcomeByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+            globalOutcome.put("totalTHBOutcome", clean(gOutcomeByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+            globalOutcome.put("totalUSDOutcome", clean(gOutcomeByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+            Map<String, Object> footer = new LinkedHashMap<>();
+            footer.put("opening", globalOpening);
+            footer.put("closing", globalClosing);
+            footer.put("income", globalIncome);
+            footer.put("outcome", globalOutcome);
 
             List<Map<String, Object>> footerList = new ArrayList<>();
-            footerList.add(sumOutAndIn);
+            footerList.add(footer);
 
             response.setStatus("00");
             response.setMessage("Success");
@@ -3376,7 +3354,7 @@ public class BansiService {
         DataResponse response = new DataResponse();
         try {
             // =========================
-            // STEP 1 : CHECK TOKEN
+            // 1. CHECK TOKEN
             // =========================
             List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToken());
             if (profileList.isEmpty()) {
@@ -3385,12 +3363,15 @@ public class BansiService {
                 return response;
             }
             Profile user = profileList.get(0);
+            String role = user.getRole().toUpperCase();
 
             // =========================
-            // STEP 2 : CHECK ROLE
+            // 2. CHECK ROLE
             // =========================
-            String role = user.getRole().toUpperCase();
-            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList(
+                    "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR",
+                    "FINANCE", "FOR_DOCUMENT_ADMIN"
+            );
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");
@@ -3398,21 +3379,20 @@ public class BansiService {
             }
 
             // =========================
-            // STEP 3 : GET DATA
+            // 3. GET DATA
             // =========================
             List<VFinanceBalanceSummary> list = financeBalanceSummaryRepository
                     .findLatestBySupplierWithFilter(
                             req.getSupplierId(),
                             req.getBigProjectId(),
                             req.getSmallProjectId(),
-                            req.getPayTypeId(),
-                            req.getBillType(),
-                            req.getCurrency(),
+                            (req.getCurrency() != null && !req.getCurrency().isEmpty())
+                                    ? req.getCurrency() : null,
                             req.getEndDate()
                     );
 
             // =========================
-            // GROUP BY SUPPLIER
+            // 4. GROUP BY SUPPLIER
             // =========================
             Map<Long, List<VFinanceBalanceSummary>> grouped = list.stream()
                     .collect(Collectors.groupingBy(
@@ -3424,112 +3404,185 @@ public class BansiService {
             List<Map<String, Object>> result = new ArrayList<>();
 
             // =========================
-            // GLOBAL BALANCE VARIABLES (สำหรับ Footer)
+            // GLOBAL ACCUMULATORS
             // =========================
-            BigDecimal gLAKBalance = BigDecimal.ZERO;
-            BigDecimal gTHBBalance = BigDecimal.ZERO;
-            BigDecimal gUSDBalance = BigDecimal.ZERO;
+            Map<String, BigDecimal> gClosingByCurrency     = new LinkedHashMap<>();
+            Map<String, BigDecimal> gIncomeByCurrency      = new LinkedHashMap<>();
+            Map<String, BigDecimal> gOutcomeByCurrency     = new LinkedHashMap<>();
+            Map<String, BigDecimal> gRealOpeningByCurrency = new LinkedHashMap<>();
 
             // =========================
-            // LOOP SUPPLIER
+            // 5. LOOP PER SUPPLIER
             // =========================
             for (Map.Entry<Long, List<VFinanceBalanceSummary>> entry : grouped.entrySet()) {
                 List<VFinanceBalanceSummary> rows = entry.getValue();
                 if (rows.isEmpty()) continue;
 
-                VFinanceBalanceSummary first = rows.get(0);
+                VFinanceBalanceSummary firstRow = rows.get(0);
+
+                // ✅ Group ตาม currency
+                Map<String, List<VFinanceBalanceSummary>> rowsByCurrency = rows.stream()
+                        .collect(Collectors.groupingBy(
+                                r -> r.getCurrency() != null
+                                        ? r.getCurrency().toUpperCase() : "UNKNOWN",
+                                LinkedHashMap::new,
+                                Collectors.toList()
+                        ));
+
                 Map<String, Object> balances = new LinkedHashMap<>();
 
-                for (VFinanceBalanceSummary row : rows) {
-                    String cur = row.getCurrency() != null ? row.getCurrency().toUpperCase() : "UNKNOWN";
+                for (Map.Entry<String, List<VFinanceBalanceSummary>> curEntry
+                        : rowsByCurrency.entrySet()) {
 
-                    BigDecimal opening = clean(row.getOpeningBalance());
-                    BigDecimal income  = clean(row.getIncome());
-                    BigDecimal outcome = clean(row.getOutcome());
-                    BigDecimal closing = clean(row.getClosingBalance());
+                    String cur = curEntry.getKey();
+                    List<VFinanceBalanceSummary> curRows = curEntry.getValue();
 
-                    // =========================
-                    // BALANCE แบบใหม่ (ตามที่ต้องการ)
-                    // =========================
+                    // ใช้ row แรกของ currency นั้น
+                    VFinanceBalanceSummary latestRow = curRows.get(0);
+
+                    // รวม income / outcome
+                    BigDecimal totalIncome = curRows.stream()
+                            .map(r -> r.getIncome() != null
+                                    ? r.getIncome() : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal totalOutcome = curRows.stream()
+                            .map(r -> r.getOutcome() != null
+                                    ? r.getOutcome() : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal closing = latestRow.getClosingBalance() != null
+                            ? latestRow.getClosingBalance() : BigDecimal.ZERO;
+
+                    BigDecimal opening = latestRow.getOpeningBalance() != null
+                            ? latestRow.getOpeningBalance() : BigDecimal.ZERO;
+
+                    // dateIn / dateOut
+                    LocalDate dateInVal = curRows.stream()
+                            .filter(r -> r.getIncome() != null
+                                    && r.getIncome().compareTo(BigDecimal.ZERO) > 0)
+                            .findFirst()
+                            .map(VFinanceBalanceSummary::getDateIn)
+                            .orElse(null);
+
+                    LocalDate dateOutVal = curRows.stream()
+                            .filter(r -> r.getOutcome() != null
+                                    && r.getOutcome().compareTo(BigDecimal.ZERO) > 0)
+                            .findFirst()
+                            .map(VFinanceBalanceSummary::getDateOut)
+                            .orElse(null);
+
+                    // ✅ คำนวณ realOpeningBalance
+                    BigDecimal realOpeningBalance = closing; // default
+                    try {
+                        if (req.getEndDate() != null && !req.getEndDate().isEmpty()) {
+                            LocalDate dateSearch = LocalDate.parse(
+                                    req.getEndDate(),
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                            );
+                            LocalDate transactionDate = dateInVal != null
+                                    ? dateInVal : dateOutVal;
+
+                            if (transactionDate != null) {
+                                if (dateSearch.isEqual(transactionDate)) {
+                                    // datesearch = date → realOpening = opening
+                                    realOpeningBalance = opening;
+                                } else if (dateSearch.isAfter(transactionDate)) {
+                                    // datesearch > date → realOpening = closing
+                                    realOpeningBalance = closing;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.warn(">>> Cannot parse endDate: " + req.getEndDate());
+                    }
+
+                    // build currency data
                     Map<String, Object> currencyData = new LinkedHashMap<>();
-                    currencyData.put("currency", cur);
-                    currencyData.put("latestDate", row.getFinanceApproveDate());
-                    currencyData.put("datesearch", req.getEndDate());
-                    currencyData.put("openingBalance", closing);
-                    currencyData.put("income", BigDecimal.ZERO);
-                    currencyData.put("outcome", BigDecimal.ZERO);
-                    currencyData.put("closingBalance", closing);
+                    currencyData.put("currency",           cur);
+                    currencyData.put("datesearch",         req.getEndDate());
+                    currencyData.put("openingBalance",     clean(opening));
+                    currencyData.put("dateIn",             dateInVal);
+                    currencyData.put("income",             clean(totalIncome));
+                    currencyData.put("dateOut",            dateOutVal);
+                    currencyData.put("outcome",            clean(totalOutcome));
+                    currencyData.put("closingBalance",     clean(closing));
+                    currencyData.put("realOpeningBalance", clean(realOpeningBalance)); // ✅
 
                     balances.put(cur, currencyData);
 
-                    // สะสมยอดรวมสำหรับ Footer
-                    if ("LAK".equals(cur)) {
-                        gLAKBalance = gLAKBalance.add(closing);
-                    } else if ("THB".equals(cur)) {
-                        gTHBBalance = gTHBBalance.add(closing);
-                    } else if ("USD".equals(cur)) {
-                        gUSDBalance = gUSDBalance.add(closing);
-                    }
+                    // ✅ สะสม global
+                    gClosingByCurrency.merge(cur,
+                            closing, BigDecimal::add);
+                    gIncomeByCurrency.merge(cur,
+                            totalIncome, BigDecimal::add);
+                    gOutcomeByCurrency.merge(cur,
+                            totalOutcome, BigDecimal::add);
+                    gRealOpeningByCurrency.merge(cur,
+                            realOpeningBalance, BigDecimal::add);
                 }
 
+                // build supplier row
                 Map<String, Object> supplierMap = new LinkedHashMap<>();
-                supplierMap.put("supplierId", first.getSupplierid());
-                supplierMap.put("supplierName", first.getSupplierName());
-                supplierMap.put("balances", balances);
-
+                supplierMap.put("supplierId",   firstRow.getSupplierid());
+                supplierMap.put("supplierName", firstRow.getSupplierName());
+                supplierMap.put("balances",     balances);
                 result.add(supplierMap);
             }
 
             // =========================
-            // GLOBAL INCOME (ทั้งหมดเป็น 0)
+            // 6. BUILD SUM FOOTER
             // =========================
-            Map<String, Object> globalIncome = new LinkedHashMap<>();
-            globalIncome.put("totalLAKIncome", BigDecimal.ZERO);
-            globalIncome.put("totalTHBIncome", BigDecimal.ZERO);
-            globalIncome.put("totalUSDIncome", BigDecimal.ZERO);
-            globalIncome.put("incomeLAKOpening", BigDecimal.ZERO);
-            globalIncome.put("incomeTHBOpening", BigDecimal.ZERO);
-            globalIncome.put("incomeUSDOpening", BigDecimal.ZERO);
-            globalIncome.put("incomeLAKClosing", BigDecimal.ZERO);
-            globalIncome.put("incomeTHBClosing", BigDecimal.ZERO);
-            globalIncome.put("incomeUSDClosing", BigDecimal.ZERO);
+            Map<String, Object> sumOpening = new LinkedHashMap<>();
+            sumOpening.put("totalLAKOpening",
+                    clean(gRealOpeningByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+            sumOpening.put("totalTHBOpening",
+                    clean(gRealOpeningByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+            sumOpening.put("totalUSDOpening",
+                    clean(gRealOpeningByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+            Map<String, Object> sumIncome = new LinkedHashMap<>();
+            sumIncome.put("totalLAKIncome",
+                    clean(gIncomeByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+            sumIncome.put("totalTHBIncome",
+                    clean(gIncomeByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+            sumIncome.put("totalUSDIncome",
+                    clean(gIncomeByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+            Map<String, Object> sumOutcome = new LinkedHashMap<>();
+            sumOutcome.put("totalLAKOutcome",
+                    clean(gOutcomeByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+            sumOutcome.put("totalTHBOutcome",
+                    clean(gOutcomeByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+            sumOutcome.put("totalUSDOutcome",
+                    clean(gOutcomeByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+            Map<String, Object> sumClosing = new LinkedHashMap<>();
+            sumClosing.put("totalLAKClosing",
+                    clean(gClosingByCurrency.getOrDefault("LAK", BigDecimal.ZERO)));
+            sumClosing.put("totalTHBClosing",
+                    clean(gClosingByCurrency.getOrDefault("THB", BigDecimal.ZERO)));
+            sumClosing.put("totalUSDClosing",
+                    clean(gClosingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
+
+            Map<String, Object> footer = new LinkedHashMap<>();
+            footer.put("openingBalance", sumOpening);   // ✅ sum realOpeningBalance
+            footer.put("sumOfIncome",    sumIncome);    // ✅ sum income
+            footer.put("sumOfOutcome",   sumOutcome);   // ✅ sum outcome
+            footer.put("closingBalance", sumClosing);   // ✅ sum closing
 
             // =========================
-            // GLOBAL OUTCOME (ยอดรวม balance ณ วันที่ค้นหา)
-            // =========================
-            Map<String, Object> globalOutcome = new LinkedHashMap<>();
-            globalOutcome.put("totalLAKOutcome", BigDecimal.ZERO);
-            globalOutcome.put("totalTHBOutcome", BigDecimal.ZERO);
-            globalOutcome.put("totalUSDOutcome", BigDecimal.ZERO);
-            globalOutcome.put("outcomeLAKOpening", gLAKBalance);
-            globalOutcome.put("outcomeTHBOpening", gTHBBalance);
-            globalOutcome.put("outcomeUSDOpening", gUSDBalance);
-            globalOutcome.put("outcomeLAKClosing", gLAKBalance);
-            globalOutcome.put("outcomeTHBClosing", gTHBBalance);
-            globalOutcome.put("outcomeUSDClosing", gUSDBalance);
-
-            // =========================
-            // FINAL FOOTER
-            // =========================
-            Map<String, Object> sumOutAndIn = new LinkedHashMap<>();
-            sumOutAndIn.put("income", globalIncome);
-            sumOutAndIn.put("outcome", globalOutcome);
-
-            List<Map<String, Object>> footerList = new ArrayList<>();
-            footerList.add(sumOutAndIn);
-
-            // =========================
-            // RESPONSE
+            // 7. RESPONSE
             // =========================
             response.setStatus("00");
             response.setMessage("Success");
             response.setDataResponse(result);
-            response.setSumFooter(footerList);
+            response.setSumFooter(List.of(footer));
 
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("EE");
-            response.setMessage("Error : " + e.getMessage());
+            response.setMessage("Error: " + e.getMessage());
         }
         return response;
     }

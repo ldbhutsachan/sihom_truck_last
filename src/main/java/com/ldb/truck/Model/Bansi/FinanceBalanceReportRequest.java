@@ -9,7 +9,6 @@ public class FinanceBalanceReportRequest {
     private Long bigProjectId;
     private Long smallProjectId;
     private Long payTypeId;
-    private String billType;        // PAY | RECEIVE
     private String currency;        // LAK | USD | THB
     private String startDate;
     private String endDate;

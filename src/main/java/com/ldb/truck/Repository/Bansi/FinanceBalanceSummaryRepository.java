@@ -13,14 +13,13 @@ import java.util.List;
 public interface FinanceBalanceSummaryRepository
         extends JpaRepository<VFinanceBalanceSummary, Long> {
 
+    // ─── API 1: balance-report ────────────────────────────
     @Query(value =
             "SELECT * FROM v_finance_balance_summary " +
                     "WHERE " +
                     "    (:supplierId     IS NULL OR supplierid          = :supplierId) " +
                     "AND (:bigProjectId   IS NULL OR big_project_id      = :bigProjectId) " +
                     "AND (:smallProjectId IS NULL OR small_project_id    = :smallProjectId) " +
-                    "AND (:payTypeId      IS NULL OR pay_type_id         = :payTypeId) " +
-                    "AND (:billType       IS NULL OR bill_type           = :billType) " +
                     "AND (:currency       IS NULL OR currency            = :currency) " +
                     "AND (:startDate      IS NULL OR finance_approve_date >= :startDate) " +
                     "AND (:endDate        IS NULL OR finance_approve_date <= :endDate) " +
@@ -30,91 +29,43 @@ public interface FinanceBalanceSummaryRepository
             @Param("supplierId")     Long supplierId,
             @Param("bigProjectId")   Long bigProjectId,
             @Param("smallProjectId") Long smallProjectId,
-            @Param("payTypeId")      Long payTypeId,
-            @Param("billType")       String billType,
             @Param("currency")       String currency,
-            @Param("startDate") LocalDate startDate,
+            @Param("startDate")      LocalDate startDate,
             @Param("endDate")        LocalDate endDate
     );
 
-    //  NEW — ดึง closing balance ล่าสุดของทุก supplier
+    // ─── API 2: balance-summary ───────────────────────────
     @Query(value =
-
             "SELECT v1.* " +
                     "FROM v_finance_balance_summary v1 " +
-
                     "INNER JOIN ( " +
-
                     "   SELECT supplierid, currency, " +
                     "          MAX(finance_approve_date) AS max_date " +
-
                     "   FROM v_finance_balance_summary " +
-
                     "   WHERE " +
-
-                    "       (:supplierId IS NULL OR supplierid = :supplierId) " +
-
-                    "   AND (:bigProjectId IS NULL OR big_project_id = :bigProjectId) " +
-
+                    "       (:supplierId     IS NULL OR supplierid     = :supplierId) " +
+                    "   AND (:bigProjectId   IS NULL OR big_project_id = :bigProjectId) " +
                     "   AND (:smallProjectId IS NULL OR small_project_id = :smallProjectId) " +
-
-                    "   AND (:payTypeId IS NULL OR pay_type_id = :payTypeId) " +
-
                     "   AND ( " +
-                    "       :billType IS NULL " +
-                    "       OR :billType = '' " +
-                    "       OR UPPER(TRIM(bill_type)) = UPPER(TRIM(:billType)) " +
-                    "   ) " +
-
-                    "   AND ( " +
-                    "       :currency IS NULL " +
-                    "       OR :currency = '' " +
+                    "       :currency IS NULL OR :currency = '' " +
                     "       OR UPPER(TRIM(currency)) = UPPER(TRIM(:currency)) " +
                     "   ) " +
-
-                    // =========================
-                    // END DATE ONLY
-                    // =========================
-
                     "   AND ( " +
-                    "       :endDate IS NULL " +
-                    "       OR :endDate = '' " +
+                    "       :endDate IS NULL OR :endDate = '' " +
                     "       OR DATE(finance_approve_date) <= DATE(:endDate) " +
                     "   ) " +
-
                     "   GROUP BY supplierid, currency " +
-
                     ") v2 " +
-
-                    "ON v1.supplierid = v2.supplierid " +
-                    "AND v1.currency = v2.currency " +
+                    "ON  v1.supplierid           = v2.supplierid " +
+                    "AND v1.currency             = v2.currency " +
                     "AND v1.finance_approve_date = v2.max_date " +
-
                     "ORDER BY v1.supplierid, v1.currency",
-
             nativeQuery = true)
-    List<VFinanceBalanceSummary>
-    findLatestBySupplierWithFilter(
-
-            @Param("supplierId")
-            Long supplierId,
-
-            @Param("bigProjectId")
-            Long bigProjectId,
-
-            @Param("smallProjectId")
-            Long smallProjectId,
-
-            @Param("payTypeId")
-            Long payTypeId,
-
-            @Param("billType")
-            String billType,
-
-            @Param("currency")
-            String currency,
-
-            @Param("endDate")
-            String endDate
+    List<VFinanceBalanceSummary> findLatestBySupplierWithFilter(
+            @Param("supplierId")     Long supplierId,
+            @Param("bigProjectId")   Long bigProjectId,
+            @Param("smallProjectId") Long smallProjectId,
+            @Param("currency")       String currency,
+            @Param("endDate")        String endDate
     );
 }

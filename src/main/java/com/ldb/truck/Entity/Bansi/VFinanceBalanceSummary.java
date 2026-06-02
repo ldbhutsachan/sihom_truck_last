@@ -1,12 +1,9 @@
 package com.ldb.truck.Entity.Bansi;
 
 import lombok.Data;
-import net.jcip.annotations.Immutable;
+import org.hibernate.annotations.Immutable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -26,9 +23,6 @@ public class VFinanceBalanceSummary {
     @Column(name = "supplier_name")
     private String supplierName;
 
-    @Column(name = "bill_type")
-    private String billType;
-
     @Column(name = "currency")
     private String currency;
 
@@ -44,11 +38,7 @@ public class VFinanceBalanceSummary {
     @Column(name = "small_project")
     private String smallProject;
 
-    @Column(name = "pay_type_id")
-    private Long payTypeId;
-
-    @Column(name = "pay_type")
-    private String payType;
+    // ✅ ลบ payTypeId และ payType ออก เพราะ View ใหม่ไม่มีแล้ว
 
     @Column(name = "finance_approve_date")
     private LocalDate financeApproveDate;
