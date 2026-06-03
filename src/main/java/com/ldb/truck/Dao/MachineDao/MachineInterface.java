@@ -4,6 +4,7 @@ import com.ldb.truck.Model.Borcar.Borcar;
 import com.ldb.truck.Model.Borcar.BorcarReq;
 import com.ldb.truck.Model.Machine.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface MachineInterface {
@@ -22,6 +23,15 @@ public interface MachineInterface {
 
   public int saveMachine(MachineReq machineReq);
   public int updateMachine(MachineReq machineReq);
+  public int updateMaintenanceDates(Integer keyId,
+                                    String maintenanceType,
+                                    LocalDate dateChange,
+                                    LocalDate dateNext);
+  public int updateMaintenanceHistory(Integer id,
+                                      LocalDate dateChange,
+                                      LocalDate dateNext,
+                                      String filePath,
+                                      String remark);
 
 
 }

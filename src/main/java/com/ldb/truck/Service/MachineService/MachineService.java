@@ -1,6 +1,8 @@
 package com.ldb.truck.Service.MachineService;
 
+import com.ldb.truck.Dao.MachineDao.MachineDao;
 import com.ldb.truck.Dao.MachineDao.MachineInterface;
+import com.ldb.truck.Entity.MerchineHis.MachineMaintenanceHistory;
 import com.ldb.truck.Entity.MerchineHis.MachineToolHis;
 import com.ldb.truck.Model.Borcar.BorCarModel;
 import com.ldb.truck.Model.Borcar.BorCarResponse;
@@ -11,8 +13,10 @@ import com.ldb.truck.Model.Login.Payment.GenerateInvoiceID;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
 import com.ldb.truck.Model.Login.Performance.v_performance;
 import com.ldb.truck.Model.Machine.*;
+import com.ldb.truck.Repository.MachineHis.MachineMaintenanceHistoryRepository;
 import com.ldb.truck.Repository.MachineHis.MachineToolHisRepository;
 import com.ldb.truck.Repository.MachineHis.MerchinHisRepository;
+import com.ldb.truck.enums.MaintenanceType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,6 +29,7 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.sql.Timestamp;
@@ -38,7 +43,7 @@ public class MachineService {
     private final MerchinHisRepository MERCHIN_HIS_REPOSITORY;
     private final JdbcTemplate jdbcTemplate;
     private final MachineToolHisRepository machineToolHisRepository;
-
+    private final MachineMaintenanceHistoryRepository historyRepo;
 
 
     public MachineResponse saveMachineHis(MachineHisReq machineHisReq,String userId){
@@ -287,24 +292,21 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setRemark(resp.getRemark());
                  machine.setMachine_mileage_now(resp.getMachine_mileage_now());
                  machine.setMachine_mileage_next(resp.getMachine_mileage_next());
-                 machine.setMachine_mileage_status(resp.getMachine_mileage_status());
+//                 machine.setMachine_mileage_status(resp.getMachine_mileage_status());
                  machine.setDateChangeLeean(resp.getDateChangeLeean());
                  machine.setDateChangeLeeanNext(resp.getDateChangeLeeanNext());
-                 machine.setChangeleean_status(resp.getChangeleean_status());
+//                 machine.setChangeleean_status(resp.getChangeleean_status());
                  machine.setDateleanGia(resp.getDateleanGia());
                  machine.setDateleanGiaNextday(resp.getDateleanGiaNextday());
-                 machine.setLeangia_status(resp.getLeangia_status());
+//                 machine.setLeangia_status(resp.getLeangia_status());
                  machine.setDateleanFuengThaiy(resp.getDateleanFuengThaiy());
-                 machine.setFuengthaiy_status(resp.getFuengthaiy_status());
+//                 machine.setFuengthaiy_status(resp.getFuengthaiy_status());
                  machine.setStartdate_kongnam(resp.getStartdate_kongnam());
                  machine.setEnddate_kongnam(resp.getEnddate_kongnam());
-                 machine.setKongnam_status(resp.getKongnam_status());
-                 machine.setEngineoil_date(resp.getEngineoil_date());
-                 machine.setEngineoil_nextdate(resp.getEngineoil_nextdate());
-                 machine.setEngineoil_status(resp.getEngineoil_status());
+//                 machine.setKongnam_status(resp.getKongnam_status());
                  machine.setHydraulic_date(resp.getHydraulic_date());
                  machine.setHydraulic_nextdate(resp.getHydraulic_nextdate());
-                 machine.setHydraulic_status(resp.getHydraulic_status());
+//                 machine.setHydraulic_status(resp.getHydraulic_status());
                  machine.setNotifyStatus(resp.getNotifyStatus());
 
                  //  เพิ่มตรงนี้เพื่อ map tools ด้วย
@@ -784,5 +786,122 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
     // Show by Tool ID
     public List<MachineToolHis> findByToolId(Long toolId) { // เปลี่ยนตรงนี้
         return machineToolHisRepository.findByToolId(toolId);
+    }
+
+    // Maintenance machine by updating tow table
+    public void saveHistoryAndUpdateMachine(Integer machineKeyId,
+                                            String mchNo,
+                                            MaintenanceType maintenanceType,
+                                            BigDecimal machineMileage,
+                                            LocalDate dateChange,
+                                            LocalDate dateNext,
+                                            String filePath,
+                                            String changedBy,
+                                            String remark) {
+        // บันทึก history
+        saveHistory(machineKeyId, mchNo, maintenanceType, machineMileage,
+                dateChange, dateNext, filePath, changedBy, remark);
+
+        // อัปเดต tb_machine
+        machineInterface.updateMaintenanceDates(
+                machineKeyId,
+                maintenanceType.name(),
+                dateChange,
+                dateNext
+        );
+    }
+    // save maintenance history funcion
+    public void saveHistory(Integer machineKeyId,
+                            String mchNo,
+                            MaintenanceType maintenanceType,
+                            BigDecimal machineMileage,
+                            LocalDate dateChange,
+                            LocalDate dateNext,
+                            String filePath,
+                            String changedBy,
+                            String remark) {
+
+
+        MachineMaintenanceHistory history = MachineMaintenanceHistory.builder()
+                .machineKeyId(machineKeyId)
+                .mchNo(mchNo)
+                .maintenanceType(maintenanceType)
+                .machineMileage(machineMileage)
+                .dateChange(dateChange)
+                .dateNext(dateNext)
+                .filePath(filePath)
+                .changedBy(changedBy)
+                .remark(remark)
+                .build();
+
+        historyRepo.save(history);
+    }
+    public MachineMaintenanceHistory getHistoryById(Integer id) {
+        return historyRepo.findById(Long.valueOf(id))
+                .orElseThrow(() -> new RuntimeException("ไม่พบข้อมูล History id: " + id));
+    }
+    public void updateMaintenanceHistory(Integer id,
+                                         LocalDate dateChange,
+                                         LocalDate dateNext,
+                                         String filePath,
+                                         String remark) {
+
+        // ดึงข้อมูล history เดิมก่อน เพื่อรู้ว่า maintenanceType และ machineKeyId คืออะไร
+        MachineMaintenanceHistory existing = getHistoryById(id);
+
+        // อัปเดต tb_machine_maintenance_history
+        machineInterface.updateMaintenanceHistory(id, dateChange, dateNext, filePath, remark);
+
+        // อัปเดต tb_machine เหมือน save
+        machineInterface.updateMaintenanceDates(
+                existing.getMachineKeyId(),
+                existing.getMaintenanceType().name(),
+                dateChange,
+                dateNext
+        );
+    }
+
+    // ดึง history ทั้งหมดของเครื่องจักร
+    public List<MachineMaintenanceHistoryResponse> getHistoryByMachine(Integer machineKeyId) {
+        List<MachineMaintenanceHistory> entities =
+                historyRepo.findByMachineKeyIdOrderByCreatedDateDesc(machineKeyId);
+
+        return entities.stream().map(e -> MachineMaintenanceHistoryResponse.builder()
+                .id(e.getId())
+                .machineKeyId(e.getMachineKeyId())
+                .mchNo(e.getMchNo())
+                .maintenanceType(e.getMaintenanceType().name())
+                .machineMileage(e.getMachineMileage())
+                .dateChange(e.getDateChange())
+                .dateNext(e.getDateNext())
+                .filePath(e.getFilePath())
+                .changedBy(e.getChangedBy())
+                .remark(e.getRemark())
+                .createdDate(e.getCreatedDate())
+                .build()
+        ).collect(Collectors.toList());
+    }
+
+    // ดึง history ตามประเภท
+    public List<MachineMaintenanceHistoryResponse> getHistoryByType(Integer machineKeyId,
+                                                                    MaintenanceType type) {
+        List<MachineMaintenanceHistory> entities =
+                historyRepo.findByMachineKeyIdAndMaintenanceTypeOrderByCreatedDateDesc(
+                        machineKeyId, type);
+
+        return entities.stream().map(e -> MachineMaintenanceHistoryResponse.builder()
+                .id(e.getId())
+                .machineKeyId(e.getMachineKeyId())
+                .mchNo(e.getMchNo())
+                .maintenanceType(e.getMaintenanceType().name())
+                .machineMileage(e.getMachineMileage())
+                .dateChange(e.getDateChange())
+                .dateNext(e.getDateNext())
+                .filePath(e.getFilePath())
+                .changedBy(e.getChangedBy())
+                .remark(e.getRemark())
+                .createdDate(e.getCreatedDate())
+                .build()
+        ).collect(Collectors.toList());
     }
 }

@@ -46,9 +46,6 @@ public class MachineReq {
     private LocalDate startdate_kongnam;
     private LocalDate enddate_kongnam;
     private LocalDate kongnam_status;
-    private LocalDate engineoil_date;
-    private LocalDate engineoil_nextdate;
-    private LocalDate engineoil_status;
     private LocalDate hydraulic_date;
     private LocalDate hydraulic_nextdate;
     private LocalDate hydraulic_status;

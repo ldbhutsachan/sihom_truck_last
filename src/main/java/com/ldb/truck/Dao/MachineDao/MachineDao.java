@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -389,70 +390,6 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
     }
 
 
-
-//    @Override
-//    public List<MachineHis> getMachineHis(MachineHisReq machineHisReq,String borNo) {
-//        StringBuilder sb = new StringBuilder();
-//        Integer keyId = machineHisReq.getKeyId();
-//        Integer status = machineHisReq.getStatus();
-//
-//        String conOrder = "\n order by a.key_id desc";
-//        String conBoNo = "";
-//        String conkeyId = "";
-//        String conStatus = "";
-//        if (status != null) {
-//            conStatus ="\n AND a.status='"+status+"'";
-//        }else {
-//            conStatus = "";
-//        }
-//        if (keyId != null) {
-//            conkeyId = "\n AND a.key_id = '" + keyId + "' ";
-//        } else {
-//            conkeyId = "";
-//        }
-////        if(!borNo.isEmpty() || !borNo.equals(null)){
-////            conBoNo = "\n b.borNo='"+borNo+"' ";
-////        }else {
-////            conBoNo = "";
-////        }
-//        try {
-////            sb.append("select \n" +
-////                    "a.key_id,a.mch_no,a.create_date,a.create_by,D.USER_LOGIN,a.time_total,a.txn_date,a.status,\n" +
-////                    "b.mch_name,b.mch_branch_name,b.mch_model,b.mch_product_year,\n" +
-////                    "c.key_id borNo,c.b_name borName\n" +
-////                    "from tb_machine_his a inner join tb_machine b on a.mch_no =b.mch_no\n" +
-////                    "inner join  tb_bors c on b.borNo=c.key_id inner join LOGIN d on a.create_by=d.key_id where 1=1  ");
-//
-//
-//            sb.append(conBoNo);
-//            sb.append(conkeyId);
-//            sb.append(conStatus);
-//            sb.append(conOrder);
-//            String sql = sb.toString();
-//            return  JdbcTemplate.query(sql, new RowMapper<MachineHis>() {
-//                @Override
-//                public MachineHis mapRow(ResultSet rs, int rowNum) throws SQLException {
-//                    MachineHis tr = new MachineHis();
-//                    tr.setKeyId(rs.getInt("key_id"));
-//                    tr.setMchNo(rs.getString("mch_no"));
-//                    tr.setCreateDate(rs.getTimestamp("create_date"));
-//                    tr.setCreateBy(rs.getString("USER_LOGIN"));
-//                    tr.setTimeTotal(rs.getString("time_total"));
-//                    tr.setTxnDate(rs.getDate("txn_date"));
-//                    tr.setStatus(rs.getInt("status"));
-//                    tr.setBorNo(rs.getString("borNo"));
-//                    tr.setBorName(rs.getString("borName"));
-//                    return tr;
-//                }
-//            });
-//
-//
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            log.error("Error in getMachineHis: ", e);
-//        }
-//        return null;
-//    }
 @Override
 public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo) {
     StringBuilder sb = new StringBuilder();
@@ -848,34 +785,31 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setRemark(rs.getString("remark"));
                 tr.setMachine_mileage_now(rs.getString("machine_mileage_now"));
                 tr.setMachine_mileage_next(rs.getString("machine_mileage_next"));
-                tr.setMachine_mileage_status(rs.getString("machine_mileage_status"));
+//                tr.setMachine_mileage_status(rs.getString("machine_mileage_status"));
                 tr.setDateChangeLeean(rs.getString("dateChangeLeean"));
                 tr.setDateChangeLeeanNext(rs.getString("dateChangeLeeanNext"));
-                tr.setChangeleean_status(rs.getString("changeleean_status"));
+//                tr.setChangeleean_status(rs.getString("changeleean_status"));
                 tr.setDateleanGia(rs.getString("dateleanGia"));
                 tr.setDateleanGiaNextday(rs.getString("dateleanGiaNextday"));
-                tr.setLeangia_status(rs.getString("leangia_status"));
+//                tr.setLeangia_status(rs.getString("leangia_status"));
                 tr.setDateleanFuengThaiy(rs.getString("dateleanFuengThaiy"));
-                tr.setFuengthaiy_status(rs.getString("fuengthaiy_status"));
+//                tr.setFuengthaiy_status(rs.getString("fuengthaiy_status"));
                 tr.setStartdate_kongnam(rs.getString("startdate_kongnam"));
                 tr.setEnddate_kongnam(rs.getString("enddate_kongnam"));
-                tr.setKongnam_status(rs.getString("kongnam_status"));
-                tr.setEngineoil_date(rs.getString("engineoil_date"));
-                tr.setEngineoil_nextdate(rs.getString("engineoil_nextdate"));
-                tr.setEngineoil_status(rs.getString("engineoil_status"));
+//                tr.setKongnam_status(rs.getString("kongnam_status"));
                 tr.setHydraulic_date(rs.getString("hydraulic_date"));
                 tr.setHydraulic_nextdate(rs.getString("hydraulic_nextdate"));
-                tr.setHydraulic_status(rs.getString("hydraulic_status"));
+//                tr.setHydraulic_status(rs.getString("hydraulic_status"));
                 tr.setNotifyStatus(rs.getString("notifyStatus"));
 
                 return tr;
             }
         });
-        // ✅ ดึง tools ทั้งหมด
+        // ดึง tools ทั้งหมด
         String sqlTools = "SELECT id, mch_no, tool_name,original_qty, update_qty, qty, status, unit FROM v_tb_machine_tool";
         List<Map<String, Object>> tools = JdbcTemplate.queryForList(sqlTools);
 
-        // ✅ จับคู่ tools เข้ากับ machine แต่ละตัว
+        //  จับคู่ tools เข้ากับ machine แต่ละตัว
         for (Machine machine : machines) {
             String mchNo = machine.getMchNo();
 
@@ -1174,10 +1108,9 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                     "dateleanGia, dateleanGiaNextday, " +
                     "dateleanFuengThaiy, " +
                     "startdate_kongnam, enddate_kongnam, " +
-                    "engineoil_date, engineoil_nextdate, " +
                     "hydraulic_date, hydraulic_nextdate" +
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-                    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             return JdbcTemplate.update(sql,
                     machineReq.getMchNo(),
@@ -1207,8 +1140,6 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                     machineReq.getDateleanFuengThaiy(),
                     machineReq.getStartdate_kongnam(),
                     machineReq.getEnddate_kongnam(),
-                    machineReq.getEngineoil_date(),
-                    machineReq.getEngineoil_nextdate(),
                     machineReq.getHydraulic_date(),
                     machineReq.getHydraulic_nextdate()
             );
@@ -1218,53 +1149,6 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         }
         return 0;
     }
-//@Override
-//public int saveMachine(MachineReq machineReq) {
-//    try {
-//        String imageUrl = machineReq.getImage(); // ใช้ URL แทน byte[]
-//        StringBuilder sql = new StringBuilder("INSERT INTO tb_machine (" +
-//                "mch_no, mch_name, mch_branch_name, mch_model, mch_product_year, " +
-//                "create_date, create_by, status, borNo, time_fix, time_fix_monitor, " +
-//                "time_oil_fix, time_oil_fix_mo, image, price, currency, date_in) VALUES (");
-//
-//        // ถ้ามี date_in → แปลงเป็น DATE, ถ้าไม่มี → NULL
-//        if (machineReq.getDate_in() != null && !machineReq.getDate_in().isEmpty()) {
-//            sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'))");
-//        } else {
-//            sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)");
-//        }
-//
-//        List<Object> params = new ArrayList<>(Arrays.asList(
-//                machineReq.getMchNo(),
-//                machineReq.getMchName(),
-//                machineReq.getMchBranchName(),
-//                machineReq.getMchModel(),
-//                machineReq.getMchProductYear(),
-//                new Date(),
-//                machineReq.getCreateBy(),
-//                machineReq.getStatus(),
-//                machineReq.getBorNo(),
-//                machineReq.getTime_fix(),
-//                machineReq.getTime_fix_monitor(),
-//                machineReq.getTime_oil_fix(),
-//                machineReq.getTime_oil_fix_mo(),
-//                imageUrl,
-//                machineReq.getPrice(),
-//                machineReq.getCurrency()
-//        ));
-//
-//        // ถ้ามี date_in → เพิ่มลงใน parameter
-//        if (machineReq.getDate_in() != null && !machineReq.getDate_in().isEmpty()) {
-//            params.add(machineReq.getDate_in());
-//        }
-//
-//        return JdbcTemplate.update(sql.toString(), params.toArray());
-//
-//    } catch (Exception e) {
-//        e.printStackTrace();
-//    }
-//    return 0;
-//}
 
     @Override
     public int updateMachine(MachineReq machineReq) {
@@ -1388,19 +1272,6 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 sql.append("enddate_kongnam = ?, ");
                 params.add(machineReq.getEnddate_kongnam());
             }
-
-            //  engineoil_date
-            if (machineReq.getEngineoil_date() != null) {
-                sql.append("engineoil_date = ?, ");
-                params.add(machineReq.getEngineoil_date());
-            }
-
-            // engineoil_nextdate
-            if (machineReq.getEngineoil_nextdate() != null) {
-                sql.append("engineoil_nextdate = ?, ");
-                params.add(machineReq.getEngineoil_nextdate());
-            }
-
             //  hydraulic_date
             if (machineReq.getHydraulic_date() != null) {
                 sql.append("hydraulic_date = ?, ");
@@ -1431,6 +1302,61 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             e.printStackTrace();
             return 0;
         }
+    }
+    @Override
+    public int updateMaintenanceDates(Integer keyId,
+                                      String maintenanceType,
+                                      LocalDate dateChange,
+                                      LocalDate dateNext) {
+        try {
+            String sql = "";
+
+            switch (maintenanceType) {
+                case "LEEAN":
+                    sql = "UPDATE tb_machine SET dateChangeLeean = ?, dateChangeLeeanNext = ? WHERE key_id = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "LEEAN_GIA":
+                    sql = "UPDATE tb_machine SET dateleanGia = ?, dateleanGiaNextday = ? WHERE key_id = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "LEEAN_FUENG_THAI":
+                    sql = "UPDATE tb_machine SET dateleanFuengThaiy = ? WHERE key_id = ?";
+                    return JdbcTemplate.update(sql, dateChange, keyId);
+
+                case "KONG_NAM":
+                    sql = "UPDATE tb_machine SET startdate_kongnam = ?, enddate_kongnam = ? WHERE key_id = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "HYDRAULIC":
+                    sql = "UPDATE tb_machine SET hydraulic_date = ?, hydraulic_nextdate = ? WHERE key_id = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                default:
+                    log.warn("Unknown maintenanceType: " + maintenanceType);
+                    return 0;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    @Override
+    public int updateMaintenanceHistory(Integer id,
+                                        LocalDate dateChange,
+                                        LocalDate dateNext,
+                                        String filePath,
+                                        String remark) {
+        try {
+            String sql = "UPDATE tb_machine_maintenance_history " +
+                    "SET date_change = ?, date_next = ?, file_path = ?, remark = ? " +
+                    "WHERE id = ?";
+            return JdbcTemplate.update(sql, dateChange, dateNext, filePath, remark, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
 }

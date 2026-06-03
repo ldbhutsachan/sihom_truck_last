@@ -50,24 +50,21 @@ public class Machine {
 
     private String machine_mileage_now;
     private String machine_mileage_next;
-    private String machine_mileage_status;
+//    private String machine_mileage_status;
     private String dateChangeLeean;
     private String dateChangeLeeanNext;
-    private String changeleean_status;
+//    private String changeleean_status;
     private String dateleanGia;
     private String dateleanGiaNextday;
-    private String leangia_status;
+//    private String leangia_status;
     private String dateleanFuengThaiy;
-    private String fuengthaiy_status;
+//    private String fuengthaiy_status;
     private String startdate_kongnam;
     private String enddate_kongnam;
-    private String kongnam_status;
-    private String engineoil_date;
-    private String engineoil_nextdate;
-    private String engineoil_status;
+//    private String kongnam_status;
     private String hydraulic_date;
     private String hydraulic_nextdate;
-    private String hydraulic_status;
+//    private String hydraulic_status;
     private String notifyStatus;
 
 
