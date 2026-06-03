@@ -9,6 +9,7 @@ import com.ldb.truck.Model.Borcar.BorCarResponse;
 import com.ldb.truck.Model.Borcar.BorcarReq;
 import com.ldb.truck.Model.Login.Profile.Profile;
 import com.ldb.truck.Model.Machine.*;
+import com.ldb.truck.Repository.MachineHis.MerchinHisRepository;
 import com.ldb.truck.Service.MachineService.MachineService;
 import com.ldb.truck.Service.MediaUploadServiceImpl;
 import com.ldb.truck.enums.MaintenanceType;
@@ -38,6 +39,8 @@ import java.util.Map;
 public class MachineController {
     private final ProfileDao profileDao;
     private final MachineService MACHINE_SERVICE;
+    @Autowired
+    private  MerchinHisRepository MERCHIN_HIS_REPOSITORY;
     @Autowired
     private MediaUploadService mediaUploadService;
 
@@ -541,6 +544,8 @@ public class MachineController {
             if (leean != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN,
                         machineMileage, leean, leeanNext, filePath, userName, remark);
+                //change ນ້ຳມັນເຄື່ອງ
+                MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(mchNo, userName);
             }
             if (gia != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN_GIA,
@@ -557,6 +562,8 @@ public class MachineController {
             if (hydDate != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.HYDRAULIC,
                         machineMileage, hydDate, hydNext, filePath, userName, remark);
+                //change ນ້ຳມັນhydraulic
+                MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(mchNo, userName);
             }
 
             response.setStatus("00");
