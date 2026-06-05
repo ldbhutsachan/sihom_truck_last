@@ -1292,6 +1292,7 @@ public class BansiService {
                     : String.valueOf(financeListEntity.getSupplierId());
 
             String payTypeId = financeListEntity.getPayTypeId();
+            String payTypeGroup = financeListEntity.getPayTypegroupId();
             String typeOf = financeListEntity.getTypeOf();
             String currency = financeListEntity.getCurrency();
 
@@ -1302,6 +1303,7 @@ public class BansiService {
                     financeListRepository.searchFinance(
                             supplierId,
                             payTypeId,
+                            payTypeGroup,
                             typeOf,
                             currency,
                             startDate,
@@ -1350,6 +1352,7 @@ public class BansiService {
                     : String.valueOf(financeListEntityAgain.getSupplierId());
 
             String payTypeId = financeListEntityAgain.getPayTypeId();
+            String payTypeGroup = financeListEntityAgain.getPayTypegroupId();
             String typeOf = financeListEntityAgain.getTypeOf();
             String currency = financeListEntityAgain.getCurrency();
             String paystatus = financeListEntityAgain.getStatus();
@@ -1361,6 +1364,7 @@ public class BansiService {
                     financeListRepositoryagain.searchFinance(
                             supplierId,
                             payTypeId,
+                            payTypeGroup,
                             typeOf,
                             currency,
                             paystatus,

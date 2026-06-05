@@ -16,6 +16,7 @@ public interface FinanceListRepositoryagain extends JpaRepository<FinanceListEnt
             "SELECT * FROM v_accounting_finance_again " +
                     "WHERE (NULLIF(:supplierId, '') IS NULL OR supplierid = :supplierId) " +
                     "AND (NULLIF(:payTypeId, '') IS NULL OR pay_type_id = :payTypeId) " +
+                    "AND (NULLIF(:payTypeGroup, '') IS NULL OR pay_typegroup_id = :payTypeGroup) " +
                     "AND (NULLIF(:typeOf, '') IS NULL OR type_of = :typeOf) " +
                     "AND (NULLIF(:currency, '') IS NULL OR currency = :currency) " +
                     "AND (NULLIF(:paystatus, '') IS NULL OR pay_status = :paystatus) " +
@@ -26,6 +27,7 @@ public interface FinanceListRepositoryagain extends JpaRepository<FinanceListEnt
     List<FinanceListEntityAgain> searchFinance(
             @Param("supplierId") String supplierId,
             @Param("payTypeId") String payTypeId,
+            @Param("payTypeGroup") String payTypeGroup,
             @Param("typeOf") String typeOf,
             @Param("currency") String currency,
             @Param("paystatus") String paystatus,

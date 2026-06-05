@@ -47,6 +47,14 @@ public class FinanceListEntity {
     @JsonProperty("pay_type")
     private String payType;
 
+    @Column(name = "pay_typegroup_id")
+    @JsonProperty("pay_typegroup_id")
+    private String payTypegroupId;
+
+    @Column(name = "pay_typegroup_name")
+    @JsonProperty("pay_typegroup_name")
+    private String payTypegroupName;
+
     @Column(name = "type_of")
     @JsonProperty("type_of")
     private String typeOf;
