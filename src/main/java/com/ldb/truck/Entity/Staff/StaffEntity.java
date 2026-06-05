@@ -44,6 +44,8 @@ public class StaffEntity {
 
     private String staffImage;
 
+    private String cvFile;
+
 //    private String ipAddress;
     private String macAddress;
     private String work_place;
@@ -63,11 +65,11 @@ public class StaffEntity {
     private LocalDate  startwork_date;
     private LocalDate  birth_date;
 
-    // ✅ เพิ่ม base salary
+    //  เพิ่ม base salary
     @Column(precision = 15, scale = 2)
     private BigDecimal baseSalary = BigDecimal.ZERO;
 
-    // ✅ เพิ่ม leave quota แต่ละประเภท
+    //  เพิ่ม leave quota แต่ละประเภท
     private Integer leaveQuotaSick      = 15;
     private Integer leaveQuotaAnnual  = 15;
     private Integer leaveQuotaCasual    = 3;

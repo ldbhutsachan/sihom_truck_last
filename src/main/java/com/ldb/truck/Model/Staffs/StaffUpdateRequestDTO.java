@@ -18,6 +18,7 @@ public class StaffUpdateRequestDTO {
     private String address;
     private String startWorkDate;
     private String birthDate;
+    private String workPlace;
     // add work schedule
     private BigDecimal baseSalary;
     private String  workSchedule;

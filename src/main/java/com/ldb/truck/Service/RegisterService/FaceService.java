@@ -264,7 +264,7 @@ public class FaceService {
     }
 
     public DataResponse updateSalarySchedule(StaffQueryRequestDTO query,
-                                             StaffUpdateRequestDTO dto) {
+                                             StaffUpdateRequestDTO dto, MultipartFile image, MultipartFile documentFile) {
 
         DataResponse response = new DataResponse();
 
@@ -333,6 +333,9 @@ public class FaceService {
             if (dto.getAddress() != null) {
                 staff.setAddress(dto.getAddress());
             }
+            if (dto.getWorkPlace() != null) {
+                staff.setWork_place(dto.getWorkPlace());
+            }
             // เพิ่มใน updateSalarySchedule
             if (dto.getStartWorkDate() != null && !dto.getStartWorkDate().isBlank()) {
                 staff.setStartwork_date(
@@ -353,10 +356,22 @@ public class FaceService {
                 }
                 staff.setUsername(dto.getUsername());
             }
+            // update staff image
+            if (image != null && !image.isEmpty()) {
+                String fileName = mediaUploadService.uploadMedia(image);
+                String fileUrl  = "http://khounkham.com/images/batery/" + fileName;
+                staff.setStaffImage(fileUrl);
+            }// update CV
+            if (documentFile != null && !documentFile.isEmpty()) {
+                String fileName = mediaUploadService.uploadMedia(documentFile);
+                String fileUrl  = "http://khounkham.com/images/batery/" + fileName;
+                staff.setCvFile(fileUrl);
+            }
+
             // Step 6: บันทึก
             StaffEntity saved = userRepository.save(staff);
 
-            // Step 7: ✅ Success response
+            // Step 7:  Success response
             Map<String, Object> data = new HashMap<>();
             data.put("staffId",        saved.getId());
             data.put("staffCode",      saved.getStaffCode());
@@ -366,6 +381,8 @@ public class FaceService {
             data.put("cycleWorkDays",  saved.getCycleWorkDays());
             data.put("cycleOffDays",   saved.getCycleOffDays());
             data.put("cycleStartDate", saved.getCycleStartDate());
+            data.put("staffImage",saved.getStaffImage());
+            data.put("cvFile",saved.getCvFile());
 
             response.setStatus("00");
             response.setMessage("ອັບເດດຂໍ້ມູນເງິນເດືອນສຳເລັດ");
@@ -394,14 +411,14 @@ public class FaceService {
                     .orElse(null);
         }
 
-        // ✅ ใช้ getDept_id() ตามชื่อจริงใน Entity
+        //  ใช้ getDept_id() ตามชื่อจริงใน Entity
         if (staff.getDept_id() != null) {
             deptName = departmentRepository.findById(staff.getDept_id())
                     .map(Department::getDeptName)
                     .orElse(null);
         }
 
-        // ✅ ใช้ getPos_id() ตามชื่อจริงใน Entity
+        //  ใช้ getPos_id() ตามชื่อจริงใน Entity
         if (staff.getPos_id() != null) {
             positionName = positionRepository.findById(staff.getPos_id())
                     .map(Position::getPosName)
@@ -417,6 +434,7 @@ public class FaceService {
                 staff.getRole(),
                 staff.getStatus(),
                 staff.getStaffImage(),
+                staff.getCvFile(),
                 staff.getBorId(),
                 borName,
                 staff.getDept_id(),

@@ -18,6 +18,7 @@ public class StaffResponseDTO {
     private String role;
     private String status;
     private String staffImage;
+    private String cvFile;
     private Integer borId;
     private String borName;
     private Long deptId;

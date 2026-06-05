@@ -126,7 +126,11 @@ public class FaceController {
             @RequestParam(value = "birthDate", required = false) String birthDate,
             @RequestParam(value = "laoName",   required = false) String laoName,
             @RequestParam(value = "username",   required = false) String username,
-            @RequestParam(value = "borId",      required = false) Integer borId
+            @RequestParam(value = "borId",      required = false) Integer borId,
+            @RequestParam(value = "image",      required = false) MultipartFile image,
+            @RequestParam(value = "documentFile",      required = false) MultipartFile documentFile,
+            @RequestParam(value = "workPlace",   required = false) String workPlace
+
 
     ) {
         StaffQueryRequestDTO query = new StaffQueryRequestDTO();
@@ -148,8 +152,9 @@ public class FaceController {
         dto.setLaoname(laoName);
         dto.setUsername(username);
         dto.setBorId(borId);
+        dto.setWorkPlace(workPlace);
 
-        return ResponseEntity.ok(faceService.updateSalarySchedule(query, dto));
+        return ResponseEntity.ok(faceService.updateSalarySchedule(query, dto,image,documentFile));
     }
 
 
