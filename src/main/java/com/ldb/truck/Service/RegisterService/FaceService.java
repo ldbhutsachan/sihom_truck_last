@@ -504,8 +504,8 @@ public class FaceService {
         } else {
             log = existingCheckOut.get();
             log.setCheckTime(LocalDateTime.now());
-            log.setIpAddress(dto.getIpAddress());    // ✅
-            log.setMacAddress(dto.getMacAddress());  // ✅
+            log.setIpAddress(dto.getIpAddress());
+            log.setMacAddress(dto.getMacAddress());
             message = "Check-out ສຳເລັດ";
             notimessage = now.isBefore(LocalTime.of(17, 0)) ? "EARLY" : "ON-TIME";
         }

@@ -18,7 +18,7 @@ public class HikvisionController {
     public ResponseEntity<?> receiveEvent(@RequestParam Map<String, String> params) {
 
         try {
-            System.out.println("🔥 HIT API FROM HIKVISION 🔥");
+            System.out.println(" HIT API FROM HIKVISION ");
 
             String eventLog = params.get("event_log");
 

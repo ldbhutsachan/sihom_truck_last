@@ -25,6 +25,9 @@ public interface UserRepository extends JpaRepository<StaffEntity, Long> {
     boolean existsByStaffCode(String staffCode);
 
     List<StaffEntity> findAllByStatus(String status);
+    // ✅ NEW — ดึงเฉพาะ staffCode (ไม่โหลด entity ทั้งหมด ประหยัด memory)
+    @Query("SELECT s.staffCode FROM StaffEntity s WHERE s.status = :status")
+    List<String> findAllStaffCodesByStatus(@Param("status") String status);
 
     // ───  NEW เพิ่มใหม่ ──────────────────────────────────────
 
