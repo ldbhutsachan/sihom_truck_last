@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 @Component
 @Repository
@@ -712,87 +713,183 @@ public int InsertResultOfSurveyDAOs (DataHoleReq dataHoleReq) throws ParseExcept
     }
 }
 //    show list of document
-    public List<DocumentStorageModel> listDocDAOs (DocumentStorageReq documentStorageReq) {
-        String sql;
-        try{
-            if (documentStorageReq.getToKen() != null && (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF") || documentStorageReq.getToKen().equals("KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue") )){
-                if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("in"))
-                {
-                    sql = "select * from V_DOC WHERE BOUND='in'";
-                    log.info("SQL in bound:" + sql);
-                }
-                else if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("out"))
-                {
-                    sql = "select * from V_DOC WHERE BOUND='"+documentStorageReq.getBound()+"'";
-                    log.info("SQL out bound:" + sql);
-                }
-                else if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("inside"))
-                {
-                    sql = "select * from V_DOC WHERE inside='inside'";
-                    log.info("SQL out bound:" + sql);
-                }
-                else if(documentStorageReq.getUserIdoffinanceial() == null || documentStorageReq.getUserIdoffinanceial().isEmpty())
-                {
-                    sql = "select * from V_DOC";
+//    public List<DocumentStorageModel> listDocDAOs (DocumentStorageReq documentStorageReq) {
+//        String sql;
+//        try{
+//            if (documentStorageReq.getToKen() != null && (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF") || documentStorageReq.getToKen().equals("KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue") )){
+//                if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("in"))
+//                {
+//                    sql = "select * from V_DOC WHERE BOUND='in'";
+//                    log.info("SQL in bound:" + sql);
+//                }
+//                else if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("out"))
+//                {
+//                    sql = "select * from V_DOC WHERE BOUND='"+documentStorageReq.getBound()+"'";
+//                    log.info("SQL out bound:" + sql);
+//                }
+//                else if (documentStorageReq.getBound() != null && documentStorageReq.getBound().equals("inside"))
+//                {
+//                    sql = "select * from V_DOC WHERE inside='inside'";
+//                    log.info("SQL out bound:" + sql);
+//                }
+//                else if(documentStorageReq.getUserIdoffinanceial() == null || documentStorageReq.getUserIdoffinanceial().isEmpty())
+//                {
+//                    sql = "select * from V_DOC";
+//
+//                    log.info("SQL:" + sql);
+//                }else {
+//                    sql = "select * from V_DOC where saveById='"+documentStorageReq.getUserIdoffinanceial()+"'";
+//                    log.info("SQL:" + sql);
+//                }
+//            }
+//            else {
+//                if (documentStorageReq.getBound().equals("in"))
+//                {
+//                    sql = "select * from V_DOC WHERE TOKEN='"+documentStorageReq.getToKen()+"'and BOUND='"+documentStorageReq.getBound()+"'";
+//                    log.info("SQL in bound:" + sql);
+//                }
+//                else if (documentStorageReq.getBound().equals("out"))
+//                {
+//                    sql = "select * from V_DOC WHERE TOKEN='" + documentStorageReq.getToKen() + "' and BOUND='"+documentStorageReq.getBound()+"'";
+//                    log.info("SQL out bound:" + sql);
+//                }
+//                else if (documentStorageReq.getBound().equals("inside"))
+//                {
+//                    sql = "select * from V_DOC WHERE TOKEN='" + documentStorageReq.getToKen() + "' and inside='inside'";
+//                    log.info("SQL out bound:" + sql);
+//                }
+//                else {
+//                    sql = "select * from V_DOC WHERE TOKEN='" + documentStorageReq.getToKen() + "'";
+//                    log.info("SQL:" + sql);
+//                }
+//            }
+//            return EBankJdbcTemplate.query(sql, new RowMapper<DocumentStorageModel>() {
+//                @Override
+//                public DocumentStorageModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                    DocumentStorageModel tr = new DocumentStorageModel();
+//                    tr.setPdf(rs.getString("PDF"));
+//                    tr.setKey_id(rs.getString("KEY_ID"));
+//                    tr.setBranchUser(rs.getString("BRANCH_USER"));
+//                    tr.setDateCreate(rs.getString("DATECREATE"));
+//                    tr.setDocType(rs.getString("DOC_TYPE"));
+//                    tr.setInboundnumber(rs.getString("INBOUNDNUMBER"));
+//                    tr.setOutboundnumber(rs.getString("OUTBOUNDNUMBER"));
+//                    tr.setDateExpDoc(rs.getString("DateExpDoc"));
+//                    tr.setClassofdocs(rs.getString("CLASSOFDOCS"));
+//                    tr.setBound(rs.getString("BOUND"));
+//                    tr.setContent_doc(rs.getString("CONTENT_DOC"));
+//                    tr.setWhocarrydoc(rs.getString("WHOCARRYDOC"));
+//                    tr.setEtc(rs.getString("ETC"));
+//                    tr.setLektee(rs.getString("LEKTEE"));
+//                    tr.setDatetakein(rs.getString("DateTakeIn"));
+//                    tr.setCompany(rs.getString("company"));
+//                    tr.setBouang(rs.getString("bouang"));
+//                    tr.setStatus(rs.getString("STATUS"));
+//                    tr.setInside(rs.getString("inside"));
+//                    return tr ;
+//                }
+//            });
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+public List<DocumentStorageModel> listDocDAOs(DocumentStorageReq req) {
 
-                    log.info("SQL:" + sql);
-                }else {
-                    sql = "select * from V_DOC where saveById='"+documentStorageReq.getUserIdoffinanceial()+"'";
-                    log.info("SQL:" + sql);
-                }
+    try {
+
+        String sql;
+
+        String excludeToken =
+                "eb168d8130dc6f4601dd97dd3f38bdbbc2Test_task_trackingda64dd75bf7dbounHR";
+
+        boolean isAdmin = req.getToKen() != null &&
+                ("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF".equals(req.getToKen())
+                        || "KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue".equals(req.getToKen()));
+
+        if (isAdmin) {
+
+            if ("in".equals(req.getBound())) {
+
+                sql = "SELECT * FROM V_DOC " +
+                        "WHERE BOUND='in' " +
+                        "AND TOKEN != '" + excludeToken + "'";
+
+            } else if ("out".equals(req.getBound())) {
+
+                sql = "SELECT * FROM V_DOC " +
+                        "WHERE BOUND='out' " +
+                        "AND TOKEN != '" + excludeToken + "'";
+
+            } else if ("inside".equals(req.getBound())) {
+
+                sql = "SELECT * FROM V_DOC " +
+                        "WHERE inside='inside' " +
+                        "AND TOKEN != '" + excludeToken + "'";
+
+            } else if (req.getUserIdoffinanceial() != null
+                    && !req.getUserIdoffinanceial().isEmpty()) {
+
+                sql = "SELECT * FROM V_DOC " +
+                        "WHERE saveById='" + req.getUserIdoffinanceial() + "'" +
+                        " AND TOKEN != '" + excludeToken + "'";
+
+            } else {
+
+                sql = "SELECT * FROM V_DOC " +
+                        "WHERE TOKEN != '" + excludeToken + "'";
             }
-            else {
-                if (documentStorageReq.getBound().equals("in"))
-                {
-                    sql = "select * from V_DOC WHERE TOKEN='"+documentStorageReq.getToKen()+"'and BOUND='"+documentStorageReq.getBound()+"'";
-                    log.info("SQL in bound:" + sql);
-                }
-                else if (documentStorageReq.getBound().equals("out"))
-                {
-                    sql = "select * from V_DOC WHERE TOKEN='" + documentStorageReq.getToKen() + "' and BOUND='"+documentStorageReq.getBound()+"'";
-                    log.info("SQL out bound:" + sql);
-                }
-                else if (documentStorageReq.getBound().equals("inside"))
-                {
-                    sql = "select * from V_DOC WHERE TOKEN='" + documentStorageReq.getToKen() + "' and inside='inside'";
-                    log.info("SQL out bound:" + sql);
-                }
-                else {
-                    sql = "select * from V_DOC WHERE TOKEN='" + documentStorageReq.getToKen() + "'";
-                    log.info("SQL:" + sql);
-                }
+
+        } else {
+
+            sql = "SELECT * FROM V_DOC WHERE TOKEN='" + req.getToKen() + "'";
+
+            if ("in".equals(req.getBound()) || "out".equals(req.getBound())) {
+
+                sql += " AND BOUND='" + req.getBound() + "'";
+
+            } else if ("inside".equals(req.getBound())) {
+
+                sql += " AND inside='inside'";
             }
-            return EBankJdbcTemplate.query(sql, new RowMapper<DocumentStorageModel>() {
-                @Override
-                public DocumentStorageModel mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    DocumentStorageModel tr = new DocumentStorageModel();
-                    tr.setPdf(rs.getString("PDF"));
-                    tr.setKey_id(rs.getString("KEY_ID"));
-                    tr.setBranchUser(rs.getString("BRANCH_USER"));
-                    tr.setDateCreate(rs.getString("DATECREATE"));
-                    tr.setDocType(rs.getString("DOC_TYPE"));
-                    tr.setInboundnumber(rs.getString("INBOUNDNUMBER"));
-                    tr.setOutboundnumber(rs.getString("OUTBOUNDNUMBER"));
-                    tr.setDateExpDoc(rs.getString("DateExpDoc"));
-                    tr.setClassofdocs(rs.getString("CLASSOFDOCS"));
-                    tr.setBound(rs.getString("BOUND"));
-                    tr.setContent_doc(rs.getString("CONTENT_DOC"));
-                    tr.setWhocarrydoc(rs.getString("WHOCARRYDOC"));
-                    tr.setEtc(rs.getString("ETC"));
-                    tr.setLektee(rs.getString("LEKTEE"));
-                    tr.setDatetakein(rs.getString("DateTakeIn"));
-                    tr.setCompany(rs.getString("company"));
-                    tr.setBouang(rs.getString("bouang"));
-                    tr.setStatus(rs.getString("STATUS"));
-                    tr.setInside(rs.getString("inside"));
-                    return tr ;
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
         }
-        return null;
+
+        log.info("SQL : {}", sql);
+
+        return EBankJdbcTemplate.query(sql, (rs, rowNum) -> {
+
+            DocumentStorageModel tr = new DocumentStorageModel();
+
+            tr.setPdf(rs.getString("PDF"));
+            tr.setKey_id(rs.getString("KEY_ID"));
+            tr.setBranchUser(rs.getString("BRANCH_USER"));
+            tr.setDateCreate(rs.getString("DATECREATE"));
+            tr.setDocType(rs.getString("DOC_TYPE"));
+            tr.setInboundnumber(rs.getString("INBOUNDNUMBER"));
+            tr.setOutboundnumber(rs.getString("OUTBOUNDNUMBER"));
+            tr.setDateExpDoc(rs.getString("DateExpDoc"));
+            tr.setClassofdocs(rs.getString("CLASSOFDOCS"));
+            tr.setBound(rs.getString("BOUND"));
+            tr.setContent_doc(rs.getString("CONTENT_DOC"));
+            tr.setWhocarrydoc(rs.getString("WHOCARRYDOC"));
+            tr.setEtc(rs.getString("ETC"));
+            tr.setLektee(rs.getString("LEKTEE"));
+            tr.setDatetakein(rs.getString("DateTakeIn"));
+            tr.setCompany(rs.getString("company"));
+            tr.setBouang(rs.getString("bouang"));
+            tr.setStatus(rs.getString("STATUS"));
+            tr.setInside(rs.getString("inside"));
+
+            return tr;
+        });
+
+    } catch (Exception e) {
+        log.error("Error listDocDAOs", e);
+        return Collections.emptyList();
     }
+}
+
+
 //    dept must received DAOs
 public List<DeptMustReceivedModel> listDeptMustReceivedDAOs (DeptMustReceivedReq deptMustReceivedReq) {
     String sql;

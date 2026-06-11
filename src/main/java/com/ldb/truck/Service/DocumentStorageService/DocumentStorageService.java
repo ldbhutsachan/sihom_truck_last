@@ -565,6 +565,7 @@ public Messages ResultOfSurveyService (DataHoleReq dataHoleReq){
         //================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
+        String role = userIn.get(0).getRole();
         //===================set data to userId===============================
         documentStorageReq.setUserId(userId);
         documentStorageReq.setBranch(userBranchNo);
