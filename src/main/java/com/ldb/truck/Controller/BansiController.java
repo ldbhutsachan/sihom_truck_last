@@ -1,10 +1,13 @@
 package com.ldb.truck.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ldb.truck.Dao.ProfileDao.ProfileDao;
 import com.ldb.truck.Dao.upload.MediaUploadService;
 import com.ldb.truck.Entity.Bansi.*;
 import com.ldb.truck.Model.Bansi.*;
 import com.ldb.truck.Model.DataResponse;
+import com.ldb.truck.Model.Login.Profile.Profile;
+import com.ldb.truck.Repository.Bansi.PayTypeGroupRepository;
 import com.ldb.truck.Service.Bansi.BansiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,10 @@ public class BansiController {
     private BansiService bansiService;
     @Autowired
     private MediaUploadService mediaUploadService;
+    @Autowired
+    private PayTypeGroupRepository payTypeGroupRepository;
+    @Autowired
+    private ProfileDao profileDao;
 
     //save project
     @CrossOrigin(origins = "*")
@@ -102,7 +109,7 @@ public class BansiController {
     @PostMapping("/insertPaymentDetail")
     public ResponseEntity<?> insertPaymentRequest(
             @RequestParam("toKen") String token,
-            @RequestParam("pay_typeid") Long payTypeId,
+//            @RequestParam("pay_typeid") Long payTypeId,
             @RequestParam("supplierid") Long supplierId,
             @RequestParam("billNo") String billNo,
             @RequestParam("title") String title,
@@ -118,14 +125,15 @@ public class BansiController {
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
 //            @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "file", required = false) MultipartFile[] files,
-            @RequestParam("b_id") Long bId
+            @RequestParam("b_id") Long bId,
+            @RequestParam("pay_type_groupid") Long pay_type_groupid
     ) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             PaymentRequestDto dto = new PaymentRequestDto();
 
             dto.setToKen(token);
-            dto.setPay_typeid(payTypeId);
+//            dto.setPay_typeid(payTypeId);
             dto.setSupplierid(supplierId);
             dto.setBillNo(billNo);
             dto.setTitle(title);
@@ -140,6 +148,7 @@ public class BansiController {
             dto.setDatermine_date(datermine_date);
             dto.setFile(files);
             dto.setB_id(bId);
+            dto.setPay_type_groupid(pay_type_groupid);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
@@ -164,7 +173,7 @@ public class BansiController {
     public ResponseEntity<?> updatePaymentRequest(
             @RequestParam("billNo") String billNo,  // เปลี่ยนจาก keyId
             @RequestParam("toKen") String token,
-            @RequestParam(value = "pay_typeid", required = false) Long payTypeId,
+//            @RequestParam(value = "pay_typeid", required = false) Long payTypeId,
             @RequestParam(value = "supplierid", required = false) Long supplierId,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "currency", required = false) String currency,
@@ -180,14 +189,15 @@ public class BansiController {
             @RequestParam(value = "bill_status", required = false) String bill_status,
 //            @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "file", required = false) MultipartFile[] files,
-            @RequestParam("b_id") Long bId
+            @RequestParam("b_id") Long bId,
+            @RequestParam("pay_type_groupid") Long pay_type_groupid
     ) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             PaymentRequestDto dto = new PaymentRequestDto();
 
             dto.setToKen(token);
-            dto.setPay_typeid(payTypeId);
+//            dto.setPay_typeid(payTypeId);
             dto.setSupplierid(supplierId);
             dto.setTitle(title);
             dto.setCurrency(currency);
@@ -202,6 +212,7 @@ public class BansiController {
             dto.setBill_status(bill_status);
             dto.setFile(files);
             dto.setB_id(bId);
+            dto.setPay_type_groupid(pay_type_groupid);
 
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
@@ -468,11 +479,19 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // show finaceData controller
+    // show accounting bill for finace
     @CrossOrigin(origins = "*")
     @PostMapping("/getListForFinance.service")
     public ResponseEntity<DataResponse> getListForFinance(@RequestBody FinanceListEntity financeListEntity) {
         DataResponse response = bansiService.getListForFinance(financeListEntity);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // show Accounting bill  for finance again
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getListForFinance.again")
+    public ResponseEntity<DataResponse> getListForFinance(@RequestBody FinanceListEntityAgain financeListEntityAgain) {
+        DataResponse response = bansiService.getFinanceListagian(financeListEntityAgain);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -552,9 +571,204 @@ public class BansiController {
         );
     }
 
+// FINANCE BILL - 3 APIs
+// ════════════════════════════════════════════════════════
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/create")
+    public ResponseEntity<DataResponse> createFinanceBill(
+            @RequestBody FinanceBillRequestDto req) {
+        return ResponseEntity.ok(bansiService.createFinanceBill(req));
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/list")
+    public ResponseEntity<DataResponse> getFinanceBills(
+            @RequestBody FinanceBillListRequest request) {
+        return ResponseEntity.ok(bansiService.getFinanceBills(request));
+    }
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/approve")
+    public ResponseEntity<DataResponse> approveFinanceBill(
+            @RequestBody FinanceBillApproveDto req) {
+        return ResponseEntity.ok(bansiService.approveFinanceBill(req));
+    }
 
+    // ─── ACCOUNTANT ขอแก้ไข amount ───────────────────────────
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/ref/request-update")
+    public ResponseEntity<DataResponse> requestUpdateRefAmount(
+            @RequestBody FinanceBillRefUpdateRequestDto req) {
+        return ResponseEntity.ok(bansiService.requestUpdateRefAmount(req));
+    }
+    // ─── GET: ดูรายการ Request ที่รอ ADMIN Approve ────────────
+    @CrossOrigin(origins = "*")
+    @GetMapping("/get-finance/update-requests")
+    public ResponseEntity<DataResponse> getUpdateRequests(
+            @RequestParam String token,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(bansiService.getUpdateRequests(token, status));
+    }
+    // ─── ADMIN Approve / Reject ───────────────────────────────
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finance-bill/ref/approve-update")
+    public ResponseEntity<DataResponse> approveUpdateRefAmount(
+            @RequestBody FinanceBillRefApproveDto req) {
+        return ResponseEntity.ok(bansiService.approveUpdateRefAmount(req));
+    }
 
+    // ─── ดู History ──────────────────────────────────────────
+    @CrossOrigin(origins = "*")
+    @GetMapping("/get-finance/update-history")
+    public ResponseEntity<DataResponse> getUpdateRefHistory(
+            @RequestParam String token,
+            @RequestParam(required = false) String financeBillNo) {
+        return ResponseEntity.ok(bansiService.getUpdateRefHistory(token, financeBillNo));
+    }
+    //report income outcome
+    @CrossOrigin(origins = "*")
+    @PostMapping("/get-finance/balance-report")
+    public ResponseEntity<DataResponse> getFinanceBalanceReport(
+            @RequestBody FinanceBalanceReportRequest req) {
+        return ResponseEntity.ok(bansiService.getFinanceBalanceReport(req));
+    }
+    // REPORT INCOME OUTCOME SUMARY
+    @CrossOrigin(origins = "*")
+    @PostMapping("/get-finance/balance-summary")
+    public ResponseEntity<DataResponse> getFinanceBalanceSummary(
+            @RequestBody FinanceBalanceReportRequest req) {
 
+        return ResponseEntity.ok(
+                bansiService.getFinanceBalanceSummary(req));
+    }
 
+    @CrossOrigin(origins = "*")
+    @PostMapping("/insertPaytype-group")
+    public DataResponse insertPayTypeGroup(@RequestBody PayTypeGroupRequest req) {
+        DataResponse response = new DataResponse();
+        try {
+            // ========== CHECK TOKEN & ROLE ==========
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToken());
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+            String role = user.getRole().toUpperCase();
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("No permission");
+                return response;
+            }
 
+            // ========== BUSINESS LOGIC ==========
+            PayTypeGroup group = new PayTypeGroup();
+            group.setGroupName(req.getGroupName());
+            group.setPid(req.getPid());
+            group.setDateCreate(LocalDateTime.now());
+
+            PayTypeGroup saved = payTypeGroupRepository.save(group);
+
+            response.setStatus("00");
+            response.setMessage("Insert Success");
+            response.setDataResponse(saved);
+
+        } catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
+
+    // ==================== GET ALL ====================
+    // ==================== GET ALL (มี Filter ตาม pid) ====================
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getPaytype-group")
+    public DataResponse getAllPayTypeGroup(@RequestBody PayTypeGroupRequest req) {
+        DataResponse response = new DataResponse();
+        try {
+            // ========== CHECK TOKEN & ROLE ==========
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToken());
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+            String role = user.getRole().toUpperCase();
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("No permission");
+                return response;
+            }
+
+            // ========== BUSINESS LOGIC (Filter ตาม pid) ==========
+            List<PayTypeGroup> list;
+
+            if (req.getPid() == null) {
+                // ถ้า pid เป็น null → แสดงทั้งหมด
+                list = payTypeGroupRepository.findAllByOrderByGidDesc();
+            } else {
+                // ถ้า pid มีค่า → Filter ตาม pid
+                list = payTypeGroupRepository.findByPid(req.getPid());
+            }
+
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(list);
+
+        } catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
+
+    // ==================== UPDATE ====================
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updatePaytyp-group")
+    public DataResponse updatePayTypeGroup(@RequestBody PayTypeGroupRequest req) {
+        DataResponse response = new DataResponse();
+        try {
+            // ========== CHECK TOKEN & ROLE ==========
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToken());
+            if (profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+            String role = user.getRole().toUpperCase();
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN");
+            if (!allowed.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("No permission");
+                return response;
+            }
+
+            // ========== BUSINESS LOGIC ==========
+            Optional<PayTypeGroup> existing = payTypeGroupRepository.findById(req.getGid());
+            if (!existing.isPresent()) {
+                response.setStatus("01");
+                response.setMessage("PayTypeGroup not found with gid: " + req.getGid());
+                return response;
+            }
+
+            PayTypeGroup group = existing.get();
+            group.setGroupName(req.getGroupName());
+            group.setPid(req.getPid());
+
+            PayTypeGroup updated = payTypeGroupRepository.save(group);
+
+            response.setStatus("00");
+            response.setMessage("Update Success");
+            response.setDataResponse(updated);
+
+        } catch (Exception e) {
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
 }

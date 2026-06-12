@@ -20,11 +20,30 @@ public interface PaymentRequestRepository extends JpaRepository<PaymentRequestEn
 
     //  UPDATE pay_status = DONE-PAY ด้วย billNo
     @Modifying
-    @Query(value = "UPDATE tb_accounting " +
-            "SET pay_status = :status " +
-            "WHERE bill_No = :billNo",
+    @Query(value =
+            "UPDATE tb_accounting " +
+                    "SET pay_status = :status, " +
+                    "    exchange_rate = COALESCE(NULLIF(:exchangeRate, ''), exchange_rate) " +
+                    "WHERE bill_No = :billNo",
             nativeQuery = true)
-    int updatePayStatusByBillNo(@Param("billNo") String billNo,
-                                @Param("status") String status);
+    int updatePayStatusByBillNo(
+            @Param("billNo") String billNo,
+            @Param("status") String status,
+            @Param("exchangeRate") String exchangeRate
+    );
+
+    //UPDATE ONLY next_pay_date
+    @Modifying
+    @Query(value =
+            "UPDATE tb_accounting " +
+                    "SET next_pay_date = :nextDatePay, " +
+                    "    exchange_rate = COALESCE(NULLIF(:exchangeRate, ''), exchange_rate) " +
+                    "WHERE bill_No = :billNo",
+            nativeQuery = true)
+    int updateNextPayDate(
+            @Param("billNo") String billNo,
+            @Param("nextDatePay") String nextDatePay,
+            @Param("exchangeRate") String exchangeRate
+    );
 }
 

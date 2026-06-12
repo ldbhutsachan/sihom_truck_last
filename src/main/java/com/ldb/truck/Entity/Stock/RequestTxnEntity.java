@@ -3,6 +3,7 @@ package com.ldb.truck.Entity.Stock;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -43,7 +44,7 @@ public class RequestTxnEntity {
     private Integer exchangeRate;
 
     @Column(name = "qty")
-    private Integer qty;
+    private BigDecimal qty;
 
     @Column(name = "price")
     private Double price;

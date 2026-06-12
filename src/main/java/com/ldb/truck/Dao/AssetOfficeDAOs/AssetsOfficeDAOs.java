@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 //++++++++++++++++++++++
 @Component
@@ -26,69 +27,156 @@ public class AssetsOfficeDAOs implements AssetsInterface{
     private JdbcTemplate EBankJdbcTemplate;
 
     //List Asset Office
-    public List<AssetsOfficeModel > listAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) {
-        String SQL;
-        try{
-            if (assetsOfficeReq.getBranch_id()!= null)
-            {
-                if (assetsOfficeReq.getCurrency() == null){
-                    SQL ="select * from TB_ASSETS WHERE branch_id='"+assetsOfficeReq.getBranch_id()+"'";
-                    log.info("SQL: "+SQL);
-                }
-                else {
-                    SQL ="select * from TB_ASSETS WHERE branch_id='"+assetsOfficeReq.getBranch_id()+"' and CURRENCY='"+assetsOfficeReq.getCurrency()+"' ";
-                    log.info("SQL: "+SQL);
-                }
-            }
-            else
-            {
-                if (assetsOfficeReq.getCurrency() == null){
-                    SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"'";
-                    log.info("SQL: "+SQL);
-                }
-                else {
-                    SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"' and CURRENCY='"+assetsOfficeReq.getCurrency()+"' ";
-                    log.info("SQL: "+SQL);
-                }
-            }
-            return EBankJdbcTemplate.query(SQL, new RowMapper<AssetsOfficeModel>() {
-                @Override
-                public AssetsOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    AssetsOfficeModel tr = new AssetsOfficeModel();
-                    tr.setKey_id(rs.getString("KEY_ID"));
-                    tr.setCode(rs.getString("CODE"));
-                    tr.setName(rs.getString("NAME"));
-                    tr.setGroup_type(rs.getString("GROUP_TYPE"));
-                    tr.setOwner(rs.getString("OWNER"));
-                    tr.setQty(rs.getString("QTY"));
-                    tr.setBranch_office(rs.getString("BRANCH_OFFICE"));
-                    tr.setCurrency(rs.getString("CURRENCY"));
-                    tr.setImg(rs.getString("IMG"));
-                    tr.setDepartment(rs.getString("DEPARTMENT"));
-                    tr.setBrand(rs.getString("BRAND"));
-                    tr.setModel(rs.getString("MODEL"));
-                    tr.setLocation_room(rs.getString("LOCATION_ROOM"));
-                    tr.setDate_getin(rs.getString("DATE_GETIN"));
-                    tr.setUnit(rs.getString("UNIT"));
-                    tr.setColors(rs.getString("colors"));
-//=====================================================================================================================
-                    String priceB4 = rs.getString("price").replaceAll(",","");
-                    double priceAfter  = Double.parseDouble(priceB4);
-                    tr.setPrice(priceAfter);
-//                    tr.setPrice(rs.getDouble("price"));
-//=====================================================================================================================
-                    tr.setLife_service(rs.getString("LIFE_SERVIECE"));
-                    tr.setDateExpire(rs.getString("dateExpire"));
-//                    String convert = tr.setPrice(rs.getString("price").replaceAll(",","");
-//                    Double contoDouble = Double.valueOf(convert);
-//                    tr.setPrice(contoDouble);
-                    return tr ;
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
+//    public List<AssetsOfficeModel > listAssetsOfficeDAOs (AssetsOfficeReq assetsOfficeReq) {
+//        String SQL;
+//        try{
+//            if (assetsOfficeReq.getBranch_id()!= null)
+//            {
+//                if (assetsOfficeReq.getCurrency() == null){
+//                    SQL ="select * from TB_ASSETS WHERE branch_id='"+assetsOfficeReq.getBranch_id()+"'";
+//                    log.info("SQL: "+SQL);
+//                }
+//                else {
+//                    SQL ="select * from TB_ASSETS WHERE branch_id='"+assetsOfficeReq.getBranch_id()+"' and CURRENCY='"+assetsOfficeReq.getCurrency()+"' ";
+//                    log.info("SQL: "+SQL);
+//                }
+//            }
+//            else
+//            {
+//                if (assetsOfficeReq.getCurrency() == null){
+//                    SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"'";
+//                    log.info("SQL: "+SQL);
+//                }
+//                else {
+//                    SQL ="select * from TB_ASSETS WHERE BRANCH_OFFICE='"+assetsOfficeReq.getBranch()+"' and CURRENCY='"+assetsOfficeReq.getCurrency()+"' ";
+//                    log.info("SQL: "+SQL);
+//                }
+//            }
+//            return EBankJdbcTemplate.query(SQL, new RowMapper<AssetsOfficeModel>() {
+//                @Override
+//                public AssetsOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+//                    AssetsOfficeModel tr = new AssetsOfficeModel();
+//                    tr.setKey_id(rs.getString("KEY_ID"));
+//                    tr.setCode(rs.getString("CODE"));
+//                    tr.setName(rs.getString("NAME"));
+//                    tr.setGroup_type(rs.getString("GROUP_TYPE"));
+//                    tr.setOwner(rs.getString("OWNER"));
+//                    tr.setQty(rs.getString("QTY"));
+//                    tr.setBranch_office(rs.getString("BRANCH_OFFICE"));
+//                    tr.setCurrency(rs.getString("CURRENCY"));
+//                    tr.setImg(rs.getString("IMG"));
+//                    tr.setDepartment(rs.getString("DEPARTMENT"));
+//                    tr.setBrand(rs.getString("BRAND"));
+//                    tr.setModel(rs.getString("MODEL"));
+//                    tr.setLocation_room(rs.getString("LOCATION_ROOM"));
+//                    tr.setDate_getin(rs.getString("DATE_GETIN"));
+//                    tr.setUnit(rs.getString("UNIT"));
+//                    tr.setColors(rs.getString("colors"));
+////=====================================================================================================================
+////                    String priceB4 = rs.getString("price").replaceAll(",","");
+////                    double priceAfter  = Double.parseDouble(priceB4);
+////                    tr.setPrice(priceAfter);
+//                    //  แก้ไขแล้ว - ตรวจสอบทุกกรณี
+//                    String priceRaw = rs.getString("price");
+//                    double priceAfter = 0.0;
+//
+//                    if (priceRaw != null && !priceRaw.trim().isEmpty()) {
+//                        try {
+//                            priceAfter = Double.parseDouble(priceRaw.replaceAll(",", "").trim());
+//                        } catch (NumberFormatException e) {
+//                            priceAfter = 0.0; // ถ้าแปลงไม่ได้ให้ใช้ 0
+//                        }
+//                    }
+//                    tr.setPrice(priceAfter);
+////=====================================================================================================================
+//                    tr.setLife_service(rs.getString("LIFE_SERVIECE"));
+//                    tr.setDateExpire(rs.getString("dateExpire"));
+////                    String convert = tr.setPrice(rs.getString("price").replaceAll(",","");
+////                    Double contoDouble = Double.valueOf(convert);
+////                    tr.setPrice(contoDouble);
+//                    return tr ;
+//                }
+//            });
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+public List<AssetsOfficeModel> listAssetsOfficeDAOs(AssetsOfficeReq assetsOfficeReq) {
+    try {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM TB_ASSETS WHERE ");
+        List<Object> params = new ArrayList<>();
+
+        if (assetsOfficeReq.getBranch_id() != null) {
+            sqlBuilder.append("BRANCH_ID = ? ");
+            params.add(assetsOfficeReq.getBranch_id());
+        } else {
+            sqlBuilder.append("BRANCH_OFFICE = ? ");
+            params.add(assetsOfficeReq.getBranch());
         }
-        return null;
+
+        if (assetsOfficeReq.getCurrency() != null) {
+            sqlBuilder.append("AND CURRENCY = ? ");
+            params.add(assetsOfficeReq.getCurrency());
+        }
+
+        String SQL = sqlBuilder.toString();
+        log.info("SQL: {}", SQL);
+
+        // ============================================================
+        // Query + RowMapper
+        // ============================================================
+        return EBankJdbcTemplate.query(SQL, params.toArray(), new RowMapper<AssetsOfficeModel>() {
+            @Override
+            public AssetsOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
+                AssetsOfficeModel tr = new AssetsOfficeModel();
+
+                tr.setKey_id(rs.getString("KEY_ID"));
+                tr.setCode(rs.getString("CODE"));
+                tr.setName(rs.getString("NAME"));
+                tr.setGroup_type(rs.getString("GROUP_TYPE"));
+                tr.setOwner(rs.getString("OWNER"));
+                tr.setQty(rs.getString("QTY"));
+                tr.setBranch_office(rs.getString("BRANCH_OFFICE"));
+                tr.setCurrency(rs.getString("CURRENCY"));
+                tr.setImg(rs.getString("IMG"));
+                tr.setDepartment(rs.getString("DEPARTMENT"));
+                tr.setBrand(rs.getString("BRAND"));
+                tr.setModel(rs.getString("MODEL"));
+                tr.setLocation_room(rs.getString("LOCATION_ROOM"));
+                tr.setDate_getin(rs.getString("DATE_GETIN"));
+                tr.setUnit(rs.getString("UNIT"));
+                tr.setColors(rs.getString("colors"));
+
+                // ============================================================
+                // Parse price (ป้องกัน null / empty / format ผิด)
+                // ============================================================
+                tr.setPrice(safeParseDouble(rs.getString("price")));
+
+                tr.setLife_service(rs.getString("LIFE_SERVIECE"));
+                tr.setDateExpire(rs.getString("dateExpire"));
+
+                return tr;
+            }
+        });
+
+    } catch (Exception e) {
+        log.error("Error in listAssetsOfficeDAOs: {}", e.getMessage(), e);
+        return Collections.emptyList(); // คืน empty list แทน null
+    }
+}
+
+    // ============================================================
+// Helper Method: แปลง String → double อย่างปลอดภัย
+// ============================================================
+    private double safeParseDouble(String value) {
+        if (value == null || value.trim().isEmpty()) return 0.0;
+        try {
+            return Double.parseDouble(value.replaceAll(",", "").trim());
+        } catch (NumberFormatException e) {
+            log.warn("Cannot parse price value: '{}'", value);
+            return 0.0;
+        }
     }
     // list Asset Models
     public List<AssetsOfficeModel> listAssetsOfficeDAOsDetailById (AssetsOfficeReq assetsOfficeReq) {

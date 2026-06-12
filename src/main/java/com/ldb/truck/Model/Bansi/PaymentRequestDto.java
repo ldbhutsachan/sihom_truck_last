@@ -3,6 +3,7 @@ package com.ldb.truck.Model.Bansi;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -29,15 +30,16 @@ public class PaymentRequestDto {
     private MultipartFile[] file;
 
     private Long b_id;
+    private Long pay_type_groupid;
 
     private List<ToolDto> tools;
 
     @Data
     public static class ToolDto {
         private String list_name;
-        private Integer qty;
+        private BigDecimal qty;
         private String unit;
-        private Float price;
+        private BigDecimal  price;
         private Integer reduce;
         private String reduce_status;
         private Integer tax;

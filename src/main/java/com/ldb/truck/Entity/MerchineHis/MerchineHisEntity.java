@@ -3,6 +3,7 @@ package com.ldb.truck.Entity.MerchineHis;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -33,9 +34,18 @@ public class MerchineHisEntity {
         @Column(name = "time_total", length = 10)
         private String time_total; // time_close varchar(10)
 
+        @Column(name = "dig_metter")
+        private BigDecimal digMetter;
+
+        @Column(name = "oil_liter")
+        private BigDecimal oilLiter;
+
         @Column(name = "txn_date")
         @Temporal(TemporalType.DATE)
         private Date txnDate; // txn_date date
+
+        @Column(name ="hole")
+        private Integer hole;
 
         @Column(name = "status")
         private Integer status; // status int(11)

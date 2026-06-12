@@ -18,8 +18,11 @@ public class PaymentRequestEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "pay_typeid")
-    private Long payTypeId;
+//    @Column(name = "pay_typeid")
+//    private Long payTypeId;
+
+    @Column(name = "pay_type_groupid")
+    private Long payTypeGroupId;
 
     @Column(name = "supplierid")
     private Long supplierId;

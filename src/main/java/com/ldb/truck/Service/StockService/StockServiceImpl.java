@@ -652,20 +652,17 @@ public class StockServiceImpl {
                         .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
                         .count());
 
-                //I have change double to BigDecimal
-//                double totalLak = listData.stream()
+//                BigDecimal totalLak = listData.stream()
 //                        .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
-//                        .map(V_order_item_details::getAmountCurrency)
-//                        .filter(Objects::nonNull)
-//                        .mapToDouble(Float::doubleValue)
-//                        .sum();
+//                        .map(p -> {
+//                            BigDecimal qty = BigDecimal.valueOf(p.getQty());
+//                            BigDecimal price = BigDecimal.valueOf(p.getPrice());
+//                            return qty.multiply(price);
+//                        })
+//                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal totalLak = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "LAK".equals(p.getCurrency()))
-                        .map(p -> {
-                            BigDecimal qty = BigDecimal.valueOf(p.getQty());
-                            BigDecimal price = BigDecimal.valueOf(p.getPrice());
-                            return qty.multiply(price);
-                        })
+                        .map(p -> p.getQty().multiply(p.getPrice()))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
 
@@ -678,16 +675,14 @@ public class StockServiceImpl {
                         .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
                         .count());
 
-//                double totalUsd = listData.stream()
+//                BigDecimal totalUsd = listData.stream()
 //                        .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
-//                        .map(V_order_item_details::getAmountCurrency)
-//                        .filter(Objects::nonNull)
-//                        .mapToDouble(Float::doubleValue)
-//                        .sum();
+//                        .map(p -> BigDecimal.valueOf(p.getQty())
+//                                .multiply(BigDecimal.valueOf(p.getPrice())))
+//                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal totalUsd = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "USD".equals(p.getCurrency()))
-                        .map(p -> BigDecimal.valueOf(p.getQty())
-                                .multiply(BigDecimal.valueOf(p.getPrice())))
+                        .map(p -> p.getQty().multiply(p.getPrice()))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
 
@@ -704,10 +699,15 @@ public class StockServiceImpl {
 //                        .filter(Objects::nonNull)
 //                        .mapToDouble(Float::doubleValue)
 //                        .sum();
+
+//                BigDecimal totalThb = listData.stream()
+//                        .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
+//                        .map(p -> BigDecimal.valueOf(p.getQty())
+//                                .multiply(BigDecimal.valueOf(p.getPrice())))
+//                        .reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal totalThb = listData.stream()
                         .filter(p -> bill.equals(p.getBillNo()) && "THB".equals(p.getCurrency()))
-                        .map(p -> BigDecimal.valueOf(p.getQty())
-                                .multiply(BigDecimal.valueOf(p.getPrice())))
+                        .map(p -> p.getQty().multiply(p.getPrice()))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
 
@@ -809,7 +809,7 @@ public class StockServiceImpl {
                     itemSize = "\n AND borkey ='145'";   // SHOW ONLY DATA FROM lAP 21 K
                     break;
                 case "FIELDAPPROVE":
-                    itemSize = "\n AND size = 'item' AND (place_buy = 'field' OR place_buy = '' OR place_buy IS NULL)";
+                    itemSize = "\n AND size = 'item' AND borkey !='145' AND (place_buy = 'field' OR place_buy = '' OR place_buy IS NULL)";
                     break;
                 default:
                     itemSize = "";   // กัน error กรณี role อื่น
@@ -843,8 +843,9 @@ public class StockServiceImpl {
                     tr.setSize(rs.getString("size"));
                     tr.setCurrency(rs.getString("currency"));
                     tr.setExchangeRate(rs.getInt("exchange_rate"));
-                    tr.setQty(rs.getInt("qty"));
-                    tr.setPrice(rs.getFloat("price"));
+//                    tr.setQty(rs.getInt("qty"));
+                    tr.setQty(rs.getBigDecimal("qty"));
+                    tr.setPrice(rs.getBigDecimal("price"));
                     tr.setStatus(rs.getString("status"));
                     tr.setToKen(rs.getString("token"));
                     tr.setTotal(rs.getBigDecimal("total"));
@@ -867,6 +868,8 @@ public class StockServiceImpl {
                     tr.setAcceptDate(rs.getDate("acceptdate"));
                     tr.setBranchNo(rs.getString("branchno"));
                     tr.setBranchName(rs.getString("bname"));
+                    tr.setKhId(rs.getString("khid"));
+                    tr.setKhName(rs.getString("khname"));
                     tr.setBorkey(rs.getString("borkey"));
                     tr.setBorame(rs.getString("borname"));
                     tr.setRemark(rs.getString("remark"));
@@ -1040,6 +1043,7 @@ public class StockServiceImpl {
             entity.setQty(item.getQty());
             entity.setRealQty(item.getRealQty());
             entity.setRPrice(item.getPrice());
+            entity.setPrice(item.getPrice()); // ✅ เพิ่มตรงนี้
             entity.setRealPrice(item.getRealPrice());
             entity.setExchangeRate(item.getExchangeRate());
             entity.setRealCurrency(item.getCurrency());
@@ -1111,23 +1115,23 @@ public class StockServiceImpl {
     }
 
 
-    private List<OrderItemReportEntity> mapOrderItemAuth(StockItemAuthReq request, String userId) {
-        List<OrderItemReportEntity> entities = new ArrayList<>();
-
-        for (StockItemAuthModel item : request.getDetailId()) {
-            OrderItemReportEntity entity = new OrderItemReportEntity();
-            entity.setBillNo(request.getBillNo());
-            entity.setItemId(item.getItemId());
-            entity.setQty(item.getQty());
-            entity.setPrice(item.getAmount());
-            entity.setApproveBy(userId);
-            entity.setApproveDate(new Date());
-            entity.setStatus("auth"); // Example default status
-            entities.add(entity);
-        }
-
-        return entities;
-    }
+//    private List<OrderItemReportEntity> mapOrderItemAuth(StockItemAuthReq request, String userId) {
+//        List<OrderItemReportEntity> entities = new ArrayList<>();
+//
+//        for (StockItemAuthModel item : request.getDetailId()) {
+//            OrderItemReportEntity entity = new OrderItemReportEntity();
+//            entity.setBillNo(request.getBillNo());
+//            entity.setItemId(item.getItemId());
+//            entity.setQty(item.getQty());
+//            entity.setPrice(item.getAmount());
+//            entity.setApproveBy(userId);
+//            entity.setApproveDate(new Date());
+//            entity.setStatus("auth"); // Example default status
+//            entities.add(entity);
+//        }
+//
+//        return entities;
+//    }
     @Autowired
     VCalOrderEntityRepository vCalOrderEntityRepository;
 
@@ -1941,7 +1945,7 @@ public class StockServiceImpl {
         // Process and update items
         for (RequestItemEbtity stock : items) {
 
-            Integer qty = stock.getQty();
+            BigDecimal qty = stock.getQty();
             Integer itemNo = stock.getItemId();
 
             // Logging details before updating
@@ -1952,7 +1956,7 @@ public class StockServiceImpl {
 
             //call check out stock
             List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(itemNo);
-            Integer beforeQty = inventoryList.get(0).getQty();
+            BigDecimal beforeQty = inventoryList.get(0).getQty();
             String itemNoId = inventoryList.get(0).getItemId();
             Integer delId = stock.getDetailId();
             log.info("show beforeQty:"+beforeQty);
@@ -2043,7 +2047,7 @@ public class StockServiceImpl {
             // Update inventory
             itemEntityRepository.updateStockInItem(
                     qty,
-//                    amount,
+                    amount,
                      ccy, realPriceData, itemNo);
 
             // Update order details
@@ -2403,7 +2407,7 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
         for (RequestItemEbtity item : items) {
             List<viewItemEntity> inventoryList = viewItemEntityRepository.getItemByItemIds(item.getItemId());
 
-            if (inventoryList.isEmpty() || item.getQty() > inventoryList.get(0).getQty()) {
+            if (inventoryList.isEmpty() || item.getQty().compareTo(inventoryList.get(0).getQty()) > 0) {
                 String msg = String.format(
                         "No: %s, Name: %s, QtyInStock: %s, RequestedQty: %s",
                         inventoryList.isEmpty() ? "?" : inventoryList.get(0).getItemId(),
@@ -2413,10 +2417,9 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                 );
                 response.setStatus("05");
                 response.setMessage("ອາໄຫຼ່ນີ້ໝົດເເລ້ວ : " + msg);
-                return response; // หยุด function ไม่ให้ approve
+                return response;
             }
         }
-
         // ===== approve items
         int updatedRows = 0;
         for (RequestItemDetailsReq.OrderObject item : stockItemDetailsReq.getDetailId()) {
@@ -2426,14 +2429,11 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
                     stockItemDetailsReq.getStatus(), // status
                     "ok",                            // usingStatus
                     new Date(),                      // usingDate
-                    stockItemDetailsReq.getKhid(),   //old_stock_house
                     stockItemDetailsReq.getUserId(), // usingBy (คนเดียวกับ approveBy)
                     item.getItemId(),                // itemId
                     stockItemDetailsReq.getBillNo()  // billNo
             );
         }
-
-
         if (updatedRows > 0) {
             response.setStatus("00");
             response.setMessage("ທ່ານອະນຸມັດລາຍການຂໍເບີກເຄື່ອງສໍາເລັດ");
@@ -2447,9 +2447,9 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
         response.setStatus("EE");
         response.setMessage("Error while updating request details.");
     }
-
     return response;
 }
+
 
     public DataResponse getRequestKey(){
         //RequestGenKeyRepository
@@ -2469,6 +2469,7 @@ public DataResponse approveRequestItem(RequestItemDetailsReq stockItemDetailsReq
         }
         return response;
     }
+
 public DataResponse checkKeyOrder(){
         //RequestGenKeyRepository
         DataResponse response = new DataResponse();
@@ -2531,9 +2532,12 @@ public DataResponse checkKeyOrder(){
 
                 groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
 
-                groupHeader.setQty((int) listData.stream()
+//                groupHeader.setQty((int) listData.stream()
+//                        .filter(p -> p.getBillNo().equals(bill))
+//                        .count());
+                groupHeader.setQty(BigDecimal.valueOf(listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
-                        .count());
+                        .count()));
                 //numfm
                 Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
 
@@ -2606,9 +2610,12 @@ public DataResponse checkKeyOrder(){
 
                 groupHeader.setTxnDate(optionalDate.map(formatter::format).orElse("No Date Found"));
 
-                groupHeader.setQty((int) listData.stream()
+//                groupHeader.setQty((int) listData.stream()
+//                        .filter(p -> p.getBillNo().equals(bill))
+//                        .count());
+                groupHeader.setQty(BigDecimal.valueOf(listData.stream()
                         .filter(p -> p.getBillNo().equals(bill))
-                        .count());
+                        .count()));
                 Double total = listData.stream().filter(p -> p.getBillNo().equals(bill)).map(RequestTxnEntity::getTotal).collect(Collectors.summingDouble(Float::doubleValue));
 
                 groupHeader.setAmount(numfm.format(total));
@@ -2642,31 +2649,42 @@ public DataResponse checkKeyOrder(){
     //======make bor start =====
     //view_borRepository
 
-    public DataResponse getBorAll(BorEntityReq borEntityReq, String uMission){
-        String keyId = borEntityReq.getKeyId();
+    public DataResponse getBorAll(BorEntityReq borEntityReq, String staffId, String role) {
+        String keyId   = borEntityReq.getKeyId();
         String typeBor = borEntityReq.getTypeBor();
-        log.info("role start:"+keyId);
+
         DataResponse response = new DataResponse();
-       try {
-           if("MANAGE".equals(uMission)){
-               response.setDataResponse((view_borRepository.getBor4HR(typeBor)));
-           }
-           if(keyId.isEmpty() || keyId.equals("all") || keyId.equals("all")){
-               response.setDataResponse(view_borRepository.getBorViewEntityAll(typeBor));
-           }else {
-               response.setDataResponse(view_borRepository.findBykeyId(keyId,typeBor));
-           }
-            if(response.getDataResponse() != null){
+
+        try {
+            // 🔧 FIX: ใช้ if-else if เพื่อป้องกัน logic ทับกัน (overwrite)
+            if ("MANAGE".equals(staffId)) {
+                // กรณี staffId = "MANAGE" → ดึงข้อมูลสำหรับ HR
+                response.setDataResponse(view_borRepository.getBor4HR(typeBor));
+
+            } else if (keyId == null || keyId.isEmpty() || keyId.equals("all")) {
+                // 🔧 FIX: เพิ่มการตรวจ null ก่อน .isEmpty() เพื่อป้องกัน NullPointerException
+                response.setDataResponse(view_borRepository.getBorViewEntityAll(typeBor, role));
+
+            } else {
+                response.setDataResponse(view_borRepository.findBykeyId(keyId, typeBor));
+            }
+
+            if (response.getDataResponse() != null
+                    && response.getDataResponse() instanceof List
+                    && !((List<?>) response.getDataResponse()).isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("Success");
-            }else {
+            } else {
                 response.setStatus("05");
                 response.setMessage("Data not found");
             }
-        }catch (Exception e){
+
+        } catch (Exception e) {
+            log.error("Error in getBorAll: {}", e.getMessage(), e); // 🔧 FIX: ใช้ log.error แทน e.printStackTrace()
             response.setStatus("EE");
             response.setMessage("Error Data");
         }
+
         return response;
     }
     public DataResponse saveBoEntity(BorEntityReqSave borEntity, String userId) {
@@ -3202,108 +3220,19 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
         });
 
     }
-    public Optional<StockCheckModel> callToRequestItemBtBillNo(String billNo) {
-        String sql = "select \n" +
-                "h.key_id\t,h.b_name\n" +
-                "from item_inventory a\n" +
-                "left join stock_house g on a.houseid = g.khid\n" +
-                "join tb_bors h on h.key_id = g.key_id\n" +
-                "join request_item_details i on a.item_id=i.item_id\n" +
-                "where i.bill_no= ? limit 1  ";
 
-        try {
-            StockCheckModel result = EBankJdbcTemplate.queryForObject(
-                    sql,
-                    new Object[]{billNo},
-                    (rs, rowNum) -> {
-                        StockCheckModel tr = new StockCheckModel();
-                        tr.setKeyNo(rs.getString("key_id"));
-                        tr.setBorName(rs.getString("b_name"));
-                        return tr;
-                    }
-            );
-            return Optional.ofNullable(result);
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-
-    public Optional<StockCheckModel> checkStockBtBorNo(String borNo) {
-        String sql = "SELECT a.key_id, b.b_name, a.khid, a.khname, a.stock_status " +
-                "FROM stock_house a " +
-                "INNER JOIN tb_bors b ON a.key_id = b.key_id " +
-                "WHERE a.key_id = ? AND a.stock_status = 'OLD-STOCK' " +
-                "LIMIT 1";
-
-        try {
-            StockCheckModel result = EBankJdbcTemplate.queryForObject(
-                    sql,
-                    new Object[]{borNo},
-                    (rs, rowNum) -> {
-                        StockCheckModel tr = new StockCheckModel();
-                        tr.setKeyNo(rs.getString("key_id"));
-                        tr.setBorName(rs.getString("b_name"));
-                        tr.setKhId(rs.getString("khid"));
-                        tr.setKhName(rs.getString("khname"));
-                        return tr;
-                    }
-            );
-            return Optional.ofNullable(result);
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-    public int updateItemToOldStock(String khNo, String usingStatus,int amt,String billNo, String itemId) {
-        String sql = "UPDATE request_item_details " +
-                "SET transfer_old_no = ?, using_status = ? , using_amt=? " +
-                "WHERE bill_no = ? AND item_id = ?";
-
-        try {
-            return EBankJdbcTemplate.update(sql, khNo, usingStatus,amt,billNo, itemId);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0; // return 0 if update fails
-        }
-    }
     //move data to stock
-    public int moveToOldStock(ItemMoveReq itemMoveReq) {
-        Optional<StockCheckModel> billInfo = callToRequestItemBtBillNo(itemMoveReq.getBillNo());
-        if (billInfo.isEmpty()) return 5; // bill not found
-
-        String borNo = billInfo.get().getKeyNo();
-        Optional<StockCheckModel> stockInfo = checkStockBtBorNo(borNo);
-        if (stockInfo.isEmpty()) return 1; // stock not found
-
-        int updatedCount = 0;
-        if (itemMoveReq.getItemMoveList() != null) {
-            for (itemInfo item : itemMoveReq.getItemMoveList()) {
-                updatedCount += updateItemToOldStock(
-                        borNo,
-                        "OLD-STOCK",
-                        item.getAmt(),
-                        itemMoveReq.getBillNo(),
-                        item.getItemNo()
-                );
-            }
-        }
-        return updatedCount;
-    }
-
     public MoveItemResponse moveItemToStock(ItemMoveReq itemMoveReq) {
         MoveItemResponse response = new MoveItemResponse();
         try {
             int check = moveToOldStock(itemMoveReq);
 
             switch (check) {
-                case 5:
+                case -5:
                     response.setStatus("NF");
                     response.setMessage("Bill not found");
                     break;
-                case 1:
+                case -1:
                     response.setStatus("NS");
                     response.setMessage("Stock not found for borNo");
                     break;
@@ -3320,5 +3249,80 @@ private static BorEntity getMapBor(BorEntityReqSave borEntity, String userId) {
             response.setMessage("Error processing data: " + e.getMessage());
         }
         return response;
+    }
+    public int moveToOldStock(ItemMoveReq itemMoveReq) {
+        //  Query เดียวแทน 2 Query
+        Optional<StockCheckModel> stockInfo = getOldStockKhIdByBillNo(itemMoveReq.getBillNo());
+        if (stockInfo.isEmpty()) return -1;
+
+        String oldStockKhId = stockInfo.get().getKhId();
+        log.info("=====> oldStockKhId: {}", oldStockKhId);
+
+        if (itemMoveReq.getItemMoveList() == null || itemMoveReq.getItemMoveList().isEmpty()) return 0;
+
+        //  Batch Update แทนการวนลูป
+        int updatedCount = batchUpdateItemToOldStock(
+                oldStockKhId,
+                "OLD-STOCK",
+                itemMoveReq.getBillNo(),
+                itemMoveReq.getItemMoveList()
+        );
+
+        log.info("=====> total updatedCount: {}", updatedCount);
+        return updatedCount;
+    }
+    //  รวม 2 Query เป็น 1 Query
+    public Optional<StockCheckModel> getOldStockKhIdByBillNo(String billNo) {
+        String sql = "SELECT h.key_id, h.b_name, s.khid, s.khname " +
+                "FROM request_item_details i " +
+                "JOIN item_inventory a ON a.item_id = i.item_id " +
+                "JOIN stock_house g ON a.houseid = g.khid " +
+                "JOIN tb_bors h ON h.key_id = g.key_id " +
+                "JOIN stock_house s ON s.key_id = h.key_id AND s.stock_status = 'OLD-STOCK' " +
+                "WHERE i.bill_no = ? LIMIT 1";
+
+        try {
+            StockCheckModel result = EBankJdbcTemplate.queryForObject(
+                    sql,
+                    new Object[]{billNo},
+                    (rs, rowNum) -> {
+                        StockCheckModel tr = new StockCheckModel();
+                        tr.setKeyNo(rs.getString("key_id"));
+                        tr.setBorName(rs.getString("b_name"));
+                        tr.setKhId(rs.getString("khid"));
+                        tr.setKhName(rs.getString("khname"));
+                        return tr;
+                    }
+            );
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            log.info("=====> Bill not found or no OLD-STOCK for billNo: {}", billNo);
+            return Optional.empty();
+        } catch (Exception e) {
+            log.info("=====> Exception: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+    // Batch Update ทีเดียวทุก item
+    public int batchUpdateItemToOldStock(String khNo, String usingStatus,
+                                         String billNo, List<itemInfo> items) {
+        String sql = "UPDATE request_item_details " +
+                "SET old_stock_house = ?, " +
+                "using_status = ?, " +
+                "using_amt = ? " +
+                "WHERE bill_no = ? AND item_id = ?";
+
+        List<Object[]> batchArgs = items.stream()
+                .map(item -> new Object[]{khNo, usingStatus, item.getAmt(), billNo, item.getItemNo()})
+                .collect(Collectors.toList());
+
+        try {
+            int[] results = EBankJdbcTemplate.batchUpdate(sql, batchArgs);
+            return Arrays.stream(results).sum();
+        } catch (Exception e) {
+            log.info("=====> batch update error: {}", e.getMessage());
+            e.printStackTrace();
+            return 0;
+        }
     }
 }

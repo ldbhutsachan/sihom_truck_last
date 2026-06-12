@@ -14,17 +14,19 @@ public interface FinanceListRepository extends JpaRepository<FinanceListEntity, 
             "SELECT * FROM v_accounting_finance " +
                     "WHERE (:supplierId IS NULL OR :supplierId = '' OR supplierid = :supplierId) " +
                     "AND (:payTypeId IS NULL OR :payTypeId = '' OR pay_type_id = :payTypeId) " +
+                    "AND (:payTypeGroup IS NULL OR :payTypeGroup = '' OR pay_typegroup_id = :payTypeGroup) " +
                     "AND (:typeOf IS NULL OR :typeOf = '' OR type_of = :typeOf)" +
                     "AND (:currency IS NULL OR :currency = '' OR currency = :currency)  " +
                     "AND (:startDate IS NULL OR :startDate = '' OR basi_approve_date >= :startDate) " +
                     "AND (:endDate IS NULL OR :endDate = '' " +
                     "     OR basi_approve_date < DATE_ADD(:endDate, INTERVAL 1 DAY)) " +
-                    "AND COALESCE(pay_status, '') <> 'DONE-PAY' " +
+                    "AND COALESCE(pay_status, '') NOT IN ('IN-PROGRACE', 'DONE-PAY') " +
                     "ORDER BY basi_approve_date DESC",
             nativeQuery = true)
     List<FinanceListEntity> searchFinance(
             @Param("supplierId") String supplierId,
             @Param("payTypeId") String payTypeId,
+            @Param("payTypeGroup") String payTypeGroup,
             @Param(("typeOf")) String typeOf,
             @Param("currency") String currency,
             @Param("startDate") String startDate,

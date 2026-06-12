@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.security.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -112,12 +113,12 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
     @Query(value = "UPDATE item_inventory as i SET " +
            // "i.unit =i.unit + :unit, " +
             "i.qty =i.qty + :qty ," +
-//            "i.price=:amount," +
+            "i.price=:amount," +
             "i.currency=:ccy, i.real_price=:realPriceData " +
             "\n WHERE i.item_id =:itemId ",nativeQuery = true)
     int updateStockInItem(
             Integer qty,
-//            Float amount,
+            Float amount,
             String ccy,
             Float realPriceData,
             Integer itemId
@@ -158,5 +159,5 @@ public interface ItemEntityRepository extends CrudRepository<ItemEntity,Long> {
     @Query(value = "UPDATE item_inventory i SET i.qty = i.qty - :qty  " +
             "WHERE i.item_id = :itemId  ",
             nativeQuery = true)
-    int updateStockInItemOut(Integer qty,Integer itemId);
+    int updateStockInItemOut(BigDecimal qty, Integer itemId);
 }

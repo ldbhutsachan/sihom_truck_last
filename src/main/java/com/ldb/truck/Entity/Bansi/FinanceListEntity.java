@@ -47,6 +47,14 @@ public class FinanceListEntity {
     @JsonProperty("pay_type")
     private String payType;
 
+    @Column(name = "pay_typegroup_id")
+    @JsonProperty("pay_typegroup_id")
+    private String payTypegroupId;
+
+    @Column(name = "pay_typegroup_name")
+    @JsonProperty("pay_typegroup_name")
+    private String payTypegroupName;
+
     @Column(name = "type_of")
     @JsonProperty("type_of")
     private String typeOf;
@@ -91,9 +99,21 @@ public class FinanceListEntity {
     @JsonProperty("usd_price")
     private Double usdPrice;
 
+    @Column(name = "basi_approveby")
+    @JsonProperty("basi_approveby")
+    private String  basiApproveby;
+
     @Column(name = "basi_approve_date")
     @JsonProperty("basi_approve_date")
     private String  basiAapproveDate;
+
+    @Column(name = "auditorby")
+    @JsonProperty("auditorby")
+    private String  auditorBy;
+
+    @Column(name = "auditor_date")
+    @JsonProperty("auditor_date")
+    private String  auditorDate;
 
     @Column(name = "date_create")
     @JsonProperty("date_create")

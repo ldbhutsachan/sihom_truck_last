@@ -2,6 +2,7 @@ package com.ldb.truck.Model.Machine;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -29,12 +30,33 @@ public class MachineReq {
     private String currency;
 //    private String date_in;
     private LocalDate date_in;
+    private String remark;
+
+    private BigDecimal machine_mileage_now;
+    private BigDecimal machine_mileage_next;
+    private LocalDate machine_mileage_status;
+    private LocalDate dateChangeLeean;
+    private LocalDate dateChangeLeeanNext;
+    private LocalDate changeleean_status;
+    private LocalDate dateleanGia;
+    private LocalDate dateleanGiaNextday;
+    private LocalDate leangia_status;
+    private LocalDate dateleanFuengThaiy;
+    private LocalDate fuengthaiy_status;
+    private LocalDate startdate_kongnam;
+    private LocalDate enddate_kongnam;
+    private LocalDate kongnam_status;
+    private LocalDate hydraulic_date;
+    private LocalDate hydraulic_nextdate;
+    private LocalDate hydraulic_status;
+    private LocalDate notifyStatus;
 
     // สำหรับ tools
     private List<ToolReq> tools;
 
     @Data
     public static class ToolReq {
+        private Long id;
         private String toolName;
         private Integer qty;
         //add new

@@ -1,49 +1,45 @@
 package com.ldb.truck.Entity.Item;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.type.CurrencyType;
-
 import javax.persistence.*;
-import java.security.Timestamp;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
 @Data
-@Table(name = "v_items") // Ensure this matches your actual table name
+@Table(name = "v_items1")
 public class viewItemEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "item_id")
-    private String itemId; // Auto-increment primary key
 
-    @Column(name = "brand_id", nullable = false)
+    @Id
+    @Column(name = "item_id")
+    private String itemId;
+
+    @Column(name = "brand_id")
     private Integer brandId;
 
-    @Column(name = "brand_Name", length = 255, nullable = false)
+    @Column(name = "brand_Name")
     private String brandName;
 
-    @Column(name = "supplier_id", nullable = false)
+    @Column(name = "supplier_id")
     private Integer supplierId;
 
-    @Column(name = "supplier_name", length = 255, nullable = false)
+    @Column(name = "supplier_name")
     private String supplierName;
 
-    @Column(name = "barcode", length = 255, nullable = false)
+    @Column(name = "barcode")
     private String barcode;
 
-    @Column(name = "item_name", length = 255, nullable = false)
+    @Column(name = "item_name")
     private String item_name;
 
-    @Column(name = "unit", nullable = false)
+    @Column(name = "unit")
     private String unit;
 
-    @Column(name = "size", nullable = false)
-    private String size; // Size might need renaming if backticks are causing issues
+    @Column(name = "size")
+    private String size;
 
-    @Column(name = "currency", nullable = false)
-    private String currency; // Enum mapping
+    @Column(name = "currency")
+    private String currency;
 
     @Column(name = "exchange_rate")
     private Integer exchangeRate;
@@ -56,98 +52,83 @@ public class viewItemEntity {
     @Temporal(TemporalType.DATE)
     private Date galatyEndDate;
 
-    @Column(name = "galaty_amt", length = 50, nullable = false)
+    @Column(name = "galaty_amt")
     private String galatyAmt;
 
     @Column(name = "qty")
-    private Integer qty;
+    private BigDecimal qty;
 
     @Column(name = "price")
-    private Float price;
+    private BigDecimal price;
 
     @Column(name = "totalamt")
     private Float totalamt;
 
-    @Column(name = "real_price", nullable = false)
-    private Float realPrice;
-
     @Column(name = "image", columnDefinition = "TEXT")
     private String image;
 
-    @Column(name = "make_by_id", length = 50, nullable = false)
+    @Column(name = "make_by_id")
     private String makeById;
 
     @Column(name = "make_date")
     @Temporal(TemporalType.DATE)
     private Date makeDate;
 
-    @Column(name = "approve_by", length = 50)
+    @Column(name = "approve_by")
     private String approveBy;
 
     @Column(name = "approve_date")
     @Temporal(TemporalType.DATE)
     private Date approveDate;
 
-    @Column(name = "branch_no", nullable = false)
+    @Column(name = "branch_no")
     private Integer branchNo;
 
-    @Column(name = "B_NAME", length = 255)
+    @Column(name = "B_NAME")
     private String bName;
 
-    @Column(name = "itemtypeid", nullable = false)
+    @Column(name = "itemtypeid")
     private Integer itemtypeid;
 
-    @Column(name = "khid", nullable = false)
+    @Column(name = "khid")
     private String khid;
 
-    @Column(name = "khno", nullable = false)
+    @Column(name = "khno")
     private String khno;
 
-    @Column(name = "khname", nullable = false)
+    @Column(name = "khname")
     private String khname;
 
-    @Column(name = "sole", nullable = false)
+    @Column(name = "sole")
     private String sole;
 
-    @Column(name = "solestep", nullable = false)
+    @Column(name = "solestep")
     private String solestep;
 
-    @Column(name = "blockno", nullable = false)
+    @Column(name = "blockno")
     private String blockno;
 
-    @Column(name = "itemtype_Name", nullable = false)
+    @Column(name = "itemtype_Name")
     private String itemtype_Name;
 
-    @Column(name = "token", nullable = false)
-    private String toKen;
-
-
-    @Column(name = "bor_no", nullable = false)
+    @Column(name = "bor_no")
     private String borNo;
 
-    @Column(name = "bor_name", nullable = false)
+    @Column(name = "bor_name")
     private String borName;
 
-    @Column(name = "bor_location", nullable = false)
+    @Column(name = "bor_location")
     private String blocation;
 
-    @Column(name = "alertqty", nullable = false)
+    @Column(name = "alertqty")
     private Integer alertqty;
 
-    @Column(name = "qtytotal", nullable = false)
-    private Integer qtytotal;
+    @Column(name = "shopid")
+    private Integer shopid;
 
-    @Column(name = "real_qty", nullable = false)
-    private Integer realQty;
+    @Column(name = "shop_name")
+    private String shopName;
 
-    @Column(name = "inqty", nullable = false)
-    private Integer inqty;
-
-    @Column(name = "outqty", nullable = false)
-    private Integer outqty;
-
-    @Column(name = "ordertype", nullable = false)
+    @Column(name = "ordertype")
     private String ordertype;
-
-
 }

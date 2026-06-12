@@ -75,6 +75,8 @@ public class CarOfficeModel {
 //    add new
     private String startdate_kongnam;
     private String enddate_kongnam;
+    private String kongnam_STATUS;
+    private String leanFuengThaiy_STATUS;
     private String borNo;
     private String borName;
 

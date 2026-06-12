@@ -16,7 +16,11 @@ import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @Repository
@@ -50,13 +54,18 @@ public class ProfileDao {
         return null;
     }
 
-    public List<Profile> getProfileInfoByToken(String toKen){
+    public List<Profile> getProfileInfoByToken(String token) {
+        try {
+            // 🔧 FIX: ใช้ Parameterized Query แทนการเชื่อม String ตรงๆ (ป้องกัน SQL Injection)
+            String SQL = "SELECT b.STAFT_ID, b.KEY_ID AS userId, b.USER_LOGIN AS userName, " +
+                    "b.ROLE, b.BRANCH AS branchNo, a.B_NAME AS branchName, b.bor_no " +
+                    "FROM LOGIN b " +
+                    "LEFT JOIN TB_BRANCH a ON a.KEY_ID = b.BRANCH " +
+                    "WHERE b.token = ?";
 
-        try{
-            String SQL = "select b.STAFT_ID, b.KEY_ID as userId ,b.USER_LOGIN as userName ,b.ROLE,b.BRANCH as branchNo ,a.B_NAME as banchName,b.bor_no \n" +
-                    "from LOGIN b left join TB_BRANCH a on a.KEY_ID  =b.BRANCH    where token='"+toKen+"'";
-            log.info("SQL:"+SQL);
-            return EBankJdbcTemplate.query(SQL, new RowMapper<Profile>() {
+            log.info("SQL: getProfileInfoByToken"); // 🔧 FIX: ไม่ log token หรือ SQL ที่มีข้อมูล sensitive
+
+            return EBankJdbcTemplate.query(SQL, new Object[]{token}, new RowMapper<Profile>() {
                 @Override
                 public Profile mapRow(ResultSet rs, int rowNum) throws SQLException {
                     Profile tr = new Profile();
@@ -65,16 +74,76 @@ public class ProfileDao {
                     tr.setUserName(rs.getString("userName"));
                     tr.setRole(rs.getString("ROLE"));
                     tr.setBranchNo(rs.getString("branchNo"));
-                    tr.setBranchName(rs.getString("banchName"));
-
+                    tr.setBranchName(rs.getString("branchName"));
                     tr.setBorNo(rs.getString("bor_no"));
-
                     return tr;
                 }
             });
-        }catch(Exception e){
-            e.printStackTrace();
+
+        } catch (Exception e) {
+            log.error("Error in getProfileInfoByToken: {}", e.getMessage(), e); // 🔧 FIX: ใช้ log.error
         }
-        return null;
+
+        return new ArrayList<>(); // 🔧 FIX: return ArrayList() แทน null เพื่อให้สอดคล้องกับ getStaffInfoByToken
+    }
+
+    public List<Profile> getStaffInfoByToken(String token) {
+        try {
+            String SQL = "SELECT * FROM company_staffs WHERE token = ?";
+
+            log.info("SQL: getStaffInfoByToken"); // 🔧 FIX: ไม่ log token
+
+            return EBankJdbcTemplate.query(SQL, new Object[]{token}, new RowMapper<Profile>() {
+                @Override
+                public Profile mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Profile tr = new Profile();
+                    tr.setUserId(rs.getString("id"));
+                    tr.setStaff_id(rs.getString("staff_code"));
+                    tr.setUserName(rs.getString("username"));
+                    tr.setRole(rs.getString("role"));
+                    return tr;
+                }
+            });
+
+        } catch (Exception e) {
+            log.error("Error in getStaffInfoByToken: {}", e.getMessage(), e); // 🔧 FIX: ใช้ log.error
+        }
+
+        return new ArrayList<>();
+    }
+
+    public Map<Long, String> getUserNameMapByIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return new HashMap<>();
+
+        try {
+            // สร้าง IN clause -> ?,?,?
+            String placeholders = userIds.stream()
+                    .map(id -> "?")
+                    .collect(Collectors.joining(","));
+
+            String SQL = "SELECT b.KEY_ID as userId, b.USER_LOGIN as staffId " +
+                    "FROM LOGIN b " +
+                    "WHERE b.KEY_ID IN (" + placeholders + ")";
+
+            log.info(">>> SQL getUserNameMapByIds: " + SQL);
+            log.info(">>> userIds to query: " + userIds);
+
+            List<Map<String, Object>> rows = EBankJdbcTemplate.queryForList(SQL, userIds.toArray());
+
+            log.info(">>> rows found: " + rows.size());
+            rows.forEach(row -> log.info(">>> row: " + row));
+
+            Map<Long, String> result = new HashMap<>();
+            for (Map<String, Object> row : rows) {
+                Long userId = Long.valueOf(row.get("userId").toString()); // ← KEY_ID
+                String name = row.get("staffId") != null ? row.get("staffId").toString() : "-";
+                result.put(userId, name);
+            }
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new HashMap<>();
+        }
     }
 }

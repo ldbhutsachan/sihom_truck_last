@@ -2,6 +2,7 @@ package com.ldb.truck.Entity.RequestItem;
 
 import lombok.Data;
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -36,10 +37,10 @@ public class RequestItemEbtity {
     private Integer exchangeRate;
 
     @Column(name = "qty")
-    private Integer qty;
+    private BigDecimal qty;
 
     @Column(name = "price")
-    private Float price;
+    private BigDecimal price;
 
     @Column(name = "saveby", length = 200)
     private String saveBy;

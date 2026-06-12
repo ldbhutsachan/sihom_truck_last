@@ -26,7 +26,8 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
             "exchange_rate AS exchangeRate,\n" +
             "currency,\n" +
             "price\n" +
-            "FROM v_items_list " +
+//            "FROM v_items_list " +
+            "FROM v_items1 " +
             "WHERE bor_no = :borNo AND khid = :khid " +
             "ORDER BY item_name ASC",
             nativeQuery = true)
@@ -48,7 +49,8 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
             "exchange_rate AS exchangeRate,\n" +
             "currency,\n" +
             "price\n " +
-            "FROM v_items_list " +
+//            "FROM v_items_list " +
+            "FROM v_items1 " +
             "ORDER BY item_name ASC",
             nativeQuery = true)
     List<ItemListView> getAllViewItemsAdmin();
@@ -69,7 +71,8 @@ public interface ItemListRepository extends JpaRepository<listItemEntity, String
             "exchange_rate AS exchangeRate,\n" +
             "currency,\n" +
             "price\n" +
-            "FROM v_items_list " +
+//            "FROM v_items_list " +
+            "FROM v_items1 " +
             "WHERE branch_no = :branchNo " +
             "AND bor_no = :borNo " +
             "AND (:khid IS NULL OR :khid = '' OR khid = :khid) " +

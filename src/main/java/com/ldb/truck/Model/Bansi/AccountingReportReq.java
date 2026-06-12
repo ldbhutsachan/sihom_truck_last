@@ -8,6 +8,7 @@ public class AccountingReportReq {
     private String big_project_id;
     private String small_project_id;
     private String pay_type_id;
+    private String gid;
     private String type_of_pay;
     private String startDate;
     private String endDate;

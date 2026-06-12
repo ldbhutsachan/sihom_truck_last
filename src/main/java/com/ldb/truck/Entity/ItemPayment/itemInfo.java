@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class itemInfo {
-    private String itemNo;
+    private Integer itemNo;
     private Integer amt;
 
     @Override

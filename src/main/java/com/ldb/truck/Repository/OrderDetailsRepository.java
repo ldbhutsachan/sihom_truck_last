@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -32,8 +33,8 @@ public interface OrderDetailsRepository extends CrudRepository<OrderItemReportEn
             @Param("size") Integer size,
             @Param("currency") String currency,
             @Param("exchangeRate") Integer exchangeRate,
-            @Param("qty") Integer qty,
-            @Param("price") Float price,
+            @Param("qty") BigDecimal qty,       // เปลี่ยนจาก Integer
+            @Param("price") BigDecimal price,   // เปลี่ยนจาก Float
             @Param("editBy") String editBy,
             @Param("editDate") Date editDate,
             @Param("status") String status,

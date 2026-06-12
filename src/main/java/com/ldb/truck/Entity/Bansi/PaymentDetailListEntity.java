@@ -2,6 +2,7 @@ package com.ldb.truck.Entity.Bansi;
 
 import lombok.Data;
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -23,13 +24,13 @@ public class PaymentDetailListEntity {
     private String listName;
 
     @Column(name = "qty")
-    private Integer qty;
+    private BigDecimal qty;
 
     @Column(name = "unit")
     private String unit;
 
     @Column(name = "price")
-    private Float price;
+    private BigDecimal  price;
 
     @Column(name = "reduce")
     private Integer reduce;

@@ -39,10 +39,10 @@ public class V_order_item_details {
     private Integer exchangeRate;
 
     @Column(name = "qty")
-    private Integer qty;
+    private BigDecimal  qty;
 
     @Column(name = "price")
-    private Float price;
+    private BigDecimal  price;
 
     @Column(name = "status", length = 200)
     private String status;
@@ -133,6 +133,12 @@ public class V_order_item_details {
 
     @Column(name="borname")
     private String borame;
+
+    @Column(name="khid")
+    private String khId;
+
+    @Column(name="khname")
+    private String khName;
 
     @Column(name="remark")
     private String remark;

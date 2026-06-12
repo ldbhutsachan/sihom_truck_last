@@ -1,6 +1,9 @@
 package com.ldb.truck.Service.MachineService;
 
+import com.ldb.truck.Dao.MachineDao.MachineDao;
 import com.ldb.truck.Dao.MachineDao.MachineInterface;
+import com.ldb.truck.Entity.MerchineHis.MachineMaintenanceHistory;
+import com.ldb.truck.Entity.MerchineHis.MachineToolHis;
 import com.ldb.truck.Model.Borcar.BorCarModel;
 import com.ldb.truck.Model.Borcar.BorCarResponse;
 import com.ldb.truck.Model.Borcar.Borcar;
@@ -10,14 +13,23 @@ import com.ldb.truck.Model.Login.Payment.GenerateInvoiceID;
 import com.ldb.truck.Model.Login.Payment.PrintInvoiceByNo;
 import com.ldb.truck.Model.Login.Performance.v_performance;
 import com.ldb.truck.Model.Machine.*;
+import com.ldb.truck.Repository.MachineHis.MachineMaintenanceHistoryRepository;
+import com.ldb.truck.Repository.MachineHis.MachineToolHisRepository;
 import com.ldb.truck.Repository.MachineHis.MerchinHisRepository;
+import com.ldb.truck.enums.MaintenanceType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.sql.Timestamp;
@@ -30,7 +42,8 @@ public class MachineService {
     private final MachineInterface machineInterface;
     private final MerchinHisRepository MERCHIN_HIS_REPOSITORY;
     private final JdbcTemplate jdbcTemplate;
-
+    private final MachineToolHisRepository machineToolHisRepository;
+    private final MachineMaintenanceHistoryRepository historyRepo;
 
 
     public MachineResponse saveMachineHis(MachineHisReq machineHisReq,String userId){
@@ -162,29 +175,58 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
     return response;
 }
 
-    public MachineHisResponse getMachineHis(MachineHisReq machineHisReq,String borNo){
+    public MachineHisResponse getMachineHis(MachineHisReq machineHisReq, String borNo) {
         MachineHisResponse response = new MachineHisResponse();
         try {
             List<MachineHis> rspList = machineInterface.getMachineHis(machineHisReq, borNo);
+
             if (rspList != null && !rspList.isEmpty()) {
+
+                double totalDigMetter = 0;
+                double totalOilLiter = 0;
+                BigDecimal totalTimeTotal = BigDecimal.ZERO;
+
+                for (MachineHis item : rspList) {
+                    if (item.getDigMetter() != null) {
+                        totalDigMetter += item.getDigMetter();           // ใช้ +=
+                    }
+                    if (item.getOilLiter() != null) {
+                        totalOilLiter += item.getOilLiter();
+                    }
+                    if (item.getTimeTotal() != null && !item.getTimeTotal().isEmpty()) {
+                        try {
+                            totalTimeTotal = totalTimeTotal.add(new BigDecimal(item.getTimeTotal()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
                 response.setData(rspList);
+                response.setTotalDigMetter(totalDigMetter);      // เปลี่ยนเป็น double
+                response.setTotalOilLiter(totalOilLiter);        // เปลี่ยนเป็น double
+                response.setTotalTimeTotal(totalTimeTotal);
                 response.setMessage("OK");
                 response.setStatus("00");
+
             } else {
                 response.setData(null);
+                response.setTotalDigMetter(0.0);
+                response.setTotalOilLiter(0.0);
+                response.setTotalTimeTotal(BigDecimal.ZERO);
                 response.setMessage("Do not data not found !!!!!");
                 response.setStatus("00");
             }
+
         } catch (Exception e) {
             response.setData(null);
             response.setMessage("Error !!!!!");
             response.setStatus("05");
             e.printStackTrace();
         }
-
-        return  response;
-
+        return response;
     }
+
     public MachineStockDetailsResponse getRequestItemList(MachineStockDetailsReq machineHisReq,String borNo){
         MachineStockDetailsResponse response = new MachineStockDetailsResponse();
 
@@ -238,6 +280,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setTime_oil_fix(resp.getTime_oil_fix());
                  machine.setTime_oil_fix_mo(resp.getTime_oil_fix_mo());
 
+                 machine.setAll_dig_metters(resp.getAll_dig_metters());
+                 machine.setAll_oil_liter(resp.getAll_oil_liter());
                  machine.setAll_Used_Hours(resp.getAll_Used_Hours());
                  machine.setLast_engine_Hours(resp.getLast_engine_Hours());
                  machine.setLast_hydraulic_Hours(resp.getLast_hydraulic_Hours());
@@ -245,8 +289,27 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setTotalFixMoOil(resp.getTotalFixMoOil());
                  machine.setImage(resp.getImage());
                  machine.setDate_in(resp.getDate_in());
+                 machine.setRemark(resp.getRemark());
+                 machine.setMachine_mileage_now(resp.getMachine_mileage_now());
+                 machine.setMachine_mileage_next(resp.getMachine_mileage_next());
+//                 machine.setMachine_mileage_status(resp.getMachine_mileage_status());
+                 machine.setDateChangeLeean(resp.getDateChangeLeean());
+                 machine.setDateChangeLeeanNext(resp.getDateChangeLeeanNext());
+//                 machine.setChangeleean_status(resp.getChangeleean_status());
+                 machine.setDateleanGia(resp.getDateleanGia());
+                 machine.setDateleanGiaNextday(resp.getDateleanGiaNextday());
+//                 machine.setLeangia_status(resp.getLeangia_status());
+                 machine.setDateleanFuengThaiy(resp.getDateleanFuengThaiy());
+//                 machine.setFuengthaiy_status(resp.getFuengthaiy_status());
+                 machine.setStartdate_kongnam(resp.getStartdate_kongnam());
+                 machine.setEnddate_kongnam(resp.getEnddate_kongnam());
+//                 machine.setKongnam_status(resp.getKongnam_status());
+                 machine.setHydraulic_date(resp.getHydraulic_date());
+                 machine.setHydraulic_nextdate(resp.getHydraulic_nextdate());
+//                 machine.setHydraulic_status(resp.getHydraulic_status());
+                 machine.setNotifyStatus(resp.getNotifyStatus());
 
-                 // ✅ เพิ่มตรงนี้เพื่อ map tools ด้วย
+                 //  เพิ่มตรงนี้เพื่อ map tools ด้วย
                  machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
 
                  //ກຳນົດ limit monitor
@@ -598,53 +661,247 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         return response;
     }
 
-@Transactional
-public MachineReportResposne updateMachine(MachineReq machineReq) {
-    MachineReportResposne response = new MachineReportResposne();
-    try {
-        // 1. Update tb_machine
-        int result = machineInterface.updateMachine(machineReq);
+    @Transactional
+    public MachineReportResposne updateMachine(MachineReq machineReq) {
 
-        // 2. Update/Insert tools
-        if (result > 0 && machineReq.getTools() != null) {
-            // ลบ tools เก่าของ mch_no ก่อน
-            String deleteSql = "DELETE FROM tb_machine_tool WHERE mch_no = ?";
-            jdbcTemplate.update(deleteSql, machineReq.getMchNo());
+        MachineReportResposne response = new MachineReportResposne();
 
-            // Insert tools ใหม่
-            String insertSql = "INSERT INTO tb_machine_tool " +
-                    "(mch_no, tool_name, qty, status, update_date, updated_by,unit) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            for (MachineReq.ToolReq tool : machineReq.getTools()) {
-                jdbcTemplate.update(insertSql,
-                        machineReq.getMchNo(),
-                        tool.getToolName(),
-                        tool.getQty(),
-                        "ok",
-                        new Timestamp(System.currentTimeMillis()),
-                        machineReq.getCreateBy(),
-                        tool.getUnit() != null ? tool.getUnit() : ""
-                );
+        try {
+            // 1. Update tb_machine
+            int result = machineInterface.updateMachine(machineReq);
+
+            if (result <= 0) {
+                response.setStatus("01");
+                response.setMessage("Failed to update machine");
+                return response;
             }
-        }
 
-        if (result > 0) {
+            // 2. Update/Insert tools
+            if (machineReq.getTools() != null) {
+
+                List<MachineReq.ToolReq> incomingTools = machineReq.getTools();
+
+                List<Long> incomingIds = new ArrayList<>();
+
+                String insertSql = "INSERT INTO tb_machine_tool " +
+                        "(mch_no, tool_name, qty, status, update_date, updated_by, unit) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+                String updateSql = "UPDATE tb_machine_tool " +
+                        "SET tool_name = ?, unit = ?, status = 'ok' " +
+                        "WHERE id = ? AND mch_no = ?";
+
+                for (MachineReq.ToolReq tool : incomingTools) {
+
+                    // =========================
+                    // INSERT NEW TOOL
+                    // =========================
+                    if (tool.getId() == null) {
+
+                        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+                        jdbcTemplate.update(connection -> {
+                            PreparedStatement ps = connection.prepareStatement(
+                                    insertSql,
+                                    Statement.RETURN_GENERATED_KEYS
+                            );
+
+                            ps.setString(1, machineReq.getMchNo());
+                            ps.setString(2, tool.getToolName());
+                            ps.setInt(3, tool.getQty());
+                            ps.setString(4, "ok"); // ✅ always ok
+                            ps.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+                            ps.setString(6, machineReq.getCreateBy());
+                            ps.setString(7, tool.getUnit() != null ? tool.getUnit() : "");
+
+                            return ps;
+
+                        }, keyHolder);
+
+                        Long newId = keyHolder.getKey().longValue();
+                        incomingIds.add(newId);
+
+                    }
+
+                    // =========================
+                    // UPDATE EXISTING TOOL
+                    // =========================
+                    else {
+
+                        jdbcTemplate.update(updateSql,
+                                tool.getToolName(),
+//                                tool.getQty(),  //can not update qr=ty
+                                tool.getUnit() != null ? tool.getUnit() : "",
+//                                new Timestamp(System.currentTimeMillis()),
+//                                machineReq.getCreateBy(),
+                                tool.getId(),
+                                machineReq.getMchNo()
+                        );
+
+                        incomingIds.add(tool.getId()); // ✅ important
+                    }
+                }
+
+                // =========================
+                // MARK NOT-USE (SAFE VERSION)
+                // =========================
+                if (!incomingIds.isEmpty()) {
+
+                    String placeholders = incomingIds.stream()
+                            .map(id -> "?")
+                            .collect(Collectors.joining(","));
+
+                    String updateStatusSql =
+                            "UPDATE tb_machine_tool SET status = 'NOT-USE' " +
+                                    "WHERE mch_no = ? AND id NOT IN (" + placeholders + ")";
+
+                    List<Object> params = new ArrayList<>();
+                    params.add(machineReq.getMchNo());
+                    params.addAll(incomingIds);
+
+                    jdbcTemplate.update(updateStatusSql, params.toArray());
+                }
+            }
+
+            // =========================
+            // RESPONSE
+            // =========================
             response.setStatus("00");
             response.setMessage("Data updated successfully");
-            response.setData(null); // หรือส่ง keyId กลับก็ได้
-        } else {
-            response.setStatus("01");
-            response.setMessage("Failed to update data");
+            response.setData(null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("05");
+            response.setMessage("An error occurred while updating data");
             response.setData(null);
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        response.setStatus("05");
-        response.setMessage("An error occurred while updating data");
-        response.setData(null);
+        return response;
+    }
+    // Insert
+    public MachineToolHis insert(MachineToolHis request) {
+        return machineToolHisRepository.save(request);
+    }
+    // Show by Tool ID
+    public List<MachineToolHis> findByToolId(Long toolId) { // เปลี่ยนตรงนี้
+        return machineToolHisRepository.findByToolId(toolId);
     }
 
-    return response;
-}
+    // Maintenance machine by updating tow table
+    public void saveHistoryAndUpdateMachine(Integer machineKeyId,
+                                            String mchNo,
+                                            MaintenanceType maintenanceType,
+                                            BigDecimal machineMileage,
+                                            LocalDate dateChange,
+                                            LocalDate dateNext,
+                                            String filePath,
+                                            String changedBy,
+                                            String remark) {
+        // บันทึก history
+        saveHistory(machineKeyId, mchNo, maintenanceType, machineMileage,
+                dateChange, dateNext, filePath, changedBy, remark);
+
+        // อัปเดต tb_machine
+        machineInterface.updateMaintenanceDates(
+                machineKeyId,
+                maintenanceType.name(),
+                dateChange,
+                dateNext
+        );
+    }
+    // save maintenance history funcion
+    public void saveHistory(Integer machineKeyId,
+                            String mchNo,
+                            MaintenanceType maintenanceType,
+                            BigDecimal machineMileage,
+                            LocalDate dateChange,
+                            LocalDate dateNext,
+                            String filePath,
+                            String changedBy,
+                            String remark) {
+
+
+        MachineMaintenanceHistory history = MachineMaintenanceHistory.builder()
+                .machineKeyId(machineKeyId)
+                .mchNo(mchNo)
+                .maintenanceType(maintenanceType)
+                .machineMileage(machineMileage)
+                .dateChange(dateChange)
+                .dateNext(dateNext)
+                .filePath(filePath)
+                .changedBy(changedBy)
+                .remark(remark)
+                .build();
+
+        historyRepo.save(history);
+    }
+    public MachineMaintenanceHistory getHistoryById(Integer id) {
+        return historyRepo.findById(Long.valueOf(id))
+                .orElseThrow(() -> new RuntimeException("ไม่พบข้อมูล History id: " + id));
+    }
+    public void updateMaintenanceHistory(Integer id,
+                                         LocalDate dateChange,
+                                         LocalDate dateNext,
+                                         String filePath,
+                                         String remark) {
+
+        // ดึงข้อมูล history เดิมก่อน เพื่อรู้ว่า maintenanceType และ machineKeyId คืออะไร
+        MachineMaintenanceHistory existing = getHistoryById(id);
+
+        // อัปเดต tb_machine_maintenance_history
+        machineInterface.updateMaintenanceHistory(id, dateChange, dateNext, filePath, remark);
+
+        // อัปเดต tb_machine เหมือน save
+        machineInterface.updateMaintenanceDates(
+                existing.getMachineKeyId(),
+                existing.getMaintenanceType().name(),
+                dateChange,
+                dateNext
+        );
+    }
+
+    // ดึง history ทั้งหมดของเครื่องจักร
+    public List<MachineMaintenanceHistoryResponse> getHistoryByMachine(Integer machineKeyId) {
+        List<MachineMaintenanceHistory> entities =
+                historyRepo.findByMachineKeyIdOrderByCreatedDateDesc(machineKeyId);
+
+        return entities.stream().map(e -> MachineMaintenanceHistoryResponse.builder()
+                .id(e.getId())
+                .machineKeyId(e.getMachineKeyId())
+                .mchNo(e.getMchNo())
+                .maintenanceType(e.getMaintenanceType().name())
+                .machineMileage(e.getMachineMileage())
+                .dateChange(e.getDateChange())
+                .dateNext(e.getDateNext())
+                .filePath(e.getFilePath())
+                .changedBy(e.getChangedBy())
+                .remark(e.getRemark())
+                .createdDate(e.getCreatedDate())
+                .build()
+        ).collect(Collectors.toList());
+    }
+
+    // ดึง history ตามประเภท
+    public List<MachineMaintenanceHistoryResponse> getHistoryByType(Integer machineKeyId,
+                                                                    MaintenanceType type) {
+        List<MachineMaintenanceHistory> entities =
+                historyRepo.findByMachineKeyIdAndMaintenanceTypeOrderByCreatedDateDesc(
+                        machineKeyId, type);
+
+        return entities.stream().map(e -> MachineMaintenanceHistoryResponse.builder()
+                .id(e.getId())
+                .machineKeyId(e.getMachineKeyId())
+                .mchNo(e.getMchNo())
+                .maintenanceType(e.getMaintenanceType().name())
+                .machineMileage(e.getMachineMileage())
+                .dateChange(e.getDateChange())
+                .dateNext(e.getDateNext())
+                .filePath(e.getFilePath())
+                .changedBy(e.getChangedBy())
+                .remark(e.getRemark())
+                .createdDate(e.getCreatedDate())
+                .build()
+        ).collect(Collectors.toList());
+    }
 }

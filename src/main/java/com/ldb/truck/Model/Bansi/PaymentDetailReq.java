@@ -10,4 +10,15 @@ public class PaymentDetailReq {
     private Long itemTypeid;
     private Long req_id;
     private Long pid;
+    private Long gid;
+    private String billNo;
+    private String billStatus;
+
+
+    //  cursor
+    private String lastDate;
+    private Long lastKeyId;
+
+    // page size
+    private Integer size;
 }

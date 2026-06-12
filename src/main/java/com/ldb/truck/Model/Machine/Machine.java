@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,8 @@ public class Machine {
     private String borName;
     private String borLocationName;
 
+    private double all_dig_metters;
+    private double all_oil_liter;
     private Integer all_Used_Hours;
     private Integer last_engine_Hours;
     private Integer time_fix;
@@ -43,20 +46,43 @@ public class Machine {
 
     private  String image;
     private String date_in;
+    private String remark;
+
+    private String machine_mileage_now;
+    private String machine_mileage_next;
+//    private String machine_mileage_status;
+    private String dateChangeLeean;
+    private String dateChangeLeeanNext;
+//    private String changeleean_status;
+    private String dateleanGia;
+    private String dateleanGiaNextday;
+//    private String leangia_status;
+    private String dateleanFuengThaiy;
+//    private String fuengthaiy_status;
+    private String startdate_kongnam;
+    private String enddate_kongnam;
+//    private String kongnam_status;
+    private String hydraulic_date;
+    private String hydraulic_nextdate;
+//    private String hydraulic_status;
+    private String notifyStatus;
 
 
 
-    // ✅ List ของ tools ที่จะ return ไปให้ client
+    //  List ของ tools ที่จะ return ไปให้ client
     private List<Tool> tools = new ArrayList<>();
 
-    // ✅ Inner class Tool
+    //  Inner class Tool
     @Data
     @NoArgsConstructor // จำเป็นสำหรับ Jackson
     @AllArgsConstructor
     public static class Tool {
-        private String tool_name;
-        private int qty;
         private int id;
+        private String tool_name;
+        private BigDecimal original_qty;
+        private BigDecimal  update_qty;
+        private BigDecimal  qty;
+        private String status;
         private String mch_no;
         private String unit;
     }

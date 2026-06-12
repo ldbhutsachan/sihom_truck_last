@@ -26,6 +26,8 @@ public class PaymentDetailModel {
     @JsonIgnore // ⬅️ จะไม่ส่ง field นี้ไป client
     private String file;
     private List<String> fileList; // ใหม่: เก็บหลายไฟล์
+    private Long gid;
+    private String groupName;
     private Long   payId;
     private String paytype;
     private String type_of;
