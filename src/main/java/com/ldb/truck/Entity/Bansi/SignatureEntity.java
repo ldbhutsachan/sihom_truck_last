@@ -17,7 +17,7 @@ public class SignatureEntity {
     @Column(name = "user_name") // <-- แก้ตรงนี้
     private String userName;
 
-    @Column(name = "signature")
+    @Column(name = "signature", columnDefinition = "LONGTEXT")
     private String signature;
 }
 
