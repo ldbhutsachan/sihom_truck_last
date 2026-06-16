@@ -19,4 +19,6 @@ public class TaskModel {
     private String branch_name;
     private String duration;
     private String progress;
+    private String description;
+    private String time;
 }
