@@ -291,24 +291,16 @@ public class BansiController {
 
 
 
-    //insert signature
+    //insert signature (Base64)
     @CrossOrigin(origins = "*")
     @PostMapping("/saveSignature.service")
-    public ResponseEntity<DataResponse> saveSignature(
-            @RequestParam("userName") String userName,
-            @RequestParam("file") MultipartFile file) {
-
+    public ResponseEntity<DataResponse> saveSignature(@RequestBody Map<String, String> body) {
         DataResponse response = new DataResponse();
         try {
-            String fileName = mediaUploadService.uploadMedia(file);
-            String fileUrl = "http://khounkham.com/images/batery/" + fileName;
-
             SignatureEntity signatureEntity = new SignatureEntity();
-            signatureEntity.setUserName(userName);
-            signatureEntity.setSignature(fileUrl);
-
+            signatureEntity.setUserName(body.get("userName"));
+            signatureEntity.setSignature(body.get("signatureBase64"));
             response = bansiService.saveSignature(signatureEntity);
-
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("EE");
@@ -317,30 +309,19 @@ public class BansiController {
         return ResponseEntity.ok(response);
     }
 
-    //update signature
+    //update signature (Base64)
     @CrossOrigin(origins = "*")
     @PostMapping("/updateSignature.service")
-    public ResponseEntity<DataResponse> updateSignature(
-            @RequestParam("sId") Long sId,
-            @RequestParam("userName") String userName,
-            @RequestParam(value = "file", required = false) MultipartFile file) {
-
+    public ResponseEntity<DataResponse> updateSignature(@RequestBody Map<String, String> body) {
         DataResponse response = new DataResponse();
         try {
-            // เตรียม entity สำหรับส่งไป Service
             SignatureEntity signatureEntity = new SignatureEntity();
-            signatureEntity.setSid(sId);
-            signatureEntity.setUserName(userName);
-
-            // ถ้ามีไฟล์ใหม่ ส่งไป Service เพื่ออัปเดต
-            if (file != null && !file.isEmpty()) {
-                String fileName = mediaUploadService.uploadMedia(file);
-                String fileUrl = "http://khounkham.com/images/batery/" + fileName;
-                signatureEntity.setSignature(fileUrl);
+            signatureEntity.setSid(Long.valueOf(body.get("sId")));
+            signatureEntity.setUserName(body.get("userName"));
+            if (body.get("signatureBase64") != null && !body.get("signatureBase64").isEmpty()) {
+                signatureEntity.setSignature(body.get("signatureBase64"));
             }
-
             response = bansiService.updateSignature(signatureEntity);
-
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("EE");
