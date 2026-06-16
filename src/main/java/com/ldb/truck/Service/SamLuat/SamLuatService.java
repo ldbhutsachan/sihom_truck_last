@@ -179,6 +179,22 @@ public class SamLuatService {
         return res;
     }
 
+    public SamLuatRes moveFolder(Long folderId, Long targetParentId) {
+        SamLuatRes res = new SamLuatRes();
+        try {
+            SamLuatFolderEntity folder = folderRepo.findById(folderId)
+                    .orElseThrow(() -> new Exception("ບໍ່ພົບ Folder"));
+            folder.setParentId(targetParentId);
+            folderRepo.save(folder);
+            res.setMessage("ຍ້າຍ Folder ສຳເລັດ");
+            res.setData(folder);
+        } catch (Exception e) {
+            res.setStatus("01");
+            res.setMessage(e.getMessage());
+        }
+        return res;
+    }
+
     public SamLuatRes moveFile(Long fileId, Long targetFolderId) {
         SamLuatRes res = new SamLuatRes();
         try {

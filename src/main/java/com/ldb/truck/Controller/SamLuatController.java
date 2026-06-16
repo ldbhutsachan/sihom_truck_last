@@ -69,6 +69,14 @@ public class SamLuatController {
         return samLuatService.getFilesByFolder(folderId);
     }
 
+    /** ຍ້າຍ Folder ໄປ Parent ອື່ນ */
+    @PostMapping("/samluat/moveFolder.service")
+    public SamLuatRes moveFolder(
+            @RequestParam("folderId") Long folderId,
+            @RequestParam(value = "targetParentId", required = false) Long targetParentId) {
+        return samLuatService.moveFolder(folderId, targetParentId);
+    }
+
     /** ຍ້າຍໄຟລ໌ໄປ Folder ອື່ນ */
     @PostMapping("/samluat/moveFile.service")
     public SamLuatRes moveFile(
