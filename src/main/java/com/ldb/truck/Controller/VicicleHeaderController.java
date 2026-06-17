@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.buf.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpHeaders;
@@ -54,6 +55,27 @@ public class VicicleHeaderController {
     VicicleHeaderService vicicleHeaderService;
     @Autowired
     private MediaUploadService mediaUploadService;
+
+    @Value("${upload.directory.car}")
+    private String uploadDirectoryCar;
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/images/car/{filename:.+}")
+    public ResponseEntity<org.springframework.core.io.Resource> serveCarImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(uploadDirectoryCar).resolve(filename).normalize();
+            org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(filePath.toUri());
+            if (!resource.exists()) return ResponseEntity.notFound().build();
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) contentType = "application/octet-stream";
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .header(HttpHeaders.CACHE_CONTROL, "max-age=86400")
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     //    test api whatsapp
 //    @CrossOrigin(origins = "*")
@@ -1029,7 +1051,7 @@ public Messages saveVicicleHeader(
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/UpdateCarOffice.service" , consumes = {"multipart/form-data"})
     public Messages UpdateCarOffice(
-//            @RequestParam("files") MultipartFile files,
+            @RequestParam(value = "img", required = false) MultipartFile img,
             @RequestParam("KEY_ID") String KEY_ID,
             @RequestParam("license_plate") String  license_plate,
             @RequestParam("battery_code_name") String  battery_code_name,
@@ -1147,21 +1169,10 @@ public Messages saveVicicleHeader(
             data.setStartdate_kongnam(startdate_kongnam);
             data.setEnddate_kongnam(enddate_kongnam);
             data.setBorNo(borNo);
-//            log.error("******file lenght"+files);
-//            log.error(data);
-//            String fileName = "";
-//            List<String> fileNames = new ArrayList<>();
-//            if(files == null){
-//                log.warn("************* file name is null ****************");
-//                data.setImg("http://khounkham.com/images/car/image.jpg");
-//            }else {
-//                Arrays.asList(files).stream().forEach(file -> {
-//                    fileNames.add(mediaUploadService.uploadMediacar(file));
-//                });
-//                log.info("Uploaded the files successfully: " + fileNames );
-//                fileName = StringUtils.join(fileNames, ',');
-//                data.setImg(fileName);
-//            }
+            if (img != null && !img.isEmpty()) {
+                String fileName = mediaUploadService.uploadMediacar(img);
+                data.setImg("http://khounkham.com/images/car/" + fileName);
+            }
             result = vicicleHeaderService.UpdateCarOfficeService(data);
         }catch (Exception e){
             e.printStackTrace();
