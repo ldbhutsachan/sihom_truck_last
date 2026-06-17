@@ -110,6 +110,4 @@ public class OrderItemReportEntity {
     @Column(name ="type_of_order")
     private String typeOfOrder;
 
-
-
 }

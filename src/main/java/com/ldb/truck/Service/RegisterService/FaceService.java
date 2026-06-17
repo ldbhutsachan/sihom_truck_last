@@ -37,6 +37,7 @@ public class FaceService {
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
     private final WorkScheduleUtil workScheduleUtil;
+    private final StaffShiftRepository staffShiftRepository;
 
     //register staff
     public StaffRegisterResponseDTO registerStaff(StaffRegisterRequestDTO dto,
@@ -724,7 +725,28 @@ public class FaceService {
                     .map(StaffEntity::getId)
                     .collect(Collectors.toSet());
 
-             // Step 11: จัดกลุ่ม logs ตาม staffId + วันที่
+            // ===============================
+            // Load staff shift once
+            // ===============================
+
+            Map<Long, WorkShift> shiftMap = new HashMap<>();
+
+            List<StaffShift> shifts =
+                    staffShiftRepository.findCurrentShiftsByStaffIds(
+                            staffIds,
+                            LocalDate.now()
+                    );
+
+
+            for (StaffShift s : shifts) {
+
+                shiftMap.putIfAbsent(
+                        s.getStaff().getId(),
+                        s.getShift()
+                );
+            }
+
+            // Step 11: จัดกลุ่ม logs ตาม staffId + วันที่
             Map<String, Map<String, Object>> dayMap = new LinkedHashMap<>();
 
             for (AttendanceLog log : logs) {
@@ -740,14 +762,21 @@ public class FaceService {
 
                 Map<String, Object> day = dayMap.get(key);
 
+                // ดึง shift จาก Map แทน query database
+                WorkShift shift = shiftMap.get(staffId);
+
                 if (log.getCheckType().equals("CHECK_IN")) {
                     day.put("checkIn",       log.getCheckTime().toString());
-                    day.put("checkInStatus", calculateCheckInStatus(log.getCheckTime()));
+                    day.put("checkInStatus", calculateCheckInStatus(
+                            log.getCheckTime(),
+                            shift));
                     day.put("ipAddress",     log.getIpAddress());
                     day.put("macAddress",    log.getMacAddress());
                 } else {
                     day.put("checkOut",       log.getCheckTime().toString());
-                    day.put("checkOutStatus", calculateCheckOutStatus(log.getCheckTime()));
+                    day.put("checkOutStatus", calculateCheckOutStatus(
+                            log.getCheckTime(),
+                            shift));
                 }
             }
 
@@ -898,43 +927,115 @@ public class FaceService {
     }
 
     //  คำนวณ CHECK_IN status
-    private String calculateCheckInStatus(LocalDateTime checkInTime) {
+//    private String calculateCheckInStatus(LocalDateTime checkInTime) {
+//
+//        LocalTime checkIn = checkInTime.toLocalTime();
+//        LocalTime deadline = LocalTime.of(8, 1); // หลัง 08:01 = สาย
+//
+//        if (checkIn.isAfter(deadline)) {
+//            // คำนวณนาทีที่สาย
+//            long minutesLate = java.time.Duration.between(deadline, checkIn).toMinutes();
+//
+//            if (minutesLate >= 60) {
+//                long hours = minutesLate / 60;
+//                long mins  = minutesLate % 60;
+//                return "LATE " + hours + " hr " + mins + " mins";
+//            } else {
+//                return "LATE " + minutesLate + " mins";
+//            }
+//        }
+//        return "ON-TIME";
+//    }
+    // FaceService.java — แก้ไข calculateCheckInStatus
+    private String calculateCheckInStatus(
+            LocalDateTime checkInTime,
+            WorkShift shift) {
+        LocalTime checkTime = checkInTime.toLocalTime();
 
-        LocalTime checkIn = checkInTime.toLocalTime();
-        LocalTime deadline = LocalTime.of(8, 1); // หลัง 08:01 = สาย
+        // ไม่มี shift
+        if (shift == null) {
 
-        if (checkIn.isAfter(deadline)) {
-            // คำนวณนาทีที่สาย
-            long minutesLate = java.time.Duration.between(deadline, checkIn).toMinutes();
-
-            if (minutesLate >= 60) {
-                long hours = minutesLate / 60;
-                long mins  = minutesLate % 60;
-                return "LATE " + hours + " hr " + mins + " mins";
-            } else {
-                return "LATE " + minutesLate + " mins";
+            // default 08:01
+            if (!checkTime.isBefore(LocalTime.of(8, 1))) {
+                long lateMinutes = ChronoUnit.MINUTES.between(
+                        LocalTime.of(8, 0),
+                        checkTime
+                );
+                long hours = lateMinutes / 60;
+                long minutes = lateMinutes % 60;
+                return hours > 0
+                        ? "LATE " + hours + " hr " + minutes + " mins"
+                        : "LATE " + minutes + " mins";
             }
+            return "INTIME";
         }
-        return "ON-TIME";
+        // มี shift
+        if (checkTime.isAfter(shift.getWorkStart())) {
+            long lateMinutes = ChronoUnit.MINUTES.between(
+                    shift.getWorkStart(),
+                    checkTime
+            );
+            long hours = lateMinutes / 60;
+            long minutes = lateMinutes % 60;
+            return hours > 0
+                    ? "LATE " + hours + " hr " + minutes + " mins"
+                    : "LATE " + minutes + " mins";
+        }
+
+        return "INTIME";
     }
 
-    // ✅ คำนวณ CHECK_OUT status
-    private String calculateCheckOutStatus(LocalDateTime checkOutTime) {
+    //  คำนวณ CHECK_OUT status
+//    private String calculateCheckOutStatus(LocalDateTime checkOutTime) {
+//
+//        LocalTime checkOut = checkOutTime.toLocalTime();
+//        LocalTime endTime  = LocalTime.of(17, 0); // ก่อน 17:00 = ออกก่อนเวลา
+//
+//        if (checkOut.isBefore(endTime)) {
+//            // คำนวณนาทีที่ออกก่อนเวลา
+//            long minutesEarly = java.time.Duration.between(checkOut, endTime).toMinutes();
+//
+//            if (minutesEarly >= 60) {
+//                long hours = minutesEarly / 60;
+//                long mins  = minutesEarly % 60;
+//                return "EARLY " + hours + " hr " + mins + " mins";
+//            } else {
+//                return "EARLY " + minutesEarly + " mins";
+//            }
+//        }
+//        return "ON-TIME";
+//    }
+    private String calculateCheckOutStatus(
+            LocalDateTime checkOutTime,
+            WorkShift shift) {
+        LocalTime checkTime = checkOutTime.toLocalTime();
 
-        LocalTime checkOut = checkOutTime.toLocalTime();
-        LocalTime endTime  = LocalTime.of(17, 0); // ก่อน 17:00 = ออกก่อนเวลา
-
-        if (checkOut.isBefore(endTime)) {
-            // คำนวณนาทีที่ออกก่อนเวลา
-            long minutesEarly = java.time.Duration.between(checkOut, endTime).toMinutes();
-
-            if (minutesEarly >= 60) {
-                long hours = minutesEarly / 60;
-                long mins  = minutesEarly % 60;
-                return "EARLY " + hours + " hr " + mins + " mins";
-            } else {
-                return "EARLY " + minutesEarly + " mins";
+        // ไม่มี shift -> ใช้ default 17:00
+        if (shift == null) {
+            if (checkTime.isBefore(LocalTime.of(17, 0))) {
+                long earlyMinutes = ChronoUnit.MINUTES.between(
+                        checkTime,
+                        LocalTime.of(17, 0)
+                );
+                long hours = earlyMinutes / 60;
+                long minutes = earlyMinutes % 60;
+                return hours > 0
+                        ? "EARLY " + hours + " hr " + minutes + " mins"
+                        : "EARLY " + minutes + " mins";
             }
+            return "ON-TIME";
+        }
+        // มี shift
+        if (checkTime.isBefore(shift.getWorkEnd())) {
+            long earlyMinutes = ChronoUnit.MINUTES.between(
+                    checkTime,
+                    shift.getWorkEnd()
+            );
+            long hours = earlyMinutes / 60;
+            long minutes = earlyMinutes % 60;
+            return hours > 0
+                    ? "EARLY " + hours + " hr " + minutes + " mins"
+                    : "EARLY " + minutes + " mins";
         }
         return "ON-TIME";
     }
@@ -1743,6 +1844,26 @@ public class FaceService {
                     .map(StaffEntity::getId)
                     .collect(Collectors.toList());
 
+            // ===============================
+            // Load staff shift once
+            // ===============================
+
+            Map<Long, WorkShift> shiftMap = new HashMap<>();
+
+            List<StaffShift> shifts =
+                    staffShiftRepository.findCurrentShiftsByStaffIds(
+                            staffIds,
+                            targetDate
+                    );
+            for (StaffShift s : shifts) {
+
+                shiftMap.putIfAbsent(
+                        s.getStaff().getId(),
+                        s.getShift()
+                );
+            }
+
+
             Map<Long, List<LeaveRequest>> leaveMap = new HashMap<>();
 
             if (!staffIds.isEmpty()) {
@@ -1817,7 +1938,7 @@ public class FaceService {
             List<Map<String, Object>> data = new ArrayList<>();
 
             for (StaffEntity staff : staffList) {
-
+                WorkShift shift = shiftMap.get(staff.getId());
                 //  create item first
                 Map<String, Object> item = new LinkedHashMap<>();
 
@@ -1845,10 +1966,14 @@ public class FaceService {
                     ipAddress = checkIn.getIpAddress();
                     macAddress = checkIn.getMacAddress();
 
-                    status = checkInTime.toLocalTime()
-                            .isAfter(LocalTime.of(8, 1))
-                            ? "LATE"
-                            : "INTIME";
+//                    status = checkInTime.toLocalTime()
+//                            .isAfter(LocalTime.of(8, 1))
+//                            ? "LATE"
+//                            : "INTIME";
+                    status = calculateCheckInStatus(
+                            checkInTime,
+                            shift
+                    );
 
                     if (checkOut != null) {
 

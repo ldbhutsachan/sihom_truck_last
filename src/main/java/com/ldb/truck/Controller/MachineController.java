@@ -529,7 +529,7 @@ public class MachineController {
             LocalDate hydNext   = parseDate(hydraulicNextdate);
 
             String filePath = null;
-            String pathAdd = "http://khounkham.com/images/maintenance/";
+            String pathAdd = "http://khounkham.com/images/batery/";
             if (imageFile != null && imageFile.length > 0) {
                 List<String> fileNames = new ArrayList<>();
                 Arrays.asList(imageFile).forEach(file -> {
@@ -608,7 +608,7 @@ public class MachineController {
 
             // จัดการไฟล์
             String filePath = null;
-            String pathAdd = "http://khounkham.com/images/maintenance/";
+            String pathAdd = "http://khounkham.com/images/batery/";
             if (imageFile != null && imageFile.length > 0) {
                 List<String> fileNames = new ArrayList<>();
                 Arrays.asList(imageFile).forEach(file -> {

@@ -23,7 +23,11 @@ public class OrderItemEntity {
     @Column(name = "item_id", nullable = false)
     private Integer itemId;
 
-    @Column(name = "item_name", nullable = false)
+//    @Column(name = "item_name", nullable = false)
+//    private String itemName;
+
+
+    @Column(name = "item_name", nullable = true)
     private String itemName;
 
     @Column(name = "unit", precision = 10, scale = 2)
