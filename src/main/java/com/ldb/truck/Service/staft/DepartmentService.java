@@ -12,10 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -532,69 +529,53 @@ public class DepartmentService {
     // =====================================================
     // CREATE SHIFT
     // =====================================================
-    public DataResponse createShift(Map<String, Object> body) {
-
+    public DataResponse createStaffShift(Map<String,Object> body){
         DataResponse response = new DataResponse();
-
         try {
             String token = (String) body.get("token");
-
+            // check user
             StaffEntity requester = userRepository.findByToken(token)
-                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
-
-            if (!requester.getRole().equals("ADMIN")
-                    && !requester.getRole().equals("HR")) {
-                throw new RuntimeException("ບໍ່ມີສິດ ສະເພາະ HR ຫຼື ADMIN ເທົ່ານັ້ນ");
+                            .orElseThrow(() -> new RuntimeException("Token ບໍ່ຖືກຕ້ອງ"));
+            if(!requester.getRole().equals("ADMIN")
+                    && !requester.getRole().equals("HR")){
+                throw new RuntimeException("ສະເພາະ ADMIN ຫຼື HR");
             }
+            List<Integer> staffIds = (List<Integer>) body.get("staffId");
+            Long shiftId = Long.valueOf(body.get("shiftId").toString());
+            LocalDate effectiveDate = LocalDate.parse(body.get("effectiveDate").toString());
+            if(staffIds == null || staffIds.isEmpty()){throw new RuntimeException("ກະລຸນາເລືອກ staff");}
+            WorkShift shift = workShiftRepository.findById(shiftId).orElseThrow(() -> new RuntimeException("ບໍ່ພົບ shift"));
+            List<StaffShift> saveList =
+                    new ArrayList<>();
+            for(Integer id : staffIds){
+                StaffEntity staff =
+                        userRepository.findById(id.longValue())
+                                .orElseThrow(() -> new RuntimeException("ບໍ່ພົບ staff id " + id));
+                // check duplicate
+                if(staffShiftRepository.checkExist(staff.getId(), shiftId, effectiveDate).isPresent()){
+                    continue;
+                }
 
-            String shiftName = (String) body.get("shiftName");
-            String shiftCode = (String) body.get("shiftCode");
-
-            if (shiftName == null || shiftName.isEmpty()) {
-                throw new RuntimeException("ກະລຸນາລະບຸ shiftName");
+                StaffShift staffShift = new StaffShift();
+                staffShift.setStaff(staff);
+                staffShift.setShift(shift);
+                staffShift.setEffectiveDate(effectiveDate);
+                staffShift.setEndDate(null);
+                saveList.add(staffShift);
             }
-            if (shiftCode == null || shiftCode.isEmpty()) {
-                throw new RuntimeException("ກະລຸນາລະບຸ shiftCode");
-            }
-
-            // เช็คซ้ำ
-            if (workShiftRepository.findByShiftCode(shiftCode).isPresent()) {
-                throw new RuntimeException("shiftCode ນີ້ມີຢູ່ແລ້ວ: " + shiftCode);
-            }
-
-            DateTimeFormatter timeFormatter =
-                    DateTimeFormatter.ofPattern("HH:mm");
-
-            WorkShift shift = new WorkShift();
-            shift.setShiftName(shiftName);
-            shift.setShiftCode(shiftCode.toUpperCase());
-            shift.setCheckInStart(LocalTime.parse(
-                    (String) body.get("checkInStart"), timeFormatter));
-            shift.setCheckInEnd(LocalTime.parse(
-                    (String) body.get("checkInEnd"), timeFormatter));
-            shift.setCheckOutStart(LocalTime.parse(
-                    (String) body.get("checkOutStart"), timeFormatter));
-            shift.setCheckOutEnd(LocalTime.parse(
-                    (String) body.get("checkOutEnd"), timeFormatter));
-            shift.setWorkStart(LocalTime.parse(
-                    (String) body.get("workStart"), timeFormatter));
-            shift.setWorkEnd(LocalTime.parse(
-                    (String) body.get("workEnd"), timeFormatter));
-            shift.setStatus("ACTIVE");
-
-            WorkShift saved = workShiftRepository.save(shift);
+            List<StaffShift> saved = staffShiftRepository.saveAll(saveList);
 
             response.setStatus("00");
-            response.setMessage("ສ້າງກະວຽກສຳເລັດ");
-            response.setDataResponse(buildShiftMap(saved));
+            response.setMessage("ສ້າງ shift ໃຫ້ staff ສຳເລັດ");
+            response.setDataResponse(saved.size());
 
-        } catch (Exception e) {
+        }catch(Exception e){
+
             e.printStackTrace();
             response.setStatus("01");
             response.setMessage(e.getMessage());
             response.setDataResponse(null);
         }
-
         return response;
     }
 
@@ -640,73 +621,81 @@ public class DepartmentService {
         DataResponse response = new DataResponse();
 
         try {
+
             String token = (String) body.get("token");
 
             StaffEntity requester = userRepository.findByToken(token)
                     .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
-
             if (!requester.getRole().equals("ADMIN")
                     && !requester.getRole().equals("HR")) {
-                throw new RuntimeException("ບໍ່ມີສິດ ສະເພາະ HR ຫຼື ADMIN ເທົ່ານັ້ນ");
+                throw new RuntimeException(
+                        "ບໍ່ມີສິດ ສະເພາະ HR ຫຼື ADMIN ເທົ່ານັ້ນ"
+                );
             }
 
-            Long staffId = Long.parseLong(body.get("staffId").toString());
+            List<Integer> staffIds = (List<Integer>) body.get("staffId");
             Long shiftId = Long.parseLong(body.get("shiftId").toString());
-            String effectiveDateStr = (String) body.get("effectiveDate");
-
-            StaffEntity staff = userRepository.findById(staffId)
-                    .orElseThrow(() -> new RuntimeException(
-                            "ບໍ່ພົບ Staff id: " + staffId));
-
+            LocalDate effectiveDate =
+                    LocalDate.parse(
+                            body.get("effectiveDate").toString(),
+                            DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    );
             WorkShift shift = workShiftRepository.findById(shiftId)
-                    .orElseThrow(() -> new RuntimeException(
-                            "ບໍ່ພົບ Shift id: " + shiftId));
+                    .orElseThrow(() -> new RuntimeException("ບໍ່ພົບ Shift id: " + shiftId));
 
-            LocalDate effectiveDate = LocalDate.parse(
-                    effectiveDateStr,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            List<Map<String,Object>> result = new ArrayList<>();
 
-            // ✅ ปิดกะเดิมก่อน
-            List<StaffShift> currentShifts = staffShiftRepository
-                    .findCurrentShifts(staffId, effectiveDate);
+            for(Integer id : staffIds) {
+                Long staffId = id.longValue();
+                StaffEntity staff = userRepository.findById(staffId)
+                        .orElseThrow(() -> new RuntimeException("ບໍ່ພົບ Staff id: " + staffId));
 
-            currentShifts.forEach(s -> {
-                s.setEndDate(effectiveDate.minusDays(1));
-                staffShiftRepository.save(s);
-            });
+                // duplicate
+                if(staffShiftRepository
+                        .checkExist(staffId, shiftId, effectiveDate)
+                        .isPresent()) {
+                    continue;
+                }
 
-            // ✅ สร้างกะใหม่
-            StaffShift staffShift = new StaffShift();
-            staffShift.setStaff(staff);
-            staffShift.setShift(shift);
-            staffShift.setEffectiveDate(effectiveDate);
-            staffShift.setEndDate(null);  // null = ยังใช้อยู่
-            staffShift.setCreatedBy(requester.getId());
+                // close old shift
+                List<StaffShift> oldShifts =
+                        staffShiftRepository.findCurrentShifts(staffId, effectiveDate);
+                for(StaffShift old : oldShifts){
+                    old.setEndDate(effectiveDate.minusDays(1));
+                    staffShiftRepository.save(old);
+                }
 
-            StaffShift saved = staffShiftRepository.save(staffShift);
+                StaffShift staffShift = new StaffShift();
+                staffShift.setStaff(staff);
+                staffShift.setShift(shift);
+                staffShift.setEffectiveDate(effectiveDate);
+                staffShift.setEndDate(null);
+                staffShift.setCreatedBy(requester.getId());
+                StaffShift saved = staffShiftRepository.save(staffShift);
+                Map<String,Object> data = new LinkedHashMap<>();
 
-            Map<String, Object> data = new LinkedHashMap<>();
-            data.put("id",            saved.getId());
-            data.put("staffId",       staff.getId());
-            data.put("staffCode",     staff.getStaffCode());
-            data.put("username",      staff.getUsername());
-            data.put("shiftId",       shift.getId());
-            data.put("shiftName",     shift.getShiftName());
-            data.put("shiftCode",     shift.getShiftCode());
-            data.put("workStart",     shift.getWorkStart().toString());
-            data.put("workEnd",       shift.getWorkEnd().toString());
-            data.put("effectiveDate", saved.getEffectiveDate().toString());
+                data.put("id", saved.getId());
+                data.put("staffId", staff.getId());
+                data.put("staffCode", staff.getStaffCode());
+                data.put("username", staff.getUsername());
+                data.put("shiftId", shift.getId());
+                data.put("shiftName", shift.getShiftName());
+                data.put("shiftCode", shift.getShiftCode());
+                data.put("effectiveDate", saved.getEffectiveDate().toString());
+                result.add(data);
+            }
 
             response.setStatus("00");
             response.setMessage("ກຳນົດກະວຽກໃຫ້ Staff ສຳເລັດ");
-            response.setDataResponse(data);
+            response.setDataResponse(result);
 
-        } catch (Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
             response.setStatus("01");
             response.setMessage(e.getMessage());
             response.setDataResponse(null);
         }
+
 
         return response;
     }
@@ -715,87 +704,65 @@ public class DepartmentService {
     // GET STAFF SHIFT
     // =====================================================
     public DataResponse getStaffShift(Map<String, Object> body) {
-
         DataResponse response = new DataResponse();
-
         try {
             String token = (String) body.get("token");
-
-            StaffEntity requester = userRepository.findByToken(token)
-                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
-
-            // กำหนดวันที่
+            StaffEntity requester = userRepository.findByToken(token).orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+            String role = requester.getRole();
             String dateStr = (String) body.get("date");
-            LocalDate targetDate = (dateStr != null && !dateStr.isEmpty())
-                    ? LocalDate.parse(dateStr,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                    : LocalDate.now();
-
-            // ดึง staffId
-            Long staffId;
-            if (body.get("staffId") != null) {
-                staffId = Long.parseLong(body.get("staffId").toString());
-            } else {
-                staffId = requester.getId();
+            LocalDate targetDate = (dateStr != null && !dateStr.isEmpty()) ? LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd")) : LocalDate.now();
+            List<StaffEntity> staffList;
+            // ADMIN / HR
+            if(role.equals("ADMIN") || role.equals("HR")){
+                String staffId = body.get("staffId") == null ? "all" : body.get("staffId").toString();
+                if(staffId.equalsIgnoreCase("all")){
+                    staffList = userRepository.findAll();
+                }else{
+                    Long id = Long.parseLong(staffId);
+                    StaffEntity staff = userRepository.findById(id).orElseThrow(() -> new RuntimeException("ບໍ່ພົບ Staff id: " + id));
+                    staffList = List.of(staff);
+                }
+            }else{
+                // USER / Other role only self
+                staffList = List.of(requester);
             }
 
-            // USER ดูได้แค่ตัวเอง
-            if (requester.getRole().equals("USER")
-                    && !requester.getId().equals(staffId)) {
-                throw new RuntimeException("ບໍ່ມີສິດເບິ່ງຂໍ້ມູນຂອງຄົນອື່ນ");
-            }
-
-            StaffEntity staff = userRepository.findById(staffId)
-                    .orElseThrow(() -> new RuntimeException(
-                            "ບໍ່ພົບ Staff id: " + staffId));
-
-            List<StaffShift> shifts = staffShiftRepository
-                    .findCurrentShifts(staffId, targetDate);
-
-            if (shifts.isEmpty()) {
-                Map<String, Object> data = new LinkedHashMap<>();
-                data.put("staffId",   staff.getId());
+            List<Map<String,Object>> result =
+                    new ArrayList<>();
+            for(StaffEntity staff : staffList){
+                List<StaffShift> shifts = staffShiftRepository.findCurrentShifts(staff.getId(), targetDate);
+                Map<String,Object> data = new LinkedHashMap<>();
+                data.put("staffId", staff.getId());
                 data.put("staffCode", staff.getStaffCode());
-                data.put("username",  staff.getUsername());
-                data.put("date",      targetDate.toString());
-                data.put("shift",     null);
-                data.put("message",   "ບໍ່ມີກະວຽກທີ່ກຳນົດໄວ້");
-
-                response.setStatus("00");
-                response.setMessage("success");
-                response.setDataResponse(data);
-                return response;
+                data.put("username", staff.getUsername());
+                data.put("date", targetDate.toString());
+                if(shifts.isEmpty()){
+                    data.put("shift", null);
+                    data.put("message", "ບໍ່ມີກະວຽກທີ່ກຳນົດໄວ້");
+                }else{
+                    WorkShift shift = shifts.get(0).getShift();
+                    data.put("shiftId", shift.getId());
+                    data.put("shiftName", shift.getShiftName());
+                    data.put("shiftCode", shift.getShiftCode());
+                    data.put("checkInStart", shift.getCheckInStart().toString());
+                    data.put("checkInEnd", shift.getCheckInEnd().toString());
+                    data.put("checkOutStart", shift.getCheckOutStart().toString());
+                    data.put("checkOutEnd", shift.getCheckOutEnd().toString());
+                    data.put("workStart", shift.getWorkStart().toString());
+                    data.put("workEnd", shift.getWorkEnd().toString());
+                    data.put("effectiveDate", shifts.get(0).getEffectiveDate().toString());
+                }
+                result.add(data);
             }
-
-            WorkShift shift = shifts.get(0).getShift();
-
-            Map<String, Object> data = new LinkedHashMap<>();
-            data.put("staffId",       staff.getId());
-            data.put("staffCode",     staff.getStaffCode());
-            data.put("username",      staff.getUsername());
-            data.put("date",          targetDate.toString());
-            data.put("shiftId",       shift.getId());
-            data.put("shiftName",     shift.getShiftName());
-            data.put("shiftCode",     shift.getShiftCode());
-            data.put("checkInStart",  shift.getCheckInStart().toString());
-            data.put("checkInEnd",    shift.getCheckInEnd().toString());
-            data.put("checkOutStart", shift.getCheckOutStart().toString());
-            data.put("checkOutEnd",   shift.getCheckOutEnd().toString());
-            data.put("workStart",     shift.getWorkStart().toString());
-            data.put("workEnd",       shift.getWorkEnd().toString());
-            data.put("effectiveDate", shifts.get(0).getEffectiveDate().toString());
-
             response.setStatus("00");
             response.setMessage("success");
-            response.setDataResponse(data);
-
-        } catch (Exception e) {
+            response.setDataResponse(result);
+        } catch(Exception e){
             e.printStackTrace();
             response.setStatus("01");
             response.setMessage(e.getMessage());
             response.setDataResponse(null);
         }
-
         return response;
     }
 

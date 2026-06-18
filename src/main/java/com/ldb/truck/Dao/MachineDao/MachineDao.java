@@ -785,6 +785,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setRemark(rs.getString("remark"));
                 tr.setMachine_mileage_now(rs.getString("machine_mileage_now"));
                 tr.setMachine_mileage_next(rs.getString("machine_mileage_next"));
+                tr.setMachine_mileage_hydrolic(rs.getString("machine_mileage_hydrolic"));
 //                tr.setMachine_mileage_status(rs.getString("machine_mileage_status"));
                 tr.setDateChangeLeean(rs.getString("dateChangeLeean"));
                 tr.setDateChangeLeeanNext(rs.getString("dateChangeLeeanNext"));
@@ -800,6 +801,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setHydraulic_date(rs.getString("hydraulic_date"));
                 tr.setHydraulic_nextdate(rs.getString("hydraulic_nextdate"));
 //                tr.setHydraulic_status(rs.getString("hydraulic_status"));
+                tr.setMachine_mileage_status(rs.getString("machine_mileage_status"));
+                tr.setMachine_mileage_hydrolic_status(rs.getString("machine_mileage_hydrolic_status"));
                 tr.setNotifyStatus(rs.getString("notifyStatus"));
 
                 return tr;
@@ -1224,7 +1227,11 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 sql.append("machine_mileage_now = ?, ");
                 params.add(machineReq.getMachine_mileage_now());
             }
-
+            //  machine_mileage_hydrolic
+            if (machineReq.getMachine_mileage_hydrolic() != null) {
+                sql.append("machine_mileage_hydrolic = ?, ");
+                params.add(machineReq.getMachine_mileage_hydrolic());
+            }
             //  machine_mileage_next
             if (machineReq.getMachine_mileage_next() != null) {
                 sql.append("machine_mileage_next = ?, ");

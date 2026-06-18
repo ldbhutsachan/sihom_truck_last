@@ -388,6 +388,7 @@ public class MachineController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date_in,
             @RequestParam(value = "machine_mileage_now", required = false) BigDecimal machine_mileage_now,
             @RequestParam(value = "machine_mileage_next", required = false) BigDecimal machine_mileage_next,
+            @RequestParam(value = "machine_mileage_hydrolic", required = false) BigDecimal machine_mileage_hydrolic,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeean,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeeanNext,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateleanGia,
@@ -421,6 +422,7 @@ public class MachineController {
         machineReq.setDate_in(date_in);
         machineReq.setMachine_mileage_now(machine_mileage_now);
         machineReq.setMachine_mileage_next(machine_mileage_next);
+        machineReq.setMachine_mileage_hydrolic(machine_mileage_hydrolic);
         machineReq.setDateChangeLeean(dateChangeLeean);
         machineReq.setDateChangeLeeanNext(dateChangeLeeanNext);
         machineReq.setDateleanGia(dateleanGia);

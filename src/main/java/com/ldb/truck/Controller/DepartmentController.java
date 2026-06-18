@@ -74,10 +74,13 @@ public class DepartmentController {
     }
     // สร้างกะใหม่
     @CrossOrigin(origins = "*")
-    @PostMapping("/shift/create")
-    public ResponseEntity<DataResponse> createShift(
-            @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(departmentService.createShift(body));
+    @PostMapping("/staff/shift/create")
+    public ResponseEntity<DataResponse> createStaffShift(
+            @RequestBody Map<String,Object> body){
+
+        return ResponseEntity.ok(
+                departmentService.createStaffShift(body)
+        );
     }
 
     // ดูกะทั้งหมด
