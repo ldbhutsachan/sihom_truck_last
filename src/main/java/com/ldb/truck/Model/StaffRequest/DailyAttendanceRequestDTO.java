@@ -8,4 +8,5 @@ public class DailyAttendanceRequestDTO {
     private String date;        // optional — "2026-04-01" ถ้าไม่ส่ง = วันนี้
     private String borId;      // optional — กรอง bor
     private String deptId;
+    private String shiftId;   // เพิ่ม
 }

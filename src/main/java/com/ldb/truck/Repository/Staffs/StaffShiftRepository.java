@@ -36,4 +36,16 @@ public interface StaffShiftRepository
             @Param("staffIds") List<Long> staffIds,
             @Param("date") LocalDate date
     );
+
+    //filter by shiftid
+    //  NEW — ดึง shifts ของ staffList พร้อม filter shiftId
+    @Query("SELECT s FROM StaffShift s WHERE " +
+            "s.staff.id IN :staffIds AND " +
+            "s.effectiveDate <= :date AND " +
+            "(s.endDate IS NULL OR s.endDate >= :date) AND " +
+            "(:shiftId IS NULL OR s.shift.id = :shiftId)")
+    List<StaffShift> findCurrentShiftsByStaffIdsAndShift(
+            @Param("staffIds") List<Long> staffIds,
+            @Param("date")     LocalDate date,
+            @Param("shiftId")  Long shiftId);
 }
