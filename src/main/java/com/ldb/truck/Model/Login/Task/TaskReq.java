@@ -21,4 +21,6 @@ public class TaskReq {
     private String progress;
     private String key_id;
     private String status;
+    private String description;
+    private String time;
 }

@@ -1178,6 +1178,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
     @Override
     public int UpdateCarOfficeDAOs(CarOfficeReq carOfficeReq) throws ParseException {
         try {
+            boolean hasImg = carOfficeReq.getImg() != null && !carOfficeReq.getImg().isEmpty();
             String SQL = "UPDATE CARS_OFFICE SET " +
                     "license_plate=?, battery_code_name=?, license_plate_end=?, license_plate_start=?, car_year=?," +
                     "car_type=?, car_brand=?, lekJuk=?, lekThung=?, carColor=?, font_light=?, back_light=?, millor_back=?, millor_side=?," +
@@ -1186,8 +1187,9 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     "oil=?, car_model=?, owner_car=?, steering_wheel=?, dao=?, wide=?, longg=?, tall=?, sitPosition_amount=?, serial_wheel_left_font=?," +
                     "serial_wheel_left_back=?, serial_wheel_right_font=?, serial_wheel_right_back=?, tungsitnumber=?, tungsitDateExpire=?," +
                     "lekmai_next=?, serial_tire_second=?, date_change_lean=?, date_change_lean_next=?, leanFuengThaiy=?, leanGiaNextday=?," +
-                    "startdate_kongnam=?, enddate_kongnam=?, borNo=? " +
-                    "WHERE KEY_ID = ?";
+                    "startdate_kongnam=?, enddate_kongnam=?, borNo=?" +
+                    (hasImg ? ", img=?" : "") +
+                    " WHERE KEY_ID = ?";
 
             log.info("SQL: " + SQL);
 
@@ -1243,6 +1245,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getStartdate_kongnam());
             paramList.add(carOfficeReq.getEnddate_kongnam());
             paramList.add(carOfficeReq.getBorNo());
+            if (hasImg) paramList.add(carOfficeReq.getImg());
             paramList.add(carOfficeReq.getKEY_ID());
 
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
