@@ -72,5 +72,39 @@ public class DepartmentController {
                                                         @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(departmentService.getAdjustments(body));
     }
+    // สร้างกะใหม่
+    @CrossOrigin(origins = "*")
+    @PostMapping("/staff/shift/create")
+    public ResponseEntity<DataResponse> createStaffShift(
+            @RequestBody Map<String,Object> body){
+
+        return ResponseEntity.ok(
+                departmentService.createStaffShift(body)
+        );
+    }
+
+    // ดูกะทั้งหมด
+    @CrossOrigin(origins = "*")
+    @PostMapping("/shift/get")
+    public ResponseEntity<DataResponse> getShifts(
+            @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(departmentService.getShifts(body));
+    }
+
+    // กำหนดกะให้ staff
+    @CrossOrigin(origins = "*")
+    @PostMapping("/shift/assign-staff")
+    public ResponseEntity<DataResponse> assignShift(
+            @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(departmentService.assignShift(body));
+    }
+
+    // ดูกะของ staff
+    @CrossOrigin(origins = "*")
+    @PostMapping("/shift/get-staff-shift")
+    public ResponseEntity<DataResponse> getStaffShift(
+            @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(departmentService.getStaffShift(body));
+    }
 
 }

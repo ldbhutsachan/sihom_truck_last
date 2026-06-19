@@ -292,6 +292,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setRemark(resp.getRemark());
                  machine.setMachine_mileage_now(resp.getMachine_mileage_now());
                  machine.setMachine_mileage_next(resp.getMachine_mileage_next());
+                 machine.setMachine_mileage_hydrolic(resp.getMachine_mileage_hydrolic());
 //                 machine.setMachine_mileage_status(resp.getMachine_mileage_status());
                  machine.setDateChangeLeean(resp.getDateChangeLeean());
                  machine.setDateChangeLeeanNext(resp.getDateChangeLeeanNext());
@@ -307,6 +308,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                  machine.setHydraulic_date(resp.getHydraulic_date());
                  machine.setHydraulic_nextdate(resp.getHydraulic_nextdate());
 //                 machine.setHydraulic_status(resp.getHydraulic_status());
+                 machine.setMachine_mileage_status(resp.getMachine_mileage_status());
+                 machine.setMachine_mileage_hydrolic_status(resp.getMachine_mileage_hydrolic_status());
                  machine.setNotifyStatus(resp.getNotifyStatus());
 
                  //  เพิ่มตรงนี้เพื่อ map tools ด้วย

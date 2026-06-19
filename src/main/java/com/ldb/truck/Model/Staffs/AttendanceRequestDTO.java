@@ -10,4 +10,5 @@ public class AttendanceRequestDTO {
     private String token; // staffCode ของคนที่ขอดูข้อมูล (ใช้เช็ค role)
     private String borId;         //  NEW — null, "all", "10"
     private String workSchedule;  //  NEW — null, "MON_FRI", "CYCLE"
+    private String shiftId;
 }
