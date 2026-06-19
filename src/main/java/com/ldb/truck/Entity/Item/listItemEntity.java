@@ -1,5 +1,6 @@
 package com.ldb.truck.Entity.Item;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -19,7 +20,8 @@ public class listItemEntity {
     private String item_name;
 
     @Column(name = "qty")
-    private BigDecimal qty;
+//    private BigDecimal qty;
+    private Double qty;
 
     @Column(name = "size", nullable = false)
     private String size; // Size might need renaming if backticks are causing issues
