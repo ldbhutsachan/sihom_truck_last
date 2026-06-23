@@ -45,7 +45,7 @@ public class MerchineHisEntity {
         private Date txnDate; // txn_date date
 
         @Column(name ="hole")
-        private Integer hole;
+        private String hole;
 
         @Column(name = "status")
         private Integer status; // status int(11)

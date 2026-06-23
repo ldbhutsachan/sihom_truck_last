@@ -395,7 +395,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     StringBuilder sb = new StringBuilder();
 
     Integer keyId = machineHisReq.getKeyId();
-    Integer hole =  machineHisReq.getHole();
+    String hole =  machineHisReq.getHole();
     String mchNo = machineHisReq.getMchNo();
     String startDate = machineHisReq.getStartDate();
     String endDate = machineHisReq.getEndDate();
@@ -473,7 +473,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                 tr.setTimeTotal(rs.getString("time_total"));
                 tr.setDigMetter(rs.getDouble("dig_metter"));
                 tr.setOilLiter(rs.getDouble("oil_liter"));
-                tr.setHole(rs.getInt("hole"));
+                tr.setHole(rs.getString("hole"));
                 tr.setTxnDate(rs.getDate("txn_date"));
                 tr.setStatus(rs.getInt("status"));
                 tr.setBorNo(rs.getString("borNo"));
