@@ -18,6 +18,5 @@ public class BrachReq {
     private String email;
     private String userId;
     private String branchNo;
-
-
+    private String status;
 }
