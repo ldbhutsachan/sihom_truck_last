@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FaceService {
-    private final UserRepository userRepository;  // ✅ ใช้ UserRepository ที่มีอยู่แล้ว
+    private final UserRepository userRepository; // ✅ ใช้ UserRepository ที่มีอยู่แล้ว
     private final MediaUploadService mediaUploadService;
     private final AttendanceLogRepository attendanceLogRepository;
     private final LeaveRequestRepository leaveRequestRepository;
@@ -39,9 +39,9 @@ public class FaceService {
     private final WorkScheduleUtil workScheduleUtil;
     private final StaffShiftRepository staffShiftRepository;
 
-    //register staff
+    // register staff
     public StaffRegisterResponseDTO registerStaff(StaffRegisterRequestDTO dto,
-                                                  String fileUrl) throws IOException {
+            String fileUrl) throws IOException {
         if (userRepository.existsByStaffCode(dto.getStaffCode())) {
             throw new RuntimeException("Staff Code ນີ້ຖືກໃຊ້ໄປແລ້ວ");
         }
@@ -52,19 +52,19 @@ public class FaceService {
             newToken = UUID.randomUUID().toString().replace("-", "");
         } while (userRepository.findByToken(newToken).isPresent());
 
-        //  Hash password ก่อนเก็บลง DB
-        String plainPassword = dto.getPassword();  // เก็บ plain ไว้ก่อน response กลับ
+        // Hash password ก่อนเก็บลง DB
+        String plainPassword = dto.getPassword(); // เก็บ plain ไว้ก่อน response กลับ
         String hashedPassword = PasswordUtil.hashPassword(plainPassword);
 
         // สร้าง staff ใหม่
         StaffEntity staff = new StaffEntity();
         staff.setStaffCode(dto.getStaffCode());
         staff.setUsername(dto.getUsername());
-        staff.setPasswordHash(hashedPassword);  // ✅ เก็บ hashed ใน DB
+        staff.setPasswordHash(hashedPassword); // ✅ เก็บ hashed ใน DB
         staff.setRole(dto.getRole() != null ? dto.getRole() : "USER");
         staff.setStatus("ACTIVE");
         staff.setToken(newToken);
-//        staff.setTokenExpiredAt(LocalDateTime.now().plusYears(1));
+        // staff.setTokenExpiredAt(LocalDateTime.now().plusYears(1));
         staff.setTokenExpiredAt(LocalDateTime.now().plusMonths(5));
 
         if (fileUrl != null) {
@@ -79,12 +79,11 @@ public class FaceService {
                 saved.getId(),
                 saved.getStaffCode(),
                 saved.getUsername(),
-                plainPassword,      //  ส่ง plain password กลับให้ client รู้
-                saved.getCreatedAt()
-        );
+                plainPassword, // ส่ง plain password กลับให้ client รู้
+                saved.getCreatedAt());
     }
 
-    //getStaff service
+    // getStaff service
     public DataResponse getStaff(StaffQueryRequestDTO dto) {
 
         DataResponse response = new DataResponse();
@@ -119,8 +118,8 @@ public class FaceService {
             // Step 5: ADMIN/HR/BORLEADER → ดูทั้งหมดหรือคนเดียว
             if (dto.getStaffId().equalsIgnoreCase("all")) {
 
-                //  เช็ค filter
-                boolean hasBorId  = dto.getBorId() != null && !dto.getBorId().isEmpty();
+                // เช็ค filter
+                boolean hasBorId = dto.getBorId() != null && !dto.getBorId().isEmpty();
                 boolean hasDeptId = dto.getDeptId() != null && !dto.getDeptId().isEmpty();
 
                 List<StaffEntity> staffList;
@@ -136,7 +135,7 @@ public class FaceService {
                             Integer.parseInt(dto.getBorId()));
 
                 } else if (hasDeptId) {
-                    //  เปลี่ยนชื่อ method
+                    // เปลี่ยนชื่อ method
                     staffList = userRepository.findAllByDeptId(
                             Long.parseLong(dto.getDeptId()));
 
@@ -149,8 +148,7 @@ public class FaceService {
                 response.setDataResponse(
                         staffList.stream()
                                 .map(this::mapToDTO)
-                                .collect(Collectors.toList())
-                );
+                                .collect(Collectors.toList()));
                 response.setSumFooter(staffList.size());
 
             } else {
@@ -176,8 +174,8 @@ public class FaceService {
 
     // update staff service
     public DataResponse updateStaff(StaffQueryRequestDTO query,
-                                    StaffUpdateRequestDTO dto,
-                                    MultipartFile image) throws IOException {
+            StaffUpdateRequestDTO dto,
+            MultipartFile image) throws IOException {
 
         DataResponse response = new DataResponse();
 
@@ -215,13 +213,20 @@ public class FaceService {
                 }
                 staff.setUsername(dto.getUsername());
             }
-            if (dto.getLaoname() != null)      staff.setLao_name(dto.getLaoname());
-            if (dto.getPhone() != null)      staff.setPhone(dto.getPhone());
-            if (dto.getRole() != null)       staff.setRole(dto.getRole());
-            if (dto.getDeptId() != null) staff.setDept_id(dto.getDeptId());
-            if (dto.getPosId() != null)   staff.setPos_id(dto.getPosId());
-            if(dto.getGender() != null)  staff.setGender(dto.getGender());
-            if(dto.getAddress() != null)  staff.setAddress(dto.getAddress());
+            if (dto.getLaoname() != null)
+                staff.setLao_name(dto.getLaoname());
+            if (dto.getPhone() != null)
+                staff.setPhone(dto.getPhone());
+            if (dto.getRole() != null)
+                staff.setRole(dto.getRole());
+            if (dto.getDeptId() != null)
+                staff.setDept_id(dto.getDeptId());
+            if (dto.getPosId() != null)
+                staff.setPos_id(dto.getPosId());
+            if (dto.getGender() != null)
+                staff.setGender(dto.getGender());
+            if (dto.getAddress() != null)
+                staff.setAddress(dto.getAddress());
             if (dto.getBirthDate() != null && !dto.getBirthDate().isBlank()) {
                 staff.setBirth_date(
                         LocalDate.parse(dto.getBirthDate(),
@@ -230,15 +235,17 @@ public class FaceService {
 
             // USER ไม่สามารถเปลี่ยน status ได้
             if (requester.getRole().equals("USER")) {
-                if (dto.getStatus() != null) staff.setStatus(staff.getStatus());
+                if (dto.getStatus() != null)
+                    staff.setStatus(staff.getStatus());
             } else {
-                if (dto.getStatus() != null) staff.setStatus(dto.getStatus());
+                if (dto.getStatus() != null)
+                    staff.setStatus(dto.getStatus());
             }
 
             // Step 6: อัปเดตรูปภาพ
             if (image != null && !image.isEmpty()) {
                 String fileName = mediaUploadService.uploadMedia(image);
-                String fileUrl  = "http://khounkham.com/images/batery/" + fileName;
+                String fileUrl = "http://khounkham.com/images/batery/" + fileName;
                 staff.setStaffImage(fileUrl);
             }
 
@@ -246,7 +253,6 @@ public class FaceService {
             if (dto.getBorId() != null) {
                 staff.setBorId(dto.getBorId());
             }
-
 
             StaffEntity saved = userRepository.save(staff);
 
@@ -265,7 +271,7 @@ public class FaceService {
     }
 
     public DataResponse updateSalarySchedule(StaffQueryRequestDTO query,
-                                             StaffUpdateRequestDTO dto, MultipartFile image, MultipartFile documentFile) {
+            StaffUpdateRequestDTO dto, MultipartFile image, MultipartFile documentFile) {
 
         DataResponse response = new DataResponse();
 
@@ -318,7 +324,7 @@ public class FaceService {
                     staff.setCycleStartDate(null);
                 }
             }
-            //update department and position, borId
+            // update department and position, borId
             if (dto.getBorId() != null) {
                 staff.setBorId(dto.getBorId());
             }
@@ -349,7 +355,8 @@ public class FaceService {
                         LocalDate.parse(dto.getBirthDate(),
                                 DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             }
-            if (dto.getLaoname() != null)      staff.setLao_name(dto.getLaoname());
+            if (dto.getLaoname() != null)
+                staff.setLao_name(dto.getLaoname());
             if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
                 if (userRepository.existsByUsername(dto.getUsername())
                         && !dto.getUsername().equals(staff.getUsername())) {
@@ -360,37 +367,37 @@ public class FaceService {
             // update staff image
             if (image != null && !image.isEmpty()) {
                 String fileName = mediaUploadService.uploadMedia(image);
-                String fileUrl  = "http://khounkham.com/images/batery/" + fileName;
+                String fileUrl = "http://khounkham.com/images/batery/" + fileName;
                 staff.setStaffImage(fileUrl);
-            }// update CV
+            } // update CV
             if (documentFile != null && !documentFile.isEmpty()) {
                 String fileName = mediaUploadService.uploadMedia(documentFile);
-                String fileUrl  = "http://khounkham.com/images/batery/" + fileName;
+                String fileUrl = "http://khounkham.com/images/batery/" + fileName;
                 staff.setCvFile(fileUrl);
             }
 
             // Step 6: บันทึก
             StaffEntity saved = userRepository.save(staff);
 
-            // Step 7:  Success response
+            // Step 7: Success response
             Map<String, Object> data = new HashMap<>();
-            data.put("staffId",        saved.getId());
-            data.put("staffCode",      saved.getStaffCode());
-            data.put("username",       saved.getUsername());
-            data.put("baseSalary",     saved.getBaseSalary());
-            data.put("workSchedule",   saved.getWorkSchedule());
-            data.put("cycleWorkDays",  saved.getCycleWorkDays());
-            data.put("cycleOffDays",   saved.getCycleOffDays());
+            data.put("staffId", saved.getId());
+            data.put("staffCode", saved.getStaffCode());
+            data.put("username", saved.getUsername());
+            data.put("baseSalary", saved.getBaseSalary());
+            data.put("workSchedule", saved.getWorkSchedule());
+            data.put("cycleWorkDays", saved.getCycleWorkDays());
+            data.put("cycleOffDays", saved.getCycleOffDays());
             data.put("cycleStartDate", saved.getCycleStartDate());
-            data.put("staffImage",saved.getStaffImage());
-            data.put("cvFile",saved.getCvFile());
+            data.put("staffImage", saved.getStaffImage());
+            data.put("cvFile", saved.getCvFile());
 
             response.setStatus("00");
             response.setMessage("ອັບເດດຂໍ້ມູນເງິນເດືອນສຳເລັດ");
             response.setDataResponse(data);
 
         } catch (Exception e) {
-            //  Error response
+            // Error response
             e.printStackTrace();
             response.setStatus("01");
             response.setMessage(e.getMessage());
@@ -399,11 +406,12 @@ public class FaceService {
 
         return response;
     }
+
     // Helper method แปลง Entity → DTO
     private StaffResponseDTO mapToDTO(StaffEntity staff) {
 
-        String borName      = null;
-        String deptName     = null;
+        String borName = null;
+        String deptName = null;
         String positionName = null;
 
         if (staff.getBorId() != null) {
@@ -412,14 +420,14 @@ public class FaceService {
                     .orElse(null);
         }
 
-        //  ใช้ getDept_id() ตามชื่อจริงใน Entity
+        // ใช้ getDept_id() ตามชื่อจริงใน Entity
         if (staff.getDept_id() != null) {
             deptName = departmentRepository.findById(staff.getDept_id())
                     .map(Department::getDeptName)
                     .orElse(null);
         }
 
-        //  ใช้ getPos_id() ตามชื่อจริงใน Entity
+        // ใช้ getPos_id() ตามชื่อจริงใน Entity
         if (staff.getPos_id() != null) {
             positionName = positionRepository.findById(staff.getPos_id())
                     .map(Position::getPosName)
@@ -449,11 +457,53 @@ public class FaceService {
                 staff.getStartwork_date(),
                 staff.getBaseSalary(),
                 staff.getCreatedAt(),
-                staff.getUpdatedAt()
-        );
+                staff.getUpdatedAt());
     }
 
-    //check-in and check-out service
+    // check-in and check-out service
+    // public CheckInResponseDTO checkIn(CheckInRequestDTO dto) {
+    //
+    // StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
+    // .orElseThrow(() -> new RuntimeException("ไม่พบ Staff Code: " +
+    // dto.getStaffCode()));
+    //
+    // if (!staff.getStatus().equals("ACTIVE")) {
+    // throw new RuntimeException("Staff นี้ไม่ได้ใช้งานแล้ว");
+    // }
+    //
+    // LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+    // LocalDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
+    //
+    // Optional<AttendanceLog> existingCheckIn =
+    // attendanceLogRepository
+    // .findTopByStaff_IdAndCheckTypeAndCheckTimeBetweenOrderByCheckTimeDesc(
+    // staff.getId(), "CHECK_IN", startOfDay, endOfDay);
+    //
+    // Optional<AttendanceLog> existingCheckOut =
+    // attendanceLogRepository
+    // .findTopByStaff_IdAndCheckTypeAndCheckTimeBetweenOrderByCheckTimeDesc(
+    // staff.getId(), "CHECK_OUT", startOfDay, endOfDay);
+    //
+    // AttendanceLog log;
+    // String message;
+    // String notimessage = "";
+    // LocalTime now = LocalTime.now();
+    //
+    // if (existingCheckIn.isEmpty()) {
+    // log = new AttendanceLog();
+    // log.setStaff(staff);
+    // log.setCheckType("CHECK_IN");
+    //// log.setCheckTime(LocalDateTime.now());
+    // log.setCheckTime(LocalDateTime.now().minusMinutes(2));
+    // log.setIpAddress(dto.getIpAddress());
+    // log.setMacAddress(dto.getMacAddress());
+    // message = "Check-in ສຳເລັດ";
+    // notimessage = now.isAfter(LocalTime.of(8, 1)) ? "LATE" : "ON-TIME";
+    //
+    // } else if (existingCheckOut.isEmpty()) {
+    // log.getCheckTime()
+    // );
+    // }
     public CheckInResponseDTO checkIn(CheckInRequestDTO dto) {
 
         StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
@@ -464,17 +514,18 @@ public class FaceService {
         }
 
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        LocalDateTime endOfDay   = startOfDay.plusDays(1).minusSeconds(1);
+        LocalDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
 
-        Optional<AttendanceLog> existingCheckIn =
-                attendanceLogRepository
-                        .findTopByStaff_IdAndCheckTypeAndCheckTimeBetweenOrderByCheckTimeDesc(
-                                staff.getId(), "CHECK_IN", startOfDay, endOfDay);
+        List<AttendanceLog> todayLogs = attendanceLogRepository
+                .findByStaff_IdAndCheckTimeBetweenOrderByCheckTimeAsc(staff.getId(), startOfDay, endOfDay);
 
-        Optional<AttendanceLog> existingCheckOut =
-                attendanceLogRepository
-                        .findTopByStaff_IdAndCheckTypeAndCheckTimeBetweenOrderByCheckTimeDesc(
-                                staff.getId(), "CHECK_OUT", startOfDay, endOfDay);
+        Optional<AttendanceLog> existingCheckIn = todayLogs.stream()
+                .filter(l -> "CHECK_IN".equals(l.getCheckType()))
+                .findFirst();
+
+        Optional<AttendanceLog> existingCheckOut = todayLogs.stream()
+                .filter(l -> "CHECK_OUT".equals(l.getCheckType()))
+                .findFirst();
 
         AttendanceLog log;
         String message;
@@ -485,7 +536,7 @@ public class FaceService {
             log = new AttendanceLog();
             log.setStaff(staff);
             log.setCheckType("CHECK_IN");
-//            log.setCheckTime(LocalDateTime.now());
+            // log.setCheckTime(LocalDateTime.now());
             log.setCheckTime(LocalDateTime.now().minusMinutes(2));
             log.setIpAddress(dto.getIpAddress());
             log.setMacAddress(dto.getMacAddress());
@@ -513,6 +564,21 @@ public class FaceService {
 
         attendanceLogRepository.save(log);
 
+        boolean isDoubleShift = staff.getBorId() != null && staff.getBorId() == 161;
+        if (isDoubleShift) {
+            AttendanceLog faceScanLog = new AttendanceLog();
+            faceScanLog.setStaff(staff);
+            faceScanLog.setCheckType("FaceScan");
+            if (existingCheckIn.isEmpty()) {
+                faceScanLog.setCheckTime(LocalDateTime.now().minusMinutes(2));
+            } else {
+                faceScanLog.setCheckTime(LocalDateTime.now());
+            }
+            faceScanLog.setIpAddress(dto.getIpAddress());
+            faceScanLog.setMacAddress(dto.getMacAddress());
+            attendanceLogRepository.save(faceScanLog);
+        }
+
         return new CheckInResponseDTO(
                 true,
                 message,
@@ -520,11 +586,10 @@ public class FaceService {
                 staff.getStaffCode(),
                 staff.getUsername(),
                 log.getCheckType(),
-                log.getCheckTime()
-        );
+                log.getCheckTime());
     }
 
-    //attendanceService
+    // attendanceService
     public DataResponse getAttendance(AttendanceRequestDTO dto) {
 
         DataResponse response = new DataResponse();
@@ -562,7 +627,7 @@ public class FaceService {
                     : LocalDate.now();
 
             LocalDateTime startDateTime = startDate.atStartOfDay();
-            LocalDateTime endDateTime   = endDate.atTime(23, 59, 59);
+            LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
             // Step 5: ดึง logs ก่อน
             List<AttendanceLog> logs;
@@ -585,8 +650,8 @@ public class FaceService {
             Long filterShiftId = (dto.getShiftId() != null
                     && !dto.getShiftId().isEmpty()
                     && !dto.getShiftId().equalsIgnoreCase("all"))
-                    ? Long.parseLong(dto.getShiftId())
-                    : null;
+                            ? Long.parseLong(dto.getShiftId())
+                            : null;
             if (dto.getStaffCode().equalsIgnoreCase("all")) {
                 boolean hasBorId = dto.getBorId() != null
                         && !dto.getBorId().isEmpty()
@@ -594,37 +659,27 @@ public class FaceService {
                 boolean hasSchedule = dto.getWorkSchedule() != null
                         && !dto.getWorkSchedule().isEmpty();
                 if (hasBorId && hasSchedule) {
-                    staffList =
-                            userRepository.findAllByBorIdAndStatusAndWorkSchedule(
-                                    Integer.parseInt(dto.getBorId()),
-                                    "ACTIVE",
-                                    dto.getWorkSchedule()
-                            );
+                    staffList = userRepository.findAllByBorIdAndStatusAndWorkSchedule(
+                            Integer.parseInt(dto.getBorId()),
+                            "ACTIVE",
+                            dto.getWorkSchedule());
                 } else if (hasBorId) {
-                    staffList =
-                            userRepository.findAllByBorIdAndStatus(
-                                    Integer.parseInt(dto.getBorId()),
-                                    "ACTIVE"
-                            );
+                    staffList = userRepository.findAllByBorIdAndStatus(
+                            Integer.parseInt(dto.getBorId()),
+                            "ACTIVE");
                 } else if (hasSchedule) {
-                    staffList =
-                            userRepository.findAllByStatusAndWorkSchedule(
-                                    "ACTIVE",
-                                    dto.getWorkSchedule()
-                            );
+                    staffList = userRepository.findAllByStatusAndWorkSchedule(
+                            "ACTIVE",
+                            dto.getWorkSchedule());
                 } else {
-                    staffList =
-                            userRepository.findAllByStatus("ACTIVE");
+                    staffList = userRepository.findAllByStatus("ACTIVE");
                 }
 
             } else {
-                StaffEntity staff =
-                        userRepository.findByStaffCode(dto.getStaffCode())
-                                .orElseThrow(() ->
-                                        new RuntimeException(
-                                                "Not found Staff Code: "
-                                                        + dto.getStaffCode()
-                                        ));
+                StaffEntity staff = userRepository.findByStaffCode(dto.getStaffCode())
+                        .orElseThrow(() -> new RuntimeException(
+                                "Not found Staff Code: "
+                                        + dto.getStaffCode()));
 
                 staffList.add(staff);
             }
@@ -634,45 +689,35 @@ public class FaceService {
                     .map(StaffEntity::getId)
                     .collect(Collectors.toList());
             if (!staffIds.isEmpty()) {
-                List<StaffShift> staffShifts =
-                        staffShiftRepository.findCurrentShiftsByStaffIdsAndShift(
-                                staffIds,
-                                LocalDate.now(),
-                                filterShiftId
-                        );
+                List<StaffShift> staffShifts = staffShiftRepository.findCurrentShiftsByStaffIdsAndShift(
+                        staffIds,
+                        LocalDate.now(),
+                        filterShiftId);
                 for (StaffShift s : staffShifts) {
                     shiftMap.putIfAbsent(
                             s.getStaff().getId(),
-                            s.getShift()
-                    );
+                            s.getShift());
                 }
             }
             // ถ้าเลือก shiftId -> filter staff
             if (filterShiftId != null) {
 
-                Set<Long> staffWithShift =
-                        shiftMap.keySet();
-
+                Set<Long> staffWithShift = shiftMap.keySet();
 
                 staffList = staffList.stream()
-                        .filter(s ->
-                                staffWithShift.contains(s.getId())
-                        )
+                        .filter(s -> staffWithShift.contains(s.getId()))
                         .collect(Collectors.toList());
-
 
                 staffIds = staffList.stream()
                         .map(StaffEntity::getId)
                         .collect(Collectors.toList());
             }
 
-
             // สำคัญมาก สำหรับ lambda
             final List<StaffEntity> finalStaffList = staffList;
 
-
             // Step 7: โหลด borName ทีเดียว
-            //  เปลี่ยนจาก logs → staffList
+            // เปลี่ยนจาก logs → staffList
             Set<Integer> borIds = staffList.stream()
                     .map(StaffEntity::getBorId)
                     .filter(Objects::nonNull)
@@ -685,7 +730,7 @@ public class FaceService {
             }
 
             // Step 8: โหลด department ทีเดียว
-            //  เปลี่ยนจาก logs → staffList
+            // เปลี่ยนจาก logs → staffList
             Set<Long> deptIds = staffList.stream()
                     .map(StaffEntity::getDept_id)
                     .filter(Objects::nonNull)
@@ -697,8 +742,8 @@ public class FaceService {
                         .forEach(dept -> deptNameMap.put(dept.getId(), dept.getDeptName()));
             }
 
-             // Step 9: โหลด position ทีเดียว
-            //  เปลี่ยนจาก logs → staffList
+            // Step 9: โหลด position ทีเดียว
+            // เปลี่ยนจาก logs → staffList
             Set<Long> posIds = staffList.stream()
                     .map(StaffEntity::getPos_id)
                     .filter(Objects::nonNull)
@@ -731,7 +776,7 @@ public class FaceService {
                                     .findFirst()
                                     .orElse(leaveStaff);
 
-                            //  คำนวณวันทำงานจริงใน leave period
+                            // คำนวณวันทำงานจริงใน leave period
                             long workDaysInLeave = 0;
                             LocalDate tmp = leave.getStartDate();
                             while (!tmp.isAfter(leave.getEndDate())) {
@@ -753,13 +798,13 @@ public class FaceService {
                             while (!current.isAfter(leave.getEndDate())) {
                                 LocalDate day = current;
 
-                                //  ข้ามวันหยุด
+                                // ข้ามวันหยุด
                                 if (!workScheduleUtil.isWorkDay(staffForSchedule, day,
                                         staffForSchedule.getWorkSchedule() != null
                                                 ? staffForSchedule.getWorkSchedule()
                                                 : "MON_FRI")) {
                                     current = current.plusDays(1);
-                                    continue;  //  ไม่เพิ่มวันหยุดเข้า leaveMap
+                                    continue; // ไม่เพิ่มวันหยุดเข้า leaveMap
                                 }
 
                                 final double dailyDays = daysPerWorkDay;
@@ -774,7 +819,7 @@ public class FaceService {
                         });
             }
 
-            //  สร้าง Set ของ staffId จาก staffList
+            // สร้าง Set ของ staffId จาก staffList
             Set<Long> staffIdSet = staffList.stream()
                     .map(StaffEntity::getId)
                     .collect(Collectors.toSet());
@@ -786,7 +831,8 @@ public class FaceService {
 
                 Long staffId = log.getStaff().getId();
 
-                if (!staffIdSet.contains(staffId)) continue;
+                if (!staffIdSet.contains(staffId))
+                    continue;
 
                 String key = staffId + "_" + log.getCheckTime().toLocalDate();
 
@@ -798,15 +844,22 @@ public class FaceService {
                 Map<String, Object> day = dayMap.get(key);
 
                 if (log.getCheckType().equals("CHECK_IN")) {
-                    day.put("checkIn",       log.getCheckTime().toString());
+                    day.put("checkIn", log.getCheckTime().toString());
                     day.put("checkInStatus", calculateCheckInStatus(
                             log.getCheckTime(), shift));
-                    day.put("ipAddress",     log.getIpAddress());
-                    day.put("macAddress",    log.getMacAddress());
-                } else {
-                    day.put("checkOut",       log.getCheckTime().toString());
+                    day.put("ipAddress", log.getIpAddress());
+                    day.put("macAddress", log.getMacAddress());
+                } else if (log.getCheckType().equals("CHECK_OUT")) {
+                    day.put("checkOut", log.getCheckTime().toString());
                     day.put("checkOutStatus", calculateCheckOutStatus(
                             log.getCheckTime(), shift));
+                } else if (log.getCheckType().equals("FaceScan")) {
+                    List<Map<String, String>> historyList = (List<Map<String, String>>) day
+                            .computeIfAbsent("faceScanHistory", k -> new ArrayList<>());
+                    Map<String, String> scanInfo = new HashMap<>();
+                    scanInfo.put("time", log.getCheckTime().toString());
+                    scanInfo.put("ipAddress", log.getIpAddress());
+                    historyList.add(scanInfo);
                 }
             }
 
@@ -824,7 +877,7 @@ public class FaceService {
                             boolean allApproved = leavesOnDay.stream()
                                     .allMatch(l -> "APPROVED".equals(l.getStatus()));
 
-                            //  คำนวณ totalDays ต่อวันนี้
+                            // คำนวณ totalDays ต่อวันนี้
                             double totalForToday = leavesOnDay.stream()
                                     .mapToDouble(l -> {
                                         // นับวันทำงานจริงใน leave period
@@ -846,19 +899,21 @@ public class FaceService {
                                     .sum();
 
                             Map<String, Object> leaveDay = new LinkedHashMap<>();
-                            leaveDay.put("date",          cur.toString());
-                            leaveDay.put("checkIn",        "00");
-                            leaveDay.put("checkInStatus",  allApproved
-                                    ? "ON_LEAVE" : "PENDING_LEAVE");
-                            leaveDay.put("checkOut",       "00");
+                            leaveDay.put("date", cur.toString());
+                            leaveDay.put("checkIn", "00");
+                            leaveDay.put("checkInStatus", allApproved
+                                    ? "ON_LEAVE"
+                                    : "PENDING_LEAVE");
+                            leaveDay.put("checkOut", "00");
                             leaveDay.put("checkOutStatus", "00");
-                            leaveDay.put("ipAddress",      null);
-                            leaveDay.put("macAddress",     null);
-                            leaveDay.put("leaveType",      leavesOnDay.get(0).getLeaveType());
-                            leaveDay.put("leaveStatus",    allApproved ? "APPROVED" : "PENDING");
-                            leaveDay.put("totalDays",      totalForToday);
-                            leaveDay.put("halfDay",        leavesOnDay.size() > 1
-                                    ? "FULL_DAY" : leavesOnDay.get(0).getHalfDay());
+                            leaveDay.put("ipAddress", null);
+                            leaveDay.put("macAddress", null);
+                            leaveDay.put("leaveType", leavesOnDay.get(0).getLeaveType());
+                            leaveDay.put("leaveStatus", allApproved ? "APPROVED" : "PENDING");
+                            leaveDay.put("totalDays", totalForToday);
+                            leaveDay.put("halfDay", leavesOnDay.size() > 1
+                                    ? "FULL_DAY"
+                                    : leavesOnDay.get(0).getHalfDay());
 
                             dayMap.put(key, leaveDay);
                         }
@@ -873,19 +928,19 @@ public class FaceService {
             for (StaffEntity staff : staffList) {
                 if (!staffMap.containsKey(staff.getId())) {
                     staffMap.put(staff.getId(), createStaffItem(
-                            staff, borNameMap, deptNameMap, posNameMap,shiftMap.get(staff.getId())));
+                            staff, borNameMap, deptNameMap, posNameMap, shiftMap.get(staff.getId())));
                 }
             }
 
-            //  เพิ่ม staff ที่มีแต่ใบลา (ไม่มี log) เข้า staffMap ด้วย
+            // เพิ่ม staff ที่มีแต่ใบลา (ไม่มี log) เข้า staffMap ด้วย
             for (StaffEntity staff : staffList) {
                 if (!staffMap.containsKey(staff.getId())) {
-                    Map<LocalDate, List<LeaveRequest>> staffLeaveMap =
-                            leaveMap.getOrDefault(staff.getId(), new HashMap<>());
+                    Map<LocalDate, List<LeaveRequest>> staffLeaveMap = leaveMap.getOrDefault(staff.getId(),
+                            new HashMap<>());
 
                     if (!staffLeaveMap.isEmpty()) {
                         staffMap.put(staff.getId(), createStaffItem(
-                                staff, borNameMap, deptNameMap, posNameMap,shiftMap.get(staff.getId())));
+                                staff, borNameMap, deptNameMap, posNameMap, shiftMap.get(staff.getId())));
                     }
                 }
             }
@@ -917,49 +972,47 @@ public class FaceService {
         return response;
     }
 
-    //  Helper — สร้าง staff item
+    // Helper — สร้าง staff item
     private Map<String, Object> createStaffItem(
             StaffEntity staff,
             Map<Integer, String> borNameMap,
             Map<Long, String> deptNameMap,
             Map<Long, String> posNameMap,
-            WorkShift shift)
-    {
+            WorkShift shift) {
         Map<String, Object> staffItem = new LinkedHashMap<>();
 
-        staffItem.put("staffId",     staff.getId());
-        staffItem.put("staffCode",   staff.getStaffCode());
-        staffItem.put("username",    staff.getUsername());
-        staffItem.put("laoName",     staff.getLao_name());
-        staffItem.put("staffImage",  staff.getStaffImage());
+        staffItem.put("staffId", staff.getId());
+        staffItem.put("staffCode", staff.getStaffCode());
+        staffItem.put("username", staff.getUsername());
+        staffItem.put("laoName", staff.getLao_name());
+        staffItem.put("staffImage", staff.getStaffImage());
 
-        staffItem.put("borId",       staff.getBorId());
-        staffItem.put("borName",     borNameMap.get(staff.getBorId()));
+        staffItem.put("borId", staff.getBorId());
+        staffItem.put("borName", borNameMap.get(staff.getBorId()));
 
-        staffItem.put("deptId",      staff.getDept_id());
-        staffItem.put("department",  deptNameMap.get(staff.getDept_id()));
+        staffItem.put("deptId", staff.getDept_id());
+        staffItem.put("department", deptNameMap.get(staff.getDept_id()));
 
-        staffItem.put("posId",       staff.getPos_id());
-        staffItem.put("position",    posNameMap.get(staff.getPos_id()));
+        staffItem.put("posId", staff.getPos_id());
+        staffItem.put("position", posNameMap.get(staff.getPos_id()));
 
-        staffItem.put("work_schedule",staff.getWorkSchedule());
+        staffItem.put("work_schedule", staff.getWorkSchedule());
 
-        staffItem.put("cycle_work_days",staff.getCycleWorkDays());
-        staffItem.put("cycle_off_days",staff.getCycleOffDays());
-        staffItem.put("cycle_start_date",staff.getCycleStartDate());
-
+        staffItem.put("cycle_work_days", staff.getCycleWorkDays());
+        staffItem.put("cycle_off_days", staff.getCycleOffDays());
+        staffItem.put("cycle_start_date", staff.getCycleStartDate());
 
         // ===== ADD SHIFT HERE =====
 
         if (shift != null) {
 
-            Map<String,Object> shiftInfo = new LinkedHashMap<>();
+            Map<String, Object> shiftInfo = new LinkedHashMap<>();
 
-            shiftInfo.put("shiftId",   shift.getId());
+            shiftInfo.put("shiftId", shift.getId());
             shiftInfo.put("shiftName", shift.getShiftName());
             shiftInfo.put("shiftCode", shift.getShiftCode());
             shiftInfo.put("workStart", shift.getWorkStart().toString());
-            shiftInfo.put("workEnd",   shift.getWorkEnd().toString());
+            shiftInfo.put("workEnd", shift.getWorkEnd().toString());
 
             staffItem.put("shift", shiftInfo);
 
@@ -967,7 +1020,6 @@ public class FaceService {
 
             staffItem.put("shift", null);
         }
-
 
         staffItem.put("attendanLog", new ArrayList<>());
 
@@ -977,37 +1029,38 @@ public class FaceService {
     // Helper method สร้าง day entry
     private Map<String, Object> createDayEntry(AttendanceLog log) {
         Map<String, Object> day = new LinkedHashMap<>();
-        day.put("id",             log.getId());
-        day.put("date",           log.getCheckTime().toLocalDate().toString());
-        day.put("checkIn",        "00");
-        day.put("checkInStatus",  "00");
-        day.put("checkOut",       "00");
+        day.put("id", log.getId());
+        day.put("date", log.getCheckTime().toLocalDate().toString());
+        day.put("checkIn", "00");
+        day.put("checkInStatus", "00");
+        day.put("checkOut", "00");
         day.put("checkOutStatus", "00");
-        day.put("ipAddress",      null);
-        day.put("macAddress",     null);
+        day.put("ipAddress", null);
+        day.put("macAddress", null);
+        day.put("faceScanHistory", new ArrayList<Map<String, String>>());
         return day;
     }
 
-    //  คำนวณ CHECK_IN status
-//    private String calculateCheckInStatus(LocalDateTime checkInTime) {
-//
-//        LocalTime checkIn = checkInTime.toLocalTime();
-//        LocalTime deadline = LocalTime.of(8, 1); // หลัง 08:01 = สาย
-//
-//        if (checkIn.isAfter(deadline)) {
-//            // คำนวณนาทีที่สาย
-//            long minutesLate = java.time.Duration.between(deadline, checkIn).toMinutes();
-//
-//            if (minutesLate >= 60) {
-//                long hours = minutesLate / 60;
-//                long mins  = minutesLate % 60;
-//                return "LATE " + hours + " hr " + mins + " mins";
-//            } else {
-//                return "LATE " + minutesLate + " mins";
-//            }
-//        }
-//        return "ON-TIME";
-//    }
+    // คำนวณ CHECK_IN status
+    // private String calculateCheckInStatus(LocalDateTime checkInTime) {
+    //
+    // LocalTime checkIn = checkInTime.toLocalTime();
+    // LocalTime deadline = LocalTime.of(8, 1); // หลัง 08:01 = สาย
+    //
+    // if (checkIn.isAfter(deadline)) {
+    // // คำนวณนาทีที่สาย
+    // long minutesLate = java.time.Duration.between(deadline, checkIn).toMinutes();
+    //
+    // if (minutesLate >= 60) {
+    // long hours = minutesLate / 60;
+    // long mins = minutesLate % 60;
+    // return "LATE " + hours + " hr " + mins + " mins";
+    // } else {
+    // return "LATE " + minutesLate + " mins";
+    // }
+    // }
+    // return "ON-TIME";
+    // }
     // FaceService.java — แก้ไข calculateCheckInStatus
     private String calculateCheckInStatus(
             LocalDateTime checkInTime,
@@ -1021,8 +1074,7 @@ public class FaceService {
             if (!checkTime.isBefore(LocalTime.of(8, 1))) {
                 long lateMinutes = ChronoUnit.MINUTES.between(
                         LocalTime.of(8, 0),
-                        checkTime
-                );
+                        checkTime);
                 long hours = lateMinutes / 60;
                 long minutes = lateMinutes % 60;
                 return hours > 0
@@ -1035,8 +1087,7 @@ public class FaceService {
         if (checkTime.isAfter(shift.getWorkStart())) {
             long lateMinutes = ChronoUnit.MINUTES.between(
                     shift.getWorkStart(),
-                    checkTime
-            );
+                    checkTime);
             long hours = lateMinutes / 60;
             long minutes = lateMinutes % 60;
             return hours > 0
@@ -1047,26 +1098,27 @@ public class FaceService {
         return "INTIME";
     }
 
-    //  คำนวณ CHECK_OUT status
-//    private String calculateCheckOutStatus(LocalDateTime checkOutTime) {
-//
-//        LocalTime checkOut = checkOutTime.toLocalTime();
-//        LocalTime endTime  = LocalTime.of(17, 0); // ก่อน 17:00 = ออกก่อนเวลา
-//
-//        if (checkOut.isBefore(endTime)) {
-//            // คำนวณนาทีที่ออกก่อนเวลา
-//            long minutesEarly = java.time.Duration.between(checkOut, endTime).toMinutes();
-//
-//            if (minutesEarly >= 60) {
-//                long hours = minutesEarly / 60;
-//                long mins  = minutesEarly % 60;
-//                return "EARLY " + hours + " hr " + mins + " mins";
-//            } else {
-//                return "EARLY " + minutesEarly + " mins";
-//            }
-//        }
-//        return "ON-TIME";
-//    }
+    // คำนวณ CHECK_OUT status
+    // private String calculateCheckOutStatus(LocalDateTime checkOutTime) {
+    //
+    // LocalTime checkOut = checkOutTime.toLocalTime();
+    // LocalTime endTime = LocalTime.of(17, 0); // ก่อน 17:00 = ออกก่อนเวลา
+    //
+    // if (checkOut.isBefore(endTime)) {
+    // // คำนวณนาทีที่ออกก่อนเวลา
+    // long minutesEarly = java.time.Duration.between(checkOut,
+    // endTime).toMinutes();
+    //
+    // if (minutesEarly >= 60) {
+    // long hours = minutesEarly / 60;
+    // long mins = minutesEarly % 60;
+    // return "EARLY " + hours + " hr " + mins + " mins";
+    // } else {
+    // return "EARLY " + minutesEarly + " mins";
+    // }
+    // }
+    // return "ON-TIME";
+    // }
     private String calculateCheckOutStatus(
             LocalDateTime checkOutTime,
             WorkShift shift) {
@@ -1077,8 +1129,7 @@ public class FaceService {
             if (checkTime.isBefore(LocalTime.of(17, 0))) {
                 long earlyMinutes = ChronoUnit.MINUTES.between(
                         checkTime,
-                        LocalTime.of(17, 0)
-                );
+                        LocalTime.of(17, 0));
                 long hours = earlyMinutes / 60;
                 long minutes = earlyMinutes % 60;
                 return hours > 0
@@ -1091,8 +1142,7 @@ public class FaceService {
         if (checkTime.isBefore(shift.getWorkEnd())) {
             long earlyMinutes = ChronoUnit.MINUTES.between(
                     checkTime,
-                    shift.getWorkEnd()
-            );
+                    shift.getWorkEnd());
             long hours = earlyMinutes / 60;
             long minutes = earlyMinutes % 60;
             return hours > 0
@@ -1102,9 +1152,7 @@ public class FaceService {
         return "ON-TIME";
     }
 
-
-
-    //LOGIN SERVICE FOR FACE-DETECTION SYSTEM
+    // LOGIN SERVICE FOR FACE-DETECTION SYSTEM
     public LoginResDTO login(LoginReq dto) {
         LoginResDTO result = new LoginResDTO();
 
@@ -1112,7 +1160,7 @@ public class FaceService {
         StaffEntity staff = userRepository.findByUsername(dto.getUser())
                 .orElseThrow(() -> new RuntimeException("Not found Username"));
 
-        // Step 2:  เช็ค password ด้วย PasswordUtil
+        // Step 2: เช็ค password ด้วย PasswordUtil
         if (!PasswordUtil.verifyPassword(dto.getPassword(), staff.getPasswordHash())) {
             throw new RuntimeException("Incorrect Password");
         }
@@ -1129,7 +1177,7 @@ public class FaceService {
         } while (userRepository.findByToken(newToken).isPresent());
 
         // Step 5: อัปเดต token และ tokenExpiredAt
-//        LocalDateTime newExpiredAt = LocalDateTime.now().plusYears(1);
+        // LocalDateTime newExpiredAt = LocalDateTime.now().plusYears(1);
         LocalDateTime newExpiredAt = LocalDateTime.now().plusDays(5);
         staff.setToken(newToken);
         staff.setTokenExpiredAt(newExpiredAt);
@@ -1143,14 +1191,13 @@ public class FaceService {
                 staff.getRole(),
                 newExpiredAt,
                 String.valueOf(staff.getBorId()),
-                String.valueOf(staff.getDept_id())
-        ));
+                String.valueOf(staff.getDept_id())));
         return result;
     }
 
     // ==============================
-// ADMIN reset password
-// ==============================
+    // ADMIN reset password
+    // ==============================
     public PasswordResponseDTO resetPassword(ResetPasswordRequestDTO dto) {
 
         // Step 1: หา ADMIN จาก token
@@ -1184,13 +1231,13 @@ public class FaceService {
         return new PasswordResponseDTO(
                 true,
                 "Reset Password ສຳເລັດ",
-                newPassword     // ✅ ส่ง plain password กลับให้ ADMIN รู้
+                newPassword // ✅ ส่ง plain password กลับให้ ADMIN รู้
         );
     }
 
     // ==============================
-// Staff เปลี่ยน password ตัวเอง
-// ==============================
+    // Staff เปลี่ยน password ตัวเอง
+    // ==============================
     public PasswordResponseDTO changePassword(ChangePasswordRequestDTO dto) {
 
         // Step 1: หา staff จาก token
@@ -1221,11 +1268,11 @@ public class FaceService {
         return new PasswordResponseDTO(
                 true,
                 "ປ່ຽນ Password ສຳເລັດ",
-                null    // ✅ ไม่ส่ง password กลับ เพราะ staff รู้อยู่แล้ว
+                null // ✅ ไม่ส่ง password กลับ เพราะ staff รู้อยู่แล้ว
         );
     }
 
-    //service request day off
+    // service request day off
     public DataResponse requestLeave(LeaveRequestDTO dto) {
 
         DataResponse response = new DataResponse();
@@ -1244,7 +1291,7 @@ public class FaceService {
             // Step 3: แปลงวันที่
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate startDate = LocalDate.parse(dto.getStartDate(), formatter);
-            LocalDate endDate   = LocalDate.parse(dto.getEndDate(), formatter);
+            LocalDate endDate = LocalDate.parse(dto.getEndDate(), formatter);
 
             // Step 4: เช็ควันที่
             if (startDate.isAfter(endDate)) {
@@ -1256,7 +1303,7 @@ public class FaceService {
             double totalDays;
 
             if (dto.getHalfDay() != null && !dto.getHalfDay().isEmpty()) {
-                //  ลาครึ่งวัน
+                // ลาครึ่งวัน
                 // startDate และ endDate ต้องเป็นวันเดียวกัน
                 if (!startDate.equals(endDate)) {
                     throw new RuntimeException(
@@ -1267,7 +1314,8 @@ public class FaceService {
                         staff,
                         startDate,
                         staff.getWorkSchedule() != null
-                                ? staff.getWorkSchedule() : "MON_FRI");
+                                ? staff.getWorkSchedule()
+                                : "MON_FRI");
 
                 if (!isWorkDay) {
                     throw new RuntimeException("ຊ່ວງທີ່ເລືອກແມ່ນວັນພັກທັງໝົດ");
@@ -1293,7 +1341,7 @@ public class FaceService {
                     .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                             staff.getId(), "PENDING", endDate, startDate);
 
-//  รวม overlapping ทั้งหมด
+            // รวม overlapping ทั้งหมด
             List<LeaveRequest> allOverlapping = new ArrayList<>();
             allOverlapping.addAll(overlapping);
             allOverlapping.addAll(overlappingPending);
@@ -1302,11 +1350,11 @@ public class FaceService {
                 for (LeaveRequest existing : allOverlapping) {
 
                     String existingHalfDay = existing.getHalfDay();
-                    String newHalfDay      = dto.getHalfDay();
+                    String newHalfDay = dto.getHalfDay();
 
-                    //  ถ้าเป็นครึ่งวันทั้งคู่ เช็คว่าซ้ำช่วงเดียวกันไหม
+                    // ถ้าเป็นครึ่งวันทั้งคู่ เช็คว่าซ้ำช่วงเดียวกันไหม
                     boolean bothHalfDay = (existingHalfDay != null && !existingHalfDay.isEmpty())
-                            && (newHalfDay      != null && !newHalfDay.isEmpty());
+                            && (newHalfDay != null && !newHalfDay.isEmpty());
 
                     if (bothHalfDay) {
                         // MORNING + MORNING = No
@@ -1337,8 +1385,8 @@ public class FaceService {
             // Step 7: เช็คโควต้า + กฎแต่ละประเภท
             validateLeaveRequest(staff, dto.getLeaveType(), totalDays, startDate);
 
-            double quota     = getLeaveQuota(dto.getLeaveType());
-            double used      = getLeaveUsed(staff.getId(), dto.getLeaveType(), startDate.getYear());
+            double quota = getLeaveQuota(dto.getLeaveType());
+            double used = getLeaveUsed(staff.getId(), dto.getLeaveType(), startDate.getYear());
             double remaining = quota - used;
 
             if (!dto.getLeaveType().equals("UNPAID")
@@ -1362,16 +1410,16 @@ public class FaceService {
 
             // Step 9: สร้าง response data
             Map<String, Object> data = new HashMap<>();
-            data.put("leaveId",       saved.getId());
-            data.put("staffCode",     staff.getStaffCode());
-            data.put("username",      staff.getUsername());
-            data.put("leaveType",     saved.getLeaveType());
-            data.put("startDate",     saved.getStartDate().toString());
-            data.put("endDate",       saved.getEndDate().toString());
-            data.put("totalDays",     saved.getTotalDays());  // 0.5 หรือ 1, 2, 3...
-            data.put("status",        saved.getStatus());     // MORNING, AFTERNOON, null
+            data.put("leaveId", saved.getId());
+            data.put("staffCode", staff.getStaffCode());
+            data.put("username", staff.getUsername());
+            data.put("leaveType", saved.getLeaveType());
+            data.put("startDate", saved.getStartDate().toString());
+            data.put("endDate", saved.getEndDate().toString());
+            data.put("totalDays", saved.getTotalDays()); // 0.5 หรือ 1, 2, 3...
+            data.put("status", saved.getStatus()); // MORNING, AFTERNOON, null
             data.put("remainingDays", remaining - totalDays);
-            data.put("createdAt",     saved.getCreatedAt());
+            data.put("createdAt", saved.getCreatedAt());
 
             response.setStatus("00");
             response.setMessage("ສົ່ງຄຳຂໍລາພັກສຳເລັດ ລໍຖ້າການອະນຸມັດ");
@@ -1386,64 +1434,67 @@ public class FaceService {
 
         return response;
     }
-//    private double  calculateWorkDays(StaffEntity staff,
-//                                  LocalDate startDate, LocalDate endDate) {
-//
-//        String schedule = staff.getWorkSchedule() != null
-//                ? staff.getWorkSchedule() : "MON_FRI";
-//
-//        double  workDays = 0;
-//        LocalDate current = startDate;
-//
-//        while (!current.isAfter(endDate)) {
-//            if (workScheduleUtil.isWorkDay(staff, current, schedule)) {
-//                workDays++;
-//            }
-//            current = current.plusDays(1);
-//        }
-//
-//        return workDays;
-//    }
+    // private double calculateWorkDays(StaffEntity staff,
+    // LocalDate startDate, LocalDate endDate) {
+    //
+    // String schedule = staff.getWorkSchedule() != null
+    // ? staff.getWorkSchedule() : "MON_FRI";
+    //
+    // double workDays = 0;
+    // LocalDate current = startDate;
+    //
+    // while (!current.isAfter(endDate)) {
+    // if (workScheduleUtil.isWorkDay(staff, current, schedule)) {
+    // workDays++;
+    // }
+    // current = current.plusDays(1);
+    // }
+    //
+    // return workDays;
+    // }
 
-//    private boolean isWorkDay(StaffEntity staff, LocalDate date, String schedule) {
-//
-//        java.time.DayOfWeek day = date.getDayOfWeek();
-//
-//        switch (schedule) {
-//            case "MON_FRI":
-//                return day != java.time.DayOfWeek.SATURDAY
-//                        && day != java.time.DayOfWeek.SUNDAY;
-//
-//            case "CYCLE":
-//                return isCycleWorkDay(staff, date);
-//
-//            default:
-//                return day != java.time.DayOfWeek.SATURDAY
-//                        && day != java.time.DayOfWeek.SUNDAY;
-//        }
-//    }
-//
-//    private boolean isCycleWorkDay(StaffEntity staff, LocalDate date) {
-//
-//        LocalDate startDate = staff.getCycleStartDate();
-//        if (startDate == null) return true;
-//
-//        int workDays   = staff.getCycleWorkDays() != null ? staff.getCycleWorkDays() : 24;
-//        int offDays    = staff.getCycleOffDays()  != null ? staff.getCycleOffDays()  : 7;
-//        int cycleLength = workDays + offDays;
-//
-//        long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(startDate, date);
-//
-//        if (daysSinceStart < 0) return true;
-//
-//        int positionInCycle = (int) (daysSinceStart % cycleLength);
-//
-//        return positionInCycle < workDays;
-//    }
+    // private boolean isWorkDay(StaffEntity staff, LocalDate date, String schedule)
+    // {
+    //
+    // java.time.DayOfWeek day = date.getDayOfWeek();
+    //
+    // switch (schedule) {
+    // case "MON_FRI":
+    // return day != java.time.DayOfWeek.SATURDAY
+    // && day != java.time.DayOfWeek.SUNDAY;
+    //
+    // case "CYCLE":
+    // return isCycleWorkDay(staff, date);
+    //
+    // default:
+    // return day != java.time.DayOfWeek.SATURDAY
+    // && day != java.time.DayOfWeek.SUNDAY;
+    // }
+    // }
+    //
+    // private boolean isCycleWorkDay(StaffEntity staff, LocalDate date) {
+    //
+    // LocalDate startDate = staff.getCycleStartDate();
+    // if (startDate == null) return true;
+    //
+    // int workDays = staff.getCycleWorkDays() != null ? staff.getCycleWorkDays() :
+    // 24;
+    // int offDays = staff.getCycleOffDays() != null ? staff.getCycleOffDays() : 7;
+    // int cycleLength = workDays + offDays;
+    //
+    // long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(startDate,
+    // date);
+    //
+    // if (daysSinceStart < 0) return true;
+    //
+    // int positionInCycle = (int) (daysSinceStart % cycleLength);
+    //
+    // return positionInCycle < workDays;
+    // }
     private void validateLeaveRequest(StaffEntity staff,
-                                      String leaveType,
-                                      double totalDays,
-                                      LocalDate startDate) {
+            String leaveType,
+            double totalDays,
+            LocalDate startDate) {
         switch (leaveType) {
 
             case "ANNUAL":
@@ -1503,11 +1554,12 @@ public class FaceService {
                             "ລາສ່ວນຕົວຄັ້ງລະໄດ້ບໍ່ເກີນ 5 ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
                 }
                 // ไม่เกิน 10 ครั้ง/ปี
-//                int personalCount = getLeaveCount(staff.getId(), "PERSONAL", startDate.getYear());
-//                if (personalCount >= 10) {
-//                    throw new RuntimeException(
-//                            "ລາສ່ວນຕົວໄດ້ສູງສຸດ 10 ຄັ້ງ/ປີ");
-//                }
+                // int personalCount = getLeaveCount(staff.getId(), "PERSONAL",
+                // startDate.getYear());
+                // if (personalCount >= 10) {
+                // throw new RuntimeException(
+                // "ລາສ່ວນຕົວໄດ້ສູງສຸດ 10 ຄັ້ງ/ປີ");
+                // }
                 break;
 
             case "SICK":
@@ -1520,47 +1572,57 @@ public class FaceService {
                 throw new RuntimeException("ປະເພດການລາບໍ່ຖືກຕ້ອງ: " + leaveType);
         }
     }
+
     // นับจำนวนครั้งที่ลาในปีนั้น (สำหรับ CASUAL)
     private int getLeaveCount(Long staffId, String leaveType, int year) {
         LocalDate startOfYear = LocalDate.of(year, 1, 1);
-        LocalDate endOfYear   = LocalDate.of(year, 12, 31);
+        LocalDate endOfYear = LocalDate.of(year, 12, 31);
 
         List<LeaveRequest> leaves = leaveRequestRepository
                 .findByStaff_IdAndLeaveTypeAndStatusAndStartDateBetween(
                         staffId, leaveType, "APPROVED", startOfYear, endOfYear);
 
-        return leaves.size();  // นับจำนวนครั้ง
+        return leaves.size(); // นับจำนวนครั้ง
     }
 
     private double getLeaveQuota(String leaveType) {
         switch (leaveType) {
-            case "SICK":      return 15.0;
-            case "ANNUAL":    return 15.0;
-            case "CASUAL":    return 9.0;
-            case "ACCIDENT":  return 30.0;
-            case "MATERNITY": return 999.0;
-            case "MISCARRIAGE": return 30.0;
-            case "PERSONAL":  return 5.0;
-            case "UNPAID":    return 999.0;
-            default: throw new RuntimeException("ປະເພດການລາບໍ່ຖືກຕ້ອງ: " + leaveType);
+            case "SICK":
+                return 15.0;
+            case "ANNUAL":
+                return 15.0;
+            case "CASUAL":
+                return 9.0;
+            case "ACCIDENT":
+                return 30.0;
+            case "MATERNITY":
+                return 999.0;
+            case "MISCARRIAGE":
+                return 30.0;
+            case "PERSONAL":
+                return 5.0;
+            case "UNPAID":
+                return 999.0;
+            default:
+                throw new RuntimeException("ປະເພດການລາບໍ່ຖືກຕ້ອງ: " + leaveType);
         }
     }
 
     private double getLeaveUsed(Long staffId, String leaveType, int year) {
         LocalDate startOfYear = LocalDate.of(year, 1, 1);
-        LocalDate endOfYear   = LocalDate.of(year, 12, 31);
+        LocalDate endOfYear = LocalDate.of(year, 12, 31);
 
         List<LeaveRequest> used = leaveRequestRepository
                 .findByStaff_IdAndLeaveTypeAndStatusAndStartDateBetween(
                         staffId, leaveType, "APPROVED", startOfYear, endOfYear);
 
-        //  sum เป็น double รองรับ 0.5
+        // sum เป็น double รองรับ 0.5
         return used.stream()
                 .mapToDouble(LeaveRequest::getTotalDays)
                 .sum();
     }
 
-    //getLeaveRequest
+    // getLeaveRequest
     public DataResponse getLeave(LeaveGetRequestDTO dto) {
 
         DataResponse response = new DataResponse();
@@ -1580,58 +1642,62 @@ public class FaceService {
 
             // แปลงวันที่ถ้ามี
             LocalDate startDate = (dto.getStartDate() != null && !dto.getStartDate().isEmpty())
-                    ? LocalDate.parse(dto.getStartDate(), formatter) : null;
+                    ? LocalDate.parse(dto.getStartDate(), formatter)
+                    : null;
             LocalDate endDate = (dto.getEndDate() != null && !dto.getEndDate().isEmpty())
-                    ? LocalDate.parse(dto.getEndDate(), formatter) : null;
+                    ? LocalDate.parse(dto.getEndDate(), formatter)
+                    : null;
 
             List<LeaveRequest> leaves;
 
             // Step 3: USER → ดูได้แค่ของตัวเอง
             if (requester.getRole().equals("USER")) {
                 leaves = leaveRequestRepository.findByFilters(
-                        requester.getId(),  // lock staffId เป็นตัวเอง
-                        null,               // borId ไม่ใช้
+                        requester.getId(), // lock staffId เป็นตัวเอง
+                        null, // borId ไม่ใช้
                         (dto.getStatus() != null && !dto.getStatus().isEmpty())
-                                ? dto.getStatus() : null,
+                                ? dto.getStatus()
+                                : null,
                         startDate,
-                        endDate
-                );
+                        endDate);
 
             } else {
                 // Step 4: HR/ADMIN → filter ตาม params ทั้งหมด
                 Long staffId = (dto.getStaffId() != null
                         && !dto.getStaffId().isEmpty()
                         && !dto.getStaffId().equalsIgnoreCase("all"))
-                        ? Long.parseLong(dto.getStaffId()) : null;
+                                ? Long.parseLong(dto.getStaffId())
+                                : null;
 
                 leaves = leaveRequestRepository.findByFilters(
                         staffId,
                         dto.getBorId(),
                         (dto.getStatus() != null && !dto.getStatus().isEmpty())
-                                ? dto.getStatus() : null,
+                                ? dto.getStatus()
+                                : null,
                         startDate,
-                        endDate
-                );
+                        endDate);
             }
 
             // Step 5: แปลง Entity → Map
             List<Map<String, Object>> data = leaves.stream().map(leave -> {
                 Map<String, Object> item = new LinkedHashMap<>();
-                item.put("leaveId",   leave.getId());
-                item.put("staffId",   leave.getStaff().getId());
+                item.put("leaveId", leave.getId());
+                item.put("staffId", leave.getStaff().getId());
                 item.put("staffCode", leave.getStaff().getStaffCode());
-                item.put("username",  leave.getStaff().getUsername());
+                item.put("username", leave.getStaff().getUsername());
                 item.put("staffImage", leave.getStaff().getStaffImage());
-                item.put("borId",     leave.getStaff().getBorId());
+                item.put("borId", leave.getStaff().getBorId());
                 item.put("leaveType", leave.getLeaveType());
-                item.put("halfDay",    leave.getHalfDay());
+                item.put("halfDay", leave.getHalfDay());
                 item.put("startDate", leave.getStartDate().toString());
-                item.put("endDate",   leave.getEndDate().toString());
+                item.put("endDate", leave.getEndDate().toString());
                 item.put("totalDays", leave.getTotalDays());
-                item.put("status",    leave.getStatus());
-                item.put("reason",    leave.getReason());
+                item.put("status", leave.getStatus());
+                item.put("reason", leave.getReason());
                 item.put("approvedBy", leave.getApprovedBy() != null
-                        ? leave.getApprovedBy().getUsername() : null);
+                        ? leave.getApprovedBy().getUsername()
+                        : null);
                 item.put("createdAt", leave.getCreatedAt());
                 item.put("updatedAt", leave.getUpdatedAt());
                 return item;
@@ -1652,7 +1718,7 @@ public class FaceService {
         return response;
     }
 
-    //approve leaveRequest
+    // approve leaveRequest
     public DataResponse approveLeave(LeaveApproveRequestDTO dto) {
 
         DataResponse response = new DataResponse();
@@ -1701,19 +1767,19 @@ public class FaceService {
 
             // Step 8: สร้าง response data
             Map<String, Object> data = new HashMap<>();
-            data.put("leaveId",      saved.getId());
-            data.put("staffId",      saved.getStaff().getId());
-            data.put("staffCode",    saved.getStaff().getStaffCode());
-            data.put("username",     saved.getStaff().getUsername());
-            data.put("staffImage",   saved.getStaff().getStaffImage());
-            data.put("leaveType",    saved.getLeaveType());
-            data.put("startDate",    saved.getStartDate().toString());
-            data.put("endDate",      saved.getEndDate().toString());
-//            data.put("totalDays",    saved.getTotalDays());
-            data.put("status",       saved.getStatus());
-            data.put("reason",       saved.getReason());
-            data.put("approvedBy",   hr.getUsername());
-            data.put("updatedAt",    saved.getUpdatedAt());
+            data.put("leaveId", saved.getId());
+            data.put("staffId", saved.getStaff().getId());
+            data.put("staffCode", saved.getStaff().getStaffCode());
+            data.put("username", saved.getStaff().getUsername());
+            data.put("staffImage", saved.getStaff().getStaffImage());
+            data.put("leaveType", saved.getLeaveType());
+            data.put("startDate", saved.getStartDate().toString());
+            data.put("endDate", saved.getEndDate().toString());
+            // data.put("totalDays", saved.getTotalDays());
+            data.put("status", saved.getStatus());
+            data.put("reason", saved.getReason());
+            data.put("approvedBy", hr.getUsername());
+            data.put("updatedAt", saved.getUpdatedAt());
 
             response.setStatus("00");
             response.setMessage(dto.getStatus().equals("APPROVED")
@@ -1731,627 +1797,642 @@ public class FaceService {
         return response;
     }
 
-    //getDailyAttendance
-//    public DataResponse getDailyAttendance(DailyAttendanceRequestDTO dto) {
-//
-//        DataResponse response = new DataResponse();
-//
-//        try {
-//
-//            // Step 1: หา requester จาก token
-//            StaffEntity requester = userRepository.findByToken(dto.getToken())
-//                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
-//
-//            // Step 2: เช็ค token หมดอายุ
-//            if (requester.getTokenExpiredAt() != null
-//                    && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
-//                throw new RuntimeException("Token หมดอายุ กรุณา Login ใหม่");
-//            }
-//
-//            // Step 3: กำหนดวันที่
-//            LocalDate targetDate = (dto.getDate() != null && !dto.getDate().isEmpty())
-//                    ? LocalDate.parse(dto.getDate(),
-//                    DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-//                    : LocalDate.now();
-//
-//            LocalDateTime startOfDay = targetDate.atStartOfDay();
-//            LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
-//
-//
-//            // Step 4: ดึง staff ตาม role + borId + deptId
-//            List<StaffEntity> staffList;
-//            //เตรียม filter values
-//            boolean hasBorId  = dto.getBorId()  != null && !dto.getBorId().isEmpty()
-//                    && !dto.getBorId().equalsIgnoreCase("all");
-//            boolean hasDeptId = dto.getDeptId() != null && !dto.getDeptId().isEmpty();
-//
-//            if (requester.getRole().equals("USER")) {
-//                staffList = new ArrayList<>();
-//                staffList.add(requester);
-//
-//            } else if (requester.getRole().equals("BORLEADER")) {
-//
-//                if (dto.getBorId() == null || dto.getBorId().isEmpty()) {
-//                    staffList = new ArrayList<>();
-//                    staffList.add(requester);
-//
-//                } else if (dto.getBorId().equalsIgnoreCase("all")) {
-//                    // BORLEADER ดูได้แค่ bor ตัวเอง
-//                    if (hasDeptId) {
-//                        staffList = userRepository.findAllByBorIdAndDeptId(
-//                                requester.getBorId(),
-//                                Long.parseLong(dto.getDeptId()));
-//                    } else {
-//                        staffList = userRepository.findAllByBorIdAndStatus(
-//                                requester.getBorId(), "ACTIVE");
-//                    }
-//                } else {
-//                    throw new RuntimeException("ບໍ່ມີສິດເບິ່ງຂໍ້ມູນ bor ອື່ນ");
-//                }
-//
-//            } else {
-//                // ADMIN / HR
-//                if (dto.getBorId() == null || dto.getBorId().isEmpty()) {
-//                    staffList = new ArrayList<>();
-//                    staffList.add(requester);
-//
-//                } else if (dto.getBorId().equalsIgnoreCase("all")) {
-//
-//                    if (hasDeptId) {
-//                        //  ทุก bor + filter deptId
-//                        staffList = userRepository.findAllByDeptId(
-//                                Long.parseLong(dto.getDeptId()));
-//                    } else {
-//                        staffList = userRepository.findAllByStatus("ACTIVE");
-//                    }
-//
-//                } else {
-//                    // filter borId
-//                    if (hasDeptId) {
-//                        // filter ทั้ง borId และ deptId
-//                        staffList = userRepository.findAllByBorIdAndDeptId(
-//                                Integer.parseInt(dto.getBorId()),
-//                                Long.parseLong(dto.getDeptId()));
-//                    } else {
-//                        staffList = userRepository.findAllByBorIdAndStatus(
-//                                Integer.parseInt(dto.getBorId()), "ACTIVE");
-//                    }
-//                }
-//            }
-//
-//            // Step 5: โหลด borName ทีเดียว
-//            Set<Integer> borIds = staffList.stream()
-//                    .map(StaffEntity::getBorId)
-//                    .filter(Objects::nonNull)
-//                    .collect(Collectors.toSet());
-//
-//            Map<Integer, String> borNameMap = new HashMap<>();
-//
-//            if (!borIds.isEmpty()) {
-//
-//                tbBorRepository.findAllById(borIds)
-//                        .forEach(bor ->
-//                                borNameMap.put(
-//                                        bor.getKeyId(),
-//                                        bor.getBName()
-//                                )
-//                        );
-//            }
-//
-//            // Step 6: โหลด department ทีเดียว
-//            Set<Long> deptIds = staffList.stream()
-//                    .map(StaffEntity::getDept_id)
-//                    .filter(Objects::nonNull)
-//                    .collect(Collectors.toSet());
-//
-//            Map<Long, String> deptNameMap = new HashMap<>();
-//
-//            if (!deptIds.isEmpty()) {
-//
-//                departmentRepository.findAllById(deptIds)
-//                        .forEach(dept ->
-//                                deptNameMap.put(
-//                                        dept.getId(),
-//                                        dept.getDeptName()
-//                                )
-//                        );
-//            }
-//
-//            // Step 7: โหลด position ทีเดียว
-//            Set<Long> posIds = staffList.stream()
-//                    .map(StaffEntity::getPos_id)
-//                    .filter(Objects::nonNull)
-//                    .collect(Collectors.toSet());
-//
-//            Map<Long, String> posNameMap = new HashMap<>();
-//
-//            if (!posIds.isEmpty()) {
-//
-//                positionRepository.findAllById(posIds)
-//                        .forEach(pos ->
-//                                posNameMap.put(
-//                                        pos.getId(),
-//                                        pos.getPosName()
-//                                )
-//                        );
-//            }
-//
-//            // Step 8: โหลด attendance logs ทีเดียว
-//            List<AttendanceLog> allLogs =
-//                    attendanceLogRepository
-//                            .findAllByCheckTimeBetweenOrderByCheckTimeAsc(
-//                                    startOfDay,
-//                                    endOfDay
-//                            );
-//
-//            Map<Long, AttendanceLog> checkInMap = new HashMap<>();
-//            Map<Long, AttendanceLog> checkOutMap = new HashMap<>();
-//
-//            for (AttendanceLog log : allLogs) {
-//
-//                Long staffId = log.getStaff().getId();
-//
-//                if ("CHECK_IN".equals(log.getCheckType())) {
-//
-//                    checkInMap.putIfAbsent(staffId, log);
-//
-//                } else if ("CHECK_OUT".equals(log.getCheckType())) {
-//
-//                    checkOutMap.put(staffId, log);
-//                }
-//            }
-//
-//            // Step 9: โหลด leave requests ทีเดียว
-//            List<Long> staffIds = staffList.stream()
-//                    .map(StaffEntity::getId)
-//                    .collect(Collectors.toList());
-//
-//            // ===============================
-//            // Load staff shift once
-//            // ===============================
-//
-//            Map<Long, WorkShift> shiftMap = new HashMap<>();
-//
-//            List<StaffShift> shifts =
-//                    staffShiftRepository.findCurrentShiftsByStaffIds(
-//                            staffIds,
-//                            targetDate
-//                    );
-//            for (StaffShift s : shifts) {
-//
-//                shiftMap.putIfAbsent(
-//                        s.getStaff().getId(),
-//                        s.getShift()
-//                );
-//            }
-//
-//
-//            Map<Long, List<LeaveRequest>> leaveMap = new HashMap<>();
-//
-//            if (!staffIds.isEmpty()) {
-//                leaveRequestRepository
-//                        .findByStaffIdsAndDate(staffIds, targetDate)
-//                        .forEach(leave -> {
-//
-//                            Long sid = leave.getStaff().getId();
-//
-//                            // หา staff จริง
-//                            StaffEntity leaveStaff = staffList.stream()
-//                                    .filter(s -> s.getId().equals(sid))
-//                                    .findFirst()
-//                                    .orElse(leave.getStaff());
-//
-//                            String schedule = leaveStaff.getWorkSchedule() != null
-//                                    ? leaveStaff.getWorkSchedule()
-//                                    : "MON_FRI";
-//
-//                            // query date ต้องเป็นวันทำงานก่อน
-//                            boolean isTargetWorkDay =
-//                                    workScheduleUtil.isWorkDay(leaveStaff, targetDate, schedule);
-//
-//                            if (!isTargetWorkDay) {
-//                                return;
-//                            }
-//
-//                            // นับจำนวนวันทำงานทั้งหมดในช่วงลา
-//                            long workDaysInLeave = 0;
-//
-//                            LocalDate current = leave.getStartDate();
-//
-//                            while (!current.isAfter(leave.getEndDate())) {
-//
-//                                if (workScheduleUtil.isWorkDay(leaveStaff, current, schedule)) {
-//                                    workDaysInLeave++;
-//                                }
-//
-//                                current = current.plusDays(1);
-//                            }
-//
-//                            // กันหาร 0
-//                            if (workDaysInLeave <= 0) {
-//                                return;
-//                            }
-//
-//                            // กระจายวันลาเฉพาะวันทำงาน
-//                            double daysPerWorkDay =
-//                                    leave.getTotalDays() / workDaysInLeave;
-//
-//                            // copy object
-//                            LeaveRequest dailyLeave = new LeaveRequest();
-//
-//                            dailyLeave.setStaff(leave.getStaff());
-//                            dailyLeave.setLeaveType(leave.getLeaveType());
-//                            dailyLeave.setStartDate(leave.getStartDate());
-//                            dailyLeave.setEndDate(leave.getEndDate());
-//
-//                            // สำคัญ
-//                            dailyLeave.setTotalDays(daysPerWorkDay);
-//
-//                            dailyLeave.setHalfDay(leave.getHalfDay());
-//                            dailyLeave.setStatus(leave.getStatus());
-//                            dailyLeave.setReason(leave.getReason());
-//
-//                            leaveMap.computeIfAbsent(sid, k -> new ArrayList<>())
-//                                    .add(dailyLeave);
-//                        });
-//            }
-//
-//            // Step 10: Loop staff
-//            List<Map<String, Object>> data = new ArrayList<>();
-//
-//            for (StaffEntity staff : staffList) {
-//                WorkShift shift = shiftMap.get(staff.getId());
-//                //  create item first
-//                Map<String, Object> item = new LinkedHashMap<>();
-//
-//                AttendanceLog checkIn = checkInMap.get(staff.getId());
-//                AttendanceLog checkOut = checkOutMap.get(staff.getId());
-//
-//                List<LeaveRequest> leaves = leaveMap.getOrDefault(
-//                        staff.getId(),
-//                        new ArrayList<>()
-//                );
-//
-//                String status;
-//                LocalDateTime checkInTime = null;
-//                LocalDateTime checkOutTime = null;
-//
-//                String ipAddress = null;
-//                String macAddress = null;
-//
-//                // =========================
-//                // CHECK ATTENDANCE STATUS
-//                // =========================
-//                if (checkIn != null) {
-//
-//                    checkInTime = checkIn.getCheckTime();
-//                    ipAddress = checkIn.getIpAddress();
-//                    macAddress = checkIn.getMacAddress();
-//
-////                    status = checkInTime.toLocalTime()
-////                            .isAfter(LocalTime.of(8, 1))
-////                            ? "LATE"
-////                            : "INTIME";
-//                    status = calculateCheckInStatus(
-//                            checkInTime,
-//                            shift
-//                    );
-//
-//                    if (checkOut != null) {
-//
-//                        checkOutTime = checkOut.getCheckTime();
-//                    }
-//
-//                } else if (!leaves.isEmpty()) {
-//
-//                    boolean allApproved = leaves.stream()
-//                            .allMatch(l ->
-//                                    "APPROVED".equals(l.getStatus()));
-//
-//                    boolean anyPending = leaves.stream()
-//                            .anyMatch(l ->
-//                                    "PENDING".equals(l.getStatus()));
-//
-//                    if (allApproved) {
-//
-//                        status = "ON_LEAVE";
-//
-//                    } else if (anyPending) {
-//
-//                        status = "PENDING_LEAVE";
-//
-//                    } else {
-//
-//                        status = "ABSENT";
-//                    }
-//
-//                } else {
-//
-//                    //  เช็คว่าเป็นวันหยุดตาม schedule ไหม
-//                    String schedule = staff.getWorkSchedule() != null
-//                            ? staff.getWorkSchedule() : "MON_FRI";
-//
-//                    boolean isWorkDay = workScheduleUtil.isWorkDay(
-//                            staff, targetDate, schedule);
-//
-//                    if (!isWorkDay) {
-//                        status = "DAY_OFF";  //  วันหยุดตาม schedule
-//                    } else {
-//                        status = "ABSENT";   //  วันทำงานแต่ไม่มา
-//                    }
-//                }
-//                // STAFF INFO
-//                item.put("staffId", staff.getId());
-//                item.put("staffCode", staff.getStaffCode());
-//                item.put("username", staff.getUsername());
-//                item.put("laoName", staff.getLao_name());
-//                item.put("staffImage", staff.getStaffImage());
-//                item.put("borId", staff.getBorId());
-//                item.put("borName",
-//                        borNameMap.get(staff.getBorId()));
-//                item.put("deptId", staff.getDept_id());
-//                item.put("department",
-//                        deptNameMap.get(staff.getDept_id()));
-//                item.put("posId", staff.getPos_id());
-//                item.put("position",
-//                        posNameMap.get(staff.getPos_id()));
-//                item.put("role", staff.getRole());
-//                item.put("checkIn",
-//                        checkInTime != null
-//                                ? checkInTime.toString()
-//                                : "00");
-//                item.put("checkOut",
-//                        checkOutTime != null
-//                                ? checkOutTime.toString()
-//                                : "00");
-//                item.put("status", status);
-//                item.put("ipAddress", ipAddress);
-//                item.put("macAddress", macAddress);
-//                // LEAVE INFO
-//                if (!leaves.isEmpty()) {
-//
-//                    double totalLeaveDays = leaves.isEmpty()
-//                            ? 0
-//                            : leaves.get(0).getTotalDays();
-//
-//                    boolean allApproved = leaves.stream()
-//                            .allMatch(l ->
-//                                    "APPROVED".equals(l.getStatus()));
-//
-//                    item.put("leaveType",
-//                            leaves.get(0).getLeaveType());
-//
-//                    item.put("leaveStatus",
-//                            allApproved
-//                                    ? "APPROVED"
-//                                    : "PENDING");
-//
-//                    item.put("leaveStart",
-//                            leaves.get(0)
-//                                    .getStartDate()
-//                                    .toString());
-//
-//                    item.put("leaveEnd",
-//                            leaves.get(0)
-//                                    .getEndDate()
-//                                    .toString());
-//
-//                    item.put("totalDays", totalLeaveDays);
-//
-//                    item.put("halfDay",
-//                            leaves.size() > 1
-//                                    ? "FULL_DAY"
-//                                    : leaves.get(0).getHalfDay());
-//
-//                } else {
-//
-//                    item.put("leaveType", null);
-//                    item.put("leaveStatus", null);
-//                    item.put("leaveStart", null);
-//                    item.put("leaveEnd", null);
-//                    item.put("totalDays", null);
-//                    item.put("halfDay", null);
-//                }
-//                data.add(item);
-//            }
-//            // Step 11: Footer summary
-//            long intime = data.stream()
-//                    .filter(d ->
-//                            "INTIME".equals(d.get("status")))
-//                    .count();
-//            long late = data.stream()
-//                    .filter(d ->
-//                            "LATE".equals(d.get("status"))).count();
-//            long absent = data.stream()
-//                    .filter(d ->
-//                            "ABSENT".equals(d.get("status"))).count();
-//            long onLeave = data.stream()
-//                    .filter(d ->
-//                            "ON_LEAVE".equals(d.get("status"))).count();
-//            long pendingLeave = data.stream()
-//                    .filter(d ->
-//                            "PENDING_LEAVE".equals(d.get("status"))).count();
-//            long dayOff       = data.stream()
-//                    .filter(d -> "DAY_OFF".equals(d.get("status"))).count();
-//            Map<String, Object> footer =
-//                    new LinkedHashMap<>();
-//            footer.put("TOTAL", data.size());
-//            footer.put("INTIME", intime);
-//            footer.put("LATE", late);
-//            footer.put("ABSENT", absent);
-//            footer.put("ON_LEAVE", onLeave);
-//            footer.put("PENDING_LEAVE", pendingLeave);
-//            footer.put("DAY_OFF",       dayOff);
-//            response.setStatus("00");
-//            response.setMessage("success");
-//            response.setDataResponse(data);
-//            response.setSumFooter(footer);
-//
-//        } catch (Exception e) {
-//
-//            e.printStackTrace();
-//
-//            response.setStatus("01");
-//            response.setMessage(e.getMessage());
-//            response.setDataResponse(null);
-//        }
-//
-//        return response;
-//    }
-public DataResponse getDailyAttendance(DailyAttendanceRequestDTO dto) {
-    DataResponse response = new DataResponse();
-    try {
-        // Step 1: token
-        StaffEntity requester =
-                userRepository.findByToken(dto.getToken())
-                        .orElseThrow(() ->
-                                new RuntimeException("Token ไม่ถูกต้อง"));
-        if (requester.getTokenExpiredAt() != null
-                && requester.getTokenExpiredAt()
-                .isBefore(LocalDateTime.now())) {
-            throw new RuntimeException(
-                    "Token หมดอายุ กรุณา Login ใหม่"
-            );
-        }
-        // Step 2 date
-        LocalDate targetDate = (dto.getDate() != null && !dto.getDate().isEmpty()) ? LocalDate.parse(dto.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")) : LocalDate.now();
-        LocalDateTime startOfDay = targetDate.atStartOfDay();
-        LocalDateTime endOfDay = targetDate.atTime(23,59,59);
+    // getDailyAttendance
+    // public DataResponse getDailyAttendance(DailyAttendanceRequestDTO dto) {
+    //
+    // DataResponse response = new DataResponse();
+    //
+    // try {
+    //
+    // // Step 1: หา requester จาก token
+    // StaffEntity requester = userRepository.findByToken(dto.getToken())
+    // .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+    //
+    // // Step 2: เช็ค token หมดอายุ
+    // if (requester.getTokenExpiredAt() != null
+    // && requester.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+    // throw new RuntimeException("Token หมดอายุ กรุณา Login ใหม่");
+    // }
+    //
+    // // Step 3: กำหนดวันที่
+    // LocalDate targetDate = (dto.getDate() != null && !dto.getDate().isEmpty())
+    // ? LocalDate.parse(dto.getDate(),
+    // DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+    // : LocalDate.now();
+    //
+    // LocalDateTime startOfDay = targetDate.atStartOfDay();
+    // LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
+    //
+    //
+    // // Step 4: ดึง staff ตาม role + borId + deptId
+    // List<StaffEntity> staffList;
+    // //เตรียม filter values
+    // boolean hasBorId = dto.getBorId() != null && !dto.getBorId().isEmpty()
+    // && !dto.getBorId().equalsIgnoreCase("all");
+    // boolean hasDeptId = dto.getDeptId() != null && !dto.getDeptId().isEmpty();
+    //
+    // if (requester.getRole().equals("USER")) {
+    // staffList = new ArrayList<>();
+    // staffList.add(requester);
+    //
+    // } else if (requester.getRole().equals("BORLEADER")) {
+    //
+    // if (dto.getBorId() == null || dto.getBorId().isEmpty()) {
+    // staffList = new ArrayList<>();
+    // staffList.add(requester);
+    //
+    // } else if (dto.getBorId().equalsIgnoreCase("all")) {
+    // // BORLEADER ดูได้แค่ bor ตัวเอง
+    // if (hasDeptId) {
+    // staffList = userRepository.findAllByBorIdAndDeptId(
+    // requester.getBorId(),
+    // Long.parseLong(dto.getDeptId()));
+    // } else {
+    // staffList = userRepository.findAllByBorIdAndStatus(
+    // requester.getBorId(), "ACTIVE");
+    // }
+    // } else {
+    // throw new RuntimeException("ບໍ່ມີສິດເບິ່ງຂໍ້ມູນ bor ອື່ນ");
+    // }
+    //
+    // } else {
+    // // ADMIN / HR
+    // if (dto.getBorId() == null || dto.getBorId().isEmpty()) {
+    // staffList = new ArrayList<>();
+    // staffList.add(requester);
+    //
+    // } else if (dto.getBorId().equalsIgnoreCase("all")) {
+    //
+    // if (hasDeptId) {
+    // // ทุก bor + filter deptId
+    // staffList = userRepository.findAllByDeptId(
+    // Long.parseLong(dto.getDeptId()));
+    // } else {
+    // staffList = userRepository.findAllByStatus("ACTIVE");
+    // }
+    //
+    // } else {
+    // // filter borId
+    // if (hasDeptId) {
+    // // filter ทั้ง borId และ deptId
+    // staffList = userRepository.findAllByBorIdAndDeptId(
+    // Integer.parseInt(dto.getBorId()),
+    // Long.parseLong(dto.getDeptId()));
+    // } else {
+    // staffList = userRepository.findAllByBorIdAndStatus(
+    // Integer.parseInt(dto.getBorId()), "ACTIVE");
+    // }
+    // }
+    // }
+    //
+    // // Step 5: โหลด borName ทีเดียว
+    // Set<Integer> borIds = staffList.stream()
+    // .map(StaffEntity::getBorId)
+    // .filter(Objects::nonNull)
+    // .collect(Collectors.toSet());
+    //
+    // Map<Integer, String> borNameMap = new HashMap<>();
+    //
+    // if (!borIds.isEmpty()) {
+    //
+    // tbBorRepository.findAllById(borIds)
+    // .forEach(bor ->
+    // borNameMap.put(
+    // bor.getKeyId(),
+    // bor.getBName()
+    // )
+    // );
+    // }
+    //
+    // // Step 6: โหลด department ทีเดียว
+    // Set<Long> deptIds = staffList.stream()
+    // .map(StaffEntity::getDept_id)
+    // .filter(Objects::nonNull)
+    // .collect(Collectors.toSet());
+    //
+    // Map<Long, String> deptNameMap = new HashMap<>();
+    //
+    // if (!deptIds.isEmpty()) {
+    //
+    // departmentRepository.findAllById(deptIds)
+    // .forEach(dept ->
+    // deptNameMap.put(
+    // dept.getId(),
+    // dept.getDeptName()
+    // )
+    // );
+    // }
+    //
+    // // Step 7: โหลด position ทีเดียว
+    // Set<Long> posIds = staffList.stream()
+    // .map(StaffEntity::getPos_id)
+    // .filter(Objects::nonNull)
+    // .collect(Collectors.toSet());
+    //
+    // Map<Long, String> posNameMap = new HashMap<>();
+    //
+    // if (!posIds.isEmpty()) {
+    //
+    // positionRepository.findAllById(posIds)
+    // .forEach(pos ->
+    // posNameMap.put(
+    // pos.getId(),
+    // pos.getPosName()
+    // )
+    // );
+    // }
+    //
+    // // Step 8: โหลด attendance logs ทีเดียว
+    // List<AttendanceLog> allLogs =
+    // attendanceLogRepository
+    // .findAllByCheckTimeBetweenOrderByCheckTimeAsc(
+    // startOfDay,
+    // endOfDay
+    // );
+    //
+    // Map<Long, AttendanceLog> checkInMap = new HashMap<>();
+    // Map<Long, AttendanceLog> checkOutMap = new HashMap<>();
+    //
+    // for (AttendanceLog log : allLogs) {
+    //
+    // Long staffId = log.getStaff().getId();
+    //
+    // if ("CHECK_IN".equals(log.getCheckType())) {
+    //
+    // checkInMap.putIfAbsent(staffId, log);
+    //
+    // } else if ("CHECK_OUT".equals(log.getCheckType())) {
+    //
+    // checkOutMap.put(staffId, log);
+    // }
+    // }
+    //
+    // // Step 9: โหลด leave requests ทีเดียว
+    // List<Long> staffIds = staffList.stream()
+    // .map(StaffEntity::getId)
+    // .collect(Collectors.toList());
+    //
+    // // ===============================
+    // // Load staff shift once
+    // // ===============================
+    //
+    // Map<Long, WorkShift> shiftMap = new HashMap<>();
+    //
+    // List<StaffShift> shifts =
+    // staffShiftRepository.findCurrentShiftsByStaffIds(
+    // staffIds,
+    // targetDate
+    // );
+    // for (StaffShift s : shifts) {
+    //
+    // shiftMap.putIfAbsent(
+    // s.getStaff().getId(),
+    // s.getShift()
+    // );
+    // }
+    //
+    //
+    // Map<Long, List<LeaveRequest>> leaveMap = new HashMap<>();
+    //
+    // if (!staffIds.isEmpty()) {
+    // leaveRequestRepository
+    // .findByStaffIdsAndDate(staffIds, targetDate)
+    // .forEach(leave -> {
+    //
+    // Long sid = leave.getStaff().getId();
+    //
+    // // หา staff จริง
+    // StaffEntity leaveStaff = staffList.stream()
+    // .filter(s -> s.getId().equals(sid))
+    // .findFirst()
+    // .orElse(leave.getStaff());
+    //
+    // String schedule = leaveStaff.getWorkSchedule() != null
+    // ? leaveStaff.getWorkSchedule()
+    // : "MON_FRI";
+    //
+    // // query date ต้องเป็นวันทำงานก่อน
+    // boolean isTargetWorkDay =
+    // workScheduleUtil.isWorkDay(leaveStaff, targetDate, schedule);
+    //
+    // if (!isTargetWorkDay) {
+    // return;
+    // }
+    //
+    // // นับจำนวนวันทำงานทั้งหมดในช่วงลา
+    // long workDaysInLeave = 0;
+    //
+    // LocalDate current = leave.getStartDate();
+    //
+    // while (!current.isAfter(leave.getEndDate())) {
+    //
+    // if (workScheduleUtil.isWorkDay(leaveStaff, current, schedule)) {
+    // workDaysInLeave++;
+    // }
+    //
+    // current = current.plusDays(1);
+    // }
+    //
+    // // กันหาร 0
+    // if (workDaysInLeave <= 0) {
+    // return;
+    // }
+    //
+    // // กระจายวันลาเฉพาะวันทำงาน
+    // double daysPerWorkDay =
+    // leave.getTotalDays() / workDaysInLeave;
+    //
+    // // copy object
+    // LeaveRequest dailyLeave = new LeaveRequest();
+    //
+    // dailyLeave.setStaff(leave.getStaff());
+    // dailyLeave.setLeaveType(leave.getLeaveType());
+    // dailyLeave.setStartDate(leave.getStartDate());
+    // dailyLeave.setEndDate(leave.getEndDate());
+    //
+    // // สำคัญ
+    // dailyLeave.setTotalDays(daysPerWorkDay);
+    //
+    // dailyLeave.setHalfDay(leave.getHalfDay());
+    // dailyLeave.setStatus(leave.getStatus());
+    // dailyLeave.setReason(leave.getReason());
+    //
+    // leaveMap.computeIfAbsent(sid, k -> new ArrayList<>())
+    // .add(dailyLeave);
+    // });
+    // }
+    //
+    // // Step 10: Loop staff
+    // List<Map<String, Object>> data = new ArrayList<>();
+    //
+    // for (StaffEntity staff : staffList) {
+    // WorkShift shift = shiftMap.get(staff.getId());
+    // // create item first
+    // Map<String, Object> item = new LinkedHashMap<>();
+    //
+    // AttendanceLog checkIn = checkInMap.get(staff.getId());
+    // AttendanceLog checkOut = checkOutMap.get(staff.getId());
+    //
+    // List<LeaveRequest> leaves = leaveMap.getOrDefault(
+    // staff.getId(),
+    // new ArrayList<>()
+    // );
+    //
+    // String status;
+    // LocalDateTime checkInTime = null;
+    // LocalDateTime checkOutTime = null;
+    //
+    // String ipAddress = null;
+    // String macAddress = null;
+    //
+    // // =========================
+    // // CHECK ATTENDANCE STATUS
+    // // =========================
+    // if (checkIn != null) {
+    //
+    // checkInTime = checkIn.getCheckTime();
+    // ipAddress = checkIn.getIpAddress();
+    // macAddress = checkIn.getMacAddress();
+    //
+    //// status = checkInTime.toLocalTime()
+    //// .isAfter(LocalTime.of(8, 1))
+    //// ? "LATE"
+    //// : "INTIME";
+    // status = calculateCheckInStatus(
+    // checkInTime,
+    // shift
+    // );
+    //
+    // if (checkOut != null) {
+    //
+    // checkOutTime = checkOut.getCheckTime();
+    // }
+    //
+    // } else if (!leaves.isEmpty()) {
+    //
+    // boolean allApproved = leaves.stream()
+    // .allMatch(l ->
+    // "APPROVED".equals(l.getStatus()));
+    //
+    // boolean anyPending = leaves.stream()
+    // .anyMatch(l ->
+    // "PENDING".equals(l.getStatus()));
+    //
+    // if (allApproved) {
+    //
+    // status = "ON_LEAVE";
+    //
+    // } else if (anyPending) {
+    //
+    // status = "PENDING_LEAVE";
+    //
+    // } else {
+    //
+    // status = "ABSENT";
+    // }
+    //
+    // } else {
+    //
+    // // เช็คว่าเป็นวันหยุดตาม schedule ไหม
+    // String schedule = staff.getWorkSchedule() != null
+    // ? staff.getWorkSchedule() : "MON_FRI";
+    //
+    // boolean isWorkDay = workScheduleUtil.isWorkDay(
+    // staff, targetDate, schedule);
+    //
+    // if (!isWorkDay) {
+    // status = "DAY_OFF"; // วันหยุดตาม schedule
+    // } else {
+    // status = "ABSENT"; // วันทำงานแต่ไม่มา
+    // }
+    // }
+    // // STAFF INFO
+    // item.put("staffId", staff.getId());
+    // item.put("staffCode", staff.getStaffCode());
+    // item.put("username", staff.getUsername());
+    // item.put("laoName", staff.getLao_name());
+    // item.put("staffImage", staff.getStaffImage());
+    // item.put("borId", staff.getBorId());
+    // item.put("borName",
+    // borNameMap.get(staff.getBorId()));
+    // item.put("deptId", staff.getDept_id());
+    // item.put("department",
+    // deptNameMap.get(staff.getDept_id()));
+    // item.put("posId", staff.getPos_id());
+    // item.put("position",
+    // posNameMap.get(staff.getPos_id()));
+    // item.put("role", staff.getRole());
+    // item.put("checkIn",
+    // checkInTime != null
+    // ? checkInTime.toString()
+    // : "00");
+    // item.put("checkOut",
+    // checkOutTime != null
+    // ? checkOutTime.toString()
+    // : "00");
+    // item.put("status", status);
+    // item.put("ipAddress", ipAddress);
+    // item.put("macAddress", macAddress);
+    // // LEAVE INFO
+    // if (!leaves.isEmpty()) {
+    //
+    // double totalLeaveDays = leaves.isEmpty()
+    // ? 0
+    // : leaves.get(0).getTotalDays();
+    //
+    // boolean allApproved = leaves.stream()
+    // .allMatch(l ->
+    // "APPROVED".equals(l.getStatus()));
+    //
+    // item.put("leaveType",
+    // leaves.get(0).getLeaveType());
+    //
+    // item.put("leaveStatus",
+    // allApproved
+    // ? "APPROVED"
+    // : "PENDING");
+    //
+    // item.put("leaveStart",
+    // leaves.get(0)
+    // .getStartDate()
+    // .toString());
+    //
+    // item.put("leaveEnd",
+    // leaves.get(0)
+    // .getEndDate()
+    // .toString());
+    //
+    // item.put("totalDays", totalLeaveDays);
+    //
+    // item.put("halfDay",
+    // leaves.size() > 1
+    // ? "FULL_DAY"
+    // : leaves.get(0).getHalfDay());
+    //
+    // } else {
+    //
+    // item.put("leaveType", null);
+    // item.put("leaveStatus", null);
+    // item.put("leaveStart", null);
+    // item.put("leaveEnd", null);
+    // item.put("totalDays", null);
+    // item.put("halfDay", null);
+    // }
+    // data.add(item);
+    // }
+    // // Step 11: Footer summary
+    // long intime = data.stream()
+    // .filter(d ->
+    // "INTIME".equals(d.get("status")))
+    // .count();
+    // long late = data.stream()
+    // .filter(d ->
+    // "LATE".equals(d.get("status"))).count();
+    // long absent = data.stream()
+    // .filter(d ->
+    // "ABSENT".equals(d.get("status"))).count();
+    // long onLeave = data.stream()
+    // .filter(d ->
+    // "ON_LEAVE".equals(d.get("status"))).count();
+    // long pendingLeave = data.stream()
+    // .filter(d ->
+    // "PENDING_LEAVE".equals(d.get("status"))).count();
+    // long dayOff = data.stream()
+    // .filter(d -> "DAY_OFF".equals(d.get("status"))).count();
+    // Map<String, Object> footer =
+    // new LinkedHashMap<>();
+    // footer.put("TOTAL", data.size());
+    // footer.put("INTIME", intime);
+    // footer.put("LATE", late);
+    // footer.put("ABSENT", absent);
+    // footer.put("ON_LEAVE", onLeave);
+    // footer.put("PENDING_LEAVE", pendingLeave);
+    // footer.put("DAY_OFF", dayOff);
+    // response.setStatus("00");
+    // response.setMessage("success");
+    // response.setDataResponse(data);
+    // response.setSumFooter(footer);
+    //
+    // } catch (Exception e) {
+    //
+    // e.printStackTrace();
+    //
+    // response.setStatus("01");
+    // response.setMessage(e.getMessage());
+    // response.setDataResponse(null);
+    // }
+    //
+    // return response;
+    // }
+    public DataResponse getDailyAttendance(DailyAttendanceRequestDTO dto) {
+        DataResponse response = new DataResponse();
+        try {
+            // Step 1: token
+            StaffEntity requester = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+            if (requester.getTokenExpiredAt() != null
+                    && requester.getTokenExpiredAt()
+                            .isBefore(LocalDateTime.now())) {
+                throw new RuntimeException(
+                        "Token หมดอายุ กรุณา Login ใหม่");
+            }
+            // Step 2 date
+            LocalDate targetDate = (dto.getDate() != null && !dto.getDate().isEmpty())
+                    ? LocalDate.parse(dto.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    : LocalDate.now();
+            LocalDateTime startOfDay = targetDate.atStartOfDay();
+            LocalDateTime endOfDay = targetDate.atTime(23, 59, 59);
 
-        // Step 3 staff filter
-        List<StaffEntity> staffList;
-        boolean hasBorId = dto.getBorId()!=null && !dto.getBorId().isEmpty();
-        boolean hasDeptId = dto.getDeptId()!=null && !dto.getDeptId().isEmpty();
-        if(requester.getRole().equals("USER")){staffList = new ArrayList<>();staffList.add(requester);
-        }else{
-            if(hasBorId
-                    && dto.getBorId().equalsIgnoreCase("all")){
-                if(hasDeptId){
-                    staffList = userRepository.findAllByDeptId(Long.parseLong(dto.getDeptId()));
-                }else{
+            // Step 3 staff filter
+            List<StaffEntity> staffList;
+            boolean hasBorId = dto.getBorId() != null && !dto.getBorId().isEmpty();
+            boolean hasDeptId = dto.getDeptId() != null && !dto.getDeptId().isEmpty();
+            if (requester.getRole().equals("USER")) {
+                staffList = new ArrayList<>();
+                staffList.add(requester);
+            } else {
+                if (hasBorId
+                        && dto.getBorId().equalsIgnoreCase("all")) {
+                    if (hasDeptId) {
+                        staffList = userRepository.findAllByDeptId(Long.parseLong(dto.getDeptId()));
+                    } else {
+                        staffList = userRepository.findAllByStatus("ACTIVE");
+                    }
+                } else if (hasBorId) {
+                    if (hasDeptId) {
+                        staffList = userRepository.findAllByBorIdAndDeptId(Integer.parseInt(dto.getBorId()),
+                                Long.parseLong(dto.getDeptId()));
+                    } else {
+                        staffList = userRepository.findAllByBorIdAndStatus(Integer.parseInt(dto.getBorId()), "ACTIVE");
+                    }
+                } else {
                     staffList = userRepository.findAllByStatus("ACTIVE");
                 }
-            }else if(hasBorId){
-                if(hasDeptId){
-                    staffList = userRepository.findAllByBorIdAndDeptId(Integer.parseInt(dto.getBorId()), Long.parseLong(dto.getDeptId()));
-                }else{
-                    staffList = userRepository.findAllByBorIdAndStatus(Integer.parseInt(dto.getBorId()), "ACTIVE");
+            }
+            // SHIFT LOAD + FILTER
+            Long filterShiftId = (dto.getShiftId() != null
+                    && !dto.getShiftId().isEmpty()
+                    && !dto.getShiftId().equalsIgnoreCase("all"))
+                            ? Long.parseLong(dto.getShiftId())
+                            : null;
+            List<Long> staffIds = staffList.stream().map(StaffEntity::getId).collect(Collectors.toList());
+
+            Map<Long, WorkShift> shiftMap = new HashMap<>();
+
+            if (!staffIds.isEmpty()) {
+                List<StaffShift> shifts = staffShiftRepository.findCurrentShiftsByStaffIds(
+                        staffIds,
+                        targetDate);
+                for (StaffShift s : shifts) {
+                    shiftMap.put(
+                            s.getStaff().getId(),
+                            s.getShift());
                 }
-            }else{
-                staffList = userRepository.findAllByStatus("ACTIVE");
             }
-        }
-        // SHIFT LOAD + FILTER
-        Long filterShiftId =
-                (dto.getShiftId()!=null
-                        && !dto.getShiftId().isEmpty()
-                        && !dto.getShiftId().equalsIgnoreCase("all"))
-                        ? Long.parseLong(dto.getShiftId()) : null;
-        List<Long> staffIds = staffList.stream().map(StaffEntity::getId).collect(Collectors.toList());
-
-        Map<Long,WorkShift> shiftMap = new HashMap<>();
-
-        if(!staffIds.isEmpty()){
-            List<StaffShift> shifts =
-                    staffShiftRepository.findCurrentShiftsByStaffIds(
-                            staffIds,
-                            targetDate
-                    );
-            for(StaffShift s:shifts){
-                shiftMap.put(
-                        s.getStaff().getId(),
-                        s.getShift()
-                );
+            // filter shift
+            if (filterShiftId != null) {
+                staffList = staffList.stream()
+                        .filter(s -> shiftMap.containsKey(s.getId())
+                                &&
+                                shiftMap.get(s.getId())
+                                        .getId()
+                                        .equals(filterShiftId))
+                        .collect(Collectors.toList());
+                staffIds = staffList.stream()
+                        .map(StaffEntity::getId)
+                        .collect(Collectors.toList());
             }
-        }
-        // filter shift
-        if(filterShiftId != null){
-            staffList = staffList.stream()
-                    .filter(s ->
-                            shiftMap.containsKey(s.getId())
-                                    &&
-                                    shiftMap.get(s.getId())
-                                            .getId()
-                                            .equals(filterShiftId)).collect(Collectors.toList());
-            staffIds = staffList.stream()
-                    .map(StaffEntity::getId)
-                    .collect(Collectors.toList());
-        }
 
-        // LOG
-        List<AttendanceLog> logs =
-                attendanceLogRepository.findAllByCheckTimeBetweenOrderByCheckTimeAsc(startOfDay, endOfDay);
-        Map<Long,AttendanceLog> checkInMap =
-                new HashMap<>();
-        Map<Long,AttendanceLog> checkOutMap =
-                new HashMap<>();
-        for(AttendanceLog log:logs){
-            Long id =
-                    log.getStaff().getId();
-            if("CHECK_IN".equals(log.getCheckType())){
-                checkInMap.putIfAbsent(id,log);
-            }else{
-                checkOutMap.put(id,log);
+            // LOG
+            List<AttendanceLog> logs = attendanceLogRepository.findAllByCheckTimeBetweenOrderByCheckTimeAsc(startOfDay,
+                    endOfDay);
+            Map<Long, AttendanceLog> checkInMap = new HashMap<>();
+            Map<Long, AttendanceLog> checkOutMap = new HashMap<>();
+            Map<Long, List<AttendanceLog>> faceScanMap = new HashMap<>();
+            for (AttendanceLog log : logs) {
+                Long id = log.getStaff().getId();
+                if ("CHECK_IN".equals(log.getCheckType())) {
+                    checkInMap.putIfAbsent(id, log);
+                } else if ("CHECK_OUT".equals(log.getCheckType())) {
+                    checkOutMap.put(id, log);
+                } else if ("FaceScan".equals(log.getCheckType())) {
+                    faceScanMap.computeIfAbsent(id, k -> new ArrayList<>()).add(log);
+                }
             }
-        }
-        // LEAVE
-        Map<Long,List<LeaveRequest>> leaveMap =
-                new HashMap<>();
-        if(!staffIds.isEmpty()){
-            leaveRequestRepository.findByStaffIdsAndDate(staffIds, targetDate)
-                    .forEach(leave -> {Long sid = leave.getStaff().getId();leaveMap.computeIfAbsent(sid, k->new ArrayList<>()).add(leave);});
-        }
-
-        // BUILD RESPONSE
-        List<Map<String,Object>> data = new ArrayList<>();
-        for(StaffEntity staff:staffList){
-            Map<String,Object> item = new LinkedHashMap<>();
-            WorkShift shift = shiftMap.get(staff.getId());
-
-            AttendanceLog checkIn = checkInMap.get(staff.getId());
-            AttendanceLog checkOut = checkOutMap.get(staff.getId());
-            item.put("staffId", staff.getId());
-            item.put("staffCode", staff.getStaffCode());
-            item.put("username", staff.getUsername());
-            item.put("laoName", staff.getLao_name());
-            item.put("checkIn", checkIn!=null ? checkIn.getCheckTime().toString() : "00");
-            item.put("checkOut", checkOut!=null ? checkOut.getCheckTime().toString() : "00");
-            item.put("status", checkIn!=null ? calculateCheckInStatus(checkIn.getCheckTime(), shift) : "ABSENT");
-
-            // SHIFT INFO
-            if(shift!=null){
-                Map<String,Object> shiftInfo = new LinkedHashMap<>();
-                shiftInfo.put("shiftId", shift.getId());
-                shiftInfo.put("shiftName", shift.getShiftName());
-                shiftInfo.put("shiftCode", shift.getShiftCode());
-                shiftInfo.put("workStart", shift.getWorkStart().toString());shiftInfo.put("workEnd", shift.getWorkEnd().toString());
-                item.put("shift", shiftInfo);
-            }else{
-                item.put("shift", null);
+            // LEAVE
+            Map<Long, List<LeaveRequest>> leaveMap = new HashMap<>();
+            if (!staffIds.isEmpty()) {
+                leaveRequestRepository.findByStaffIdsAndDate(staffIds, targetDate)
+                        .forEach(leave -> {
+                            Long sid = leave.getStaff().getId();
+                            leaveMap.computeIfAbsent(sid, k -> new ArrayList<>()).add(leave);
+                        });
             }
-            //leave info
-            List<Map<String,Object>> leaveData = new ArrayList<>();
-            for(LeaveRequest leave : leaveMap.getOrDefault(staff.getId(), new ArrayList<>())) {
-                Map<String,Object> l = new LinkedHashMap<>();
-                l.put("leaveId", leave.getId());
-                l.put("leaveType", leave.getLeaveType());
-                l.put("startDate", leave.getStartDate().toString());
-                l.put("endDate", leave.getEndDate().toString());
-                l.put("totalDays", leave.getTotalDays());
-                l.put("halfDay", leave.getHalfDay());
-                l.put("status", leave.getStatus());leaveData.add(l);
+
+            // BUILD RESPONSE
+            List<Map<String, Object>> data = new ArrayList<>();
+            for (StaffEntity staff : staffList) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                WorkShift shift = shiftMap.get(staff.getId());
+
+                AttendanceLog checkIn = checkInMap.get(staff.getId());
+                AttendanceLog checkOut = checkOutMap.get(staff.getId());
+                item.put("staffId", staff.getId());
+                item.put("staffCode", staff.getStaffCode());
+                item.put("username", staff.getUsername());
+                item.put("laoName", staff.getLao_name());
+                item.put("checkIn", checkIn != null ? checkIn.getCheckTime().toString() : "00");
+                item.put("checkOut", checkOut != null ? checkOut.getCheckTime().toString() : "00");
+                item.put("status", checkIn != null ? calculateCheckInStatus(checkIn.getCheckTime(), shift) : "ABSENT");
+
+                // SHIFT INFO
+                if (shift != null) {
+                    Map<String, Object> shiftInfo = new LinkedHashMap<>();
+                    shiftInfo.put("shiftId", shift.getId());
+                    shiftInfo.put("shiftName", shift.getShiftName());
+                    shiftInfo.put("shiftCode", shift.getShiftCode());
+                    shiftInfo.put("workStart", shift.getWorkStart().toString());
+                    shiftInfo.put("workEnd", shift.getWorkEnd().toString());
+                    item.put("shift", shiftInfo);
+                } else {
+                    item.put("shift", null);
+                }
+                // leave info
+                List<Map<String, Object>> leaveData = new ArrayList<>();
+                for (LeaveRequest leave : leaveMap.getOrDefault(staff.getId(), new ArrayList<>())) {
+                    Map<String, Object> l = new LinkedHashMap<>();
+                    l.put("leaveId", leave.getId());
+                    l.put("leaveType", leave.getLeaveType());
+                    l.put("startDate", leave.getStartDate().toString());
+                    l.put("endDate", leave.getEndDate().toString());
+                    l.put("totalDays", leave.getTotalDays());
+                    l.put("halfDay", leave.getHalfDay());
+                    l.put("status", leave.getStatus());
+                    leaveData.add(l);
+                }
+                item.put("leave", leaveData);
+
+                List<AttendanceLog> faceScans = faceScanMap.getOrDefault(staff.getId(), new ArrayList<>());
+                List<Map<String, String>> historyList = new ArrayList<>();
+                for (AttendanceLog scan : faceScans) {
+                    Map<String, String> scanInfo = new HashMap<>();
+                    scanInfo.put("time", scan.getCheckTime().toString());
+                    scanInfo.put("ipAddress", scan.getIpAddress());
+                    historyList.add(scanInfo);
+                }
+                item.put("faceScanHistory", historyList);
+
+                data.add(item);
             }
-            item.put("leave", leaveData);
-            data.add(item);
+            response.setStatus("00");
+            response.setMessage("success");
+            response.setDataResponse(data);
+            response.setSumFooter(data.size());
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
         }
-        response.setStatus("00");
-        response.setMessage("success");
-        response.setDataResponse(data);
-        response.setSumFooter(data.size());
-    }catch(Exception e){
-        e.printStackTrace();
-        response.setStatus("01");
-        response.setMessage(e.getMessage());
+        return response;
     }
-    return response;}
 }
