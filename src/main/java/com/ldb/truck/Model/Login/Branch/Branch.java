@@ -18,4 +18,7 @@ public class Branch {
     private String userId;
     private String userName;
     private String createDate;
+    private Integer holeCount;
+    private String lastUpdate;
+    private String status;
 }
