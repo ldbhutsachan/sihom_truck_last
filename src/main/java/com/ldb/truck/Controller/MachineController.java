@@ -558,6 +558,9 @@ public class MachineController {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN_FUENG_THAI,
                         machineMileage, fueng, null, filePath, userName, remark, used_with);
             }
+            log.info("startdateKongnam = {}", startdateKongnam);
+            log.info("kongStart = {}", kongStart);
+            log.info("used_with = {}", used_with);
             if (kongStart != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.KONG_NAM,
                         machineMileage, kongStart, kongEnd, filePath, userName, remark, used_with);
@@ -599,6 +602,7 @@ public class MachineController {
             @RequestParam(value = "dateChange", required = false) String dateChange,
             @RequestParam(value = "dateNext", required = false) String dateNext,
             @RequestParam(value = "remark", required = false) String remark,
+            @RequestParam(value = "use_with", required = false) String use_with,
             @RequestPart(value = "files", required = false) MultipartFile[] imageFile) {
 
         MaintenanceMachineRes response = new MaintenanceMachineRes();
@@ -626,7 +630,8 @@ public class MachineController {
                     parseDate(dateChange),
                     parseDate(dateNext),
                     filePath,
-                    remark
+                    remark,
+                    use_with
             );
 
             response.setStatus("00");

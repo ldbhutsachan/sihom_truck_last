@@ -792,6 +792,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
     }
 
     // Maintenance machine by updating tow table
+    @Transactional
     public void saveHistoryAndUpdateMachine(Integer machineKeyId,
                                             String mchNo,
                                             MaintenanceType maintenanceType,
@@ -807,12 +808,29 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                 dateChange, dateNext, filePath, changedBy, remark, used_with);
 
         // อัปเดต tb_machine
-        machineInterface.updateMaintenanceDates(
-                machineKeyId,
-                maintenanceType.name(),
-                dateChange,
-                dateNext
-        );
+        if ("machine".equalsIgnoreCase(used_with)) {
+           int result = machineInterface.updateMaintenanceDates(
+                    machineKeyId,
+                   maintenanceType.name().trim(),
+                    dateChange,
+                    dateNext
+            );
+            if(result <= 0){
+                throw new RuntimeException("Update tbmachine failed");
+            }
+        }
+        if ("car".equalsIgnoreCase(used_with)) {
+            int result=machineInterface.updateCarofficeDates(
+                    machineKeyId,
+                    maintenanceType.name().trim(),
+                    dateChange,
+                    dateNext
+            );
+//            log.info("RETURN FROM updateCarofficeDates = {}", result);
+            if(result <= 0){
+                throw new RuntimeException("Update table caroffice failed");
+            }
+        }
     }
     // save maintenance history funcion
     public void saveHistory(Integer machineKeyId,
@@ -850,7 +868,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                                          LocalDate dateChange,
                                          LocalDate dateNext,
                                          String filePath,
-                                         String remark) {
+                                         String remark,
+                                         String used_with) {
 
         // ดึงข้อมูล history เดิมก่อน เพื่อรู้ว่า maintenanceType และ machineKeyId คืออะไร
         MachineMaintenanceHistory existing = getHistoryById(id);
@@ -859,12 +878,22 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         machineInterface.updateMaintenanceHistory(id, dateChange, dateNext, filePath, remark);
 
         // อัปเดต tb_machine เหมือน save
-        machineInterface.updateMaintenanceDates(
-                existing.getMachineKeyId(),
-                existing.getMaintenanceType().name(),
-                dateChange,
-                dateNext
-        );
+        if ("machine".equalsIgnoreCase(used_with)) {
+            machineInterface.updateMaintenanceDates(
+                    existing.getMachineKeyId(), //id of machine
+                    existing.getMaintenanceType().name().trim(),
+                    dateChange,
+                    dateNext
+            );
+        }
+        if ("car".equalsIgnoreCase(used_with)) {
+            machineInterface.updateCarofficeDates(
+                    existing.getMachineKeyId(), //id of car
+                    existing.getMaintenanceType().name().trim(),
+                    dateChange,
+                    dateNext
+            );
+        }
     }
 
     // ดึง history ทั้งหมดของเครื่องจักร
