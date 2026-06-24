@@ -800,10 +800,11 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                                             LocalDate dateNext,
                                             String filePath,
                                             String changedBy,
-                                            String remark) {
+                                            String remark,
+                                            String used_with) {
         // บันทึก history
         saveHistory(machineKeyId, mchNo, maintenanceType, machineMileage,
-                dateChange, dateNext, filePath, changedBy, remark);
+                dateChange, dateNext, filePath, changedBy, remark, used_with);
 
         // อัปเดต tb_machine
         machineInterface.updateMaintenanceDates(
@@ -822,7 +823,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                             LocalDate dateNext,
                             String filePath,
                             String changedBy,
-                            String remark) {
+                            String remark,
+                            String used_with) {
 
 
         MachineMaintenanceHistory history = MachineMaintenanceHistory.builder()
@@ -835,6 +837,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                 .filePath(filePath)
                 .changedBy(changedBy)
                 .remark(remark)
+                .used_with(used_with)
                 .build();
 
         historyRepo.save(history);

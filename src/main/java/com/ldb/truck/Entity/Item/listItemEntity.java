@@ -12,7 +12,7 @@ import java.util.Date;
 @Table(name="v_items_list")
 public class listItemEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
     private String itemId; // Auto-increment primary key
 
