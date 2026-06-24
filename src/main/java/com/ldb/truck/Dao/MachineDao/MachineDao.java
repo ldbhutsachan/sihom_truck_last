@@ -1310,6 +1310,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             return 0;
         }
     }
+
+    //save machine maintenance
     @Override
     public int updateMaintenanceDates(Integer keyId,
                                       String maintenanceType,
@@ -1318,7 +1320,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         try {
             String sql = "";
 
-            switch (maintenanceType) {
+            switch (maintenanceType.trim()) {
                 case "LEEAN":
                     sql = "UPDATE tb_machine SET dateChangeLeean = ?, dateChangeLeeanNext = ? WHERE key_id = ?";
                     return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
@@ -1349,6 +1351,46 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         }
         return 0;
     }
+
+    //save car maintenance
+    @Override
+    public int updateCarofficeDates(Integer keyId,
+                                      String maintenanceType,
+                                      LocalDate dateChange,
+                                      LocalDate dateNext) {
+        try {
+            String sql = "";
+
+            switch (maintenanceType.trim()) {
+                case "LEEAN":
+                    sql = "UPDATE CARS_OFFICE SET date_change_lean = ?, date_change_lean_next = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "LEEAN_GIA":
+                    sql = "UPDATE CARS_OFFICE SET leanGia = ?, leanGiaNextday = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "LEEAN_FUENG_THAI":
+                    sql = "UPDATE CARS_OFFICE SET leanFuengThaiy = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, keyId);
+
+                case "KONG_NAM":
+                    sql = "UPDATE CARS_OFFICE SET startdate_kongnam = ?, enddate_kongnam = ? WHERE KEY_ID = ?";
+//                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+                    int result = JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+//                    log.info("KONG_NAME UPDATE RESULT ={}", result);
+                    return  result;
+                default:
+                    log.warn("Unknown maintenanceType: " + maintenanceType);
+                    return 0;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     @Override
     public int updateMaintenanceHistory(Integer id,
                                         LocalDate dateChange,
