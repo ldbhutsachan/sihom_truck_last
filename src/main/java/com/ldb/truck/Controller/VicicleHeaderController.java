@@ -1105,7 +1105,8 @@ public Messages saveVicicleHeader(
             //add new
             @RequestParam("startdate_kongnam") String  startdate_kongnam,
             @RequestParam("enddate_kongnam") String  enddate_kongnam,
-            @RequestParam("borNo") String  borNo
+            @RequestParam("borNo") String  borNo,
+            @RequestParam("remark") String  remark
 
     ){
         log.info("===================================save header==================================================");
@@ -1169,6 +1170,7 @@ public Messages saveVicicleHeader(
             data.setStartdate_kongnam(startdate_kongnam);
             data.setEnddate_kongnam(enddate_kongnam);
             data.setBorNo(borNo);
+            data.setRemark(remark);
             if (img != null && !img.isEmpty()) {
                 String fileName = mediaUploadService.uploadMediacar(img);
                 data.setImg("http://khounkham.com/images/car/" + fileName);

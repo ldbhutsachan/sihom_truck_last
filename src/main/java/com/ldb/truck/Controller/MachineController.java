@@ -509,6 +509,7 @@ public class MachineController {
             @RequestParam(value = "enddateKongnam", required = false) String enddateKongnam,
             @RequestParam(value = "hydraulicDate", required = false) String hydraulicDate,
             @RequestParam(value = "hydraulicNextdate", required = false) String hydraulicNextdate,
+            @RequestParam(value = "used_with", required = false) String used_with,
             @RequestPart(value = "files", required = false) MultipartFile[] imageFile) {
 
         MaintenanceMachineRes response = new MaintenanceMachineRes();
@@ -545,25 +546,25 @@ public class MachineController {
 
             if (leean != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN,
-                        machineMileage, leean, leeanNext, filePath, userName, remark);
+                        machineMileage, leean, leeanNext, filePath, userName, remark, used_with);
                 //change ນ້ຳມັນເຄື່ອງ
                 MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(mchNo, userName);
             }
             if (gia != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN_GIA,
-                        machineMileage, gia, giaNext, filePath, userName, remark);
+                        machineMileage, gia, giaNext, filePath, userName, remark, used_with);
             }
             if (fueng != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN_FUENG_THAI,
-                        machineMileage, fueng, null, filePath, userName, remark);
+                        machineMileage, fueng, null, filePath, userName, remark, used_with);
             }
             if (kongStart != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.KONG_NAM,
-                        machineMileage, kongStart, kongEnd, filePath, userName, remark);
+                        machineMileage, kongStart, kongEnd, filePath, userName, remark, used_with);
             }
             if (hydDate != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.HYDRAULIC,
-                        machineMileage, hydDate, hydNext, filePath, userName, remark);
+                        machineMileage, hydDate, hydNext, filePath, userName, remark, used_with);
                 //change ນ້ຳມັນhydraulic
                 MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(mchNo, userName);
             }

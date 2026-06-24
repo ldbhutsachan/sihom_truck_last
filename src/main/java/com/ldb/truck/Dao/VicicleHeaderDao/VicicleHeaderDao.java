@@ -23,7 +23,7 @@ public interface VicicleHeaderDao {
     public int updateVicicleHeader (VicicleHeaderReq vicicleHeaderReq) throws ParseException;
     public int updateVicicleHeaderUppicHaveData (VicicleHeaderReq vicicleHeaderReq) throws ParseException;
     public int delVicicleHeader (VicicleHeaderReq vicicleHeaderReq);
-    public int delCarOfficeDAOs (CarOfficeReq carOfficeReq);
+    public int delCarOfficeDAOs (CarOfficeReq carOfficeReq, String userName);
 
     public int InsertCarOfficeDAOs (CarOfficeReq carOfficeReq) throws ParseException;
     public int PayCarDao (PaidCarDaoReq paidCarDaoReq) throws ParseException;

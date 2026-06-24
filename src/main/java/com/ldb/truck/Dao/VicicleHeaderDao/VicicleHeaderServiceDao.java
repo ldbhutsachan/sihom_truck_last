@@ -304,7 +304,8 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
         StringBuilder SQL = new StringBuilder();
         SQL.append("SELECT * FROM V_OFFIE_CAR_STATUS a ")
                 .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
-                .append("WHERE 1 = 1 ");
+                .append("WHERE 1 = 1 ")
+                .append("AND (a.status IS NULL OR a.status <> 'NO-ACTIVE') ");
 
         // ตรวจสอบ borNo ตาม role
         if ("PADMIN".equalsIgnoreCase(role) || "USERSTOCK".equalsIgnoreCase(role)) {
@@ -321,7 +322,8 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
             if(carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()){
                 SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
             }else {
-                SQL.append("AND c.BRANCH = '").append(branch).append("' ");
+//                SQL.append("AND c.BRANCH = '").append(branch).append("' ");
+                SQL.append("AND 1=1 ");
             }
             
         } else {
@@ -408,6 +410,8 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
                 tr.setLeanFuengThaiy_STATUS(rs.getString("leanFuengThaiy_STATUS"));
                 tr.setBorNo(rs.getString("borNo"));
                 tr.setBorName(rs.getString("borName"));
+                tr.setRemark(rs.getString("remark"));
+                tr.setStatus(rs.getString("status"));
                 // =======================================================
 
                 // =================== ส่ง SMS (comment ไว้) ===================
@@ -1187,7 +1191,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     "oil=?, car_model=?, owner_car=?, steering_wheel=?, dao=?, wide=?, longg=?, tall=?, sitPosition_amount=?, serial_wheel_left_font=?," +
                     "serial_wheel_left_back=?, serial_wheel_right_font=?, serial_wheel_right_back=?, tungsitnumber=?, tungsitDateExpire=?," +
                     "lekmai_next=?, serial_tire_second=?, date_change_lean=?, date_change_lean_next=?, leanFuengThaiy=?, leanGiaNextday=?," +
-                    "startdate_kongnam=?, enddate_kongnam=?, borNo=?" +
+                    "startdate_kongnam=?, enddate_kongnam=?, borNo=?, remark=?" +
                     (hasImg ? ", img=?" : "") +
                     " WHERE KEY_ID = ?";
 
@@ -1245,6 +1249,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getStartdate_kongnam());
             paramList.add(carOfficeReq.getEnddate_kongnam());
             paramList.add(carOfficeReq.getBorNo());
+            paramList.add(carOfficeReq.getRemark());
             if (hasImg) paramList.add(carOfficeReq.getImg());
             paramList.add(carOfficeReq.getKEY_ID());
 
@@ -1748,11 +1753,16 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
     }
     // del car office DAOs
     @Override
-    public int delCarOfficeDAOs (CarOfficeReq carOfficeReq) {
+    public int delCarOfficeDAOs (CarOfficeReq carOfficeReq, String userName) {
         String keyId = carOfficeReq.getKeyId();
         int i =0;
         try {
-            String SQL = "delete from CARS_OFFICE where KEY_ID = '" + keyId +"'";
+//            String SQL = "delete from CARS_OFFICE where KEY_ID = '" + keyId +"'";
+            String SQL =
+                    "UPDATE CARS_OFFICE "
+                            + "SET status='NO-ACTIVE', "
+                            + "borNo='" + userName + "' "
+                            + "WHERE KEY_ID='" + keyId + "'";
             log.info("SQL:"+SQL);
             i= EBankJdbcTemplate.update(SQL);
         }catch (Exception e){
