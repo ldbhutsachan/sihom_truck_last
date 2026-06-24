@@ -45,6 +45,8 @@ public class InventoryController {
     @Autowired
     private MediaUploadService mediaUploadService;
 // ===============================================Shop==================================================
+
+
     // show List Shop
 @CrossOrigin(origins = "*")
 @PostMapping("/ListShops.service")
@@ -503,6 +505,8 @@ public ShowOfferPaper reportshowofferpaper(@RequestBody OfferPaperReq offerPaper
     return result;
 }
 //report currency inventory
+
+
 @CrossOrigin(origins = "*")
 @PostMapping("/reportShowofferpaperCurrencyUSD.service")
 public ReportShowOfferPaper reportShowofferpaperCurrencyUSD(@RequestBody OfferPaperReq offerPaperReq){

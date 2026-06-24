@@ -118,24 +118,22 @@ public class ReportAllService {
         List<ReportAll> groupListData = new ArrayList<>();
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         List<ReportAll> listData = new ArrayList<>();
-        List<ReportAll> listData02 = new ArrayList<>();
         ReportAllRes result = new ReportAllRes();
         try {
             listData = reportStaffServiceDao.ListAllReportProduct(reportAllReq);
-            listData02 = reportStaffServiceDao.ListAllReportProductType02(reportAllReq);
             //================================sum footer=================================
-            double sumNummun =  listData02.stream().map(ReportAll::getTotalNummun).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalBiaLieng=  listData02.stream().map(ReportAll::getTotalBiaLieng).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtodtalLaiyJaiyFrist =  listData02.stream().map(ReportAll::getTodtalLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtodtodtalLaiyJaiySecond =  listData02.stream().map(ReportAll::getTodtalLaiyJaiySecond).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalstaff02_payAll=  listData02.stream().map(ReportAll::getTotalstaff02_payAll).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalstaff02_beforepay =  listData02.stream().map(ReportAll::getTotalstaff02_payAll).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalPriceFuel =  listData02.stream().map(ReportAll::getTotalPriceFuel).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalPriceNummun =  listData02.stream().map(ReportAll::getTotalPriceNummun).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumallLaiyJaiy =  listData02.stream().map(ReportAll::getAllLaiyJaiy).collect(Collectors.summingDouble(Double::doubleValue));
-            double getAllTotalLaijai =  listData02.stream().map(ReportAll::getAllLaiyJaiyOut).collect(Collectors.summingDouble(Double::doubleValue));
-            double getAllTotalLaijaiFrist =  listData02.stream().map(ReportAll::getAllLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumRunningTotal =  listData02.stream().map(ReportAll::getRunningTotal).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumNummun =  listData.stream().map(ReportAll::getTotalNummun).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalBiaLieng=  listData.stream().map(ReportAll::getTotalBiaLieng).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtodtalLaiyJaiyFrist =  listData.stream().map(ReportAll::getTodtalLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtodtodtalLaiyJaiySecond =  listData.stream().map(ReportAll::getTodtalLaiyJaiySecond).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalstaff02_payAll=  listData.stream().map(ReportAll::getTotalstaff02_payAll).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalstaff02_beforepay =  listData.stream().map(ReportAll::getTotalstaff02_payAll).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalPriceFuel =  listData.stream().map(ReportAll::getTotalPriceFuel).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalPriceNummun =  listData.stream().map(ReportAll::getTotalPriceNummun).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumallLaiyJaiy =  listData.stream().map(ReportAll::getAllLaiyJaiy).collect(Collectors.summingDouble(Double::doubleValue));
+            double getAllTotalLaijaiFrist = reportStaffServiceDao.getSumExpenses(reportAllReq);
+            double getAllTotalLaijai = getAllTotalLaijaiFrist + sumallLaiyJaiy;
+            double sumRunningTotal =  listData.stream().map(ReportAll::getRunningTotal).collect(Collectors.summingDouble(Double::doubleValue));
             sumFooterGroup restFooter = new sumFooterGroup();
             restFooter.setRunningTotal(numfm.format(sumRunningTotal));
             restFooter.setTotalNummun(numfm.format(sumNummun));

@@ -972,8 +972,20 @@ public List<ForShowTotalOilPaid> ShowOilPaid(@RequestBody  ReportAllReq reportAl
         });
     }
 
-
-
-
-
+    public double getSumExpenses(ReportAllReq reportAllReq) {
+        String sql = "";
+        try {
+            if (reportAllReq.getStartDate() == null) {
+                sql = "select COALESCE(sum(TOTAL), 0) as total from V_EXPENSES where STATUS in('PAY') AND BRANCH='" + reportAllReq.getBranch() + "'";
+            } else {
+                sql = "select COALESCE(sum(TOTAL), 0) as total from V_EXPENSES where STATUS in('PAY') AND BRANCH='" + reportAllReq.getBranch() + "' and EXPDATE BETWEEN '" + reportAllReq.getStartDate() + "' and '" + reportAllReq.getEndDate() + "'";
+            }
+            log.info("SQL_getSumExpenses: " + sql);
+            Double val = EBankJdbcTemplate.queryForObject(sql, Double.class);
+            return val != null ? val : 0.0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0;
+        }
+    }
 }

@@ -748,8 +748,8 @@ public ShowOfferPaper ReportShowOfferPaperSaved (@RequestBody OfferPaperReq offe
     ShowOfferPaper result = new ShowOfferPaper();
     DecimalFormat numfm = new DecimalFormat("###,###.###");
     try {
-
         listData = inventoryDao.ReportShowofferpaperDAOs(offerPaperReq);
+
         sumFooterGroupOfferPaper restFooter = new sumFooterGroupOfferPaper();
         double Real_TotalMoney =  listData.stream().map(OfferPaperModelFaso::getReal_totalMoney).collect(Collectors.summingDouble(Double::doubleValue));
         restFooter.setTotalMoney(numfm.format(Real_TotalMoney));
@@ -760,7 +760,9 @@ public ShowOfferPaper ReportShowOfferPaperSaved (@RequestBody OfferPaperReq offe
         result.setData(listData);
 //=============================================================================================
         listData2 = inventoryDao.ShowofferpaperDAOspayCredit(offerPaperReq);
+
         sumFooterGroupOfferPaper_Paid_Credit restFooter2 = new sumFooterGroupOfferPaper_Paid_Credit();
+
         double Real_TotalMoney2 =  listData2.stream().map(OfferPaperModelFaso::getReal_totalMoneyCredit).collect(Collectors.summingDouble(Double::doubleValue));
         restFooter2.setTotalMoney_credit(numfm.format(Real_TotalMoney2));
 
@@ -769,6 +771,7 @@ public ShowOfferPaper ReportShowOfferPaperSaved (@RequestBody OfferPaperReq offe
         result.setStatus("00");
 //        result.setData(listData2);
 //=============================================================================================
+
 
 
         return result;

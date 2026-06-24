@@ -107,7 +107,7 @@ public List<Branch> getBranchNew(BrachReq brachReq) {
               "(select max(create_date) from DATA_HOLE where branch_id = TB_BRANCH.KEY_ID) as LAST_UPDATE " +
               "from TB_BRANCH where userId='"+brachReq.getUserId()+"' " +
               "or ('"+brachReq.getUserId()+"' in (select KEY_ID from LOGIN where ROLE in ('FOR_DOCUMENT_ADMIN', 'FOR_DOCUMENT')) " +
-              "and userId = '166')";
+              "and userId in ('166', '141'))";
         log.info("show SQL:"+query);
         return EBankJdbcTemplate.query(query, new RowMapper<Branch>() {
             @Override
