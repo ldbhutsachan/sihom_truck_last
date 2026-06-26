@@ -854,12 +854,12 @@ public class FaceService {
                     day.put("checkOutStatus", calculateCheckOutStatus(
                             log.getCheckTime(), shift));
                 } else if (log.getCheckType().equals("FaceScan")) {
-                    List<Map<String, String>> historyList = (List<Map<String, String>>) day
-                            .computeIfAbsent("faceScanHistory", k -> new ArrayList<>());
-                    Map<String, String> scanInfo = new HashMap<>();
-                    scanInfo.put("time", log.getCheckTime().toString());
-                    scanInfo.put("ipAddress", log.getIpAddress());
-                    historyList.add(scanInfo);
+                    // List<Map<String, String>> historyList = (List<Map<String, String>>) day
+                    // .computeIfAbsent("faceScanHistory", k -> new ArrayList<>());
+                    // Map<String, String> scanInfo = new HashMap<>();
+                    // scanInfo.put("time", log.getCheckTime().toString());
+                    // scanInfo.put("ipAddress", log.getIpAddress());
+                    // historyList.add(scanInfo);
                 }
             }
 
@@ -949,9 +949,31 @@ public class FaceService {
             for (Map.Entry<String, Map<String, Object>> entry : dayMap.entrySet()) {
                 Long staffId = Long.parseLong(entry.getKey().split("_")[0]);
                 Map<String, Object> staffItem = staffMap.get(staffId);
+
+                Map<String, Object> day = entry.getValue();
+                double workday = 0.0;
+                String checkInStr = (String) day.get("checkIn");
+                String checkOutStr = (String) day.get("checkOut");
+
+                if (checkInStr != null && !checkInStr.equals("00") && checkOutStr != null
+                        && !checkOutStr.equals("00")) {
+                    try {
+                        LocalDateTime checkInTime = LocalDateTime.parse(checkInStr);
+                        LocalDateTime checkOutTime = LocalDateTime.parse(checkOutStr);
+                        long minutes = java.time.Duration.between(checkInTime, checkOutTime).toMinutes();
+                        if (minutes >= 450) {
+                            workday = 1.0;
+                        } else if (minutes >= 240) {
+                            workday = 0.5;
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+                day.put("workday", workday);
+
                 if (staffItem != null) {
                     ((List<Map<String, Object>>) staffItem.get("attendanLog"))
-                            .add(entry.getValue());
+                            .add(day);
                 }
             }
 
@@ -1037,7 +1059,7 @@ public class FaceService {
         day.put("checkOutStatus", "00");
         day.put("ipAddress", null);
         day.put("macAddress", null);
-        day.put("faceScanHistory", new ArrayList<Map<String, String>>());
+        // day.put("faceScanHistory", new ArrayList<Map<String, String>>());
         return day;
     }
 
@@ -1067,13 +1089,12 @@ public class FaceService {
             WorkShift shift) {
         LocalTime checkTime = checkInTime.toLocalTime();
 
-        // ไม่มี shift
+        // No shift ບໍ່ມີກະເຮັດວຽກ
         if (shift == null) {
-
-            // default 08:01
-            if (!checkTime.isBefore(LocalTime.of(8, 1))) {
+            LocalTime lateStart = LocalTime.of(8, 1);
+            if (!checkTime.isBefore(lateStart)) {
                 long lateMinutes = ChronoUnit.MINUTES.between(
-                        LocalTime.of(8, 0),
+                        lateStart,
                         checkTime);
                 long hours = lateMinutes / 60;
                 long minutes = lateMinutes % 60;
@@ -1083,7 +1104,7 @@ public class FaceService {
             }
             return "INTIME";
         }
-        // มี shift
+        // No shift ກະເຮັດວຽກ
         if (checkTime.isAfter(shift.getWorkStart())) {
             long lateMinutes = ChronoUnit.MINUTES.between(
                     shift.getWorkStart(),
@@ -2384,6 +2405,18 @@ public class FaceService {
                 item.put("checkIn", checkIn != null ? checkIn.getCheckTime().toString() : "00");
                 item.put("checkOut", checkOut != null ? checkOut.getCheckTime().toString() : "00");
                 item.put("status", checkIn != null ? calculateCheckInStatus(checkIn.getCheckTime(), shift) : "ABSENT");
+
+                double workday = 0.0;
+                if (checkIn != null && checkOut != null) {
+                    long minutes = java.time.Duration.between(checkIn.getCheckTime(), checkOut.getCheckTime())
+                            .toMinutes();
+                    if (minutes >= 450) { // 7 hours 30 mins
+                        workday = 1.0;
+                    } else if (minutes >= 240) { // 4 hours
+                        workday = 0.5;
+                    }
+                }
+                item.put("workday", workday);
 
                 // SHIFT INFO
                 if (shift != null) {

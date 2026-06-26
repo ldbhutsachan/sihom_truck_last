@@ -44,14 +44,14 @@ public class VicicleHeaderService {
     public VicicleHeaderRes listVicicleHeader(VicicleHeaderReq vicicleHeaderReq) {
 
         log.info("toKen=======================:" + vicicleHeaderReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleHeaderReq.getToKen());
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         vicicleHeaderReq.setUserId(userId);
         vicicleHeaderReq.setBranch(userBranchNo);
-        //new
+        // new
         String uMission = userIn.get(0).getStaff_id();
         List<VicicleHeader> vicicleHeaders = new ArrayList<>();
         VicicleHeaderRes result = new VicicleHeaderRes();
@@ -74,22 +74,22 @@ public class VicicleHeaderService {
         }
     }
 
-    //---combo1
+    // ---combo1
     public VicicleHeaderRes listVicicleHeaderCombo1(VicicleHeaderReq vicicleHeaderReq) {
         log.info("toKen=======================:" + vicicleHeaderReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleHeaderReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         vicicleHeaderReq.setUserId(userId);
         vicicleHeaderReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
         List<VicicleHeader> vicicleHeaders = new ArrayList<>();
         VicicleHeaderRes result = new VicicleHeaderRes();
         try {
@@ -111,18 +111,18 @@ public class VicicleHeaderService {
         }
     }
 
-    //---get data by id
+    // ---get data by id
     public VicicleHeaderRes listVicicleHeaderByID(@RequestBody VicicleHeaderReq vicicleHeaderReq) {
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleHeaderReq.getToKen());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         vicicleHeaderReq.setUserId(userId);
         vicicleHeaderReq.setBranch(userBranchNo);
 
-        //new
+        // new
         String uMission = userIn.get(0).getStaff_id();
         List<VicicleHeader> vicicleHeaders = new ArrayList<>();
         VicicleHeaderRes result = new VicicleHeaderRes();
@@ -150,28 +150,28 @@ public class VicicleHeaderService {
     // list Car office
     public CarOfficeRes listCarOfficeService(@RequestBody CarOfficeReq carOfficeReq) {
         log.info("toKen=======================:" + carOfficeReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String branch = userIn.get(0).getBranchNo();
-        //add more
+        // add more
         String role = userIn.get(0).getRole();
         String bor_no = userIn.get(0).getBorNo();
-        //====================================================================
+        // ====================================================================
         List<CarOfficeModel> CarOfficeModel = new ArrayList<>();
         CarOfficeRes result = new CarOfficeRes();
         try {
-//======================================================================SMS============================================
-//            ArrayList<String> phoneNumbers = new ArrayList<>();
-//            phoneNumbers.add("8562092607628");
-////            phoneNumbers.add("8562092661111");
-////            phoneNumbers.add("8562092607630");
-////            phoneNumbers.add("8562092607631");
-////            phoneNumbers.add("8562092607632");
-////            phoneNumbers.add("8562092607633");
-////            phoneNumbers.add("8562092607634");
-////            phoneNumbers.add("8562092607635");
+            // ======================================================================SMS============================================
+            // ArrayList<String> phoneNumbers = new ArrayList<>();
+            // phoneNumbers.add("8562092607628");
+            //// phoneNumbers.add("8562092661111");
+            //// phoneNumbers.add("8562092607630");
+            //// phoneNumbers.add("8562092607631");
+            //// phoneNumbers.add("8562092607632");
+            //// phoneNumbers.add("8562092607633");
+            //// phoneNumbers.add("8562092607634");
+            //// phoneNumbers.add("8562092607635");
             CarOfficeModel = vicicleHeaderDao.listCarOfficeDAOs(carOfficeReq, role, branch, bor_no);
             if (CarOfficeModel.size() < 1) {
                 result.setMessage("have No List of Car yet");
@@ -192,11 +192,11 @@ public class VicicleHeaderService {
         }
     }
 
-    //car bor service
+    // car bor service
     public CarBorRes listCarOfficeBorService(CarBorReq CarBorReq) {
         log.info("toKen=======================:" + CarBorReq.getToKen());
 
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(CarBorReq.getToKen());
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
@@ -205,11 +205,11 @@ public class VicicleHeaderService {
 
         String borNoClient = CarBorReq.getBorNo(); // borNo จาก body
 
-        //===================set data to CarBorReq===============================
+        // ===================set data to CarBorReq===============================
         CarBorReq.setUserId(userId);
         CarBorReq.setBranch(userBranchNo);
         // ไม่ต้อง set BorNo ที่ profile ลงไป เพื่อให้ borNoClient ใช้ได้สำหรับ PADMIN
-        //====================================================================
+        // ====================================================================
 
         List<CarBorModel> CarBorModel = new ArrayList<>();
         CarBorRes result = new CarBorRes();
@@ -233,23 +233,22 @@ public class VicicleHeaderService {
         }
     }
 
-
     // list lod dao that paid
     public CarPaidRes listCarDaoPaidService(@RequestBody CarOfficeReq carOfficeReq) {
         log.info("toKen=======================:" + carOfficeReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         carOfficeReq.setUserId(userId);
         carOfficeReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
         List<CarPaidModel> CarPaidModel = new ArrayList<>();
         CarPaidRes result = new CarPaidRes();
         try {
@@ -273,22 +272,22 @@ public class VicicleHeaderService {
         }
     }
 
-    //list lod dao
+    // list lod dao
     public CarOfficeRes listDaoCarOfficeService(@RequestBody CarOfficeReq carOfficeReq) {
         log.info("toKen=======================:" + carOfficeReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         carOfficeReq.setUserId(userId);
         carOfficeReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
         List<CarOfficeModel> CarOfficeModel = new ArrayList<>();
         CarOfficeRes result = new CarOfficeRes();
         try {
@@ -331,7 +330,7 @@ public class VicicleHeaderService {
         }
     }
 
-    //--del
+    // --del
     public VicicleHeaderRes DelVicicleHeaderByID(VicicleHeaderReq vicicleHeaderReq) {
         VicicleHeaderRes result = new VicicleHeaderRes();
         try {
@@ -347,14 +346,19 @@ public class VicicleHeaderService {
         }
     }
 
-    //del car office
+    // del car office
     public CarOfficeRes DelCarOfficeService(CarOfficeReq carOfficeReq) {
         CarOfficeRes result = new CarOfficeRes();
         List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
+        if (userIn == null || userIn.isEmpty()) {
+            result.setMessage("Invalid or missing toKen");
+            result.setStatus("01");
+            return result;
+        }
         String userName = userIn.get(0).getUserName();
         try {
             vicicleHeaderDao.delCarOfficeDAOs(carOfficeReq, userName);
-            result.setMessage("Delete Success");
+            result.setMessage("SET status: NO-ACTIVE successfully");
             result.setStatus("00");
             return result;
         } catch (Exception e) {
@@ -365,22 +369,22 @@ public class VicicleHeaderService {
         }
     }
 
-    //--insert data
+    // --insert data
     public Messages saveVicicleHeader(VicicleHeaderReq stafReq) {
         log.info("toKen=======================:" + stafReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(stafReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         stafReq.setUserId(userId);
         stafReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
         log.info("batno:" + stafReq.getBatNo());
         Messages message = new Messages();
         int i = 0;
@@ -406,16 +410,16 @@ public class VicicleHeaderService {
     // insert car office Service
     public Messages InsertCarOfficeService(CarOfficeReq carOfficeReq) {
         log.info("toKen=======================:" + carOfficeReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         carOfficeReq.setUserId(userId);
         carOfficeReq.setBranch(userBranchNo);
         Messages message = new Messages();
@@ -439,19 +443,19 @@ public class VicicleHeaderService {
         return message;
     }
 
-    //pay lod dao service
+    // pay lod dao service
     public Messages PayLodDaoService(PaidCarDaoReq paidCarDaoReq) {
         log.info("toKen=======================:" + paidCarDaoReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(paidCarDaoReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         paidCarDaoReq.setUserId(userId);
         paidCarDaoReq.setBranch(userBranchNo);
         Messages message = new Messages();
@@ -477,12 +481,12 @@ public class VicicleHeaderService {
 
     // update car office
     public Messages UpdateCarOfficeService(CarOfficeReq carOfficeReq) {
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(carOfficeReq.getToKen());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         carOfficeReq.setUserId(userId);
         carOfficeReq.setBranch(userBranchNo);
         Messages message = new Messages();
@@ -507,7 +511,7 @@ public class VicicleHeaderService {
         return message;
     }
 
-    //    update car office notice status
+    // update car office notice status
     public Messages UpdateCarOfficeNoticeStatus(CarOfficeReq carOfficeReq) {
         Messages message = new Messages();
         try {
@@ -524,49 +528,51 @@ public class VicicleHeaderService {
         return message;
     }
 
-    //---update
-//public VicicleHeaderRes updateVicicleHeader(VicicleHeaderReq vicicleHeaderReq){
-//    VicicleHeaderRes result = new VicicleHeaderRes();
-//    try {
-//        vicicleHeaderDao.updateVicicleHeader(vicicleHeaderReq);
-//        vicicleHeaderDao.saveHeaderHistroty(vicicleHeaderReq);
-//        result.setMessage("Success");
-//        result.setStatus("00");
-//        return result;
-//    }catch (Exception e){
-//        e.printStackTrace();
-//        result.setMessage("data not found");
-//        result.setStatus("01");
-//        return result;
-//    }
-//    //---report header
-//}
+    // ---update
+    // public VicicleHeaderRes updateVicicleHeader(VicicleHeaderReq
+    // vicicleHeaderReq){
+    // VicicleHeaderRes result = new VicicleHeaderRes();
+    // try {
+    // vicicleHeaderDao.updateVicicleHeader(vicicleHeaderReq);
+    // vicicleHeaderDao.saveHeaderHistroty(vicicleHeaderReq);
+    // result.setMessage("Success");
+    // result.setStatus("00");
+    // return result;
+    // }catch (Exception e){
+    // e.printStackTrace();
+    // result.setMessage("data not found");
+    // result.setStatus("01");
+    // return result;
+    // }
+    // //---report header
+    // }
     public Messages updateVicicleHeader(VicicleHeaderReq vicicleHeaderReq) {
         log.info("toKen=======================:" + vicicleHeaderReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleHeaderReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         vicicleHeaderReq.setUserId(userId);
         vicicleHeaderReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
         Messages message = new Messages();
         int i = 0;
         try {
             log.info("getImageTruck:" + vicicleHeaderReq.getBatNo());
-            if (vicicleHeaderReq.getImageTruck().equals("1") || vicicleHeaderReq.getImageTruck() == null || vicicleHeaderReq.getBatNo() == "undefined") {
+            if (vicicleHeaderReq.getImageTruck().equals("1") || vicicleHeaderReq.getImageTruck() == null
+                    || vicicleHeaderReq.getBatNo() == "undefined") {
                 i = vicicleHeaderDao.updateVicicleHeaderUppicHaveData(vicicleHeaderReq);
             } else {
                 i = vicicleHeaderDao.updateVicicleHeader(vicicleHeaderReq);
             }
 
-            //  i = vicicleHeaderDao.saveHeaderHistroty(vicicleHeaderReq);
+            // i = vicicleHeaderDao.saveHeaderHistroty(vicicleHeaderReq);
             if (i == 0) {
                 message.setStatus("01");
                 message.setMessage("ບໍ່ສາມາດເເກ້ໄຂໄດ້");
@@ -585,19 +591,19 @@ public class VicicleHeaderService {
 
     public VicicleHeaderRes ReportHeaderHis(ReportAllReq vicicleHeaderReq) {
         log.info("toKen=======================:" + vicicleHeaderReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleHeaderReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         vicicleHeaderReq.setUserId(userId);
         vicicleHeaderReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
         VicicleHeaderRes result = new VicicleHeaderRes();
         List<VicicleHeader> ListData = new ArrayList<>();
         try {
@@ -614,22 +620,22 @@ public class VicicleHeaderService {
         return result;
     }
 
-    //List<ReportHeader> listReportHeader(ReportHeaderReq reportHeaderReq)
+    // List<ReportHeader> listReportHeader(ReportHeaderReq reportHeaderReq)
     public ReportHeaderRes listReportHeader(ReportHeaderReq vicicleHeaderReq) {
         log.info("toKen=======================:" + vicicleHeaderReq.getToKen());
-        //============================get User info=======================
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(vicicleHeaderReq.getToKen());
         log.info("show=================UserNo:" + userIn.get(0).getUserId());
         log.info("show=================UserBname:" + userIn.get(0).getBranchName());
         log.info("show=================Role:" + userIn.get(0).getRole());
         log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        //================================================================
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         vicicleHeaderReq.setUserId(userId);
         vicicleHeaderReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
         ReportHeaderRes result = new ReportHeaderRes();
         List<ReportHeader> ListData = new ArrayList<>();
         try {

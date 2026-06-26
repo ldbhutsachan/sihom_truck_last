@@ -34,7 +34,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.sql.Timestamp;
 
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -45,12 +44,11 @@ public class MachineService {
     private final MachineToolHisRepository machineToolHisRepository;
     private final MachineMaintenanceHistoryRepository historyRepo;
 
-
-    public MachineResponse saveMachineHis(MachineHisReq machineHisReq,String userId){
+    public MachineResponse saveMachineHis(MachineHisReq machineHisReq, String userId) {
         MachineResponse response = new MachineResponse();
         try {
-            int check  = machineInterface.saveMachinedaily(machineHisReq,userId);
-            if(check >= 1 ){
+            int check = machineInterface.saveMachinedaily(machineHisReq, userId);
+            if (check >= 1) {
                 response.setStatus("00");
                 response.setMessage("OK");
                 response.setData(null);
@@ -61,21 +59,22 @@ public class MachineService {
             response.setData(null);
             return response;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("00");
             response.setMessage("Error Can't Save Data !!!!");
             response.setData(null);
-            //return response;
+            // return response;
         }
 
         return response;
     }
-    public MachineResponse aceptMachineHis(AceptItemReq machineHisReq,String userName){
+
+    public MachineResponse aceptMachineHis(AceptItemReq machineHisReq, String userName) {
         MachineResponse response = new MachineResponse();
         try {
-            int check  = machineInterface.acceptItem(machineHisReq,userName);
-            if(check >= 1 ){
+            int check = machineInterface.acceptItem(machineHisReq, userName);
+            if (check >= 1) {
                 response.setStatus("00");
                 response.setMessage("OK");
                 response.setData(null);
@@ -86,27 +85,27 @@ public class MachineService {
             response.setData(null);
             return response;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("00");
             response.setMessage("Error Can't Accept Data !!!!");
             response.setData(null);
-            //return response;
+            // return response;
         }
 
         return response;
     }
-    public MachineResponse updateMachineHis(MachineHisReq machineHisReq,String userName){
+
+    public MachineResponse updateMachineHis(MachineHisReq machineHisReq, String userName) {
         MachineResponse response = new MachineResponse();
         try {
-            int check  = machineInterface.updateMachinedaily(machineHisReq);
-            if(check == 1  ){
+            int check = machineInterface.updateMachinedaily(machineHisReq);
+            if (check == 1) {
                 response.setStatus("00");
                 response.setMessage("OK");
                 response.setData(null);
                 return response;
-            }
-            else if(check == 2){
+            } else if (check == 2) {
                 response.setStatus("01");
                 response.setMessage("out of update step!!!!");
                 response.setData(null);
@@ -117,7 +116,7 @@ public class MachineService {
             response.setData(null);
             return response;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("00");
             response.setMessage("Error Can't update Data !!!!");
@@ -126,54 +125,55 @@ public class MachineService {
 
         return response;
     }
-public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String userName) {
-    MachineResponse response = new MachineResponse();
 
-    try {
-        int check;
-        String type = machineHisReq.getType();
-        String mchNo = machineHisReq.getMchNo();
+    public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String userName) {
+        MachineResponse response = new MachineResponse();
 
-        if ("1".equals(type)) {
-            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(mchNo, userName);
-        } else if ("2".equals(type)) {
-            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(mchNo, userName);
-        } else {
-            check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(mchNo, userName);
+        try {
+            int check;
+            String type = machineHisReq.getType();
+            String mchNo = machineHisReq.getMchNo();
+
+            if ("1".equals(type)) {
+                check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(mchNo, userName);
+            } else if ("2".equals(type)) {
+                check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(mchNo, userName);
+            } else {
+                check = MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTyeAll(mchNo, userName);
+            }
+
+            log.info("check: {}", check);
+
+            // switch (check) {
+            // case 1:
+            // response.setStatus("00");
+            // response.setMessage("Update completed successfully.");
+            // break;
+            // case 2:
+            // response.setStatus("01");
+            // response.setMessage("Machine already closed or no data to update.");
+            // break;
+            // default:
+            // response.setStatus("00");
+            // response.setMessage("Update data success!");
+            // }
+            if (check > 0) {
+                response.setStatus("00");
+                response.setMessage("Update completed successfully. Rows updated: " + check);
+            } else {
+                response.setStatus("01");
+                response.setMessage("No data found to update.");
+            }
+
+        } catch (Exception e) {
+            log.error("Error updating machine history", e);
+            response.setStatus("99");
+            response.setMessage("Error: Can't update data!");
         }
 
-        log.info("check: {}", check);
-
-//        switch (check) {
-//            case 1:
-//                response.setStatus("00");
-//                response.setMessage("Update completed successfully.");
-//                break;
-//            case 2:
-//                response.setStatus("01");
-//                response.setMessage("Machine already closed or no data to update.");
-//                break;
-//            default:
-//                response.setStatus("00");
-//                response.setMessage("Update data success!");
-//        }
-        if (check > 0) {
-            response.setStatus("00");
-            response.setMessage("Update completed successfully. Rows updated: " + check);
-        } else {
-            response.setStatus("01");
-            response.setMessage("No data found to update.");
-        }
-
-    } catch (Exception e) {
-        log.error("Error updating machine history", e);
-        response.setStatus("99");
-        response.setMessage("Error: Can't update data!");
+        response.setData(null);
+        return response;
     }
-
-    response.setData(null);
-    return response;
-}
 
     public MachineHisResponse getMachineHis(MachineHisReq machineHisReq, String borNo) {
         MachineHisResponse response = new MachineHisResponse();
@@ -188,7 +188,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
 
                 for (MachineHis item : rspList) {
                     if (item.getDigMetter() != null) {
-                        totalDigMetter += item.getDigMetter();           // ใช้ +=
+                        totalDigMetter += item.getDigMetter(); // ใช้ +=
                     }
                     if (item.getOilLiter() != null) {
                         totalOilLiter += item.getOilLiter();
@@ -203,8 +203,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                 }
 
                 response.setData(rspList);
-                response.setTotalDigMetter(totalDigMetter);      // เปลี่ยนเป็น double
-                response.setTotalOilLiter(totalOilLiter);        // เปลี่ยนเป็น double
+                response.setTotalDigMetter(totalDigMetter); // เปลี่ยนเป็น double
+                response.setTotalOilLiter(totalOilLiter); // เปลี่ยนเป็น double
                 response.setTotalTimeTotal(totalTimeTotal);
                 response.setMessage("OK");
                 response.setStatus("00");
@@ -227,28 +227,27 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         return response;
     }
 
-    public MachineStockDetailsResponse getRequestItemList(MachineStockDetailsReq machineHisReq,String borNo){
+    public MachineStockDetailsResponse getRequestItemList(MachineStockDetailsReq machineHisReq, String borNo) {
         MachineStockDetailsResponse response = new MachineStockDetailsResponse();
 
         try {
-            List<MachineStockDetails> rspList = machineInterface.getRequestItemList(machineHisReq,borNo);
+            List<MachineStockDetails> rspList = machineInterface.getRequestItemList(machineHisReq, borNo);
 
             response.setData(rspList);
             response.setMessage("OK");
             response.setStatus("00");
 
-        }catch (Exception e){
+        } catch (Exception e) {
             response.setData(null);
             response.setMessage("Error !!!!!");
             response.setStatus("05");
             e.printStackTrace();
         }
-        return  response;
+        return response;
 
     }
 
-    public MachineResponse getMachine(MachineRPReq machineRPReq,String role,String borNo) {
-
+    public MachineResponse getMachine(MachineRPReq machineRPReq, String role, String borNo) {
 
         String totalMsg = "";
         String totalMs2 = "";
@@ -256,109 +255,109 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         List<Machine> data = new ArrayList<>();
         List<Machine> dataRsp = new ArrayList<>();
         try {
-             data = machineInterface.getMachine(machineRPReq,role,borNo);
-             for (Machine resp : data){
-                 Machine machine = new Machine();
-                 machine.setKeyId(resp.getKeyId());
-                 machine.setMchNo(resp.getMchNo());
-                 machine.setMchName(resp.getMchName());
-                 machine.setPrice(resp.getPrice());
-                 machine.setCurrency(resp.getCurrency());
-                 machine.setMchBranchName(resp.getMchBranchName());
-                 machine.setMchModel(resp.getMchModel());
-                 machine.setMchProductYear(resp.getMchProductYear());
-                 machine.setCreateDate(resp.getCreateDate());
-                 machine.setCreateBy(resp.getCreateBy());
-                 machine.setUserLogin(resp.getUserLogin());
-                 machine.setRole(resp.getRole());
-                 machine.setStatus(resp.getStatus());
-                 machine.setBorNo(resp.getBorNo());
-                 machine.setBorName(resp.getBorName());
-                 machine.setBorLocationName(resp.getBorLocationName());
-                 machine.setTime_fix(resp.getTime_fix());
-                 machine.setTime_fix_monitor(resp.getTime_fix_monitor());
-                 machine.setTime_oil_fix(resp.getTime_oil_fix());
-                 machine.setTime_oil_fix_mo(resp.getTime_oil_fix_mo());
+            data = machineInterface.getMachine(machineRPReq, role, borNo);
+            for (Machine resp : data) {
+                Machine machine = new Machine();
+                machine.setKeyId(resp.getKeyId());
+                machine.setMchNo(resp.getMchNo());
+                machine.setMchName(resp.getMchName());
+                machine.setPrice(resp.getPrice());
+                machine.setCurrency(resp.getCurrency());
+                machine.setMchBranchName(resp.getMchBranchName());
+                machine.setMchModel(resp.getMchModel());
+                machine.setMchProductYear(resp.getMchProductYear());
+                machine.setCreateDate(resp.getCreateDate());
+                machine.setCreateBy(resp.getCreateBy());
+                machine.setUserLogin(resp.getUserLogin());
+                machine.setRole(resp.getRole());
+                machine.setStatus(resp.getStatus());
+                machine.setBorNo(resp.getBorNo());
+                machine.setBorName(resp.getBorName());
+                machine.setBorLocationName(resp.getBorLocationName());
+                machine.setTime_fix(resp.getTime_fix());
+                machine.setTime_fix_monitor(resp.getTime_fix_monitor());
+                machine.setTime_oil_fix(resp.getTime_oil_fix());
+                machine.setTime_oil_fix_mo(resp.getTime_oil_fix_mo());
 
-                 machine.setAll_dig_metters(resp.getAll_dig_metters());
-                 machine.setAll_oil_liter(resp.getAll_oil_liter());
-                 machine.setAll_Used_Hours(resp.getAll_Used_Hours());
-                 machine.setLast_engine_Hours(resp.getLast_engine_Hours());
-                 machine.setLast_hydraulic_Hours(resp.getLast_hydraulic_Hours());
-                 machine.setTotalFixMo(resp.getTotalFixMo());
-                 machine.setTotalFixMoOil(resp.getTotalFixMoOil());
-                 machine.setImage(resp.getImage());
-                 machine.setDate_in(resp.getDate_in());
-                 machine.setRemark(resp.getRemark());
-                 machine.setMachine_mileage_now(resp.getMachine_mileage_now());
-                 machine.setMachine_mileage_next(resp.getMachine_mileage_next());
-                 machine.setMachine_mileage_hydrolic(resp.getMachine_mileage_hydrolic());
-//                 machine.setMachine_mileage_status(resp.getMachine_mileage_status());
-                 machine.setDateChangeLeean(resp.getDateChangeLeean());
-                 machine.setDateChangeLeeanNext(resp.getDateChangeLeeanNext());
-//                 machine.setChangeleean_status(resp.getChangeleean_status());
-                 machine.setDateleanGia(resp.getDateleanGia());
-                 machine.setDateleanGiaNextday(resp.getDateleanGiaNextday());
-//                 machine.setLeangia_status(resp.getLeangia_status());
-                 machine.setDateleanFuengThaiy(resp.getDateleanFuengThaiy());
-//                 machine.setFuengthaiy_status(resp.getFuengthaiy_status());
-                 machine.setStartdate_kongnam(resp.getStartdate_kongnam());
-                 machine.setEnddate_kongnam(resp.getEnddate_kongnam());
-//                 machine.setKongnam_status(resp.getKongnam_status());
-                 machine.setHydraulic_date(resp.getHydraulic_date());
-                 machine.setHydraulic_nextdate(resp.getHydraulic_nextdate());
-//                 machine.setHydraulic_status(resp.getHydraulic_status());
-                 machine.setMachine_mileage_status(resp.getMachine_mileage_status());
-                 machine.setMachine_mileage_hydrolic_status(resp.getMachine_mileage_hydrolic_status());
-                 machine.setNotifyStatus(resp.getNotifyStatus());
+                machine.setAll_dig_metters(resp.getAll_dig_metters());
+                machine.setAll_oil_liter(resp.getAll_oil_liter());
+                machine.setAll_Used_Hours(resp.getAll_Used_Hours());
+                machine.setLast_engine_Hours(resp.getLast_engine_Hours());
+                machine.setLast_hydraulic_Hours(resp.getLast_hydraulic_Hours());
+                machine.setTotalFixMo(resp.getTotalFixMo());
+                machine.setTotalFixMoOil(resp.getTotalFixMoOil());
+                machine.setImage(resp.getImage());
+                machine.setDate_in(resp.getDate_in());
+                machine.setRemark(resp.getRemark());
+                machine.setMachine_mileage_now(resp.getMachine_mileage_now());
+                machine.setMachine_mileage_next(resp.getMachine_mileage_next());
+                machine.setMachine_mileage_hydrolic(resp.getMachine_mileage_hydrolic());
+                // machine.setMachine_mileage_status(resp.getMachine_mileage_status());
+                machine.setDateChangeLeean(resp.getDateChangeLeean());
+                machine.setDateChangeLeeanNext(resp.getDateChangeLeeanNext());
+                // machine.setChangeleean_status(resp.getChangeleean_status());
+                machine.setDateleanGia(resp.getDateleanGia());
+                machine.setDateleanGiaNextday(resp.getDateleanGiaNextday());
+                // machine.setLeangia_status(resp.getLeangia_status());
+                machine.setDateleanFuengThaiy(resp.getDateleanFuengThaiy());
+                // machine.setFuengthaiy_status(resp.getFuengthaiy_status());
+                machine.setStartdate_kongnam(resp.getStartdate_kongnam());
+                machine.setEnddate_kongnam(resp.getEnddate_kongnam());
+                // machine.setKongnam_status(resp.getKongnam_status());
+                machine.setHydraulic_date(resp.getHydraulic_date());
+                machine.setHydraulic_nextdate(resp.getHydraulic_nextdate());
+                // machine.setHydraulic_status(resp.getHydraulic_status());
+                machine.setMachine_mileage_status(resp.getMachine_mileage_status());
+                machine.setMachine_mileage_hydrolic_status(resp.getMachine_mileage_hydrolic_status());
+                machine.setNotifyStatus(resp.getNotifyStatus());
 
-                 //  เพิ่มตรงนี้เพื่อ map tools ด้วย
-                 machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
+                // เพิ่มตรงนี้เพื่อ map tools ด้วย
+                machine.setTools(resp.getTools() != null ? resp.getTools() : new ArrayList<>());
 
-                 //ກຳນົດ limit monitor
+                // ກຳນົດ limit monitor
 
-                 //for checking
-                 int timeOFix=resp.getTime_fix();
-                 int timeHFix=resp.getTime_oil_fix();
+                // for checking
+                int timeOFix = resp.getTime_fix();
+                int timeHFix = resp.getTime_oil_fix();
 
-                 int time1 = resp.getTime_fix_monitor();
-                 int time_mo = resp.getTime_oil_fix_mo();
-                 // ຄໍານວນ ຍໍ້າມັນ
-                 int time2 = resp.getTotalFixMo();
-                 // ຄໍານວນ ນໍ້າມັນ ໄຮໂດລິກ
-                 int time3 = resp.getTotalFixMoOil();
+                int time1 = resp.getTime_fix_monitor();
+                int time_mo = resp.getTime_oil_fix_mo();
+                // ຄໍານວນ ຍໍ້າມັນ
+                int time2 = resp.getTotalFixMo();
+                // ຄໍານວນ ນໍ້າມັນ ໄຮໂດລິກ
+                int time3 = resp.getTotalFixMoOil();
 
-                 String mesTime1 = "OK";
-                 String mesTime2 = "LOW";
-                 String mesTime3 = "EP";
+                String mesTime1 = "OK";
+                String mesTime2 = "LOW";
+                String mesTime3 = "EP";
 
-                 if(timeOFix <= 0 && timeHFix <= 0){
-                     totalMsg = mesTime1;
-                     totalMs2 = mesTime1;
-                 }else{
-                     //ກວດສະຖານະນໍ້າມັຫນ
-                     if(time2 > time1 ){
-                         totalMsg = mesTime1;
-                     }else if(time2 <=0  ){
-                         totalMsg = mesTime3;
-                     }else  {
-                         totalMsg = mesTime2;
-                     }
-                     //ກວດສະຖານະນ ໄຮໂດລິກ
-                     if(time3 > time_mo ){
-                         totalMs2 = mesTime1;
-                     }else if(time3 <= 0  ){
-                         totalMs2 = mesTime3;
-                     }else  {
-                         totalMs2 = mesTime2;
-                     }
-                 }
+                if (timeOFix <= 0 && timeHFix <= 0) {
+                    totalMsg = mesTime1;
+                    totalMs2 = mesTime1;
+                } else {
+                    // ກວດສະຖານະນໍ້າມັຫນ
+                    if (time2 > time1) {
+                        totalMsg = mesTime1;
+                    } else if (time2 <= 0) {
+                        totalMsg = mesTime3;
+                    } else {
+                        totalMsg = mesTime2;
+                    }
+                    // ກວດສະຖານະນ ໄຮໂດລິກ
+                    if (time3 > time_mo) {
+                        totalMs2 = mesTime1;
+                    } else if (time3 <= 0) {
+                        totalMs2 = mesTime3;
+                    } else {
+                        totalMs2 = mesTime2;
+                    }
+                }
 
-                 machine.setStatus_mo(totalMsg);
-                 machine.setStatus_oil_mo(totalMs2);
+                machine.setStatus_mo(totalMsg);
+                machine.setStatus_oil_mo(totalMs2);
 
-                 dataRsp.add(machine);
-             }
+                dataRsp.add(machine);
+            }
             if (dataRsp != null && !dataRsp.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("successfully");
@@ -377,10 +376,11 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
 
         return response;
     }
-    public MachineDetailsResponse getReportMachineDetail(MachineRPReq machineRPReq,String role ,String borNo) {
+
+    public MachineDetailsResponse getReportMachineDetail(MachineRPReq machineRPReq, String role, String borNo) {
         MachineDetailsResponse response = new MachineDetailsResponse();
         try {
-            List<MachineDetails> data = machineInterface.getReportMachineDetails(machineRPReq,role,borNo);
+            List<MachineDetails> data = machineInterface.getReportMachineDetails(machineRPReq, role, borNo);
             if (data != null && !data.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("OK");
@@ -400,18 +400,17 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         return response;
     }
 
-    public MachineReportSumResposne getSumReportMachine(MachineRPReq machineRPReq,String role,String borNo) {
+    public MachineReportSumResposne getSumReportMachine(MachineRPReq machineRPReq, String role, String borNo) {
         MachineReportSumResposne response = new MachineReportSumResposne();
         GroupHeaderReport groupHeader = new GroupHeaderReport();
         List<MachineSumRptModel> dataList = new ArrayList<>();
         double sumTotalThb = 0.0;
         double sumTotalUsd = 0.0;
-        double sumTotalLak =0.0;
+        double sumTotalLak = 0.0;
         try {
             List<MachineStockDetails> data = machineInterface.getSumReportMachine(machineRPReq, role, borNo);
-//            if(data.size()> 1){
+            // if(data.size()> 1){
             if (data != null && data.size() > 0) {
-
 
                 sumTotalLak = Optional.ofNullable(data)
                         .orElse(Collections.emptyList())
@@ -434,9 +433,6 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                         .mapToDouble(MachineStockDetails::getTotal)
                         .sum();
 
-
-
-
                 List<String> merCodeList = data.stream()
                         .map(MachineStockDetails::getMchNo)
                         .distinct()
@@ -447,7 +443,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                             .filter(p -> merCo.equals(p.getMchNo()))
                             .collect(Collectors.toList());
 
-                    if (filtered.isEmpty()) continue;
+                    if (filtered.isEmpty())
+                        continue;
 
                     MachineSumRptModel rePData = new MachineSumRptModel();
                     MachineStockDetails first = filtered.get(0); // assuming consistent mchId/mchName per mchNo
@@ -490,7 +487,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                 response.setGroupHeader(groupHeader);
                 response.setData(dataList);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             response.setStatus("05");
             response.setMessage(e.getMessage());
             response.setGroupHeader(null);
@@ -526,10 +523,10 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                         groupedData.put(carId, model);
                     }
 
-                    //  เพิ่มข้อมูลใน groupList
+                    // เพิ่มข้อมูลใน groupList
                     BorCarModel.GroupList group = new BorCarModel.GroupList();
-//                    group.setLicense_plate_end(b.getLicense_plate_end());
-//                    group.setLicense_plate_start(b.getLicense_plate_start());
+                    // group.setLicense_plate_end(b.getLicense_plate_end());
+                    // group.setLicense_plate_start(b.getLicense_plate_start());
                     group.setSaveby_name(b.getSaveby_name());
                     group.setSavedate(b.getSavedate());
                     group.setBill_no(b.getBill_no());
@@ -540,16 +537,16 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                     group.setCurrency(b.getCurrency());
                     group.setQty(b.getQty());
                     group.setTotal(b.getTotal());
-//                    group.setBor_no(b.getBor_no());
-//                    group.setBor_name(b.getBor_name());
+                    // group.setBor_no(b.getBor_no());
+                    // group.setBor_name(b.getBor_name());
                     group.setApproveby(b.getApproveby());
                     group.setApprovedate(b.getApprovedate());
                     model.getGroupList().add(group);
                 }
 
-                //  แปลง Map → List
+                // แปลง Map → List
                 dataList.addAll(groupedData.values());
-                //  คำนวณยอดรวมตามสกุลเงิน
+                // คำนวณยอดรวมตามสกุลเงิน
                 for (BorCarModel car : dataList) {
                     double sumLak = 0.0;
                     double sumUsd = 0.0;
@@ -594,12 +591,11 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         return response;
     }
 
-
-    public MachineReportResposne getReportMachineSum(MachineRPReq machineRPReq,String role,String borNo) {
+    public MachineReportResposne getReportMachineSum(MachineRPReq machineRPReq, String role, String borNo) {
         MachineReportResposne response = new MachineReportResposne();
 
         try {
-            List<MachineReport> data = machineInterface.getReportMachine(machineRPReq,role,borNo);
+            List<MachineReport> data = machineInterface.getReportMachine(machineRPReq, role, borNo);
 
             if (data != null && !data.isEmpty()) {
                 response.setStatus("00");
@@ -638,7 +634,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
             // 2. Insert tools
             if (result > 0 && machineReq.getTools() != null) {
                 for (MachineReq.ToolReq tool : machineReq.getTools()) {
-                    String sqlTool = "INSERT INTO tb_machine_tool (mch_no, tool_name, qty, status, update_date, updated_by,unit) " +
+                    String sqlTool = "INSERT INTO tb_machine_tool (mch_no, tool_name, qty, status, update_date, updated_by,unit) "
+                            +
                             "VALUES (?, ?, ?, ?, ?, ?, ?)";
                     jdbcTemplate.update(sqlTool,
                             machineReq.getMchNo(),
@@ -647,8 +644,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                             "ok",
                             new java.sql.Timestamp(System.currentTimeMillis()),
                             machineReq.getCreateBy(),
-                            tool.getUnit() != null ? tool.getUnit() : ""
-                    );
+                            tool.getUnit() != null ? tool.getUnit() : "");
 
                 }
             }
@@ -706,8 +702,7 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                         jdbcTemplate.update(connection -> {
                             PreparedStatement ps = connection.prepareStatement(
                                     insertSql,
-                                    Statement.RETURN_GENERATED_KEYS
-                            );
+                                    Statement.RETURN_GENERATED_KEYS);
 
                             ps.setString(1, machineReq.getMchNo());
                             ps.setString(2, tool.getToolName());
@@ -733,13 +728,12 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
 
                         jdbcTemplate.update(updateSql,
                                 tool.getToolName(),
-//                                tool.getQty(),  //can not update qr=ty
+                                // tool.getQty(), //can not update qr=ty
                                 tool.getUnit() != null ? tool.getUnit() : "",
-//                                new Timestamp(System.currentTimeMillis()),
-//                                machineReq.getCreateBy(),
+                                // new Timestamp(System.currentTimeMillis()),
+                                // machineReq.getCreateBy(),
                                 tool.getId(),
-                                machineReq.getMchNo()
-                        );
+                                machineReq.getMchNo());
 
                         incomingIds.add(tool.getId()); // ✅ important
                     }
@@ -754,9 +748,8 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                             .map(id -> "?")
                             .collect(Collectors.joining(","));
 
-                    String updateStatusSql =
-                            "UPDATE tb_machine_tool SET status = 'NOT-USE' " +
-                                    "WHERE mch_no = ? AND id NOT IN (" + placeholders + ")";
+                    String updateStatusSql = "UPDATE tb_machine_tool SET status = 'NOT-USE' " +
+                            "WHERE mch_no = ? AND id NOT IN (" + placeholders + ")";
 
                     List<Object> params = new ArrayList<>();
                     params.add(machineReq.getMchNo());
@@ -782,10 +775,12 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
 
         return response;
     }
+
     // Insert
     public MachineToolHis insert(MachineToolHis request) {
         return machineToolHisRepository.save(request);
     }
+
     // Show by Tool ID
     public List<MachineToolHis> findByToolId(Long toolId) { // เปลี่ยนตรงนี้
         return machineToolHisRepository.findByToolId(toolId);
@@ -794,56 +789,54 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
     // Maintenance machine by updating tow table
     @Transactional
     public void saveHistoryAndUpdateMachine(Integer machineKeyId,
-                                            String mchNo,
-                                            MaintenanceType maintenanceType,
-                                            BigDecimal machineMileage,
-                                            LocalDate dateChange,
-                                            LocalDate dateNext,
-                                            String filePath,
-                                            String changedBy,
-                                            String remark,
-                                            String used_with) {
+            String mchNo,
+            MaintenanceType maintenanceType,
+            BigDecimal machineMileage,
+            LocalDate dateChange,
+            LocalDate dateNext,
+            String filePath,
+            String changedBy,
+            String remark,
+            String used_with) {
         // บันทึก history
         saveHistory(machineKeyId, mchNo, maintenanceType, machineMileage,
                 dateChange, dateNext, filePath, changedBy, remark, used_with);
 
         // อัปเดต tb_machine
         if ("machine".equalsIgnoreCase(used_with)) {
-           int result = machineInterface.updateMaintenanceDates(
+            int result = machineInterface.updateMaintenanceDates(
                     machineKeyId,
-                   maintenanceType.name().trim(),
+                    maintenanceType.name().trim(),
                     dateChange,
-                    dateNext
-            );
-            if(result <= 0){
+                    dateNext);
+            if (result <= 0) {
                 throw new RuntimeException("Update tbmachine failed");
             }
         }
         if ("car".equalsIgnoreCase(used_with)) {
-            int result=machineInterface.updateCarofficeDates(
+            int result = machineInterface.updateCarofficeDates(
                     machineKeyId,
                     maintenanceType.name().trim(),
                     dateChange,
-                    dateNext
-            );
-//            log.info("RETURN FROM updateCarofficeDates = {}", result);
-            if(result <= 0){
+                    dateNext);
+            // log.info("RETURN FROM updateCarofficeDates = {}", result);
+            if (result <= 0) {
                 throw new RuntimeException("Update table caroffice failed");
             }
         }
     }
+
     // save maintenance history funcion
     public void saveHistory(Integer machineKeyId,
-                            String mchNo,
-                            MaintenanceType maintenanceType,
-                            BigDecimal machineMileage,
-                            LocalDate dateChange,
-                            LocalDate dateNext,
-                            String filePath,
-                            String changedBy,
-                            String remark,
-                            String used_with) {
-
+            String mchNo,
+            MaintenanceType maintenanceType,
+            BigDecimal machineMileage,
+            LocalDate dateChange,
+            LocalDate dateNext,
+            String filePath,
+            String changedBy,
+            String remark,
+            String used_with) {
 
         MachineMaintenanceHistory history = MachineMaintenanceHistory.builder()
                 .machineKeyId(machineKeyId)
@@ -860,18 +853,21 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
 
         historyRepo.save(history);
     }
+
     public MachineMaintenanceHistory getHistoryById(Integer id) {
         return historyRepo.findById(Long.valueOf(id))
                 .orElseThrow(() -> new RuntimeException("ไม่พบข้อมูล History id: " + id));
     }
-    public void updateMaintenanceHistory(Integer id,
-                                         LocalDate dateChange,
-                                         LocalDate dateNext,
-                                         String filePath,
-                                         String remark,
-                                         String used_with) {
 
-        // ดึงข้อมูล history เดิมก่อน เพื่อรู้ว่า maintenanceType และ machineKeyId คืออะไร
+    public void updateMaintenanceHistory(Integer id,
+            LocalDate dateChange,
+            LocalDate dateNext,
+            String filePath,
+            String remark,
+            String used_with) {
+
+        // ดึงข้อมูล history เดิมก่อน เพื่อรู้ว่า maintenanceType และ machineKeyId
+        // คืออะไร
         MachineMaintenanceHistory existing = getHistoryById(id);
 
         // อัปเดต tb_machine_maintenance_history
@@ -880,26 +876,23 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
         // อัปเดต tb_machine เหมือน save
         if ("machine".equalsIgnoreCase(used_with)) {
             machineInterface.updateMaintenanceDates(
-                    existing.getMachineKeyId(), //id of machine
+                    existing.getMachineKeyId(), // id of machine
                     existing.getMaintenanceType().name().trim(),
                     dateChange,
-                    dateNext
-            );
+                    dateNext);
         }
         if ("car".equalsIgnoreCase(used_with)) {
             machineInterface.updateCarofficeDates(
-                    existing.getMachineKeyId(), //id of car
+                    existing.getMachineKeyId(), // id of car
                     existing.getMaintenanceType().name().trim(),
                     dateChange,
-                    dateNext
-            );
+                    dateNext);
         }
     }
 
     // ดึง history ทั้งหมดของเครื่องจักร
     public List<MachineMaintenanceHistoryResponse> getHistoryByMachine(Integer machineKeyId) {
-        List<MachineMaintenanceHistory> entities =
-                historyRepo.findByMachineKeyIdOrderByCreatedDateDesc(machineKeyId);
+        List<MachineMaintenanceHistory> entities = historyRepo.findByMachineKeyIdOrderByCreatedDateDesc(machineKeyId);
 
         return entities.stream().map(e -> MachineMaintenanceHistoryResponse.builder()
                 .id(e.getId())
@@ -913,15 +906,14 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                 .changedBy(e.getChangedBy())
                 .remark(e.getRemark())
                 .createdDate(e.getCreatedDate())
-                .build()
-        ).collect(Collectors.toList());
+                .build()).collect(Collectors.toList());
     }
 
     // ดึง history ตามประเภท
     public List<MachineMaintenanceHistoryResponse> getHistoryByType(Integer machineKeyId,
-                                                                    MaintenanceType type) {
-        List<MachineMaintenanceHistory> entities =
-                historyRepo.findByMachineKeyIdAndMaintenanceTypeOrderByCreatedDateDesc(
+            MaintenanceType type) {
+        List<MachineMaintenanceHistory> entities = historyRepo
+                .findByMachineKeyIdAndMaintenanceTypeOrderByCreatedDateDesc(
                         machineKeyId, type);
 
         return entities.stream().map(e -> MachineMaintenanceHistoryResponse.builder()
@@ -936,7 +928,25 @@ public MachineResponse enableMachineHis(MachineHisReq machineHisReq, String user
                 .changedBy(e.getChangedBy())
                 .remark(e.getRemark())
                 .createdDate(e.getCreatedDate())
-                .build()
-        ).collect(Collectors.toList());
+                .build()).collect(Collectors.toList());
+    }
+
+    // อัปเดตหรือเพิ่มรูปภาพของ Machine Tool
+    public MachineReportResposne updateMachineToolImage(Long toolId, String imageUrl) {
+        MachineReportResposne response = new MachineReportResposne();
+        try {
+            String sql = "UPDATE tb_machine_tool SET img = ? WHERE id = ?";
+            jdbcTemplate.update(sql, imageUrl, toolId);
+
+            response.setStatus("00");
+            response.setMessage("Data updated successfully");
+            response.setData(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("05");
+            response.setMessage("An error occurred while updating data");
+            response.setData(null);
+        }
+        return response;
     }
 }

@@ -88,5 +88,6 @@ public class Machine {
         private String status;
         private String mch_no;
         private String unit;
+        private String img;
     }
 }
