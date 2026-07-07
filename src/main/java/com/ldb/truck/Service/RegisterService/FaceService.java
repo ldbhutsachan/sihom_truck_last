@@ -1711,21 +1711,48 @@ public class FaceService {
                 item.put("staffCode", leave.getStaff().getStaffCode());
                 item.put("username", leave.getStaff().getUsername());
                 item.put("laoName", leave.getStaff().getLao_name());
-                item.put("phone",leave.getStaff().getPhone());
-                item.put("birthday",leave.getStaff().getBirth_date());
-                item.put("address",leave.getStaff().getAddress());
+                item.put("phone", leave.getStaff().getPhone());
+                item.put("birthday", leave.getStaff().getBirth_date());
+                item.put("address", leave.getStaff().getAddress());
                 item.put("staffImage", leave.getStaff().getStaffImage());
                 item.put("borId", leave.getStaff().getBorId());
+
+                // Fetch deptName and posName
+                String deptName = "";
+                if (leave.getStaff().getDept_id() != null) {
+                    deptName = departmentRepository.findById(leave.getStaff().getDept_id())
+                            .map(dept -> dept.getDeptName())
+                            .orElse("");
+                }
+                String posName = "";
+                if (leave.getStaff().getPos_id() != null) {
+                    posName = positionRepository.findById(leave.getStaff().getPos_id())
+                            .map(pos -> pos.getPosName())
+                            .orElse("");
+                }
+                item.put("deptName", deptName);
+                item.put("posName", posName);
+
                 item.put("leaveType", leave.getLeaveType());
+
+                long doneLeave = leaveRequestRepository.countApprovedLeaveByStaffAndType(leave.getStaff().getId(),
+                        leave.getLeaveType());
+                item.put("done_leave", doneLeave);
+                if ("PENDING".equals(leave.getStatus())) {
+                    item.put("time_leave", doneLeave + 1);
+                } else {
+                    item.put("time_leave", doneLeave);
+                }
+
                 item.put("halfDay", leave.getHalfDay());
                 item.put("startDate", leave.getStartDate().toString());
                 item.put("endDate", leave.getEndDate().toString());
                 item.put("totalDays", leave.getTotalDays());
                 item.put("status", leave.getStatus());
-                item.put("leaveTitle",leave.getLeave_title());
+                item.put("leaveTitle", leave.getLeave_title());
                 item.put("reason", leave.getReason());
-                item.put("contact",leave.getContact());
-                item.put("relationship",leave.getRelationship());
+                item.put("contact", leave.getContact());
+                item.put("relationship", leave.getRelationship());
                 item.put("approvedBy", leave.getApprovedBy() != null
                         ? leave.getApprovedBy().getUsername()
                         : null);
