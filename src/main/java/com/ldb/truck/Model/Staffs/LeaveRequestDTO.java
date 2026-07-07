@@ -13,4 +13,5 @@ public class LeaveRequestDTO {
     private String contact;
     private String relationship;
     private String halfDay;         //  เพิ่มใหม่ — "MORNING", "AFTERNOON", null=เต็มวัน
+    private org.springframework.web.multipart.MultipartFile[] files;
 }

@@ -40,6 +40,7 @@ public class DepartmentController {
     public ResponseEntity<DataResponse> createPosition(@RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(departmentService.createPosition(body));
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/position/get")
     public ResponseEntity<DataResponse> getPosition(
@@ -52,6 +53,7 @@ public class DepartmentController {
     public ResponseEntity<DataResponse> updatePosition(@RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(departmentService.updatePosition(body));
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/adjustment/request")
     public ResponseEntity<DataResponse> request(
@@ -68,19 +70,19 @@ public class DepartmentController {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/adjustment/get")
-    public ResponseEntity<DataResponse> getAdjustment(  //  method
-                                                        @RequestBody Map<String, Object> body) {
+    public ResponseEntity<DataResponse> getAdjustment( // method
+            @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(departmentService.getAdjustments(body));
     }
+
     // สร้างกะใหม่
     @CrossOrigin(origins = "*")
     @PostMapping("/staff/shift/create")
     public ResponseEntity<DataResponse> createStaffShift(
-            @RequestBody Map<String,Object> body){
+            @RequestBody Map<String, Object> body) {
 
         return ResponseEntity.ok(
-                departmentService.createStaffShift(body)
-        );
+                departmentService.createStaffShift(body));
     }
 
     // ดูกะทั้งหมด
@@ -89,6 +91,14 @@ public class DepartmentController {
     public ResponseEntity<DataResponse> getShifts(
             @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(departmentService.getShifts(body));
+    }
+
+    // อัปเดตกะ
+    @CrossOrigin(origins = "*")
+    @PostMapping("/shift/update")
+    public ResponseEntity<DataResponse> updateShifts(
+            @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(departmentService.updateShifts(body));
     }
 
     // กำหนดกะให้ staff

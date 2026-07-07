@@ -2,6 +2,8 @@ package com.ldb.truck.Controller;
 
 import com.ldb.truck.Model.ImageOfCar.ImageOfCarReq;
 import com.ldb.truck.Service.ImageOfCarService;
+import com.ldb.truck.Model.StaffStatement.StaffStatementBatchReq;
+import com.ldb.truck.Model.StaffStatement.StaffStatementReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,8 @@ public class ImageOfCarController {
             @RequestParam("imageType") String imageType,
             @RequestPart(value = "files", required = false) MultipartFile[] imageFile) {
         log.info("insertcarimages called with carId: " + carId + " and imageType: " + imageType);
-        return new ResponseEntity<>(imageOfCarService.insertCarImages(toKen, carId, imageType, imageFile), HttpStatus.OK);
+        return new ResponseEntity<>(imageOfCarService.insertCarImages(toKen, carId, imageType, imageFile),
+                HttpStatus.OK);
     }
 
     @CrossOrigin(origins = "*")
@@ -46,5 +49,34 @@ public class ImageOfCarController {
     public ResponseEntity<?> showCarImages(@RequestBody ImageOfCarReq req) {
         log.info("showcarimages called with token: " + req.getToKen() + " and imageType: " + req.getImageType());
         return new ResponseEntity<>(imageOfCarService.showCarImages(req), HttpStatus.OK);
+    }
+    // --- Staff Statement APIs ---
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/staff-statements/upload")
+    public ResponseEntity<?> insertStaffStatements(
+            @RequestParam("toKen") String token,
+            @ModelAttribute StaffStatementBatchReq req) {
+        log.info("insertStaffStatements bulk called");
+        return new ResponseEntity<>(imageOfCarService.insertStaffStatements(token, req), HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/staff-statements/get")
+    public ResponseEntity<?> listStaffStatements(@RequestBody StaffStatementReq req) {
+        String tokenStr = req.getToken();
+        log.info("listStaffStatements called with staffId: " + req.getStaffId());
+        return new ResponseEntity<>(imageOfCarService.listStaffStatements(tokenStr, req), HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/staff-statements/update")
+    public ResponseEntity<?> updateStaffStatement(
+            @RequestParam("toKen") String token,
+            @RequestParam("id") Long id,
+            @RequestParam("title") String title,
+            @RequestPart(value = "files", required = false) MultipartFile[] files) {
+        log.info("updateStaffStatement called for id: " + id);
+        return new ResponseEntity<>(imageOfCarService.updateStaffStatement(token, id, title, files), HttpStatus.OK);
     }
 }

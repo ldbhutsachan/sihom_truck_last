@@ -192,7 +192,7 @@ public class FaceController {
     @CrossOrigin(origins = "*")
     @PostMapping("/requestDayoff")
     public ResponseEntity<DataResponse> requestLeave(
-            @RequestBody LeaveRequestDTO dto) {
+            @org.springframework.web.bind.annotation.ModelAttribute LeaveRequestDTO dto) {
         return ResponseEntity.ok(faceService.requestLeave(dto));
     }
 
