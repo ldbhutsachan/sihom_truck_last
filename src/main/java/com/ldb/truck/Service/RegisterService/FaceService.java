@@ -1416,6 +1416,18 @@ public class FaceService {
                 throw new RuntimeException(
                         "ວັນລາບໍ່ພໍ ຄົງເຫຼືອ " + remaining + " ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
             }
+            // Handle File Uploads
+            String fileUrls = null;
+            if (dto.getFiles() != null && dto.getFiles().length > 0) {
+                java.util.List<String> filePaths = new java.util.ArrayList<>();
+                String pathAdd = "http://khounkham.com/images/staff/";
+                for (org.springframework.web.multipart.MultipartFile file : dto.getFiles()) {
+                    String fileName = mediaUploadService.uploadMedia(file);
+                    filePaths.add(pathAdd + fileName);
+                }
+                fileUrls = org.apache.commons.lang3.StringUtils.join(filePaths, ",");
+            }
+
             // Step 8: บันทึก
             LeaveRequest leave = new LeaveRequest();
             leave.setStaff(staff);
@@ -1429,6 +1441,7 @@ public class FaceService {
             leave.setReason(dto.getReason());
             leave.setContact(dto.getContact());
             leave.setRelationship(dto.getRelationship());
+            leave.setFiles(fileUrls);
 
             LeaveRequest saved = leaveRequestRepository.save(leave);
 
@@ -1444,6 +1457,7 @@ public class FaceService {
             data.put("status", saved.getStatus()); // MORNING, AFTERNOON, null
             data.put("remainingDays", remaining - totalDays);
             data.put("createdAt", saved.getCreatedAt());
+            data.put("files", saved.getFiles());
 
             response.setStatus("00");
             response.setMessage("ສົ່ງຄຳຂໍລາພັກສຳເລັດ ລໍຖ້າການອະນຸມັດ");
@@ -1734,6 +1748,7 @@ public class FaceService {
                 item.put("posName", posName);
 
                 item.put("leaveType", leave.getLeaveType());
+                item.put("files", leave.getFiles());
 
                 long doneLeave = leaveRequestRepository.countApprovedLeaveByStaffAndType(leave.getStaff().getId(),
                         leave.getLeaveType());
@@ -1753,6 +1768,7 @@ public class FaceService {
                 item.put("reason", leave.getReason());
                 item.put("contact", leave.getContact());
                 item.put("relationship", leave.getRelationship());
+                item.put("files", leave.getFiles());
                 item.put("approvedBy", leave.getApprovedBy() != null
                         ? leave.getApprovedBy().getUsername()
                         : null);
