@@ -8,6 +8,9 @@ public class LeaveRequestDTO {
     private String leaveType;       // SICK, PERSONAL, MATERNITY, UNPAID
     private String startDate;       // "2026-04-01"
     private String endDate;         // "2026-04-03"
+    private String leaveTitle;
     private String reason;          // เหตุผล (optional)
+    private String contact;
+    private String relationship;
     private String halfDay;         //  เพิ่มใหม่ — "MORNING", "AFTERNOON", null=เต็มวัน
 }

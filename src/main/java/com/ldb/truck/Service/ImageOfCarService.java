@@ -50,7 +50,7 @@ public class ImageOfCarService {
             List<ImageOfCar> existingImages = imageOfCarDao.listCarImages(checkReq);
             if (existingImages != null && !existingImages.isEmpty()) {
                 response.setStatus("01");
-                response.setMessage("ຮູບພາບປະເພດ: " + imageType + " .ມີຢູ່ແລ້ວ ກະລຸນາອັບເດັບແທນໄດ້ເລີຍ");
+                response.setMessage("ຮູບພາບປະເພດ: \" + imageType + \" .ມີຢູ່ແລ້ວ ກະລຸນາອັບເດັບແທນໄດ້ເລີຍ");
 
                 response.setData(null);
                 return response;
