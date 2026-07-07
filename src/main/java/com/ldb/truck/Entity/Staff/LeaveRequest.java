@@ -36,10 +36,17 @@ public class LeaveRequest {
     @Column(nullable = false)
     private Double  totalDays;
 
+
     private String halfDay;
+
+    private String leave_title;
 
     @Column(nullable = false)
     private String status = "PENDING";  // PENDING, APPROVED, REJECTED
+
+    private String contact;
+
+    private String relationship;
 
     private String reason;
 

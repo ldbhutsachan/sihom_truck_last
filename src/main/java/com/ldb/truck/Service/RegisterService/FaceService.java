@@ -1425,7 +1425,10 @@ public class FaceService {
             leave.setTotalDays(totalDays);
             leave.setHalfDay(dto.getHalfDay());
             leave.setStatus("PENDING");
+            leave.setLeave_title(dto.getLeaveTitle());
             leave.setReason(dto.getReason());
+            leave.setContact(dto.getContact());
+            leave.setRelationship(dto.getRelationship());
 
             LeaveRequest saved = leaveRequestRepository.save(leave);
 
@@ -1707,6 +1710,10 @@ public class FaceService {
                 item.put("staffId", leave.getStaff().getId());
                 item.put("staffCode", leave.getStaff().getStaffCode());
                 item.put("username", leave.getStaff().getUsername());
+                item.put("laoName", leave.getStaff().getLao_name());
+                item.put("phone",leave.getStaff().getPhone());
+                item.put("birthday",leave.getStaff().getBirth_date());
+                item.put("address",leave.getStaff().getAddress());
                 item.put("staffImage", leave.getStaff().getStaffImage());
                 item.put("borId", leave.getStaff().getBorId());
                 item.put("leaveType", leave.getLeaveType());
@@ -1715,7 +1722,10 @@ public class FaceService {
                 item.put("endDate", leave.getEndDate().toString());
                 item.put("totalDays", leave.getTotalDays());
                 item.put("status", leave.getStatus());
+                item.put("leaveTitle",leave.getLeave_title());
                 item.put("reason", leave.getReason());
+                item.put("contact",leave.getContact());
+                item.put("relationship",leave.getRelationship());
                 item.put("approvedBy", leave.getApprovedBy() != null
                         ? leave.getApprovedBy().getUsername()
                         : null);
