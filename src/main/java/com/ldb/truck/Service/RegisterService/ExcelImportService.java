@@ -50,7 +50,7 @@ public class ExcelImportService {
             String filename = file.getOriginalFilename();
             if (filename == null
                     || (!filename.endsWith(".xlsx")
-                    && !filename.endsWith(".xls"))) {
+                            && !filename.endsWith(".xls"))) {
                 throw new RuntimeException(
                         "ກະລຸນາອັບໂຫລດໄຟລ໌ Excel (.xlsx, .xls) ເທົ່ານັ້ນ");
             }
@@ -66,44 +66,45 @@ public class ExcelImportService {
 
             List<Map<String, Object>> updatedList = new ArrayList<>();
             List<Map<String, Object>> skippedList = new ArrayList<>();
-            List<Map<String, Object>> errorList   = new ArrayList<>();
-            List<StaffEntity> toUpdate            = new ArrayList<>();
+            List<Map<String, Object>> errorList = new ArrayList<>();
+            List<StaffEntity> toUpdate = new ArrayList<>();
 
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null)
+                    continue;
 
                 try {
                     String staffCode = getCellValue(row, 0);
-                    if (staffCode == null || staffCode.isEmpty()) continue;
+                    if (staffCode == null || staffCode.isEmpty())
+                        continue;
 
-                    Optional<StaffEntity> optStaff =
-                            userRepository.findByStaffCode(staffCode);
+                    Optional<StaffEntity> optStaff = userRepository.findByStaffCode(staffCode);
 
                     if (optStaff.isEmpty()) {
                         Map<String, Object> skip = new LinkedHashMap<>();
-                        skip.put("row",       i + 1);
+                        skip.put("row", i + 1);
                         skip.put("staffCode", staffCode);
-                        skip.put("reason",    "ບໍ່ພົບ Staff Code: " + staffCode);
+                        skip.put("reason", "ບໍ່ພົບ Staff Code: " + staffCode);
                         skippedList.add(skip);
                         continue;
                     }
 
                     StaffEntity staff = optStaff.get();
 
-                    setIfNotEmpty(staff::setUsername,  getCellValue(row, 1));
-                    setIfNotEmpty(staff::setLao_name,  getCellValue(row, 2));
-                    setIfNotEmpty(staff::setPhone,     getCellValue(row, 3));
-                    setIfNotEmpty(staff::setGender,    getCellValue(row, 4));
+                    setIfNotEmpty(staff::setUsername, getCellValue(row, 1));
+                    setIfNotEmpty(staff::setLao_name, getCellValue(row, 2));
+                    setIfNotEmpty(staff::setPhone, getCellValue(row, 3));
+                    setIfNotEmpty(staff::setGender, getCellValue(row, 4));
 
                     String birthDate = getCellValue(row, 5);
                     if (birthDate != null && !birthDate.isEmpty())
                         staff.setBirth_date(LocalDate.parse(birthDate, dateFormatter));
 
                     setIfNotEmpty(staff::setAddress, getCellValue(row, 6));
-                    setIfNotEmpty(staff::setStatus,  getCellValue(row, 7));
+                    setIfNotEmpty(staff::setStatus, getCellValue(row, 7));
 
                     String borId = getCellValue(row, 8);
                     if (borId != null && !borId.isEmpty())
@@ -163,17 +164,20 @@ public class ExcelImportService {
                         }
                     }
 
-                    toUpdate.add(staff);  // เก็บไว้ก่อน
+                    // เพิ่มการอัปเดต work_place จากคอลัมน์ 21 (V)
+                    setIfNotEmpty(staff::setWork_place, getCellValue(row, 21));
+
+                    toUpdate.add(staff); // เก็บไว้ก่อน
 
                     Map<String, Object> updated = new LinkedHashMap<>();
-                    updated.put("row",       i + 1);
+                    updated.put("row", i + 1);
                     updated.put("staffCode", staffCode);
-                    updated.put("username",  staff.getUsername());
+                    updated.put("username", staff.getUsername());
                     updatedList.add(updated);
 
                 } catch (Exception rowError) {
                     Map<String, Object> error = new LinkedHashMap<>();
-                    error.put("row",    i + 1);
+                    error.put("row", i + 1);
                     error.put("reason", rowError.getMessage());
                     errorList.add(error);
                 }
@@ -181,16 +185,16 @@ public class ExcelImportService {
 
             workbook.close();
 
-            //  Save ทีเดียว
+            // Save ทีเดียว
             userRepository.saveAll(toUpdate);
 
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("totalUpdated", updatedList.size());
             data.put("totalSkipped", skippedList.size());
-            data.put("totalError",   errorList.size());
-            data.put("updated",      updatedList);
-            data.put("skipped",      skippedList);
-            data.put("errors",       errorList);
+            data.put("totalError", errorList.size());
+            data.put("updated", updatedList);
+            data.put("skipped", skippedList);
+            data.put("errors", errorList);
 
             response.setStatus("00");
             response.setMessage("ນຳເຂົ້າຂໍ້ມູນສຳເລັດ");
@@ -206,10 +210,11 @@ public class ExcelImportService {
         return response;
     }
 
-    //  Helper — ดึงค่าจาก cell
+    // Helper — ดึงค่าจาก cell
     private String getCellValue(Row row, int colIndex) {
         Cell cell = row.getCell(colIndex);
-        if (cell == null) return null;
+        if (cell == null)
+            return null;
 
         switch (cell.getCellType()) {
             case STRING:
