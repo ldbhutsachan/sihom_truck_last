@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -437,6 +438,22 @@ public FixRes proofFixReqService(FixReq fixReq){
         result.setMessage("exeption");
         result.setStatus("01");
         return result;
+    }
+}
+//prove fix req batch list
+@Transactional
+public FixRes proofFixReqBatchService(List<FixReq> fixReqs){
+    FixRes result = new FixRes();
+    try {
+        for (FixReq req : fixReqs) {
+            inventoryDao.proofFixReqDao(req);
+        }
+        result.setMessage("Batch list proved success");
+        result.setStatus("00");
+        return result;
+    }catch (Exception e){
+        e.printStackTrace();
+        throw new RuntimeException("Batch operation failed", e);
     }
 }
     // Move item to stock

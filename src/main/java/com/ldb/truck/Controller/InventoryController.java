@@ -346,6 +346,22 @@ public FixRes proofFixReq (@RequestBody FixReq fixReq){
     }
     return result;
 }
+//proof fix batch
+@CrossOrigin(origins = "*")
+@PostMapping("/proofFixReqBatch.service")
+public FixRes proofFixReqBatch (@RequestBody List<FixReq> fixReqs){
+    FixRes result = new FixRes();
+    try {
+        result = inventoryService.proofFixReqBatchService(fixReqs);
+    }
+    catch (Exception e){
+        e.printStackTrace();
+        result.setStatus("01");
+        result.setMessage("exception");
+        return result;
+    }
+    return result;
+}
     //show old inventory
     @CrossOrigin(origins = "*")
     @PostMapping("/showOldInventory.service")
