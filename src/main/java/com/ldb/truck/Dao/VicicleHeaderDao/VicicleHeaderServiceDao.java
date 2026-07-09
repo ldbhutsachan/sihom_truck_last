@@ -302,10 +302,10 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
 public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String role, String branch, String bor_no) {
     try {
         StringBuilder SQL = new StringBuilder();
-        SQL.append("SELECT * FROM V_OFFIE_CAR_STATUS a ")
+        SQL.append("SELECT a.* FROM V_OFFIE_CAR_STATUS a ")
                 .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
-                .append("WHERE 1 = 1 ")
-                .append("AND (a.status IS NULL OR a.status <> 'NO-ACTIVE') ");
+                .append("WHERE 1 = 1 ");
+//                .append("AND (a.status IS NULL OR a.status <> 'NO-ACTIVE') ");
 
         // ตรวจสอบ borNo ตาม role
         if ("PADMIN".equalsIgnoreCase(role) || "USERSTOCK".equalsIgnoreCase(role)) {
@@ -546,7 +546,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
     @Override
     public List<CarOfficeModel> listLodDaoOfficeDAOs (CarOfficeReq carOfficeReq) {
         try{
-            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' and a.dao='YES'";
+            String SQL ="select a.* from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' and a.dao='YES'";
             log.info("SQL"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
                 @Override
@@ -636,7 +636,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
 //                    .create();
 //            System.out.println(message.getBody());
 // ________________________________________________________________________________________________________
-            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.KEY_ID ='"+carOfficeReq.getKeyId()+"' ";
+            String SQL ="select a.* from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.KEY_ID ='"+carOfficeReq.getKeyId()+"' ";
             log.info("SQL"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
                 @Override
@@ -1741,11 +1741,11 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
     }
     @Override
     public int delVicicleHeader(VicicleHeaderReq vicicleHeaderReq) {
-        int i =0;
+        int i = 0;
         try {
-            String SQL = "delete from TB_HEADER_TRUCK where key_id='" + vicicleHeaderReq.getKey_id() + "'";
-           i= EBankJdbcTemplate.update(SQL);
-        }catch (Exception e){
+            String SQL = "delete from TB_HEADER_TRUCK where key_id = ?";
+            i = EBankJdbcTemplate.update(SQL, vicicleHeaderReq.getKey_id());
+        } catch (Exception e) {
             e.printStackTrace();
             return i;
         }
@@ -1753,19 +1753,14 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
     }
     // del car office DAOs
     @Override
-    public int delCarOfficeDAOs (CarOfficeReq carOfficeReq, String userName) {
+    public int delCarOfficeDAOs(CarOfficeReq carOfficeReq, String userName) {
         String keyId = carOfficeReq.getKeyId();
-        int i =0;
+        int i = 0;
         try {
-//            String SQL = "delete from CARS_OFFICE where KEY_ID = '" + keyId +"'";
-            String SQL =
-                    "UPDATE CARS_OFFICE "
-                            + "SET status='NO-ACTIVE', "
-                            + "borNo='" + userName + "' "
-                            + "WHERE KEY_ID='" + keyId + "'";
-            log.info("SQL:"+SQL);
-            i= EBankJdbcTemplate.update(SQL);
-        }catch (Exception e){
+            String SQL = "UPDATE CARS_OFFICE SET status = 'NO-ACTIVE', borNo = ? WHERE KEY_ID = ?";
+            log.info("SQL: " + SQL + " [borNo=" + userName + ", KEY_ID=" + keyId + "]");
+            i = EBankJdbcTemplate.update(SQL, userName, keyId);
+        } catch (Exception e) {
             e.printStackTrace();
             return i;
         }

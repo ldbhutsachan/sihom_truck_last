@@ -854,12 +854,12 @@ public class FaceService {
                     day.put("checkOutStatus", calculateCheckOutStatus(
                             log.getCheckTime(), shift));
                 } else if (log.getCheckType().equals("FaceScan")) {
-                    List<Map<String, String>> historyList = (List<Map<String, String>>) day
-                            .computeIfAbsent("faceScanHistory", k -> new ArrayList<>());
-                    Map<String, String> scanInfo = new HashMap<>();
-                    scanInfo.put("time", log.getCheckTime().toString());
-                    scanInfo.put("ipAddress", log.getIpAddress());
-                    historyList.add(scanInfo);
+                    // List<Map<String, String>> historyList = (List<Map<String, String>>) day
+                    // .computeIfAbsent("faceScanHistory", k -> new ArrayList<>());
+                    // Map<String, String> scanInfo = new HashMap<>();
+                    // scanInfo.put("time", log.getCheckTime().toString());
+                    // scanInfo.put("ipAddress", log.getIpAddress());
+                    // historyList.add(scanInfo);
                 }
             }
 
@@ -949,9 +949,31 @@ public class FaceService {
             for (Map.Entry<String, Map<String, Object>> entry : dayMap.entrySet()) {
                 Long staffId = Long.parseLong(entry.getKey().split("_")[0]);
                 Map<String, Object> staffItem = staffMap.get(staffId);
+
+                Map<String, Object> day = entry.getValue();
+                double workday = 0.0;
+                String checkInStr = (String) day.get("checkIn");
+                String checkOutStr = (String) day.get("checkOut");
+
+                if (checkInStr != null && !checkInStr.equals("00") && checkOutStr != null
+                        && !checkOutStr.equals("00")) {
+                    try {
+                        LocalDateTime checkInTime = LocalDateTime.parse(checkInStr);
+                        LocalDateTime checkOutTime = LocalDateTime.parse(checkOutStr);
+                        long minutes = java.time.Duration.between(checkInTime, checkOutTime).toMinutes();
+                        if (minutes >= 450) {
+                            workday = 1.0;
+                        } else if (minutes >= 240) {
+                            workday = 0.5;
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+                day.put("workday", workday);
+
                 if (staffItem != null) {
                     ((List<Map<String, Object>>) staffItem.get("attendanLog"))
-                            .add(entry.getValue());
+                            .add(day);
                 }
             }
 
@@ -1037,7 +1059,7 @@ public class FaceService {
         day.put("checkOutStatus", "00");
         day.put("ipAddress", null);
         day.put("macAddress", null);
-        day.put("faceScanHistory", new ArrayList<Map<String, String>>());
+        // day.put("faceScanHistory", new ArrayList<Map<String, String>>());
         return day;
     }
 
@@ -1067,13 +1089,12 @@ public class FaceService {
             WorkShift shift) {
         LocalTime checkTime = checkInTime.toLocalTime();
 
-        // ไม่มี shift
+        // No shift ບໍ່ມີກະເຮັດວຽກ
         if (shift == null) {
-
-            // default 08:01
-            if (!checkTime.isBefore(LocalTime.of(8, 1))) {
+            LocalTime lateStart = LocalTime.of(8, 1);
+            if (!checkTime.isBefore(lateStart)) {
                 long lateMinutes = ChronoUnit.MINUTES.between(
-                        LocalTime.of(8, 0),
+                        lateStart,
                         checkTime);
                 long hours = lateMinutes / 60;
                 long minutes = lateMinutes % 60;
@@ -1083,7 +1104,7 @@ public class FaceService {
             }
             return "INTIME";
         }
-        // มี shift
+        // No shift ກະເຮັດວຽກ
         if (checkTime.isAfter(shift.getWorkStart())) {
             long lateMinutes = ChronoUnit.MINUTES.between(
                     shift.getWorkStart(),
@@ -1395,6 +1416,18 @@ public class FaceService {
                 throw new RuntimeException(
                         "ວັນລາບໍ່ພໍ ຄົງເຫຼືອ " + remaining + " ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
             }
+            // Handle File Uploads
+            String fileUrls = null;
+            if (dto.getFiles() != null && dto.getFiles().length > 0) {
+                java.util.List<String> filePaths = new java.util.ArrayList<>();
+                String pathAdd = "http://khounkham.com/images/staff/";
+                for (org.springframework.web.multipart.MultipartFile file : dto.getFiles()) {
+                    String fileName = mediaUploadService.uploadMediaStaff(file);
+                    filePaths.add(pathAdd + fileName);
+                }
+                fileUrls = org.apache.commons.lang3.StringUtils.join(filePaths, ",");
+            }
+
             // Step 8: บันทึก
             LeaveRequest leave = new LeaveRequest();
             leave.setStaff(staff);
@@ -1404,7 +1437,11 @@ public class FaceService {
             leave.setTotalDays(totalDays);
             leave.setHalfDay(dto.getHalfDay());
             leave.setStatus("PENDING");
+            leave.setLeave_title(dto.getLeaveTitle());
             leave.setReason(dto.getReason());
+            leave.setContact(dto.getContact());
+            leave.setRelationship(dto.getRelationship());
+            leave.setFiles(fileUrls);
 
             LeaveRequest saved = leaveRequestRepository.save(leave);
 
@@ -1420,6 +1457,7 @@ public class FaceService {
             data.put("status", saved.getStatus()); // MORNING, AFTERNOON, null
             data.put("remainingDays", remaining - totalDays);
             data.put("createdAt", saved.getCreatedAt());
+            data.put("files", saved.getFiles());
 
             response.setStatus("00");
             response.setMessage("ສົ່ງຄຳຂໍລາພັກສຳເລັດ ລໍຖ້າການອະນຸມັດ");
@@ -1432,6 +1470,158 @@ public class FaceService {
             response.setDataResponse(null);
         }
 
+        return response;
+    }
+
+    public DataResponse updateRequestLeave(LeaveRequestDTO dto) {
+        DataResponse response = new DataResponse();
+        try {
+            if (dto.getId() == null) {
+                throw new RuntimeException("ກະລຸນາສົ່ງ id ຂອງການລາ (leaveId)");
+            }
+
+            StaffEntity staff = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token ບໍ່ຖືກຕ້ອງ"));
+
+            // เช็ค token หมดอายุ
+            if (staff.getTokenExpiredAt() != null
+                    && staff.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token is expired please Login again");
+            }
+
+            LeaveRequest leave = leaveRequestRepository.findById(dto.getId())
+                    .orElseThrow(() -> new RuntimeException("ບໍ່ພົບຂໍ້ມູນການຂໍລາພັກນີ້"));
+
+            // 1. ตรวจสอบสิทธิ์ (ต้องเป็นเจ้าของเท่านั้น)
+            if (!leave.getStaff().getId().equals(staff.getId())) {
+                throw new RuntimeException("ທ່ານບໍ່ມີສິດແກ້ໄຂຂໍ້ມູນນີ້");
+            }
+
+            // 2. สถานะต้องเป็น PENDING เท่านั้น
+            if (!"PENDING".equals(leave.getStatus())) {
+                throw new RuntimeException("ບໍ່ສາມາດແກ້ໄຂໄດ້ ເນື່ອງຈາກໃບລາພັກນີ້ໄດ້ອະນຸມັດແລ້ວ");
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate startDate = LocalDate.parse(dto.getStartDate(), formatter);
+            LocalDate endDate = LocalDate.parse(dto.getEndDate(), formatter);
+
+            if (startDate.isAfter(endDate)) {
+                throw new RuntimeException("ວັນທີ່ເລີ່ມຕົ້ນຕ້ອງບໍ່ເກີນວັນທີ່ສີ້ນສຸດຂອງການລາ");
+            }
+
+            double totalDays;
+            if (dto.getHalfDay() != null && !dto.getHalfDay().isEmpty()) {
+                if (!startDate.equals(endDate)) {
+                    throw new RuntimeException("ການລາເຄີ່ງວັນ startDate ແລະ endDate ຕ້ອງເປັນວັນດຽວກັນ");
+                }
+                boolean isWorkDay = workScheduleUtil.isWorkDay(
+                        leave.getStaff(), startDate,
+                        leave.getStaff().getWorkSchedule() != null ? leave.getStaff().getWorkSchedule() : "MON_FRI");
+                if (!isWorkDay) {
+                    throw new RuntimeException("ຊ່ວງທີ່ເລືອກແມ່ນວັນພັກທັງໝົດ");
+                }
+                totalDays = 0.5;
+            } else {
+                totalDays = workScheduleUtil.calculateWorkDays(leave.getStaff(), startDate, endDate);
+                if (totalDays == 0) {
+                    throw new RuntimeException("ຊ່ວງທີ່ເລືອກແມ່ນວັນຢຸດທັງໝົດ");
+                }
+            }
+
+            // เช็คทับซ้อน (ยกเว้นตัวเอง)
+            List<LeaveRequest> overlapping = leaveRequestRepository
+                    .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                            leave.getStaff().getId(), "APPROVED", endDate, startDate);
+            List<LeaveRequest> overlappingPending = leaveRequestRepository
+                    .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                            leave.getStaff().getId(), "PENDING", endDate, startDate);
+
+            List<LeaveRequest> allOverlapping = new ArrayList<>();
+            allOverlapping.addAll(overlapping);
+            allOverlapping.addAll(overlappingPending);
+
+            // เอาตัวเองออกจากการตรวจสอบทับซ้อน
+            allOverlapping.removeIf(req -> req.getId().equals(leave.getId()));
+
+            if (!allOverlapping.isEmpty()) {
+                for (LeaveRequest existing : allOverlapping) {
+                    String existingHalfDay = existing.getHalfDay();
+                    String newHalfDay = dto.getHalfDay();
+                    boolean bothHalfDay = (existingHalfDay != null && !existingHalfDay.isEmpty())
+                            && (newHalfDay != null && !newHalfDay.isEmpty());
+
+                    if (bothHalfDay) {
+                        if (existingHalfDay.equals(newHalfDay)) {
+                            throw new RuntimeException("ຊ່ວງວັນທີຂໍລາຊ້ຳກັບຄຳຂໍທີ່ມີຢູ່ແລ້ວ (" + newHalfDay + ")");
+                        }
+                    } else {
+                        throw new RuntimeException("ຊ່ວງວັນທີຂໍລາຊ້ຳກັບວັນລາທີ່ມີຢູ່ແລ້ວ");
+                    }
+                }
+            }
+
+            validateLeaveRequest(leave.getStaff(), dto.getLeaveType(), totalDays, startDate);
+
+            double quota = getLeaveQuota(dto.getLeaveType());
+            double used = getLeaveUsed(leave.getStaff().getId(), dto.getLeaveType(), startDate.getYear());
+            // ลบยอดที่ใช้อยู่ในคำขอนี้คืนมาคำนวณใหม่
+            if (leave.getLeaveType().equals(dto.getLeaveType())
+                    && leave.getStartDate().getYear() == startDate.getYear()) {
+                // used ไม่รวมตัวมันเอง (เพราะ status PENDING อาจจะถูกดึงมาแล้วหรือยังไม่ดึง
+                // ขึ้นอยู่กับ getLeaveUsed() แต่ PENDING ยังไม่นับรวมใน used)
+                // ตามโค้ด getLeaveUsed() มันนับเฉพาะ APPROVED เท่านั้น ดังนั้นไม่ต้องปรับ
+            }
+
+            double remaining = quota - used;
+
+            if (!dto.getLeaveType().equals("UNPAID")
+                    && !dto.getLeaveType().equals("MATERNITY")
+                    && totalDays > remaining) {
+                throw new RuntimeException("ວັນລາບໍ່ພໍ ຄົງເຫຼືອ " + remaining + " ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
+            }
+
+            // Handle Files
+            if (dto.getFiles() != null && dto.getFiles().length > 0) {
+                java.util.List<String> filePaths = new java.util.ArrayList<>();
+                String pathAdd = "http://khounkham.com/images/staff/";
+                for (org.springframework.web.multipart.MultipartFile file : dto.getFiles()) {
+                    String fileName = mediaUploadService.uploadMediaStaff(file);
+                    filePaths.add(pathAdd + fileName);
+                }
+                leave.setFiles(org.apache.commons.lang3.StringUtils.join(filePaths, ","));
+            }
+
+            leave.setLeaveType(dto.getLeaveType());
+            leave.setStartDate(startDate);
+            leave.setEndDate(endDate);
+            leave.setTotalDays(totalDays);
+            leave.setHalfDay(dto.getHalfDay());
+            leave.setLeave_title(dto.getLeaveTitle());
+            leave.setReason(dto.getReason());
+            leave.setContact(dto.getContact());
+            leave.setRelationship(dto.getRelationship());
+
+            LeaveRequest saved = leaveRequestRepository.save(leave);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("leaveId", saved.getId());
+            data.put("staffCode", leave.getStaff().getStaffCode());
+            data.put("username", leave.getStaff().getUsername());
+            data.put("leaveType", saved.getLeaveType());
+            data.put("status", saved.getStatus());
+            data.put("files", saved.getFiles());
+
+            response.setStatus("00");
+            response.setMessage("ແກ້ໄຂຂໍ້ມູນການຂໍລາພັກສຳເລັດ");
+            response.setDataResponse(data);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
         return response;
     }
     // private double calculateWorkDays(StaffEntity staff,
@@ -1686,15 +1876,51 @@ public class FaceService {
                 item.put("staffId", leave.getStaff().getId());
                 item.put("staffCode", leave.getStaff().getStaffCode());
                 item.put("username", leave.getStaff().getUsername());
+                item.put("laoName", leave.getStaff().getLao_name());
+                item.put("phone", leave.getStaff().getPhone());
+                item.put("birthday", leave.getStaff().getBirth_date());
+                item.put("address", leave.getStaff().getAddress());
                 item.put("staffImage", leave.getStaff().getStaffImage());
                 item.put("borId", leave.getStaff().getBorId());
+
+                // Fetch deptName and posName
+                String deptName = "";
+                if (leave.getStaff().getDept_id() != null) {
+                    deptName = departmentRepository.findById(leave.getStaff().getDept_id())
+                            .map(dept -> dept.getDeptName())
+                            .orElse("");
+                }
+                String posName = "";
+                if (leave.getStaff().getPos_id() != null) {
+                    posName = positionRepository.findById(leave.getStaff().getPos_id())
+                            .map(pos -> pos.getPosName())
+                            .orElse("");
+                }
+                item.put("deptName", deptName);
+                item.put("posName", posName);
+
                 item.put("leaveType", leave.getLeaveType());
+                item.put("files", leave.getFiles());
+
+                long doneLeave = leaveRequestRepository.countApprovedLeaveByStaffAndType(leave.getStaff().getId(),
+                        leave.getLeaveType());
+                item.put("done_leave", doneLeave);
+                if ("PENDING".equals(leave.getStatus())) {
+                    item.put("time_leave", doneLeave + 1);
+                } else {
+                    item.put("time_leave", doneLeave);
+                }
+
                 item.put("halfDay", leave.getHalfDay());
                 item.put("startDate", leave.getStartDate().toString());
                 item.put("endDate", leave.getEndDate().toString());
                 item.put("totalDays", leave.getTotalDays());
                 item.put("status", leave.getStatus());
+                item.put("leaveTitle", leave.getLeave_title());
                 item.put("reason", leave.getReason());
+                item.put("contact", leave.getContact());
+                item.put("relationship", leave.getRelationship());
+                item.put("files", leave.getFiles());
                 item.put("approvedBy", leave.getApprovedBy() != null
                         ? leave.getApprovedBy().getUsername()
                         : null);
@@ -2384,6 +2610,18 @@ public class FaceService {
                 item.put("checkIn", checkIn != null ? checkIn.getCheckTime().toString() : "00");
                 item.put("checkOut", checkOut != null ? checkOut.getCheckTime().toString() : "00");
                 item.put("status", checkIn != null ? calculateCheckInStatus(checkIn.getCheckTime(), shift) : "ABSENT");
+
+                double workday = 0.0;
+                if (checkIn != null && checkOut != null) {
+                    long minutes = java.time.Duration.between(checkIn.getCheckTime(), checkOut.getCheckTime())
+                            .toMinutes();
+                    if (minutes >= 450) { // 7 hours 30 mins
+                        workday = 1.0;
+                    } else if (minutes >= 240) { // 4 hours
+                        workday = 0.5;
+                    }
+                }
+                item.put("workday", workday);
 
                 // SHIFT INFO
                 if (shift != null) {

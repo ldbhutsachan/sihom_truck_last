@@ -809,7 +809,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             }
         });
         // ดึง tools ทั้งหมด
-        String sqlTools = "SELECT id, mch_no, tool_name,original_qty, update_qty, qty, status, unit FROM v_tb_machine_tool";
+        String sqlTools = "SELECT v.id, v.mch_no, v.tool_name, v.original_qty, v.update_qty, v.qty, v.status, v.unit, t.img FROM v_tb_machine_tool v LEFT JOIN tb_machine_tool t ON v.id = t.id";
         List<Map<String, Object>> tools = JdbcTemplate.queryForList(sqlTools);
 
         //  จับคู่ tools เข้ากับ machine แต่ละตัว
@@ -826,7 +826,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                             new BigDecimal(String.valueOf(t.get("qty"))),
                             String.valueOf(t.get("status")),
                             String.valueOf(t.get("mch_no")),
-                            String.valueOf(t.get("unit"))
+                            String.valueOf(t.get("unit")),
+                            t.get("img") != null ? String.valueOf(t.get("img")) : null
                     ))
                     .collect(Collectors.toList());
 
@@ -1310,6 +1311,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             return 0;
         }
     }
+
+    //save machine maintenance
     @Override
     public int updateMaintenanceDates(Integer keyId,
                                       String maintenanceType,
@@ -1318,7 +1321,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         try {
             String sql = "";
 
-            switch (maintenanceType) {
+            switch (maintenanceType.trim()) {
                 case "LEEAN":
                     sql = "UPDATE tb_machine SET dateChangeLeean = ?, dateChangeLeeanNext = ? WHERE key_id = ?";
                     return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
@@ -1349,6 +1352,46 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         }
         return 0;
     }
+
+    //save car maintenance
+    @Override
+    public int updateCarofficeDates(Integer keyId,
+                                      String maintenanceType,
+                                      LocalDate dateChange,
+                                      LocalDate dateNext) {
+        try {
+            String sql = "";
+
+            switch (maintenanceType.trim()) {
+                case "LEEAN":
+                    sql = "UPDATE CARS_OFFICE SET date_change_lean = ?, date_change_lean_next = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "LEEAN_GIA":
+                    sql = "UPDATE CARS_OFFICE SET leanGia = ?, leanGiaNextday = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "LEEAN_FUENG_THAI":
+                    sql = "UPDATE CARS_OFFICE SET leanFuengThaiy = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, keyId);
+
+                case "KONG_NAM":
+                    sql = "UPDATE CARS_OFFICE SET startdate_kongnam = ?, enddate_kongnam = ? WHERE KEY_ID = ?";
+//                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+                    int result = JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+//                    log.info("KONG_NAME UPDATE RESULT ={}", result);
+                    return  result;
+                default:
+                    log.warn("Unknown maintenanceType: " + maintenanceType);
+                    return 0;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     @Override
     public int updateMaintenanceHistory(Integer id,
                                         LocalDate dateChange,
