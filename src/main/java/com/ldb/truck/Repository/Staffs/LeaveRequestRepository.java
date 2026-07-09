@@ -68,4 +68,8 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("staffIds")  List<Long> staffIds,
             @Param("startDate") LocalDate startDate,
             @Param("endDate")   LocalDate endDate);
+
+    //  NEW — นับจำนวนการลาที่ถูกอนุมัติแล้วตามประเภทและพนักงาน
+    @Query("SELECT COUNT(l) FROM LeaveRequest l WHERE l.staff.id = :staffId AND l.leaveType = :leaveType AND l.status = 'APPROVED'")
+    long countApprovedLeaveByStaffAndType(@Param("staffId") Long staffId, @Param("leaveType") String leaveType);
 }

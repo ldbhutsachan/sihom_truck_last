@@ -27,15 +27,13 @@ public class FaceController {
     private final FaceService faceService;
     private final MediaUploadService mediaUploadService;
 
-
-
     // ✅ consumes = MULTIPART_FORM_DATA_VALUE รองรับ FormData
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/register.service", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StaffRegisterResponseDTO> register(
             @RequestParam("staffCode") String staffCode,
             @RequestParam("username") String username,
-            @RequestParam(value = "image", required = false) MultipartFile image  // ✅ optional
+            @RequestParam(value = "image", required = false) MultipartFile image // ✅ optional
     ) throws IOException {
 
         // แปลง param → DTO
@@ -59,31 +57,31 @@ public class FaceController {
         return ResponseEntity.ok(response);
     }
 
-    //  ดูข้อมูล staff (all หรือ by id)
+    // ดูข้อมูล staff (all หรือ by id)
     @CrossOrigin(origins = "*")
     @PostMapping("/getStaff")
     public ResponseEntity<DataResponse> getStaff(@RequestBody StaffQueryRequestDTO dto) {
         return ResponseEntity.ok(faceService.getStaff(dto));
     }
 
-    //  อัปเดตข้อมูล staff
+    // อัปเดตข้อมูล staff
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/updateStaffInfo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DataResponse> update(
             @RequestParam("staffId") String staffId,
-            @RequestParam(value = "username",   required = false) String username,
-            @RequestParam(value = "phone",      required = false) String phone,
-            @RequestParam(value = "role",       required = false) String role,
-            @RequestParam(value = "status",     required = false) String status,
-            @RequestParam(value = "deptId", required = false) Long  deptId,
-            @RequestParam(value = "posId",   required = false) Long  posId,
-            @RequestParam(value = "borId",      required = false) Integer borId,
-            @RequestParam(value = "image",      required = false) MultipartFile image,
+            @RequestParam(value = "username", required = false) String username,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "role", required = false) String role,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "deptId", required = false) Long deptId,
+            @RequestParam(value = "posId", required = false) Long posId,
+            @RequestParam(value = "borId", required = false) Integer borId,
+            @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam("token") String token,
-            @RequestParam(value = "gender",      required = false) String gender,
-            @RequestParam(value = "address",      required = false) String address,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "birthDate", required = false) String birthDate,
-            @RequestParam(value = "laoName",   required = false) String laoName
+            @RequestParam(value = "laoName", required = false) String laoName
 
     ) throws IOException {
 
@@ -107,30 +105,29 @@ public class FaceController {
         return ResponseEntity.ok(faceService.updateStaff(query, dto, image));
     }
 
-    //  API ใหม่ — HR/ADMIN อัปเดตเงินเดือน + work schedule
+    // API ใหม่ — HR/ADMIN อัปเดตเงินเดือน + work schedule
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/updateStuffBy-HR", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DataResponse> updateSalary(
             @RequestParam("token") String token,
             @RequestParam("staffId") String staffId,
-            @RequestParam(value = "baseSalary",     required = false) BigDecimal baseSalary,
-            @RequestParam(value = "workSchedule",   required = false) String workSchedule,
-            @RequestParam(value = "cycleWorkDays",  required = false) Integer cycleWorkDays,
-            @RequestParam(value = "cycleOffDays",   required = false) Integer cycleOffDays,
+            @RequestParam(value = "baseSalary", required = false) BigDecimal baseSalary,
+            @RequestParam(value = "workSchedule", required = false) String workSchedule,
+            @RequestParam(value = "cycleWorkDays", required = false) Integer cycleWorkDays,
+            @RequestParam(value = "cycleOffDays", required = false) Integer cycleOffDays,
             @RequestParam(value = "cycleStartDate", required = false) String cycleStartDate,
-            @RequestParam(value = "deptId", required = false) Long  deptId,
-            @RequestParam(value = "posId",   required = false) Long  posId,
-            @RequestParam(value = "gender",      required = false) String gender,
-            @RequestParam(value = "address",      required = false) String address,
+            @RequestParam(value = "deptId", required = false) Long deptId,
+            @RequestParam(value = "posId", required = false) Long posId,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "startWorkDate", required = false) String startWorkDate,
             @RequestParam(value = "birthDate", required = false) String birthDate,
-            @RequestParam(value = "laoName",   required = false) String laoName,
-            @RequestParam(value = "username",   required = false) String username,
-            @RequestParam(value = "borId",      required = false) Integer borId,
-            @RequestParam(value = "image",      required = false) MultipartFile image,
-            @RequestParam(value = "documentFile",      required = false) MultipartFile documentFile,
-            @RequestParam(value = "workPlace",   required = false) String workPlace
-
+            @RequestParam(value = "laoName", required = false) String laoName,
+            @RequestParam(value = "username", required = false) String username,
+            @RequestParam(value = "borId", required = false) Integer borId,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "documentFile", required = false) MultipartFile documentFile,
+            @RequestParam(value = "workPlace", required = false) String workPlace
 
     ) {
         StaffQueryRequestDTO query = new StaffQueryRequestDTO();
@@ -154,11 +151,10 @@ public class FaceController {
         dto.setBorId(borId);
         dto.setWorkPlace(workPlace);
 
-        return ResponseEntity.ok(faceService.updateSalarySchedule(query, dto,image,documentFile));
+        return ResponseEntity.ok(faceService.updateSalarySchedule(query, dto, image, documentFile));
     }
 
-
-    //check in Controller
+    // check in Controller
     @CrossOrigin(origins = "*")
     @PostMapping("/checkInCheckOut")
     public ResponseEntity<CheckInResponseDTO> checkIn(
@@ -166,14 +162,15 @@ public class FaceController {
         return ResponseEntity.ok(faceService.checkIn(dto));
     }
 
-    //getAttendance
+    // getAttendance
     @CrossOrigin(origins = "*")
     @PostMapping("/getCheckIn-CheckOutData")
     public ResponseEntity<DataResponse> getAttendance(
             @RequestBody AttendanceRequestDTO dto) {
         return ResponseEntity.ok(faceService.getAttendance(dto));
     }
-    //  ADMIN reset password
+
+    // ADMIN reset password
     @CrossOrigin(origins = "*")
     @PostMapping("/reset-password")
     public ResponseEntity<PasswordResponseDTO> resetPassword(
@@ -181,22 +178,31 @@ public class FaceController {
         return ResponseEntity.ok(faceService.resetPassword(dto));
     }
 
-    //  Staff เปลี่ยน password ตัวเอง
+    // Staff เปลี่ยน password ตัวเอง
     @CrossOrigin(origins = "*")
     @PostMapping("/change-password")
     public ResponseEntity<PasswordResponseDTO> changePassword(
             @RequestBody ChangePasswordRequestDTO dto) {
         return ResponseEntity.ok(faceService.changePassword(dto));
     }
-    //rquest day off
+
+    // rquest day off
     @CrossOrigin(origins = "*")
     @PostMapping("/requestDayoff")
     public ResponseEntity<DataResponse> requestLeave(
-            @RequestBody LeaveRequestDTO dto) {
+            @org.springframework.web.bind.annotation.ModelAttribute LeaveRequestDTO dto) {
         return ResponseEntity.ok(faceService.requestLeave(dto));
     }
 
-    //get leaveRequest
+    // update request day off
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateRequestDayoff")
+    public ResponseEntity<DataResponse> updateRequestLeave(
+            @org.springframework.web.bind.annotation.ModelAttribute LeaveRequestDTO dto) {
+        return ResponseEntity.ok(faceService.updateRequestLeave(dto));
+    }
+
+    // get leaveRequest
     @CrossOrigin(origins = "*")
     @PostMapping("/getLeaveRequest")
     public ResponseEntity<DataResponse> getLeave(
@@ -204,7 +210,7 @@ public class FaceController {
         return ResponseEntity.ok(faceService.getLeave(dto));
     }
 
-    //approve LeaveReques
+    // approve LeaveReques
     @CrossOrigin(origins = "*")
     @PostMapping("/approveLeave")
     public ResponseEntity<DataResponse> approveLeave(
@@ -212,7 +218,7 @@ public class FaceController {
         return ResponseEntity.ok(faceService.approveLeave(dto));
     }
 
-    //DailyAttendance controller
+    // DailyAttendance controller
     @CrossOrigin(origins = "*")
     @PostMapping("/getDailyAttendance")
     public ResponseEntity<DataResponse> getDailyAttendance(

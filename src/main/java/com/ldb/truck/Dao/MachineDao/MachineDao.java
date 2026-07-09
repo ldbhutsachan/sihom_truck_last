@@ -395,7 +395,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
     StringBuilder sb = new StringBuilder();
 
     Integer keyId = machineHisReq.getKeyId();
-    Integer hole =  machineHisReq.getHole();
+    String hole =  machineHisReq.getHole();
     String mchNo = machineHisReq.getMchNo();
     String startDate = machineHisReq.getStartDate();
     String endDate = machineHisReq.getEndDate();
@@ -473,7 +473,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                 tr.setTimeTotal(rs.getString("time_total"));
                 tr.setDigMetter(rs.getDouble("dig_metter"));
                 tr.setOilLiter(rs.getDouble("oil_liter"));
-                tr.setHole(rs.getInt("hole"));
+                tr.setHole(rs.getString("hole"));
                 tr.setTxnDate(rs.getDate("txn_date"));
                 tr.setStatus(rs.getInt("status"));
                 tr.setBorNo(rs.getString("borNo"));
@@ -785,6 +785,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setRemark(rs.getString("remark"));
                 tr.setMachine_mileage_now(rs.getString("machine_mileage_now"));
                 tr.setMachine_mileage_next(rs.getString("machine_mileage_next"));
+                tr.setMachine_mileage_hydrolic(rs.getString("machine_mileage_hydrolic"));
 //                tr.setMachine_mileage_status(rs.getString("machine_mileage_status"));
                 tr.setDateChangeLeean(rs.getString("dateChangeLeean"));
                 tr.setDateChangeLeeanNext(rs.getString("dateChangeLeeanNext"));
@@ -800,13 +801,15 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setHydraulic_date(rs.getString("hydraulic_date"));
                 tr.setHydraulic_nextdate(rs.getString("hydraulic_nextdate"));
 //                tr.setHydraulic_status(rs.getString("hydraulic_status"));
+                tr.setMachine_mileage_status(rs.getString("machine_mileage_status"));
+                tr.setMachine_mileage_hydrolic_status(rs.getString("machine_mileage_hydrolic_status"));
                 tr.setNotifyStatus(rs.getString("notifyStatus"));
 
                 return tr;
             }
         });
         // ดึง tools ทั้งหมด
-        String sqlTools = "SELECT id, mch_no, tool_name,original_qty, update_qty, qty, status, unit FROM v_tb_machine_tool";
+        String sqlTools = "SELECT v.id, v.mch_no, v.tool_name, v.original_qty, v.update_qty, v.qty, v.status, v.unit, t.img FROM v_tb_machine_tool v LEFT JOIN tb_machine_tool t ON v.id = t.id";
         List<Map<String, Object>> tools = JdbcTemplate.queryForList(sqlTools);
 
         //  จับคู่ tools เข้ากับ machine แต่ละตัว
@@ -823,7 +826,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                             new BigDecimal(String.valueOf(t.get("qty"))),
                             String.valueOf(t.get("status")),
                             String.valueOf(t.get("mch_no")),
-                            String.valueOf(t.get("unit"))
+                            String.valueOf(t.get("unit")),
+                            t.get("img") != null ? String.valueOf(t.get("img")) : null
                     ))
                     .collect(Collectors.toList());
 
@@ -1224,7 +1228,11 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 sql.append("machine_mileage_now = ?, ");
                 params.add(machineReq.getMachine_mileage_now());
             }
-
+            //  machine_mileage_hydrolic
+            if (machineReq.getMachine_mileage_hydrolic() != null) {
+                sql.append("machine_mileage_hydrolic = ?, ");
+                params.add(machineReq.getMachine_mileage_hydrolic());
+            }
             //  machine_mileage_next
             if (machineReq.getMachine_mileage_next() != null) {
                 sql.append("machine_mileage_next = ?, ");
@@ -1303,6 +1311,8 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
             return 0;
         }
     }
+
+    //save machine maintenance
     @Override
     public int updateMaintenanceDates(Integer keyId,
                                       String maintenanceType,
@@ -1311,7 +1321,7 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         try {
             String sql = "";
 
-            switch (maintenanceType) {
+            switch (maintenanceType.trim()) {
                 case "LEEAN":
                     sql = "UPDATE tb_machine SET dateChangeLeean = ?, dateChangeLeeanNext = ? WHERE key_id = ?";
                     return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
@@ -1342,6 +1352,46 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
         }
         return 0;
     }
+
+    //save car maintenance
+    @Override
+    public int updateCarofficeDates(Integer keyId,
+                                      String maintenanceType,
+                                      LocalDate dateChange,
+                                      LocalDate dateNext) {
+        try {
+            String sql = "";
+
+            switch (maintenanceType.trim()) {
+                case "LEEAN":
+                    sql = "UPDATE CARS_OFFICE SET date_change_lean = ?, date_change_lean_next = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "LEEAN_GIA":
+                    sql = "UPDATE CARS_OFFICE SET leanGia = ?, leanGiaNextday = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+
+                case "LEEAN_FUENG_THAI":
+                    sql = "UPDATE CARS_OFFICE SET leanFuengThaiy = ? WHERE KEY_ID = ?";
+                    return JdbcTemplate.update(sql, dateChange, keyId);
+
+                case "KONG_NAM":
+                    sql = "UPDATE CARS_OFFICE SET startdate_kongnam = ?, enddate_kongnam = ? WHERE KEY_ID = ?";
+//                    return JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+                    int result = JdbcTemplate.update(sql, dateChange, dateNext, keyId);
+//                    log.info("KONG_NAME UPDATE RESULT ={}", result);
+                    return  result;
+                default:
+                    log.warn("Unknown maintenanceType: " + maintenanceType);
+                    return 0;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     @Override
     public int updateMaintenanceHistory(Integer id,
                                         LocalDate dateChange,

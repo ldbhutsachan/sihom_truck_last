@@ -302,9 +302,10 @@ public class VicicleHeaderServiceDao implements VicicleHeaderDao {
 public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String role, String branch, String bor_no) {
     try {
         StringBuilder SQL = new StringBuilder();
-        SQL.append("SELECT * FROM V_OFFIE_CAR_STATUS a ")
+        SQL.append("SELECT a.* FROM V_OFFIE_CAR_STATUS a ")
                 .append("JOIN LOGIN c ON a.userId = c.KEY_ID ")
                 .append("WHERE 1 = 1 ");
+//                .append("AND (a.status IS NULL OR a.status <> 'NO-ACTIVE') ");
 
         // ตรวจสอบ borNo ตาม role
         if ("PADMIN".equalsIgnoreCase(role) || "USERSTOCK".equalsIgnoreCase(role)) {
@@ -321,7 +322,8 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
             if(carOfficeReq.getBorNo() != null && !carOfficeReq.getBorNo().trim().isEmpty()){
                 SQL.append("AND a.borNo = '").append(carOfficeReq.getBorNo()).append("' ");
             }else {
-                SQL.append("AND c.BRANCH = '").append(branch).append("' ");
+//                SQL.append("AND c.BRANCH = '").append(branch).append("' ");
+                SQL.append("AND 1=1 ");
             }
             
         } else {
@@ -408,6 +410,8 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
                 tr.setLeanFuengThaiy_STATUS(rs.getString("leanFuengThaiy_STATUS"));
                 tr.setBorNo(rs.getString("borNo"));
                 tr.setBorName(rs.getString("borName"));
+                tr.setRemark(rs.getString("remark"));
+                tr.setStatus(rs.getString("status"));
                 // =======================================================
 
                 // =================== ส่ง SMS (comment ไว้) ===================
@@ -542,7 +546,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
     @Override
     public List<CarOfficeModel> listLodDaoOfficeDAOs (CarOfficeReq carOfficeReq) {
         try{
-            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' and a.dao='YES'";
+            String SQL ="select a.* from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where c.BRANCH='"+carOfficeReq.getBranch()+"' and a.dao='YES'";
             log.info("SQL"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
                 @Override
@@ -632,7 +636,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
 //                    .create();
 //            System.out.println(message.getBody());
 // ________________________________________________________________________________________________________
-            String SQL ="select * from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.KEY_ID ='"+carOfficeReq.getKeyId()+"' ";
+            String SQL ="select a.* from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.KEY_ID ='"+carOfficeReq.getKeyId()+"' ";
             log.info("SQL"+SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
                 @Override
@@ -1178,6 +1182,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
     @Override
     public int UpdateCarOfficeDAOs(CarOfficeReq carOfficeReq) throws ParseException {
         try {
+            boolean hasImg = carOfficeReq.getImg() != null && !carOfficeReq.getImg().isEmpty();
             String SQL = "UPDATE CARS_OFFICE SET " +
                     "license_plate=?, battery_code_name=?, license_plate_end=?, license_plate_start=?, car_year=?," +
                     "car_type=?, car_brand=?, lekJuk=?, lekThung=?, carColor=?, font_light=?, back_light=?, millor_back=?, millor_side=?," +
@@ -1186,8 +1191,9 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     "oil=?, car_model=?, owner_car=?, steering_wheel=?, dao=?, wide=?, longg=?, tall=?, sitPosition_amount=?, serial_wheel_left_font=?," +
                     "serial_wheel_left_back=?, serial_wheel_right_font=?, serial_wheel_right_back=?, tungsitnumber=?, tungsitDateExpire=?," +
                     "lekmai_next=?, serial_tire_second=?, date_change_lean=?, date_change_lean_next=?, leanFuengThaiy=?, leanGiaNextday=?," +
-                    "startdate_kongnam=?, enddate_kongnam=?, borNo=? " +
-                    "WHERE KEY_ID = ?";
+                    "startdate_kongnam=?, enddate_kongnam=?, borNo=?, remark=?" +
+                    (hasImg ? ", img=?" : "") +
+                    " WHERE KEY_ID = ?";
 
             log.info("SQL: " + SQL);
 
@@ -1243,6 +1249,8 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getStartdate_kongnam());
             paramList.add(carOfficeReq.getEnddate_kongnam());
             paramList.add(carOfficeReq.getBorNo());
+            paramList.add(carOfficeReq.getRemark());
+            if (hasImg) paramList.add(carOfficeReq.getImg());
             paramList.add(carOfficeReq.getKEY_ID());
 
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
@@ -1733,11 +1741,11 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
     }
     @Override
     public int delVicicleHeader(VicicleHeaderReq vicicleHeaderReq) {
-        int i =0;
+        int i = 0;
         try {
-            String SQL = "delete from TB_HEADER_TRUCK where key_id='" + vicicleHeaderReq.getKey_id() + "'";
-           i= EBankJdbcTemplate.update(SQL);
-        }catch (Exception e){
+            String SQL = "delete from TB_HEADER_TRUCK where key_id = ?";
+            i = EBankJdbcTemplate.update(SQL, vicicleHeaderReq.getKey_id());
+        } catch (Exception e) {
             e.printStackTrace();
             return i;
         }
@@ -1745,14 +1753,14 @@ public int UpdateCarOfficenoticeStatusDAOs (CarOfficeReq carOfficeReq){
     }
     // del car office DAOs
     @Override
-    public int delCarOfficeDAOs (CarOfficeReq carOfficeReq) {
+    public int delCarOfficeDAOs(CarOfficeReq carOfficeReq, String userName) {
         String keyId = carOfficeReq.getKeyId();
-        int i =0;
+        int i = 0;
         try {
-            String SQL = "delete from CARS_OFFICE where KEY_ID = '" + keyId +"'";
-            log.info("SQL:"+SQL);
-            i= EBankJdbcTemplate.update(SQL);
-        }catch (Exception e){
+            String SQL = "UPDATE CARS_OFFICE SET status = 'NO-ACTIVE', borNo = ? WHERE KEY_ID = ?";
+            log.info("SQL: " + SQL + " [borNo=" + userName + ", KEY_ID=" + keyId + "]");
+            i = EBankJdbcTemplate.update(SQL, userName, keyId);
+        } catch (Exception e) {
             e.printStackTrace();
             return i;
         }

@@ -33,7 +33,9 @@ public class ImplBranchDao implements BranchDao{
       log.info("show get info:======999999:"+brachReq.getUserId());
       log.info("show get info:======branch:"+brachReq.getBranchNo());
         try{
-            query="select a.KEY_ID ,a.B_NAME ,a.B_TEL ,a.B_LOCATION ,a.EMAIL ,a.userId ,b.USER_LOGIN ,a.createDate\n" +
+            query="select a.KEY_ID ,a.B_NAME ,a.B_TEL ,a.B_LOCATION ,a.EMAIL ,a.userId ,b.USER_LOGIN ,a.createDate, a.B_STATUS, " +
+                    "(select count(*) from DATA_HOLE h where h.branch_id = a.KEY_ID) as HOLE_COUNT, " +
+                    "(select max(create_date) from DATA_HOLE h where h.branch_id = a.KEY_ID) as LAST_UPDATE\n" +
                     "from LOGIN b inner join TB_BRANCH a on a.userId  =b.KEY_ID where a.key_id ='"+brachReq.getBranchNo()+"' AND a.userId='"+brachReq.getUserId()+"'";
 
             log.info("show SQL:"+query);
@@ -48,6 +50,9 @@ public class ImplBranchDao implements BranchDao{
                     tr.setEmail(rs.getString("EMAIL"));
                     tr.setUserName(rs.getString("userId"));
                     tr.setCreateDate(rs.getString("createDate"));
+                    tr.setHoleCount(rs.getInt("HOLE_COUNT"));
+                    tr.setLastUpdate(rs.getString("LAST_UPDATE"));
+                    tr.setStatus(rs.getString("B_STATUS"));
                     return tr;
                 }
             });
@@ -62,8 +67,47 @@ public class ImplBranchDao implements BranchDao{
 public List<Branch> getBranchNew(BrachReq brachReq) {
     log.info("show get info:======999999:"+brachReq.getUserId());
     log.info("show get info:======branch:"+brachReq.getBranchNo());
-    try{
-        query="select * from TB_BRANCH where userId='"+brachReq.getUserId()+"'";
+    try {
+        try {
+            // Alter table to add create_date if it does not exist
+            EBankJdbcTemplate.execute("ALTER TABLE DATA_HOLE ADD COLUMN create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+            log.info("Successfully executed DDL to add create_date to DATA_HOLE if missing");
+        } catch (Exception e) {
+            // Expected if column already exists
+        }
+
+        try {
+            // Alter table to add B_STATUS if it does not exist
+            EBankJdbcTemplate.execute("ALTER TABLE TB_BRANCH ADD COLUMN B_STATUS VARCHAR(255) DEFAULT 'ດຳເນີນງານ'");
+            log.info("Successfully executed DDL to add B_STATUS to TB_BRANCH if missing");
+        } catch (Exception e) {
+            // Expected if column already exists
+        }
+
+        try {
+            // Check if test boreholes are already inserted to avoid duplication
+            Integer testCount = EBankJdbcTemplate.queryForObject("select count(*) from DATA_HOLE where hole_number like 'BH-TEST-%'", Integer.class);
+            if (testCount == null || testCount == 0) {
+                // Get current date string and format test timestamps relative to current date (e.g. 10 minutes ago, 2 hours ago, 4 hours ago)
+                // Using exact timestamps matching user OS local time or near current time
+                EBankJdbcTemplate.execute("insert into DATA_HOLE (pic, hole_number, data_Coller, userId, full_Name_Hole_number, branch_id, create_date) " +
+                        "values ('pic_test1.png', 'BH-TEST-001', 'TESTER', '166', 'Borehole Test XiengKhouang', '3', DATE_SUB(NOW(), INTERVAL 15 MINUTE))");
+                EBankJdbcTemplate.execute("insert into DATA_HOLE (pic, hole_number, data_Coller, userId, full_Name_Hole_number, branch_id, create_date) " +
+                        "values ('pic_test2.png', 'BH-TEST-002', 'TESTER', '166', 'Borehole Test Savannakhet', '4', DATE_SUB(NOW(), INTERVAL 2 HOUR))");
+                EBankJdbcTemplate.execute("insert into DATA_HOLE (pic, hole_number, data_Coller, userId, full_Name_Hole_number, branch_id, create_date) " +
+                        "values ('pic_test3.png', 'BH-TEST-003', 'TESTER', '166', 'Borehole Test HO Office', '5', DATE_SUB(NOW(), INTERVAL 5 HOUR))");
+                log.info("Successfully inserted test borehole records");
+            }
+        } catch (Exception e) {
+            log.error("Failed to insert test records", e);
+        }
+
+        query="select *, " +
+              "(select count(*) from DATA_HOLE where branch_id = TB_BRANCH.KEY_ID) as HOLE_COUNT, " +
+              "(select max(create_date) from DATA_HOLE where branch_id = TB_BRANCH.KEY_ID) as LAST_UPDATE " +
+              "from TB_BRANCH where userId='"+brachReq.getUserId()+"' " +
+              "or ('"+brachReq.getUserId()+"' in (select KEY_ID from LOGIN where ROLE in ('FOR_DOCUMENT_ADMIN', 'FOR_DOCUMENT')) " +
+              "and userId in ('166', '141'))";
         log.info("show SQL:"+query);
         return EBankJdbcTemplate.query(query, new RowMapper<Branch>() {
             @Override
@@ -76,6 +120,9 @@ public List<Branch> getBranchNew(BrachReq brachReq) {
                 tr.setEmail(rs.getString("EMAIL"));
                 tr.setUserName(rs.getString("userId"));
                 tr.setCreateDate(rs.getString("createDate"));
+                tr.setHoleCount(rs.getInt("HOLE_COUNT"));
+                tr.setLastUpdate(rs.getString("LAST_UPDATE"));
+                tr.setStatus(rs.getString("B_STATUS"));
                 return tr;
             }
         });
@@ -87,13 +134,14 @@ public List<Branch> getBranchNew(BrachReq brachReq) {
     @Override
     public int saveDataBranch(BrachReq brachReq) {
         try{
-        query="insert into TB_BRANCH (B_NAME,B_TEL,B_LOCATION,EMAIL,userId,createDate) VALUES (?,?,?,?,?,now())";
+        query="insert into TB_BRANCH (B_NAME,B_TEL,B_LOCATION,EMAIL,userId,createDate,B_STATUS) VALUES (?,?,?,?,?,now(),?)";
             List<String> paraList = new ArrayList<>();
             paraList.add(brachReq.getB_name());
             paraList.add(brachReq.getB_tel());
             paraList.add(brachReq.getLocation());
             paraList.add(brachReq.getEmail());
             paraList.add(brachReq.getUserId());
+            paraList.add(brachReq.getStatus() != null ? brachReq.getStatus() : "ດຳເນີນງານ");
             return EBankJdbcTemplate.update(query,paraList.toArray());
         }
         catch (Exception e){
@@ -105,13 +153,14 @@ public List<Branch> getBranchNew(BrachReq brachReq) {
     @Override
     public int updateDataBranch(BrachReq brachReq) {
         try{
-            query="update TB_BRANCH set B_NAME=?,B_TEL=?,B_LOCATION=?,EMAIL=?,userId=?,createDate=now() WHERE KEY_ID=?";
+            query="update TB_BRANCH set B_NAME=?,B_TEL=?,B_LOCATION=?,EMAIL=?,userId=?,B_STATUS=?,createDate=now() WHERE KEY_ID=?";
             List<String> paraList = new ArrayList<>();
             paraList.add(brachReq.getB_name());
             paraList.add(brachReq.getB_tel());
             paraList.add(brachReq.getLocation());
             paraList.add(brachReq.getEmail());
             paraList.add(brachReq.getUserId());
+            paraList.add(brachReq.getStatus());
 
             paraList.add(brachReq.getKey_id());
             return EBankJdbcTemplate.update(query,paraList.toArray());

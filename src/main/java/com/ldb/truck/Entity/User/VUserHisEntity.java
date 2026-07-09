@@ -11,7 +11,7 @@ import java.util.Date;
 
 public class VUserHisEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id") // Maps to DB column name
     private String user_id;
 

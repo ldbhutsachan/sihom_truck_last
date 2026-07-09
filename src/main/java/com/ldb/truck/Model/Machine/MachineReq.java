@@ -34,6 +34,7 @@ public class MachineReq {
 
     private BigDecimal machine_mileage_now;
     private BigDecimal machine_mileage_next;
+    private BigDecimal machine_mileage_hydrolic;
     private LocalDate machine_mileage_status;
     private LocalDate dateChangeLeean;
     private LocalDate dateChangeLeeanNext;

@@ -50,6 +50,7 @@ public class Machine {
 
     private String machine_mileage_now;
     private String machine_mileage_next;
+    private String machine_mileage_hydrolic;
 //    private String machine_mileage_status;
     private String dateChangeLeean;
     private String dateChangeLeeanNext;
@@ -65,6 +66,8 @@ public class Machine {
     private String hydraulic_date;
     private String hydraulic_nextdate;
 //    private String hydraulic_status;
+    private String machine_mileage_status;
+    private String machine_mileage_hydrolic_status;
     private String notifyStatus;
 
 
@@ -85,5 +88,6 @@ public class Machine {
         private String status;
         private String mch_no;
         private String unit;
+        private String img;
     }
 }

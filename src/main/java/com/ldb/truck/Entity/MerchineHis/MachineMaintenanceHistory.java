@@ -24,6 +24,8 @@ public class MachineMaintenanceHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+//    @Column(name = "machine_key_id", nullable = false)
+//    private Integer machineKeyId;
     @Column(name = "machine_key_id", nullable = false)
     private Integer machineKeyId;
 
@@ -51,6 +53,9 @@ public class MachineMaintenanceHistory {
 
     @Column(name = "remark", columnDefinition = "TEXT")
     private String remark;
+
+    @Column(name = "used_with")
+    private String used_with;
 
     @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;

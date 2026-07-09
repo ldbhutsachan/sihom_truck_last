@@ -25,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class MachineController {
     private final ProfileDao profileDao;
     private final MachineService MACHINE_SERVICE;
     @Autowired
-    private  MerchinHisRepository MERCHIN_HIS_REPOSITORY;
+    private MerchinHisRepository MERCHIN_HIS_REPOSITORY;
     @Autowired
     private MediaUploadService mediaUploadService;
 
@@ -234,7 +233,7 @@ public class MachineController {
         }
 
         String role = userProfiles.get(0).getRole();
-//        String borNo = userProfiles.get(0).getBorNo();
+        // String borNo = userProfiles.get(0).getBorNo();
 
         try {
             response = MACHINE_SERVICE.getReportBorCar(borcarReq, role);
@@ -245,7 +244,6 @@ public class MachineController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
 
     @CrossOrigin(origins = "*")
     @PostMapping("/getReportMachineSum.service")
@@ -285,7 +283,7 @@ public class MachineController {
             @RequestParam(value = "mchBranchName", required = false) String mchBranchName,
             @RequestParam(value = "mchModel", required = false) String mchModel,
             @RequestParam(value = "mchProductYear", required = false) String mchProductYear,
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date_in,  // for insert date_in in local Datetime
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date_in, // for insert date_in in local Datetime
             @RequestParam(value = "machine_mileage_now", required = false) BigDecimal machine_mileage_now,
             @RequestParam(value = "machine_mileage_next", required = false) BigDecimal machine_mileage_next,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeean,
@@ -335,8 +333,7 @@ public class MachineController {
                 List<MachineReq.ToolReq> tools = mapper.readValue(
                         toolsJson,
                         new TypeReference<List<MachineReq.ToolReq>>() {
-                        }
-                );
+                        });
                 machineReq.setTools(tools);
             }
             String fileName = "";
@@ -384,10 +381,10 @@ public class MachineController {
             @RequestParam(value = "remark", required = false) String remark,
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
-            @RequestParam(value = "date_in", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date_in,
+            @RequestParam(value = "date_in", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date_in,
             @RequestParam(value = "machine_mileage_now", required = false) BigDecimal machine_mileage_now,
             @RequestParam(value = "machine_mileage_next", required = false) BigDecimal machine_mileage_next,
+            @RequestParam(value = "machine_mileage_hydrolic", required = false) BigDecimal machine_mileage_hydrolic,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeean,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateChangeLeeanNext,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateleanGia,
@@ -397,7 +394,6 @@ public class MachineController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate enddate_kongnam,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hydraulic_date,
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hydraulic_nextdate
-
 
     ) throws Exception {
 
@@ -421,6 +417,7 @@ public class MachineController {
         machineReq.setDate_in(date_in);
         machineReq.setMachine_mileage_now(machine_mileage_now);
         machineReq.setMachine_mileage_next(machine_mileage_next);
+        machineReq.setMachine_mileage_hydrolic(machine_mileage_hydrolic);
         machineReq.setDateChangeLeean(dateChangeLeean);
         machineReq.setDateChangeLeeanNext(dateChangeLeeanNext);
         machineReq.setDateleanGia(dateleanGia);
@@ -435,8 +432,7 @@ public class MachineController {
             ObjectMapper mapper = new ObjectMapper();
             List<MachineReq.ToolReq> tools = mapper.readValue(
                     toolsJson, new TypeReference<List<MachineReq.ToolReq>>() {
-                    }
-            );
+                    });
             machineReq.setTools(tools);
         }
         String fileName = "";
@@ -458,7 +454,7 @@ public class MachineController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    //insert Machinetoolhis
+    // insert Machinetoolhis
     @CrossOrigin(origins = "*")
     @PostMapping("/insertMachineToolHis")
     public ResponseEntity<?> insert(@RequestBody MachineToolHisRequest request) {
@@ -481,12 +477,40 @@ public class MachineController {
         return ResponseEntity.status(HttpStatus.CREATED).body(MACHINE_SERVICE.insert(entity));
     }
 
-    //getmachineToolHis
+    // getmachineToolHis
     @CrossOrigin(origins = "*")
     @PostMapping("/getMachineToolHis")
     public ResponseEntity<?> findByToolId(@RequestBody Map<String, Long> body) { // เปลี่ยนตรงนี้
         Long toolId = body.get("id");
         return ResponseEntity.ok(MACHINE_SERVICE.findByToolId(toolId));
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/uploadMachineToolImage")
+    public ResponseEntity<?> uploadMachineToolImage(
+            @RequestParam("token") String token,
+            @RequestParam("id") Long id,
+            @RequestParam(value = "image", required = false) MultipartFile imageFile) {
+
+        List<Profile> userProfiles = profileDao.getProfileInfoByToken(token);
+        if (userProfiles.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String pathAdd = "http://khounkham.com/images/batery/";
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String fileName = mediaUploadService.uploadMedia(imageFile);
+            String imageUrl = pathAdd + fileName;
+
+            MachineReportResposne result = MACHINE_SERVICE.updateMachineToolImage(id, imageUrl);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
+
+        MachineReportResposne errorResult = new MachineReportResposne();
+        errorResult.setStatus("01");
+        errorResult.setMessage("No image provided");
+        errorResult.setData(null);
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
 
     // บันทึก history
@@ -507,6 +531,7 @@ public class MachineController {
             @RequestParam(value = "enddateKongnam", required = false) String enddateKongnam,
             @RequestParam(value = "hydraulicDate", required = false) String hydraulicDate,
             @RequestParam(value = "hydraulicNextdate", required = false) String hydraulicNextdate,
+            @RequestParam(value = "used_with", required = false) String used_with,
             @RequestPart(value = "files", required = false) MultipartFile[] imageFile) {
 
         MaintenanceMachineRes response = new MaintenanceMachineRes();
@@ -518,18 +543,18 @@ public class MachineController {
             }
             String userName = userProfiles.get(0).getUserName();
 
-            LocalDate leean     = parseDate(dateChangeLeean);
+            LocalDate leean = parseDate(dateChangeLeean);
             LocalDate leeanNext = parseDate(dateChangeLeeanNext);
-            LocalDate gia       = parseDate(dateleanGia);
-            LocalDate giaNext   = parseDate(dateleanGiaNextday);
-            LocalDate fueng     = parseDate(dateleanFuengThaiy);
+            LocalDate gia = parseDate(dateleanGia);
+            LocalDate giaNext = parseDate(dateleanGiaNextday);
+            LocalDate fueng = parseDate(dateleanFuengThaiy);
             LocalDate kongStart = parseDate(startdateKongnam);
-            LocalDate kongEnd   = parseDate(enddateKongnam);
-            LocalDate hydDate   = parseDate(hydraulicDate);
-            LocalDate hydNext   = parseDate(hydraulicNextdate);
+            LocalDate kongEnd = parseDate(enddateKongnam);
+            LocalDate hydDate = parseDate(hydraulicDate);
+            LocalDate hydNext = parseDate(hydraulicNextdate);
 
             String filePath = null;
-            String pathAdd = "http://khounkham.com/images/maintenance/";
+            String pathAdd = "http://khounkham.com/images/batery/";
             if (imageFile != null && imageFile.length > 0) {
                 List<String> fileNames = new ArrayList<>();
                 Arrays.asList(imageFile).forEach(file -> {
@@ -543,26 +568,29 @@ public class MachineController {
 
             if (leean != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN,
-                        machineMileage, leean, leeanNext, filePath, userName, remark);
-                //change ນ້ຳມັນເຄື່ອງ
+                        machineMileage, leean, leeanNext, filePath, userName, remark, used_with);
+                // change ນ້ຳມັນເຄື່ອງ
                 MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosed(mchNo, userName);
             }
             if (gia != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN_GIA,
-                        machineMileage, gia, giaNext, filePath, userName, remark);
+                        machineMileage, gia, giaNext, filePath, userName, remark, used_with);
             }
             if (fueng != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.LEEAN_FUENG_THAI,
-                        machineMileage, fueng, null, filePath, userName, remark);
+                        machineMileage, fueng, null, filePath, userName, remark, used_with);
             }
+            log.info("startdateKongnam = {}", startdateKongnam);
+            log.info("kongStart = {}", kongStart);
+            log.info("used_with = {}", used_with);
             if (kongStart != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.KONG_NAM,
-                        machineMileage, kongStart, kongEnd, filePath, userName, remark);
+                        machineMileage, kongStart, kongEnd, filePath, userName, remark, used_with);
             }
             if (hydDate != null) {
                 MACHINE_SERVICE.saveHistoryAndUpdateMachine(machineKeyId, mchNo, MaintenanceType.HYDRAULIC,
-                        machineMileage, hydDate, hydNext, filePath, userName, remark);
-                //change ນ້ຳມັນhydraulic
+                        machineMileage, hydDate, hydNext, filePath, userName, remark, used_with);
+                // change ນ້ຳມັນhydraulic
                 MERCHIN_HIS_REPOSITORY.updateMachineStatusToClosedTye2(mchNo, userName);
             }
 
@@ -581,13 +609,14 @@ public class MachineController {
 
     // --- Helper แปลง String เป็น LocalDate ---
     private LocalDate parseDate(String dateStr) {
-        if (dateStr == null || dateStr.trim().isEmpty()) return null;
+        if (dateStr == null || dateStr.trim().isEmpty())
+            return null;
         // ตัด " ออกกรณี Postman ส่งมาพร้อม "
         dateStr = dateStr.replace("\"", "").trim();
         return LocalDate.parse(dateStr);
     }
 
-    //update
+    // update
     @CrossOrigin(origins = "*")
     @PostMapping("/updateMaintenance")
     public ResponseEntity<?> updateHistory(
@@ -596,6 +625,7 @@ public class MachineController {
             @RequestParam(value = "dateChange", required = false) String dateChange,
             @RequestParam(value = "dateNext", required = false) String dateNext,
             @RequestParam(value = "remark", required = false) String remark,
+            @RequestParam(value = "use_with", required = false) String use_with,
             @RequestPart(value = "files", required = false) MultipartFile[] imageFile) {
 
         MaintenanceMachineRes response = new MaintenanceMachineRes();
@@ -608,7 +638,7 @@ public class MachineController {
 
             // จัดการไฟล์
             String filePath = null;
-            String pathAdd = "http://khounkham.com/images/maintenance/";
+            String pathAdd = "http://khounkham.com/images/batery/";
             if (imageFile != null && imageFile.length > 0) {
                 List<String> fileNames = new ArrayList<>();
                 Arrays.asList(imageFile).forEach(file -> {
@@ -623,8 +653,8 @@ public class MachineController {
                     parseDate(dateChange),
                     parseDate(dateNext),
                     filePath,
-                    remark
-            );
+                    remark,
+                    use_with);
 
             response.setStatus("00");
             response.setMessage("Updated maintenance successfully");
@@ -650,15 +680,13 @@ public class MachineController {
 
         try {
             List<Profile> userProfiles = profileDao.getProfileInfoByToken(
-                    (String) body.get("toKen")
-            );
+                    (String) body.get("toKen"));
             if (userProfiles.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
             Integer machineKeyId = (Integer) body.get("machineKeyId");
-            List<MachineMaintenanceHistoryResponse> data =
-                    MACHINE_SERVICE.getHistoryByMachine(machineKeyId);
+            List<MachineMaintenanceHistoryResponse> data = MACHINE_SERVICE.getHistoryByMachine(machineKeyId);
 
             response.setStatus("00");
             response.setMessage("Data retrieved successfully");
@@ -684,18 +712,15 @@ public class MachineController {
 
         try {
             List<Profile> userProfiles = profileDao.getProfileInfoByToken(
-                    (String) body.get("toKen")
-            );
+                    (String) body.get("toKen"));
             if (userProfiles.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
             Integer machineKeyId = (Integer) body.get("machineKeyId");
             MaintenanceType type = MaintenanceType.valueOf(
-                    (String) body.get("maintenanceType")
-            );
-            List<MachineMaintenanceHistoryResponse> data =
-                    MACHINE_SERVICE.getHistoryByType(machineKeyId, type);
+                    (String) body.get("maintenanceType"));
+            List<MachineMaintenanceHistoryResponse> data = MACHINE_SERVICE.getHistoryByType(machineKeyId, type);
 
             response.setStatus("00");
             response.setMessage("Get Maintenance Data successfully");

@@ -32,6 +32,10 @@ public interface MachineInterface {
                                       LocalDate dateNext,
                                       String filePath,
                                       String remark);
+  public int updateCarofficeDates(Integer keyId,
+                                    String maintenanceType,
+                                    LocalDate dateChange,
+                                    LocalDate dateNext);
 
 
 }

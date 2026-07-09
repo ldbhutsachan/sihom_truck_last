@@ -15,7 +15,7 @@ public class MachineHis {
     private String timeTotal; // time_close varchar(10)
     private Double digMetter;
     private Double oilLiter;
-    private Integer hole;
+    private String hole;
     private Date txnDate; // txn_date date
     private Integer status; // status int(11)
     private String borNo;

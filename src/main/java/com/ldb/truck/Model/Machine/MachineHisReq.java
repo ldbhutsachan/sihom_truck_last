@@ -20,7 +20,7 @@ public class MachineHisReq {
     private String timeClose; // time_close varchar(10)
     private BigDecimal digMetter;
     private BigDecimal oilLiter;
-    private Integer hole;
+    private String hole;
 
 
     private Date txnDate; // txn_date date

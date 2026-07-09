@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -439,6 +440,22 @@ public FixRes proofFixReqService(FixReq fixReq){
         return result;
     }
 }
+//prove fix req batch list
+@Transactional
+public FixRes proofFixReqBatchService(List<FixReq> fixReqs){
+    FixRes result = new FixRes();
+    try {
+        for (FixReq req : fixReqs) {
+            inventoryDao.proofFixReqDao(req);
+        }
+        result.setMessage("Batch list proved success");
+        result.setStatus("00");
+        return result;
+    }catch (Exception e){
+        e.printStackTrace();
+        throw new RuntimeException("Batch operation failed", e);
+    }
+}
     // Move item to stock
     public MoveToStockRes MoveItemToStockService (MoveToStockReq moveToStockReq ){
 
@@ -748,8 +765,8 @@ public ShowOfferPaper ReportShowOfferPaperSaved (@RequestBody OfferPaperReq offe
     ShowOfferPaper result = new ShowOfferPaper();
     DecimalFormat numfm = new DecimalFormat("###,###.###");
     try {
-
         listData = inventoryDao.ReportShowofferpaperDAOs(offerPaperReq);
+
         sumFooterGroupOfferPaper restFooter = new sumFooterGroupOfferPaper();
         double Real_TotalMoney =  listData.stream().map(OfferPaperModelFaso::getReal_totalMoney).collect(Collectors.summingDouble(Double::doubleValue));
         restFooter.setTotalMoney(numfm.format(Real_TotalMoney));
@@ -760,7 +777,9 @@ public ShowOfferPaper ReportShowOfferPaperSaved (@RequestBody OfferPaperReq offe
         result.setData(listData);
 //=============================================================================================
         listData2 = inventoryDao.ShowofferpaperDAOspayCredit(offerPaperReq);
+
         sumFooterGroupOfferPaper_Paid_Credit restFooter2 = new sumFooterGroupOfferPaper_Paid_Credit();
+
         double Real_TotalMoney2 =  listData2.stream().map(OfferPaperModelFaso::getReal_totalMoneyCredit).collect(Collectors.summingDouble(Double::doubleValue));
         restFooter2.setTotalMoney_credit(numfm.format(Real_TotalMoney2));
 
@@ -769,6 +788,7 @@ public ShowOfferPaper ReportShowOfferPaperSaved (@RequestBody OfferPaperReq offe
         result.setStatus("00");
 //        result.setData(listData2);
 //=============================================================================================
+
 
 
         return result;

@@ -22,10 +22,10 @@ public class LeaveRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
-    private StaffEntity approvedBy;     // HR ที่อนุมัติ
+    private StaffEntity approvedBy; // HR ที่อนุมัติ
 
     @Column(nullable = false)
-    private String leaveType;           // SICK, PERSONAL, MATERNITY, UNPAID
+    private String leaveType; // SICK, PERSONAL, MATERNITY, UNPAID
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -34,12 +34,20 @@ public class LeaveRequest {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private Double  totalDays;
+    private Double totalDays;
 
     private String halfDay;
 
+    private String leave_title;
+
+    private String files;
+
     @Column(nullable = false)
-    private String status = "PENDING";  // PENDING, APPROVED, REJECTED
+    private String status = "PENDING"; // PENDING, APPROVED, REJECTED
+
+    private String contact;
+
+    private String relationship;
 
     private String reason;
 

@@ -79,5 +79,7 @@ public class CarOfficeModel {
     private String leanFuengThaiy_STATUS;
     private String borNo;
     private String borName;
+    private String remark;
+    private String status;
 
 }

@@ -17,7 +17,7 @@ public class modelItemList {
     private String borNo;
     private String borName;
     private String size;
-    private BigDecimal qty;
+    private Double  qty;
     private String khid;
     private String khno;
     private String khname;
