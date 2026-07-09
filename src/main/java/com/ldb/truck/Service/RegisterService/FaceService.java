@@ -1422,7 +1422,7 @@ public class FaceService {
                 java.util.List<String> filePaths = new java.util.ArrayList<>();
                 String pathAdd = "http://khounkham.com/images/staff/";
                 for (org.springframework.web.multipart.MultipartFile file : dto.getFiles()) {
-                    String fileName = mediaUploadService.uploadMedia(file);
+                    String fileName = mediaUploadService.uploadMediaStaff(file);
                     filePaths.add(pathAdd + fileName);
                 }
                 fileUrls = org.apache.commons.lang3.StringUtils.join(filePaths, ",");
@@ -1470,6 +1470,158 @@ public class FaceService {
             response.setDataResponse(null);
         }
 
+        return response;
+    }
+
+    public DataResponse updateRequestLeave(LeaveRequestDTO dto) {
+        DataResponse response = new DataResponse();
+        try {
+            if (dto.getId() == null) {
+                throw new RuntimeException("ກະລຸນາສົ່ງ id ຂອງການລາ (leaveId)");
+            }
+
+            StaffEntity staff = userRepository.findByToken(dto.getToken())
+                    .orElseThrow(() -> new RuntimeException("Token ບໍ່ຖືກຕ້ອງ"));
+
+            // เช็ค token หมดอายุ
+            if (staff.getTokenExpiredAt() != null
+                    && staff.getTokenExpiredAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Token is expired please Login again");
+            }
+
+            LeaveRequest leave = leaveRequestRepository.findById(dto.getId())
+                    .orElseThrow(() -> new RuntimeException("ບໍ່ພົບຂໍ້ມູນການຂໍລາພັກນີ້"));
+
+            // 1. ตรวจสอบสิทธิ์ (ต้องเป็นเจ้าของเท่านั้น)
+            if (!leave.getStaff().getId().equals(staff.getId())) {
+                throw new RuntimeException("ທ່ານບໍ່ມີສິດແກ້ໄຂຂໍ້ມູນນີ້");
+            }
+
+            // 2. สถานะต้องเป็น PENDING เท่านั้น
+            if (!"PENDING".equals(leave.getStatus())) {
+                throw new RuntimeException("ບໍ່ສາມາດແກ້ໄຂໄດ້ ເນື່ອງຈາກໃບລາພັກນີ້ໄດ້ອະນຸມັດແລ້ວ");
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate startDate = LocalDate.parse(dto.getStartDate(), formatter);
+            LocalDate endDate = LocalDate.parse(dto.getEndDate(), formatter);
+
+            if (startDate.isAfter(endDate)) {
+                throw new RuntimeException("ວັນທີ່ເລີ່ມຕົ້ນຕ້ອງບໍ່ເກີນວັນທີ່ສີ້ນສຸດຂອງການລາ");
+            }
+
+            double totalDays;
+            if (dto.getHalfDay() != null && !dto.getHalfDay().isEmpty()) {
+                if (!startDate.equals(endDate)) {
+                    throw new RuntimeException("ການລາເຄີ່ງວັນ startDate ແລະ endDate ຕ້ອງເປັນວັນດຽວກັນ");
+                }
+                boolean isWorkDay = workScheduleUtil.isWorkDay(
+                        leave.getStaff(), startDate,
+                        leave.getStaff().getWorkSchedule() != null ? leave.getStaff().getWorkSchedule() : "MON_FRI");
+                if (!isWorkDay) {
+                    throw new RuntimeException("ຊ່ວງທີ່ເລືອກແມ່ນວັນພັກທັງໝົດ");
+                }
+                totalDays = 0.5;
+            } else {
+                totalDays = workScheduleUtil.calculateWorkDays(leave.getStaff(), startDate, endDate);
+                if (totalDays == 0) {
+                    throw new RuntimeException("ຊ່ວງທີ່ເລືອກແມ່ນວັນຢຸດທັງໝົດ");
+                }
+            }
+
+            // เช็คทับซ้อน (ยกเว้นตัวเอง)
+            List<LeaveRequest> overlapping = leaveRequestRepository
+                    .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                            leave.getStaff().getId(), "APPROVED", endDate, startDate);
+            List<LeaveRequest> overlappingPending = leaveRequestRepository
+                    .findByStaff_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                            leave.getStaff().getId(), "PENDING", endDate, startDate);
+
+            List<LeaveRequest> allOverlapping = new ArrayList<>();
+            allOverlapping.addAll(overlapping);
+            allOverlapping.addAll(overlappingPending);
+
+            // เอาตัวเองออกจากการตรวจสอบทับซ้อน
+            allOverlapping.removeIf(req -> req.getId().equals(leave.getId()));
+
+            if (!allOverlapping.isEmpty()) {
+                for (LeaveRequest existing : allOverlapping) {
+                    String existingHalfDay = existing.getHalfDay();
+                    String newHalfDay = dto.getHalfDay();
+                    boolean bothHalfDay = (existingHalfDay != null && !existingHalfDay.isEmpty())
+                            && (newHalfDay != null && !newHalfDay.isEmpty());
+
+                    if (bothHalfDay) {
+                        if (existingHalfDay.equals(newHalfDay)) {
+                            throw new RuntimeException("ຊ່ວງວັນທີຂໍລາຊ້ຳກັບຄຳຂໍທີ່ມີຢູ່ແລ້ວ (" + newHalfDay + ")");
+                        }
+                    } else {
+                        throw new RuntimeException("ຊ່ວງວັນທີຂໍລາຊ້ຳກັບວັນລາທີ່ມີຢູ່ແລ້ວ");
+                    }
+                }
+            }
+
+            validateLeaveRequest(leave.getStaff(), dto.getLeaveType(), totalDays, startDate);
+
+            double quota = getLeaveQuota(dto.getLeaveType());
+            double used = getLeaveUsed(leave.getStaff().getId(), dto.getLeaveType(), startDate.getYear());
+            // ลบยอดที่ใช้อยู่ในคำขอนี้คืนมาคำนวณใหม่
+            if (leave.getLeaveType().equals(dto.getLeaveType())
+                    && leave.getStartDate().getYear() == startDate.getYear()) {
+                // used ไม่รวมตัวมันเอง (เพราะ status PENDING อาจจะถูกดึงมาแล้วหรือยังไม่ดึง
+                // ขึ้นอยู่กับ getLeaveUsed() แต่ PENDING ยังไม่นับรวมใน used)
+                // ตามโค้ด getLeaveUsed() มันนับเฉพาะ APPROVED เท่านั้น ดังนั้นไม่ต้องปรับ
+            }
+
+            double remaining = quota - used;
+
+            if (!dto.getLeaveType().equals("UNPAID")
+                    && !dto.getLeaveType().equals("MATERNITY")
+                    && totalDays > remaining) {
+                throw new RuntimeException("ວັນລາບໍ່ພໍ ຄົງເຫຼືອ " + remaining + " ວັນ ແຕ່ຂໍ " + totalDays + " ວັນ");
+            }
+
+            // Handle Files
+            if (dto.getFiles() != null && dto.getFiles().length > 0) {
+                java.util.List<String> filePaths = new java.util.ArrayList<>();
+                String pathAdd = "http://khounkham.com/images/staff/";
+                for (org.springframework.web.multipart.MultipartFile file : dto.getFiles()) {
+                    String fileName = mediaUploadService.uploadMediaStaff(file);
+                    filePaths.add(pathAdd + fileName);
+                }
+                leave.setFiles(org.apache.commons.lang3.StringUtils.join(filePaths, ","));
+            }
+
+            leave.setLeaveType(dto.getLeaveType());
+            leave.setStartDate(startDate);
+            leave.setEndDate(endDate);
+            leave.setTotalDays(totalDays);
+            leave.setHalfDay(dto.getHalfDay());
+            leave.setLeave_title(dto.getLeaveTitle());
+            leave.setReason(dto.getReason());
+            leave.setContact(dto.getContact());
+            leave.setRelationship(dto.getRelationship());
+
+            LeaveRequest saved = leaveRequestRepository.save(leave);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("leaveId", saved.getId());
+            data.put("staffCode", leave.getStaff().getStaffCode());
+            data.put("username", leave.getStaff().getUsername());
+            data.put("leaveType", saved.getLeaveType());
+            data.put("status", saved.getStatus());
+            data.put("files", saved.getFiles());
+
+            response.setStatus("00");
+            response.setMessage("ແກ້ໄຂຂໍ້ມູນການຂໍລາພັກສຳເລັດ");
+            response.setDataResponse(data);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage(e.getMessage());
+            response.setDataResponse(null);
+        }
         return response;
     }
     // private double calculateWorkDays(StaffEntity staff,

@@ -196,6 +196,14 @@ public class FaceController {
         return ResponseEntity.ok(faceService.requestLeave(dto));
     }
 
+    //update request day off
+    @CrossOrigin(origins = "*")
+    @PostMapping("/updateRequestDayoff")
+    public ResponseEntity<DataResponse> updateRequestLeave(
+            @org.springframework.web.bind.annotation.ModelAttribute LeaveRequestDTO dto) {
+        return ResponseEntity.ok(faceService.updateRequestLeave(dto));
+    }
+
     //get leaveRequest
     @CrossOrigin(origins = "*")
     @PostMapping("/getLeaveRequest")
