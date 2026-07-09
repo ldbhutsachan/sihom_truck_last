@@ -40,9 +40,7 @@ public class MediaUploadServiceImpl implements MediaUploadService {
     public String uploadMedia(MultipartFile file) {
         try {
 
-            log.info("Begin Convert MultiPart File To Base64String");
-            String base64String = new String(Base64.encodeBase64(file.getBytes()));
-            log.info("Convert To Base64 String Completed");
+            log.info("Skipping base64 conversion for speed");
 
             log.info("Get File Extension");
             String[] filePattern = (file.getOriginalFilename()).split("\\.");
@@ -74,12 +72,6 @@ public class MediaUploadServiceImpl implements MediaUploadService {
 //            }else{
 //                httpPost = new HttpPost(uploadURL);
 //            }
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("BASE64", base64String));
-            params.add(new BasicNameValuePair("filename", fileName));
-           // httpPost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-            log.info("Start To Post Upload Image ...");
-           // HttpResponse rest = client.execute(httpPost);
             log.info("Finish Image Upload");
             return  fileName;
         }catch (Exception ex){
@@ -92,9 +84,7 @@ public class MediaUploadServiceImpl implements MediaUploadService {
     @Override
     public String uploadMediaStaff(MultipartFile file) {
         try {
-            log.info("Begin Convert MultiPart File To Base64String");
-            String base64String = new String(Base64.encodeBase64(file.getBytes()));
-            log.info("Convert To Base64 String Completed");
+            log.info("Skipping base64 conversion for speed");
 
             log.info("Get File Extension");
             String[] filePattern = (file.getOriginalFilename()).split("\\.");
@@ -115,10 +105,6 @@ public class MediaUploadServiceImpl implements MediaUploadService {
             Path filePath = Path.of(uploadDirectoryStaff, fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             //==============upload images========================================================
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("BASE64", base64String));
-            params.add(new BasicNameValuePair("filename", fileName));
-            log.info("Start To Post Upload Image ...");
             log.info("Finish Image Upload");
             return  fileName;
         }catch (Exception ex){
@@ -130,9 +116,7 @@ public class MediaUploadServiceImpl implements MediaUploadService {
     @Override
     public String uploadMediacar(MultipartFile file) {
         try {
-            log.info("Begin Convert MultiPart File To Base64String");
-            String base64String = new String(Base64.encodeBase64(file.getBytes()));
-            log.info("Convert To Base64 String Completed");
+            log.info("Skipping base64 conversion for speed");
             log.info("Get File Extension");
             String[] filePattern = (file.getOriginalFilename()).split("\\.");
             String extension = filePattern[filePattern.length-1];
@@ -149,10 +133,6 @@ public class MediaUploadServiceImpl implements MediaUploadService {
             Path filePath = Path.of(uploadDirectoryCar, fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             //==============upload images========================================================
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("BASE64", base64String));
-            params.add(new BasicNameValuePair("filename", fileName));
-            log.info("Start To Post Upload Image ...");
             log.info("Finish Image Upload");
             return  fileName;
         }catch (Exception ex){
@@ -165,9 +145,7 @@ public class MediaUploadServiceImpl implements MediaUploadService {
 @Override
 public String uploadPDF(MultipartFile file) {
     try {
-        log.info("Begin Convert MultiPart File To Base64String");
-        String base64String = new String(Base64.encodeBase64(file.getBytes()));
-        log.info("Convert To Base64 String Completed");
+        log.info("Skipping base64 conversion for speed");
 
         log.info("Get Original Filename");
         String originalFilename = file.getOriginalFilename();
@@ -181,10 +159,6 @@ public String uploadPDF(MultipartFile file) {
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         //==============upload images========================================================
 
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("BASE64", base64String));
-        params.add(new BasicNameValuePair("filename", originalFilename));
-        log.info("Start To Post Upload Image ...");
         log.info("Finish Image Upload");
         return originalFilename;
     } catch (Exception ex) {
@@ -198,12 +172,7 @@ public String[] uploadPDF2 (MultipartFile[] files) {
     try {
         List<String> uploadedFileNames = new ArrayList<>();
         for (MultipartFile file : files) {
-            log.info("Begin Convert MultiPart File To Base64String for: " + file.getOriginalFilename());
-            byte[] fileBytes = file.getBytes();  // Read file bytes
-//            String base64String = Base64.getEncoder().encodeToString(fileBytes); // Encode bytes to base64 string
-            String base64String = Base64.encodeBase64String(fileBytes); // Encode bytes to base64 string
-
-            log.info("Convert To Base64 String Completed");
+            log.info("Skipping base64 conversion for speed");
 
             log.info("Get Original Filename");
             String originalFilename = file.getOriginalFilename();
@@ -217,10 +186,6 @@ public String[] uploadPDF2 (MultipartFile[] files) {
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             //==============upload images========================================================
 
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("BASE64", base64String));
-            params.add(new BasicNameValuePair("filename", originalFilename));
-            log.info("Start To Post Upload Image ...");
             log.info("Finish Image Upload");
 
             uploadedFileNames.add(originalFilename);

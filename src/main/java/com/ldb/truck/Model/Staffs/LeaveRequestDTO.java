@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class LeaveRequestDTO {
+    private Long id;                // สำหรับอัปเดต
     private String token;           // token ของ staff ที่ขอลา
     private String leaveType;       // SICK, PERSONAL, MATERNITY, UNPAID
     private String startDate;       // "2026-04-01"
