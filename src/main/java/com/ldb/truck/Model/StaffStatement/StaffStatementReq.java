@@ -11,7 +11,6 @@ public class StaffStatementReq {
     private Integer borId;
     private Long deptId;
     private String token; // Accept "token" from JSON
-    private String toKen; // Fallback just in case
     private String startDate;
     private String endDate;
 }
