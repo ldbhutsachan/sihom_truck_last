@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class StaffStatementReq {
+    private String staffCode;
     private String staffId;
     private String title;
     private MultipartFile[] files;

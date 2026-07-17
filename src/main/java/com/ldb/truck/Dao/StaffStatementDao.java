@@ -105,7 +105,7 @@ public class StaffStatementDao {
         }
     }
 
-    public List<StaffStatementDetailRes> searchStaffStatementData(Long staffId, Integer borId, Long deptId,
+    public List<StaffStatementDetailRes> searchStaffStatementData(String staffCode, Integer borId, Long deptId,
             String startDate, String endDate) {
         StringBuilder sql = new StringBuilder(
                 "SELECT s.*, c.username, c.lao_name, c.dept_id, c.pos_id, c.bor_id, " +
@@ -119,9 +119,9 @@ public class StaffStatementDao {
 
         List<Object> params = new java.util.ArrayList<>();
 
-        if (staffId != null) {
-            sql.append("AND c.id = ? ");
-            params.add(staffId);
+        if (staffCode != null && !staffCode.trim().isEmpty()) {
+            sql.append("AND s.staff_code = ? ");
+            params.add(staffCode);
         }
         if (borId != null) {
             sql.append("AND c.bor_id = ? ");

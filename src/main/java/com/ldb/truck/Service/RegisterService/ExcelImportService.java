@@ -432,18 +432,13 @@ public class ExcelImportService {
             String reqToken = (token != null && !token.isEmpty()) ? token : req.getToken();
 
             StaffEntity requester = userRepository.findByToken(reqToken)
-                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
-
-            Long parsedStaffId = null;
-            if (req.getStaffId() != null && !req.getStaffId().trim().isEmpty()) {
-                parsedStaffId = Long.parseLong(req.getStaffId());
-            }
+                    .orElseThrow(() -> new RuntimeException("Token not found"));
 
             List<StaffStatementDetailRes> list;
             if ("ADMIN".equals(requester.getRole()) || "HR".equals(requester.getRole())) {
                 // ADMIN/HR can search any staff or apply filters
                 list = staffStatementDao.searchStaffStatementData(
-                        parsedStaffId,
+                        req.getStaffCode(),
                         req.getBorId(),
                         req.getDeptId(),
                         req.getStartDate(),
@@ -451,7 +446,7 @@ public class ExcelImportService {
             } else {
                 // Regular staff can only see their own statements
                 list = staffStatementDao.searchStaffStatementData(
-                        requester.getId(),
+                        requester.getStaffCode(),
                         null,
                         null,
                         req.getStartDate(),
@@ -465,7 +460,72 @@ public class ExcelImportService {
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus("01");
-            response.setMessage("เกิดข้อผิดพลาด: " + e.getMessage());
+            response.setMessage("ເກີດຂໍ້ຜິດພາດ: " + e.getMessage());
+            response.setDataResponse(null);
+        }
+        return response;
+    }
+
+    public DataResponse updateStaffStatement(String token,
+            com.ldb.truck.Model.StaffStatement.StaffStatementUpdateReq req) {
+        DataResponse response = new DataResponse();
+        try {
+            StaffEntity requester = userRepository.findByToken(token)
+                    .orElseThrow(() -> new RuntimeException("Token ไม่ถูกต้อง"));
+
+            if (!"ADMIN".equals(requester.getRole()) && !"HR".equals(requester.getRole())) {
+                throw new RuntimeException("ທ່ານບໍ່ມີສິດ, ສະເພາະ HR ຫຼື ADMIN ເທົ່ານັ້ນ");
+            }
+
+            if (req.getId() == null) {
+                throw new RuntimeException("ID ບໍ່ສາມາດເປັນຄ່າວ່າງໄດ້");
+            }
+
+            StaffStatement statement = staffStatementRepository.findById(req.getId())
+                    .orElseThrow(() -> new RuntimeException("ບໍ່ພົບຂໍ້ມູນທີ່ຕ້ອງການແກ້ໄຂ"));
+
+            if (req.getTitle() != null)
+                statement.setTitle(req.getTitle());
+            if (req.getStatementDate() != null)
+                statement.setStatementDate(req.getStatementDate());
+            if (req.getUsdSalary() != null)
+                statement.setUsdSalary(req.getUsdSalary());
+            if (req.getLak_salary() != null)
+                statement.setLak_salary(req.getLak_salary());
+            if (req.getWorkDay() != null)
+                statement.setWorkDay(req.getWorkDay());
+            if (req.getAmount_salary() != null)
+                statement.setAmount_salary(req.getAmount_salary());
+            if (req.getOt() != null)
+                statement.setOt(req.getOt());
+            if (req.getTransportationAllowance() != null)
+                statement.setTransportationAllowance(req.getTransportationAllowance());
+            if (req.getAmountMoney() != null)
+                statement.setAmountMoney(req.getAmountMoney());
+            if (req.getBond() != null)
+                statement.setBond(req.getBond());
+            if (req.getHealthInsuranceDeduction() != null)
+                statement.setHealthInsuranceDeduction(req.getHealthInsuranceDeduction());
+            if (req.getIncomeTax() != null)
+                statement.setIncomeTax(req.getIncomeTax());
+            if (req.getTotalDeductions() != null)
+                statement.setTotalDeductions(req.getTotalDeductions());
+            if (req.getTotalEarningsLak() != null)
+                statement.setTotalEarningsLak(req.getTotalEarningsLak());
+
+            statement.setSaveBy(requester.getUsername());
+            statement.setCreateDate(LocalDateTime.now());
+
+            staffStatementRepository.save(statement);
+
+            response.setStatus("00");
+            response.setMessage("ແກ້ໄຂຂໍ້ມູນສຳເລັດ");
+            response.setDataResponse(statement);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("01");
+            response.setMessage("ເກີດຂໍ້ຜິດພາດ: " + e.getMessage());
             response.setDataResponse(null);
         }
         return response;

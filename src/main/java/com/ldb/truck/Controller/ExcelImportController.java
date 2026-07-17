@@ -43,4 +43,18 @@ public class ExcelImportController {
                         @RequestBody StaffStatementReq req) {
                 return ResponseEntity.ok(excelImportService.listStaffStatementData(token, req));
         }
+
+        @CrossOrigin(origins = "*")
+        @PostMapping(value = "/update_statement")
+        public ResponseEntity<DataResponse> updateStaffStatement(
+                        @RequestHeader(value = "token", required = false) String tokenHeader,
+                        @RequestBody com.ldb.truck.Model.StaffStatement.StaffStatementUpdateReq req) {
+                // Support token in both header and body (assuming old APIs sometimes passed it
+                // differently, but for JSON req we'll prioritize Header, else you could add
+                // token to UpdateReq if needed, but here we expect it in Header or query if you
+                // want. Wait, I'll just use tokenHeader)
+                String actualToken = (tokenHeader != null && !tokenHeader.trim().isEmpty()) ? tokenHeader
+                                : req.getToken();
+                return ResponseEntity.ok(excelImportService.updateStaffStatement(actualToken, req));
+        }
 }
