@@ -36,7 +36,7 @@ public class AttendanceLogCleanupService {
 
             // Keep only the latest 4 months of data in the backup table based on the
             // createdAt field
-            LocalDateTime backupCutoffDate = LocalDateTime.now().minusMonths(4);
+            LocalDateTime backupCutoffDate = LocalDateTime.now().minusMonths(3);
             attendanceLogBackupRepository.deleteLogsOlderThan(backupCutoffDate);
             log.info("Successfully deleted attendance log backups older than: {}", backupCutoffDate);
         } catch (Exception e) {
