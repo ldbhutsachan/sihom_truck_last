@@ -42,7 +42,7 @@ import java.util.List;
 @RequestMapping("${base_url}")
 public class Controller {
     @Autowired
-    private  FaceService faceService;
+    private FaceService faceService;
 
     @Autowired
     ProfileDao profileDao;
@@ -61,21 +61,23 @@ public class Controller {
     TruckService truckService;
     @Autowired
     private MediaUploadService mediaUploadService;
+
     @CrossOrigin(origins = "*")
     @GetMapping("/test")
     public String Test() throws Exception {
 
         return "hello";
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllCustomer")
-    public CustomerRes  getAllCustomer (@RequestBody  CustomerReq customerReq){
+    public CustomerRes getAllCustomer(@RequestBody CustomerReq customerReq) {
         CustomerRes result = new CustomerRes();
         try {
 
             result = customerService.getAllCustomer(customerReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -83,16 +85,17 @@ public class Controller {
         }
         return result;
     }
+
     // start================= fuel station ===========================
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllFuelStation.service")
-    public FuelStationRes getAllFuelStation (@RequestBody FuelStationReq fuelStationReq ){
+    public FuelStationRes getAllFuelStation(@RequestBody FuelStationReq fuelStationReq) {
         FuelStationRes result = new FuelStationRes();
         try {
 
             result = customerService.getAllFuelStation(fuelStationReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -100,14 +103,15 @@ public class Controller {
         }
         return result;
     }
+
     // end================= fuel station ===========================
     @CrossOrigin(origins = "*")
     @PostMapping("/getCustomerById")
-    public CustomerRes  getCustomerById (@RequestBody  CustomerReq customerReq){
+    public CustomerRes getCustomerById(@RequestBody CustomerReq customerReq) {
         CustomerRes result = new CustomerRes();
         try {
             result = customerService.getCustomerById(customerReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -118,12 +122,12 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/StoreCustomer")
-    public CustomerRes  StoreCustomer (@RequestBody  CustomerReq customerReq){
+    public CustomerRes StoreCustomer(@RequestBody CustomerReq customerReq) {
         CustomerRes result = new CustomerRes();
         try {
             result = customerService.StoreCustomer(customerReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -131,15 +135,16 @@ public class Controller {
         }
         return result;
     }
-    //=========store fuel starion================================start============
+
+    // =========store fuel starion================================start============
     @CrossOrigin(origins = "*")
     @PostMapping("/StoreFuelStation.service")
-    public FuelStationRes  StoreFuelStation (@RequestBody  FuelStationReq fuelStationReq){
+    public FuelStationRes StoreFuelStation(@RequestBody FuelStationReq fuelStationReq) {
         FuelStationRes result = new FuelStationRes();
         try {
             result = customerService.StoreFuelStation(fuelStationReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -147,16 +152,17 @@ public class Controller {
         }
         return result;
     }
-    //=========store fuel starion================================start============
-    //=========update fuel starion================================start============
+
+    // =========store fuel starion================================start============
+    // =========update fuel starion================================start============
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateFuelStation.service")
-    public FuelStationRes  UpdateFuelStation (@RequestBody  FuelStationReq fuelStationReq){
+    public FuelStationRes UpdateFuelStation(@RequestBody FuelStationReq fuelStationReq) {
         FuelStationRes result = new FuelStationRes();
         try {
             result = customerService.UpdateFuelStation(fuelStationReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -164,15 +170,16 @@ public class Controller {
         }
         return result;
     }
-    //=========update fuel starion================================start============
+
+    // =========update fuel starion================================start============
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateStatusFuelStation.service")
-    public FuelStationRes  UpdateStatusFuelStation (@RequestBody  FuelStationReq fuelStationReq){
+    public FuelStationRes UpdateStatusFuelStation(@RequestBody FuelStationReq fuelStationReq) {
         FuelStationRes result = new FuelStationRes();
         try {
             result = customerService.UpdateStatusFuelStationService(fuelStationReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -180,15 +187,16 @@ public class Controller {
         }
         return result;
     }
-    //=========Delete fuel starion================================start============
+
+    // =========Delete fuel starion================================start============
     @CrossOrigin(origins = "*")
     @PostMapping("/DeleteFuelStation.service")
-    public FuelStationRes  DeleteFuelStation (@RequestBody  FuelStationReq fuelStationReq){
+    public FuelStationRes DeleteFuelStation(@RequestBody FuelStationReq fuelStationReq) {
         FuelStationRes result = new FuelStationRes();
-//        String id = String.valueOf(fuelStationReq.getId());
+        // String id = String.valueOf(fuelStationReq.getId());
         try {
             result = customerService.deleteFuelStation(fuelStationReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -196,11 +204,11 @@ public class Controller {
         }
         return result;
     }
-    //=========Delete fuel starion================================start============
+    // =========Delete fuel starion================================start============
 
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateCustomer")
-    public CustomerRes  UpdateCustomer (@RequestBody  CustomerReq customerReq){
+    public CustomerRes UpdateCustomer(@RequestBody CustomerReq customerReq) {
 
         CustomerRes result = new CustomerRes();
 
@@ -208,7 +216,7 @@ public class Controller {
 
             result = customerService.UpdateCustomer(customerReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -217,15 +225,14 @@ public class Controller {
         return result;
     }
 
-
     @CrossOrigin(origins = "*")
     @PostMapping("/DeleteCustomer")
-    public CustomerRes  DeleteCustomer (@RequestBody  CustomerReq customerReq){
+    public CustomerRes DeleteCustomer(@RequestBody CustomerReq customerReq) {
         CustomerRes result = new CustomerRes();
         String id = String.valueOf(customerReq.getId());
         try {
             result = customerService.deleteCustomer(id);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -233,41 +240,15 @@ public class Controller {
         }
         return result;
     }
-    //--List<staftOut> getChooseStaft01(
+
+    // --List<staftOut> getChooseStaft01(
     @CrossOrigin(origins = "*")
     @PostMapping("/getChooseStaft01.service")
-    public staftRes getChooseStaft01(@RequestBody stafReq stafReq){
+    public staftRes getChooseStaft01(@RequestBody stafReq stafReq) {
         staftRes result = new staftRes();
         try {
             result = staftService.getChooseStaft01(stafReq);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setStatus("01");
-            result.setMessage("exeption");
-            return result;
-        }
-        return result;
-    }    @CrossOrigin(origins = "*")
-    @PostMapping("/getChooseStaft02.service")
-    public staftRes getChooseStaft02(@RequestBody stafReq stafReq){
-        staftRes result = new staftRes();
-        try {
-            result = staftService.getChooseStaft02(stafReq);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setStatus("01");
-            result.setMessage("exeption");
-            return result;
-        }
-        return result;
-    }
-    @CrossOrigin(origins = "*")
-    @PostMapping("/getStaftById")
-    public staftRes getStaftById (@RequestBody stafReq stafReq){
-        staftRes result = new staftRes();
-        try {
-            result = staftService.getStaftById(stafReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -277,38 +258,60 @@ public class Controller {
     }
 
     @CrossOrigin(origins = "*")
-    @PostMapping(value = "/StoreStaft" , consumes = {"multipart/form-data"})
+    @PostMapping("/getChooseStaft02.service")
+    public staftRes getChooseStaft02(@RequestBody stafReq stafReq) {
+        staftRes result = new staftRes();
+        try {
+            result = staftService.getChooseStaft02(stafReq);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getStaftById")
+    public staftRes getStaftById(@RequestBody stafReq stafReq) {
+        staftRes result = new staftRes();
+        try {
+            result = staftService.getStaftById(stafReq);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exeption");
+            return result;
+        }
+        return result;
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping(value = "/StoreStaft", consumes = { "multipart/form-data" })
     public Messages StoreStaft(
-            @RequestParam(name="files" , required=false) MultipartFile[] files
-            ,@RequestParam("staftId") String  staftId
-            ,@RequestParam("name") String  name
-            ,@RequestParam("surname") String  surname
-            ,@RequestParam("idCard") String  idCard
-            ,@RequestParam("licenceId") String  licenceId
-            ,@RequestParam("verBy") String  verBy
-            ,@RequestParam("licenceExp") String  licenceExp
-            ,@RequestParam("vaillage") String  vaillage
-            ,@RequestParam("district") String  district
-            ,@RequestParam("province") String  province
-            ,@RequestParam("mobile") String  mobile
-            ,@RequestParam("mobile1") String  mobile1
-            ,@RequestParam("gender") String  gender
-            ,@RequestParam("userId") String  userId
-            ,@RequestParam("toKen") String  toKen
-    ){
-        //============================get User info=======================
+            @RequestParam(name = "files", required = false) MultipartFile[] files,
+            @RequestParam("staftId") String staftId, @RequestParam("name") String name,
+            @RequestParam("surname") String surname, @RequestParam("idCard") String idCard,
+            @RequestParam("licenceId") String licenceId, @RequestParam("verBy") String verBy,
+            @RequestParam("licenceExp") String licenceExp, @RequestParam("vaillage") String vaillage,
+            @RequestParam("district") String district, @RequestParam("province") String province,
+            @RequestParam("mobile") String mobile, @RequestParam("mobile1") String mobile1,
+            @RequestParam("gender") String gender, @RequestParam("userId") String userId,
+            @RequestParam("toKen") String toKen) {
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
-        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
-        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        logger.info("show=================Role:"+userIn.get(0).getRole());
-        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        logger.info("show=================UserNo:" + userIn.get(0).getUserId());
+        logger.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        logger.info("show=================Role:" + userIn.get(0).getRole());
+        logger.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String SaveById = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
-//        expenTypeReq.setUserId(userId);
-//        expenTypeReq.setBranch(userBranchNo);
-        //====================================================================
+        // ===================set data to userId===============================
+        // expenTypeReq.setUserId(userId);
+        // expenTypeReq.setBranch(userBranchNo);
+        // ====================================================================
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
         String namefile = formatter.format(date);
@@ -331,67 +334,58 @@ public class Controller {
             data.setUserId(userId);
             data.setSaveById(SaveById);
 
-//            data.setDataTime(dataTime);
-//            data.setImageStaff(imageStaff);
-            logger.error("******file lenght"+files);
+            // data.setDataTime(dataTime);
+            // data.setImageStaff(imageStaff);
+            logger.error("******file lenght" + files);
             logger.error(data);
             String fileName = "";
             List<String> fileNames = new ArrayList<>();
-            if(files == null){
+            if (files == null) {
                 logger.warn("************* file name is null ****************");
                 data.setImageStaff("http://khounkham.com/images/staff/image.jpg");
-            }else {
+            } else {
                 Arrays.asList(files).stream().forEach(file -> {
                     fileNames.add(mediaUploadService.uploadMediaStaff(file));
                 });
-                logger.info("Uploaded the files successfully: " + fileNames );
+                logger.info("Uploaded the files successfully: " + fileNames);
                 fileName = StringUtils.join(fileNames, ',');
                 data.setImageStaff(fileName);
             }
             result = staftService.StoreStaft(data);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
-            return  result;
+            return result;
         }
-        return  result;
+        return result;
     }
+
     @CrossOrigin(origins = "*")
-    @PostMapping(value = "/updateStaft" , consumes = {"multipart/form-data"})
+    @PostMapping(value = "/updateStaft", consumes = { "multipart/form-data" })
     public Messages updateStaft(
-            @RequestParam(name="files" , required=false) MultipartFile[] files
-            ,@RequestParam("id") String  id
-            ,@RequestParam("staftId") String  staftId
-            ,@RequestParam("name") String  name
-            ,@RequestParam("surname") String  surname
-            ,@RequestParam("idCard") String  idCard
-            ,@RequestParam("licenceId") String  licenceId
-            ,@RequestParam("verBy") String  verBy
-            ,@RequestParam("licenceExp") String  licenceExp
-            ,@RequestParam("vaillage") String  vaillage
-            ,@RequestParam("district") String  district
-            ,@RequestParam("province") String  province
-            ,@RequestParam("mobile") String  mobile
-            ,@RequestParam("mobile1") String  mobile1
-            ,@RequestParam("gender") String  gender
-            ,@RequestParam("userId") String  userId
-            ,@RequestParam("imageStaff") String  imageStaff
-            ,@RequestParam("toKen") String  toKen
-    ){
-        //============================get User info=======================
+            @RequestParam(name = "files", required = false) MultipartFile[] files, @RequestParam("id") String id,
+            @RequestParam("staftId") String staftId, @RequestParam("name") String name,
+            @RequestParam("surname") String surname, @RequestParam("idCard") String idCard,
+            @RequestParam("licenceId") String licenceId, @RequestParam("verBy") String verBy,
+            @RequestParam("licenceExp") String licenceExp, @RequestParam("vaillage") String vaillage,
+            @RequestParam("district") String district, @RequestParam("province") String province,
+            @RequestParam("mobile") String mobile, @RequestParam("mobile1") String mobile1,
+            @RequestParam("gender") String gender, @RequestParam("userId") String userId,
+            @RequestParam("imageStaff") String imageStaff, @RequestParam("toKen") String toKen) {
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(toKen);
-        logger.info("show=================UserNo:"+userIn.get(0).getUserId());
-        logger.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        logger.info("show=================Role:"+userIn.get(0).getRole());
-        logger.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        logger.info("show=================UserNo:" + userIn.get(0).getUserId());
+        logger.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        logger.info("show=================Role:" + userIn.get(0).getRole());
+        logger.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String SaveById = userIn.get(0).getUserId();
-//        String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
-//        expenTypeReq.setUserId(userId);
-//        expenTypeReq.setBranch(userBranchNo);
-        //====================================================================
+        // String userBranchNo = userIn.get(0).getBranchNo();
+        // ===================set data to userId===============================
+        // expenTypeReq.setUserId(userId);
+        // expenTypeReq.setBranch(userBranchNo);
+        // ====================================================================
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyyss");
         String namefile = formatter.format(date);
@@ -415,37 +409,38 @@ public class Controller {
             data.setUserId(userId);
             data.setImageStaff(imageStaff);
             data.setSaveById(SaveById);
-            logger.error("******file lenght"+files);
+            logger.error("******file lenght" + files);
             logger.error(data);
             String fileName = "";
             List<String> fileNames = new ArrayList<>();
-            if(files == null){
+            if (files == null) {
                 logger.warn("************* file name is null ****************");
                 data.setImageStaff("1");
-            }else {
+            } else {
                 Arrays.asList(files).stream().forEach(file -> {
                     fileNames.add(mediaUploadService.uploadMediaStaff(file));
                 });
-                logger.info("Uploaded the files successfully: " + fileNames );
+                logger.info("Uploaded the files successfully: " + fileNames);
                 fileName = StringUtils.join(fileNames, ',');
                 data.setImageStaff(fileName);
             }
             result = staftService.UpdateStaft(data);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("ບໍ່ສາມາດບັນທຶກໄດ້");
-            return  result;
+            return result;
         }
-        return  result;
+        return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllStaft")
-    public staftRes getAllStaft (){
+    public staftRes getAllStaft() {
         staftRes result = new staftRes();
         try {
             result = staftService.getAllStaft();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -453,14 +448,15 @@ public class Controller {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/DeleteStaft")
-    public staftRes  DeleteStaft ( @RequestBody stafReq stafReq){
+    public staftRes DeleteStaft(@RequestBody stafReq stafReq) {
         staftRes result = new staftRes();
         try {
             result = staftService.DeleteStaft(stafReq.getId());
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -468,14 +464,15 @@ public class Controller {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllProduct")
-    public ProductRes getAllProduct (@RequestBody ProductReq productReq){
+    public ProductRes getAllProduct(@RequestBody ProductReq productReq) {
         ProductRes result = new ProductRes();
         try {
             result = productService.getAllProcut(productReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -486,7 +483,7 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/getProductById")
-    public ProductRes getProductById (@RequestBody  ProductReq productReq){
+    public ProductRes getProductById(@RequestBody ProductReq productReq) {
 
         ProductRes result = new ProductRes();
 
@@ -494,7 +491,7 @@ public class Controller {
 
             result = productService.getProcutById(productReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -505,7 +502,7 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/StoreProduct")
-    public ProductRes StoreProduct (@RequestBody  ProductReq productReq){
+    public ProductRes StoreProduct(@RequestBody ProductReq productReq) {
 
         ProductRes result = new ProductRes();
 
@@ -513,7 +510,7 @@ public class Controller {
 
             result = productService.StoreProcut(productReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -524,7 +521,7 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateProduct")
-    public ProductRes UpdateProduct (@RequestBody  ProductReq productReq){
+    public ProductRes UpdateProduct(@RequestBody ProductReq productReq) {
 
         ProductRes result = new ProductRes();
 
@@ -532,7 +529,7 @@ public class Controller {
 
             result = productService.UpdaeProcut(productReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -543,7 +540,7 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/DeleteProduct")
-    public ProductRes DeleteProduct (@RequestBody  ProductReq productReq){
+    public ProductRes DeleteProduct(@RequestBody ProductReq productReq) {
 
         ProductRes result = new ProductRes();
 
@@ -551,7 +548,7 @@ public class Controller {
 
             result = productService.DeleteProcut(productReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -565,9 +562,10 @@ public class Controller {
     public Object Login(@RequestBody LoginReq loginReq) {
 
         try {
-            System.out.println("============================>login service<============================================");
+            System.out
+                    .println("============================>login service<============================================");
 
-            //  เช็คว่าจะ login ระบบไหน
+            // เช็คว่าจะ login ระบบไหน
             if ("CHECK-INOUT".equalsIgnoreCase(loginReq.getSystem())) {
                 // ระบบใหม่ → Face Detection
                 return faceService.login(loginReq);
@@ -587,11 +585,11 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllLocation")
-    public LocationRes getAllLocation (@RequestBody LocationReq locationReq){
+    public LocationRes getAllLocation(@RequestBody LocationReq locationReq) {
         LocationRes result = new LocationRes();
         try {
             result = locationService.getAllLocation(locationReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -599,13 +597,14 @@ public class Controller {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/getLocationById")
-    public LocationRes getLocationById (@RequestBody LocationReq locationReq){
+    public LocationRes getLocationById(@RequestBody LocationReq locationReq) {
         LocationRes result = new LocationRes();
         try {
             result = locationService.getLocationById(locationReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -613,15 +612,16 @@ public class Controller {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/StoreLocation")
-    public LocationRes StoreProduct (@RequestBody LocationReq locationReq){
+    public LocationRes StoreProduct(@RequestBody LocationReq locationReq) {
         LocationRes result = new LocationRes();
         try {
 
             result = locationService.StoreLocation(locationReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -629,13 +629,14 @@ public class Controller {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateLocation")
-    public LocationRes UpdateLocation (@RequestBody LocationReq locationReq){
+    public LocationRes UpdateLocation(@RequestBody LocationReq locationReq) {
         LocationRes result = new LocationRes();
         try {
             result = locationService.UpdateLocation(locationReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -646,7 +647,7 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/DeleteLocation")
-    public LocationRes DeleteLocation (@RequestBody LocationReq locationReq){
+    public LocationRes DeleteLocation(@RequestBody LocationReq locationReq) {
 
         LocationRes result = new LocationRes();
 
@@ -654,7 +655,7 @@ public class Controller {
 
             result = locationService.DeleteLocation(locationReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -665,7 +666,7 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/getAllTruck")
-    public TruckRes getAllTruck (){
+    public TruckRes getAllTruck() {
 
         TruckRes result = new TruckRes();
 
@@ -673,7 +674,7 @@ public class Controller {
 
             result = truckService.getAllTruck();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -684,7 +685,7 @@ public class Controller {
 
     @CrossOrigin(origins = "*")
     @PostMapping("/getTruckById")
-    public TruckRes getTruckById (@RequestBody TruckReq truckReq){
+    public TruckRes getTruckById(@RequestBody TruckReq truckReq) {
 
         TruckRes result = new TruckRes();
 
@@ -692,7 +693,7 @@ public class Controller {
 
             result = truckService.getTruckById(truckReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -700,13 +701,14 @@ public class Controller {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/StoreTruck")
-    public TruckRes StoreTruck (@RequestBody TruckReq truckReq){
+    public TruckRes StoreTruck(@RequestBody TruckReq truckReq) {
         TruckRes result = new TruckRes();
         try {
             result = truckService.StoreTruck(truckReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -714,13 +716,14 @@ public class Controller {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateTruck")
-    public TruckRes UpdateTruck (@RequestBody TruckReq truckReq){
+    public TruckRes UpdateTruck(@RequestBody TruckReq truckReq) {
         TruckRes result = new TruckRes();
         try {
             result = truckService.UpdateTruck(truckReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -728,16 +731,17 @@ public class Controller {
         }
         return result;
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/DeleteTruck")
-    public TruckRes DeleteTruck (@RequestBody TruckReq truckReq){
+    public TruckRes DeleteTruck(@RequestBody TruckReq truckReq) {
         TruckRes result = new TruckRes();
 
         try {
 
             result = truckService.DeleteTruck(truckReq);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -745,15 +749,17 @@ public class Controller {
         }
         return result;
     }
-    //----------------=================REPORT CAR DETAILS
+
+    // ----------------=================REPORT CAR DETAILS
     @CrossOrigin(origins = "*")
     @PostMapping("/ReportGiveCarAll")
-    public TruckDetailsRes ReportGiveCarAll(@RequestBody ResFromDateReq resFromDateReq){
-        logger.info("================================>ReportGiveCarAll<========================================================");
+    public TruckDetailsRes ReportGiveCarAll(@RequestBody ResFromDateReq resFromDateReq) {
+        logger.info(
+                "================================>ReportGiveCarAll<========================================================");
         TruckDetailsRes result = new TruckDetailsRes();
         try {
             result = truckService.ReportGive(resFromDateReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");
@@ -761,15 +767,17 @@ public class Controller {
         }
         return result;
     }
-    //=============================================>ReportGiveCarAllNo<===========================================================
+
+    // =============================================>ReportGiveCarAllNo<===========================================================
     @CrossOrigin(origins = "*")
     @PostMapping("/ReportGiveCarAllNo")
-    public TruckDetailsGroupRes ReportGiveCarAllNo(@RequestBody TruckDetailsReq truckDetailsReq){
-        logger.info("================================>ReportGiveCarAll<========================================================");
+    public TruckDetailsGroupRes ReportGiveCarAllNo(@RequestBody TruckDetailsReq truckDetailsReq) {
+        logger.info(
+                "================================>ReportGiveCarAll<========================================================");
         TruckDetailsGroupRes result = new TruckDetailsGroupRes();
         try {
             result = truckService.ReportGiveCarAllNo(truckDetailsReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("exeption");

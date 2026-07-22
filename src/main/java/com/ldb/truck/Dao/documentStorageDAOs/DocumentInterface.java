@@ -24,6 +24,7 @@ public interface DocumentInterface {
     public int DeptMustReceivedInsertDAOs (DeptMustReceivedReq deptMustReceivedReq) throws ParseException;
     public int InsertDocumentDAOs (DocumentStorageReq documentStorageReq) throws ParseException;
     public List<DocumentStorageModel> listDocDAOs (DocumentStorageReq documentStorageReq);
+    public List<DocumentStorageModel> listDocDAOs (DocumentStorageReq documentStorageReq, String role2);
     public int delDocumentDAOs (DocumentStorageReq documentStorageReq);
     public List<DocumentStorageModel> ShowDocumentDetailDAOs (DocumentStorageReq documentStorageReq);
 //    public List<DocumentStorageModel> listDocumentAdmin (DocumentStorageReq documentStorageReq);

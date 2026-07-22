@@ -19,5 +19,6 @@ public class Profile {
 
     private String borNo;
     private String borName;
+    private String role2;
 
 }

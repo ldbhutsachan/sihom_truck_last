@@ -568,26 +568,34 @@ public class DocumentStorageService {
     // }
     // return message;
     // }
-    // list Document service
     public DocumentStorageRes listDocumentService(@RequestBody DocumentStorageReq documentStorageReq) {
-        // ============================get User info=======================
-        List<Profile> userIn = profileDao.getProfileInfoByToken(documentStorageReq.getToKen());
-        // ================================================================
-        String userId = userIn.get(0).getUserId();
-        String userBranchNo = userIn.get(0).getBranchNo();
-        String role = userIn.get(0).getRole();
-        // ===================set data to userId===============================
-        documentStorageReq.setUserId(userId);
-        documentStorageReq.setBranch(userBranchNo);
-        // ====================================================================
-        List<DocumentStorageModel> Data = new ArrayList<>();
         DocumentStorageRes result = new DocumentStorageRes();
         try {
-            Data = documentStorageDaos.listDocDAOs(documentStorageReq);
+            if (documentStorageReq.getToKen() == null || documentStorageReq.getToKen().trim().isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Token not found");
+                return result;
+            }
+
+            List<Profile> userIn = profileDao.getProfileInfoByToken(documentStorageReq.getToKen());
+            if (userIn == null || userIn.isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Token not found");
+                return result;
+            }
+            String userId = userIn.get(0).getUserId();
+            String userBranchNo = userIn.get(0).getBranchNo();
+            String role2 = userIn.get(0).getRole2();
+
+            documentStorageReq.setUserId(userId);
+            documentStorageReq.setBranch(userBranchNo);
+
+            List<DocumentStorageModel> Data = documentStorageDaos.listDocDAOs(documentStorageReq, role2);
             result.setMessage("Success");
             result.setStatus("00");
             result.setData(Data);
             return result;
+
         } catch (Exception e) {
             e.printStackTrace();
             result.setMessage("data not found");
