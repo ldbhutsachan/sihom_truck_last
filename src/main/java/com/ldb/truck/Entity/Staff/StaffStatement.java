@@ -62,6 +62,12 @@ public class StaffStatement {
     @Column(name = "total_earnings_lak")
     private String totalEarningsLak;
 
+    @Column(name = "comment_income")
+    private String commentIncome;
+
+    @Column(name = "comment_outcome")
+    private String commentOutcome;
+
     @Column(name = "save_by")
     private String saveBy;
 

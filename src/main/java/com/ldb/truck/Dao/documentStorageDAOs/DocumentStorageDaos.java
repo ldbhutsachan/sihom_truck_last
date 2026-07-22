@@ -857,6 +857,22 @@ public List<DocumentStorageModel> listDocDAOs(DocumentStorageReq req) {
             }
         }
 
+        if (req.getStartDate() != null && !req.getStartDate().trim().isEmpty()) {
+            String startDate = req.getStartDate().trim();
+            if (startDate.length() == 10) {
+                startDate += " 00:00:00";
+            }
+            sql += " AND DATECREATE >= '" + startDate + "'";
+        }
+
+        if (req.getEndDate() != null && !req.getEndDate().trim().isEmpty()) {
+            String endDate = req.getEndDate().trim();
+            if (endDate.length() == 10) {
+                endDate += " 23:59:59";
+            }
+            sql += " AND DATECREATE <= '" + endDate + "'";
+        }
+
         log.info("SQL : {}", sql);
 
         return EBankJdbcTemplate.query(sql, (rs, rowNum) -> {

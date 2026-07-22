@@ -165,6 +165,8 @@ public class StaffStatementDao {
             res.setIncomeTax(rs.getString("income_tax"));
             res.setTotalDeductions(rs.getString("total_deductions"));
             res.setTotalEarningsLak(rs.getString("total_earnings_lak"));
+            res.setCommentIncome(rs.getString("comment_income"));
+            res.setCommentOutcome(rs.getString("comment_outcome"));
             res.setSaveBy(rs.getString("save_by"));
             res.setCreateDate(rs.getString("create_date"));
 

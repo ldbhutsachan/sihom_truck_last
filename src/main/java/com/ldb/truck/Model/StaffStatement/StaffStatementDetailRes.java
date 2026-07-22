@@ -24,6 +24,8 @@ public class StaffStatementDetailRes {
     private String incomeTax;
     private String totalDeductions;
     private String totalEarningsLak;
+    private String commentIncome;
+    private String commentOutcome;
     private String saveBy;
     private String createDate;
 

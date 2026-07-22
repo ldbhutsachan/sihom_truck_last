@@ -36,4 +36,6 @@ public class DocumentStorageReq {
     private String type;
     private String inside;
     private String searchKey;
+    private String startDate;
+    private String endDate;
 }

@@ -333,6 +333,8 @@ public class ExcelImportService {
                         statement.setIncomeTax(getCSVValue(cols, 10));
                         statement.setTotalDeductions(getCSVValue(cols, 11));
                         statement.setTotalEarningsLak(getCSVValue(cols, 12));
+                        statement.setCommentIncome(getCSVValue(cols, 13));
+                        statement.setCommentOutcome(getCSVValue(cols, 14));
 
                         statement.setTitle(title);
                         statement.setStatementDate(statementDate);
@@ -359,7 +361,7 @@ public class ExcelImportService {
 
                         // Check if row is completely empty
                         boolean isEmptyRow = true;
-                        for (int i = 0; i <= 12; i++) {
+                        for (int i = 0; i <= 14; i++) {
                             if (getCellValue(currentRow, i) != null && !getCellValue(currentRow, i).trim().isEmpty()) {
                                 isEmptyRow = false;
                                 break;
@@ -383,6 +385,8 @@ public class ExcelImportService {
                         statement.setIncomeTax(getCellValue(currentRow, 10));
                         statement.setTotalDeductions(getCellValue(currentRow, 11));
                         statement.setTotalEarningsLak(getCellValue(currentRow, 12));
+                        statement.setCommentIncome(getCellValue(currentRow, 13));
+                        statement.setCommentOutcome(getCellValue(currentRow, 14));
 
                         statement.setTitle(title);
                         statement.setStatementDate(statementDate);
@@ -512,6 +516,10 @@ public class ExcelImportService {
                 statement.setTotalDeductions(req.getTotalDeductions());
             if (req.getTotalEarningsLak() != null)
                 statement.setTotalEarningsLak(req.getTotalEarningsLak());
+            if (req.getCommentIncome() != null)
+                statement.setCommentIncome(req.getCommentIncome());
+            if (req.getCommentOutcome() != null)
+                statement.setCommentOutcome(req.getCommentOutcome());
 
             statement.setSaveBy(requester.getUsername());
             statement.setCreateDate(LocalDateTime.now());

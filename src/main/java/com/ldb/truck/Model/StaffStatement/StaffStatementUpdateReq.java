@@ -20,4 +20,6 @@ public class StaffStatementUpdateReq {
     private String incomeTax;
     private String totalDeductions;
     private String totalEarningsLak;
+    private String commentIncome;
+    private String commentOutcome;
 }
