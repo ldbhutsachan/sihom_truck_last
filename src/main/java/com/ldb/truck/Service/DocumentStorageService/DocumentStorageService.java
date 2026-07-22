@@ -1359,7 +1359,33 @@ public class DocumentStorageService {
     public DocumentStorageRes DelDocumentByID(DocumentStorageReq documentStorageReq) {
         DocumentStorageRes result = new DocumentStorageRes();
         try {
-            documentStorageDaos.delDocumentDAOs(documentStorageReq);
+            if (documentStorageReq.getToKen() == null || documentStorageReq.getToKen().trim().isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Token not found");
+                return result;
+            }
+
+            List<Profile> userIn = profileDao.getProfileInfoByToken(documentStorageReq.getToKen());
+            if (userIn == null || userIn.isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Token not found");
+                return result;
+            }
+
+            String role2 = userIn.get(0).getRole2();
+            if (role2 == null || !"ADMIN".equalsIgnoreCase(role2.trim())) {
+                result.setStatus("01");
+                result.setMessage("Permission denied, only ADMIN can delete");
+                return result;
+            }
+
+            int i = documentStorageDaos.delDocumentDAOs(documentStorageReq);
+            if (i == 0) {
+                result.setStatus("01");
+                result.setMessage("Delete failed or document not found");
+                return result;
+            }
+
             result.setMessage("Success");
             result.setStatus("00");
             return result;
