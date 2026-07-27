@@ -28,13 +28,13 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class MediaUploadServiceImpl implements MediaUploadService {
-    @Value("${upload.directory.batery}")
+    @Value("${upload.directory.batery:src/main/resources/images/batery/}")
     private String uploadDirectory;
 
-    @Value("${upload.directory.car}")
+    @Value("${upload.directory.car:src/main/resources/images/car/}")
     private String uploadDirectoryCar;
 
-    @Value("${upload.directory.staff}")
+    @Value("${upload.directory.staff:src/main/resources/images/staff/}")
     private String uploadDirectoryStaff;
     @Override
     public String uploadMedia(MultipartFile file) {
