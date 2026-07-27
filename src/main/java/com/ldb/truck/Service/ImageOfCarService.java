@@ -580,7 +580,8 @@ public class ImageOfCarService {
             List<CandidateProfile> savedCandidates = candidateProfileRepository.saveAll(updatedList);
 
             response.setStatus("00");
-            response.setMessage("Candidate status updated successfully for " + savedCandidates.size() + " candidate(s)");
+            response.setMessage(
+                    "Candidate status updated successfully for " + savedCandidates.size() + " candidate(s)");
             response.setDataResponse(savedCandidates.size() == 1 ? savedCandidates.get(0) : savedCandidates);
         } catch (Exception e) {
             log.error("Error updating candidate status: ", e);
@@ -629,10 +630,13 @@ public class ImageOfCarService {
             LocalDateTime endDateTime = parseEndDateTime(endDateStr);
             String filterStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : null;
 
-            List<CandidateProfile> list = candidateProfileRepository.filterCandidates(filterStatus, startDateTime, endDateTime);
+            List<CandidateProfile> list = candidateProfileRepository.filterCandidates(filterStatus, startDateTime,
+                    endDateTime);
 
-            // Compute summary counts across all candidate records in scope (regardless of status filter)
-            List<CandidateProfile> allInScope = candidateProfileRepository.filterCandidates(null, startDateTime, endDateTime);
+            // Compute summary counts across all candidate records in scope (regardless of
+            // status filter)
+            List<CandidateProfile> allInScope = candidateProfileRepository.filterCandidates(null, startDateTime,
+                    endDateTime);
             CandidateStatusSummary summary = new CandidateStatusSummary();
             long countWait = 0;
             long countInProgress = 0;
@@ -646,11 +650,13 @@ public class ImageOfCarService {
                     String st = c.getStatus() != null ? c.getStatus().trim().toUpperCase() : "WAIT";
                     if ("WAIT".equalsIgnoreCase(st)) {
                         countWait++;
-                    } else if ("IN-PROGRESS".equalsIgnoreCase(st) || "IN_PROGRESS".equalsIgnoreCase(st) || "INPROGRESS".equalsIgnoreCase(st)) {
+                    } else if ("IN-PROGRESS".equalsIgnoreCase(st) || "IN_PROGRESS".equalsIgnoreCase(st)
+                            || "INPROGRESS".equalsIgnoreCase(st)) {
                         countInProgress++;
                     } else if ("OK".equalsIgnoreCase(st)) {
                         countOk++;
-                    } else if ("BLACK-LIST".equalsIgnoreCase(st) || "BLACKLIST".equalsIgnoreCase(st) || "BLACK_LIST".equalsIgnoreCase(st)) {
+                    } else if ("BLACK-LIST".equalsIgnoreCase(st) || "BLACKLIST".equalsIgnoreCase(st)
+                            || "BLACK_LIST".equalsIgnoreCase(st)) {
                         countBlackList++;
                     } else if ("FAIL".equalsIgnoreCase(st) || "FAILED".equalsIgnoreCase(st)) {
                         countFail++;
@@ -679,7 +685,8 @@ public class ImageOfCarService {
     }
 
     private LocalDateTime parseStartDateTime(String dateStr) {
-        if (dateStr == null || dateStr.trim().isEmpty()) return null;
+        if (dateStr == null || dateStr.trim().isEmpty())
+            return null;
         dateStr = dateStr.trim();
         try {
             if (dateStr.length() == 10) {
@@ -697,7 +704,8 @@ public class ImageOfCarService {
     }
 
     private LocalDateTime parseEndDateTime(String dateStr) {
-        if (dateStr == null || dateStr.trim().isEmpty()) return null;
+        if (dateStr == null || dateStr.trim().isEmpty())
+            return null;
         dateStr = dateStr.trim();
         try {
             if (dateStr.length() == 10) {
