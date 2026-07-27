@@ -34,26 +34,41 @@ public class ImageOfCarController {
     private ImageOfCarService imageOfCarService;
 
     @CrossOrigin(origins = "*")
-    @PostMapping("/insertcarimages")
+    @PostMapping(value = "/insertcarimages", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE })
     public ResponseEntity<?> insertCarImages(
             @RequestParam("toKen") String toKen,
             @RequestParam("carId") Integer carId,
             @RequestParam("imageType") String imageType,
-            @RequestPart(value = "files", required = false) MultipartFile[] imageFile) {
+            @RequestPart(value = "files", required = false) MultipartFile[] files,
+            @RequestPart(value = "file", required = false) MultipartFile[] singleFile,
+            @RequestPart(value = "image", required = false) MultipartFile[] image,
+            @RequestPart(value = "images", required = false) MultipartFile[] images) {
         log.info("insertcarimages called with carId: " + carId + " and imageType: " + imageType);
-        return new ResponseEntity<>(imageOfCarService.insertCarImages(toKen, carId, imageType, imageFile),
+        MultipartFile[] finalFiles = files;
+        if (finalFiles == null || finalFiles.length == 0) finalFiles = singleFile;
+        if (finalFiles == null || finalFiles.length == 0) finalFiles = image;
+        if (finalFiles == null || finalFiles.length == 0) finalFiles = images;
+        return new ResponseEntity<>(imageOfCarService.insertCarImages(toKen, carId, imageType, finalFiles),
                 HttpStatus.OK);
     }
 
     @CrossOrigin(origins = "*")
-    @PostMapping("/updatecarimages")
+    @PostMapping(value = "/updatecarimages", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE })
     public ResponseEntity<?> updateCarImages(
             @RequestParam("toKen") String toKen,
             @RequestParam("id") Long id,
             @RequestParam("imageType") String imageType,
-            @RequestPart(value = "files", required = false) MultipartFile[] imageFile) {
+            @RequestPart(value = "files", required = false) MultipartFile[] files,
+            @RequestPart(value = "file", required = false) MultipartFile[] singleFile,
+            @RequestPart(value = "image", required = false) MultipartFile[] image,
+            @RequestPart(value = "images", required = false) MultipartFile[] images) {
         log.info("updatecarimages called for id: " + id + " and imageType: " + imageType);
-        return new ResponseEntity<>(imageOfCarService.updateCarImages(toKen, id, imageType, imageFile), HttpStatus.OK);
+        MultipartFile[] finalFiles = files;
+        if (finalFiles == null || finalFiles.length == 0) finalFiles = singleFile;
+        if (finalFiles == null || finalFiles.length == 0) finalFiles = image;
+        if (finalFiles == null || finalFiles.length == 0) finalFiles = images;
+        return new ResponseEntity<>(imageOfCarService.updateCarImages(toKen, id, imageType, finalFiles),
+                HttpStatus.OK);
     }
 
     @CrossOrigin(origins = "*")

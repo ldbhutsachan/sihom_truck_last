@@ -455,9 +455,9 @@ public class ImageOfCarService {
                 for (MultipartFile file : imageFiles) {
                     if (file != null && !file.isEmpty()) {
                         try {
-                            String url = mediaUploadService.uploadMedia(file);
-                            if (url != null && !url.trim().isEmpty()) {
-                                imageUrls.add(url.trim());
+                            String fileName = mediaUploadService.uploadMediaCandidate(file);
+                            if (fileName != null && !fileName.trim().isEmpty()) {
+                                imageUrls.add("http://khounkham.com/images/candidate/" + fileName.trim());
                             }
                         } catch (Exception e) {
                             log.error("Error uploading candidate image: ", e);
@@ -482,9 +482,9 @@ public class ImageOfCarService {
                 for (MultipartFile file : docFiles) {
                     if (file != null && !file.isEmpty()) {
                         try {
-                            String url = mediaUploadService.uploadMedia(file);
-                            if (url != null && !url.trim().isEmpty()) {
-                                docUrls.add(url.trim());
+                            String fileName = mediaUploadService.uploadMediaCandidate(file);
+                            if (fileName != null && !fileName.trim().isEmpty()) {
+                                docUrls.add("http://khounkham.com/images/candidate/" + fileName.trim());
                             }
                         } catch (Exception e) {
                             log.error("Error uploading candidate document/file: ", e);

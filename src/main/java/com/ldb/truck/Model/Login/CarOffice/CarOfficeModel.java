@@ -81,5 +81,6 @@ public class CarOfficeModel {
     private String borName;
     private String remark;
     private String status;
+    private String spare_tire;
 
 }

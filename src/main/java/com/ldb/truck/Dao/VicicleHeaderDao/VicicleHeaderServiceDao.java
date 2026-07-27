@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -412,6 +413,19 @@ public List<CarOfficeModel> listCarOfficeDAOs(CarOfficeReq carOfficeReq, String 
                 tr.setBorName(rs.getString("borName"));
                 tr.setRemark(rs.getString("remark"));
                 tr.setStatus(rs.getString("status"));
+                boolean hasSpareTire1 = false;
+                try {
+                    ResultSetMetaData meta = rs.getMetaData();
+                    for (int cIdx = 1; cIdx <= meta.getColumnCount(); cIdx++) {
+                        if ("spare_tire".equalsIgnoreCase(meta.getColumnLabel(cIdx)) || "spare_tire".equalsIgnoreCase(meta.getColumnName(cIdx))) {
+                            hasSpareTire1 = true;
+                            break;
+                        }
+                    }
+                } catch (Exception ignored) {}
+                if (hasSpareTire1) {
+                    tr.setSpare_tire(rs.getString("spare_tire"));
+                }
                 // =======================================================
 
                 // =================== ส่ง SMS (comment ไว้) ===================
@@ -620,24 +634,14 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
     // car office detail
     @Override
     public List<CarOfficeModel> listCarOfficeDAOsDetailById (CarOfficeReq carOfficeReq) {
-//        final String ACCOUNT_SID = "AC0f41da64f12a09afba5f8e84efa72eda";
-//        final String AUTH_TOKEN = "83f8118f3b5dbc1ece33af5b8b9a1d28";
         try{
-//            public class Example {
-                // Find your Account Sid and Token at twilio.com/console
+            String targetKeyId = carOfficeReq.getKeyId();
+            if (targetKeyId == null || targetKeyId.trim().isEmpty()) {
+                targetKeyId = carOfficeReq.getKEY_ID();
+            }
 
-//                    Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-//                     Message message = Message.creator(
-//                            new com.twilio.type.PhoneNumber("whatsapp:+8562091056567"),
-//                            new com.twilio.type.PhoneNumber("whatsapp:+15005550006"),
-//                            "HXXXXXXXXX")
-//                    .setContentVariables("{\"1\":\"pid\"}")
-//                    .setMessagingServiceSid("MGXXXXXXXX")
-//                    .create();
-//            System.out.println(message.getBody());
-// ________________________________________________________________________________________________________
-            String SQL ="select a.* from V_OFFIE_CAR_STATUS a INNER JOIN LOGIN c ON a.userId  = c.KEY_ID where a.KEY_ID ='"+carOfficeReq.getKeyId()+"' ";
-            log.info("SQL"+SQL);
+            String SQL = "select a.* from V_OFFIE_CAR_STATUS a LEFT JOIN LOGIN c ON a.userId = c.KEY_ID where a.KEY_ID = '" + targetKeyId + "' ";
+            log.info("SQL: " + SQL);
             return EBankJdbcTemplate.query(SQL, new RowMapper<CarOfficeModel>() {
                 @Override
                 public CarOfficeModel mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -679,7 +683,6 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     tr.setLongg(rs.getString("longg"));
                     tr.setTall(rs.getString("tall"));
                     tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
-                    tr.setSitPosition_amount(rs.getString("sitPosition_amount"));
                     tr.setSerial_wheel_left_font(rs.getString("serial_wheel_left_font"));
                     tr.setSerial_wheel_left_back(rs.getString("serial_wheel_left_back"));
                     tr.setSerial_wheel_right_font(rs.getString("serial_wheel_right_font"));
@@ -710,10 +713,24 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     tr.setLeanFuengThaiy_STATUS(rs.getString("leanFuengThaiy_STATUS"));
                     tr.setBorNo(rs.getString("borNo"));
                     tr.setBorName(rs.getString("borName"));
+                    boolean hasSpareTire2 = false;
+                    try {
+                        ResultSetMetaData meta = rs.getMetaData();
+                        for (int cIdx = 1; cIdx <= meta.getColumnCount(); cIdx++) {
+                            if ("spare_tire".equalsIgnoreCase(meta.getColumnLabel(cIdx)) || "spare_tire".equalsIgnoreCase(meta.getColumnName(cIdx))) {
+                                hasSpareTire2 = true;
+                                break;
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                    if (hasSpareTire2) {
+                        tr.setSpare_tire(rs.getString("spare_tire"));
+                    }
                     return tr ;
                 }
             });
         }catch (Exception e){
+            log.error("Error in listCarOfficeDAOsDetailById: ", e);
             e.printStackTrace();
         }
         return null;
@@ -1084,7 +1101,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             String SQL = "insert into CARS_OFFICE (img,license_plate,battery_code_name,license_plate_end,license_plate_start," +
                     "car_year,car_type,car_brand,lekJuk,lekThung,carColor,font_light,back_light,millor_back,millor_side,car_mileage_now,cc,leanGia," +
                     "insurance_Lao,insurance_viet,insurance_thai,insurance_Lao_expireDate,insurance_viet_expireDate,insurance_thai_expireDate," +
-                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next,leanFuengThaiy,leanGiaNextday,startdate_kongnam,enddate_kongnam,borNo) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "technic_check_dateStart,technic_check_dateEnd,total_weigh_car,oil,car_model,owner_car,steering_wheel,dao,wide,longg,tall,sitPosition_amount,serial_wheel_left_font,serial_wheel_left_back,serial_wheel_right_font,serial_wheel_right_back,userId,lean,tungsitnumber,tungsitDateExpire,lekmai_next,serial_tire_second,date_change_lean,date_change_lean_next,leanFuengThaiy,leanGiaNextday,startdate_kongnam,enddate_kongnam,borNo,spare_tire) value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             log.info("SQL:"+SQL);
             List<Object> paramList = new ArrayList<Object>();
             paramList.add(path + fileName);
@@ -1149,6 +1166,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getStartdate_kongnam());
             paramList.add(carOfficeReq.getEnddate_kongnam());
             paramList.add(carOfficeReq.getBorNo());
+            paramList.add(carOfficeReq.getSpare_tire());
             return EBankJdbcTemplate.update(SQL, paramList.toArray());
         }catch (Exception e){
             e.printStackTrace();
@@ -1191,7 +1209,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
                     "oil=?, car_model=?, owner_car=?, steering_wheel=?, dao=?, wide=?, longg=?, tall=?, sitPosition_amount=?, serial_wheel_left_font=?," +
                     "serial_wheel_left_back=?, serial_wheel_right_font=?, serial_wheel_right_back=?, tungsitnumber=?, tungsitDateExpire=?," +
                     "lekmai_next=?, serial_tire_second=?, date_change_lean=?, date_change_lean_next=?, leanFuengThaiy=?, leanGiaNextday=?," +
-                    "startdate_kongnam=?, enddate_kongnam=?, borNo=?, remark=?" +
+                    "startdate_kongnam=?, enddate_kongnam=?, borNo=?, remark=?, spare_tire=?" +
                     (hasImg ? ", img=?" : "") +
                     " WHERE KEY_ID = ?";
 
@@ -1250,6 +1268,7 @@ private void sendSmsReminder(String phoneNumber, String carInfo, String messageB
             paramList.add(carOfficeReq.getEnddate_kongnam());
             paramList.add(carOfficeReq.getBorNo());
             paramList.add(carOfficeReq.getRemark());
+            paramList.add(carOfficeReq.getSpare_tire());
             if (hasImg) paramList.add(carOfficeReq.getImg());
             paramList.add(carOfficeReq.getKEY_ID());
 
