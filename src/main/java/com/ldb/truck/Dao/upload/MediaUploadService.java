@@ -9,6 +9,7 @@ public interface MediaUploadService {
     public String uploadMedia(MultipartFile file);
     public String uploadMediaStaff(MultipartFile file);
     public String uploadMediacar(MultipartFile file);
+    public String uploadMediaCandidate(MultipartFile file);
     public String uploadPDF(MultipartFile file);
     public String [] uploadPDF2 (MultipartFile[] file);
 }

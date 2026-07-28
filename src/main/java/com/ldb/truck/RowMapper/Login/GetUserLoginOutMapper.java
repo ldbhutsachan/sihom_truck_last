@@ -9,9 +9,10 @@ import java.sql.SQLException;
 public class GetUserLoginOutMapper implements RowMapper {
     @Override
     public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-        GetUserLoginOut data = new GetUserLoginOut ();
+        GetUserLoginOut data = new GetUserLoginOut();
         try {
             data.setRole(rs.getString("ROLE"));
+            data.setRole2(rs.getString("role2"));
             data.setStaftId(rs.getString("USERID"));
             data.setStaftName(rs.getString("USER_LOGIN"));
             data.setStatus(rs.getString("STATUS"));
@@ -21,12 +22,11 @@ public class GetUserLoginOutMapper implements RowMapper {
             data.setDepartment1(rs.getString("DEPARTMENT1"));
             data.setSprit_role(rs.getString("SPRIT_ROLE"));
 
-
             data.setBranchNo(rs.getString("branchNo"));
             data.setBranchName(rs.getString("branchName"));
             data.setBorNo(rs.getString("broNo"));
             data.setBorName(rs.getString("borName"));
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return data;
         }

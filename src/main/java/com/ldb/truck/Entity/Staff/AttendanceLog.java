@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "attendance_logs")
+@EntityListeners(AttendanceLogListener.class)
 @Data
 @NoArgsConstructor
 public class AttendanceLog {
@@ -20,7 +21,7 @@ public class AttendanceLog {
     private StaffEntity staff;
 
     @Column(nullable = false)
-    private String checkType;       // "CHECK_IN" / "CHECK_OUT"
+    private String checkType; // "CHECK_IN" / "CHECK_OUT"
 
     @Column(nullable = false)
     private LocalDateTime checkTime;
@@ -36,6 +37,7 @@ public class AttendanceLog {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
-        if (this.checkTime == null) this.checkTime = LocalDateTime.now();
+        if (this.checkTime == null)
+            this.checkTime = LocalDateTime.now();
     }
 }
