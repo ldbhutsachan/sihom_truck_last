@@ -13,10 +13,10 @@ import javax.sql.DataSource;
 @EnableJpaRepositories(basePackages = "com.ldb.truck.Repository")
 public class DatabaseConfig {
 
-    @Value("${DB_URL:${spring.datasource.url:jdbc:mariadb://178.128.214.105:33066/khounkham_logistics_db_EABh1xCQuo}}")
+    @Value("${spring.datasource.url:jdbc:mariadb://178.128.214.105:33066/khounkham_logistics_db_EABh1xCQuo}")
     private String dbUrl;
 
-    @Value("${DB_USERNAME:${spring.datasource.username:khounkham_logistics_user}}")
+    @Value("${spring.datasource.username:khounkham_logistics_user}")
     private String dbUsername;
 
     @Value("${spring.datasource.password:${DB_PASSWORD:}}")
