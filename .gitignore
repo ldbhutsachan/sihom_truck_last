@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local Properties (Ignored from Git) ###
+**/application-local.properties
+application-local.properties
