@@ -915,7 +915,8 @@ public class DocumentStorageDaos implements DocumentInterface {
             if ("in".equals(req.getBound()) || "out".equals(req.getBound())) {
                 sql += " AND BOUND='" + req.getBound() + "'";
             } else if ("inside".equals(req.getBound())) {
-                sql += " AND inside='inside'";
+                // sql += " AND inside='inside'";
+                sql += " AND BOUND='" + req.getBound() + "'";
             } else if (isAdmin && req.getUserIdoffinanceial() != null && !req.getUserIdoffinanceial().isEmpty()) {
                 sql += " AND saveById='" + req.getUserIdoffinanceial() + "'";
             }
