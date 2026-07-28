@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,7 +40,7 @@ public class BansiController {
     @Autowired
     private ProfileDao profileDao;
 
-    //save project
+    // save project
     @CrossOrigin(origins = "*")
     @PostMapping("/saveProjectPaymen.service")
     public ResponseEntity<DataResponse> saveReq(@RequestBody BansiEntity bansiEntity) {
@@ -49,20 +48,22 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //update project
+    // update project
     @CrossOrigin(origins = "*")
     @PostMapping("/updateProjectPaymen.service")
     public ResponseEntity<DataResponse> updateReq(@RequestBody BansiEntity bansiEntity) {
         DataResponse response = bansiService.updateProjectPaymen(bansiEntity);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    //show project
+
+    // show project
     @CrossOrigin(origins = "*")
     @PostMapping("/showProjectPaymen.service")
     public ResponseEntity<DataResponse> showProject(@RequestBody ProjectShowReq request) {
         DataResponse response = bansiService.showProjectPayment(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     // save payment_type
     @CrossOrigin(origins = "*")
     @PostMapping("/savePayType.service")
@@ -71,7 +72,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //update payment_tpye
+    // update payment_tpye
     @CrossOrigin(origins = "*")
     @PostMapping("/updatePayType.service")
     public ResponseEntity<Map<String, String>> updatePayType(@RequestBody PayTypeEntity payTypeEntity) {
@@ -79,7 +80,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //show payment_type
+    // show payment_type
     @CrossOrigin(origins = "*")
     @PostMapping("/showPayType.service")
     public ResponseEntity<DataResponse> showPayType(@RequestBody PayTypeReq request) {
@@ -87,7 +88,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //generate bill_no api
+    // generate bill_no api
     @CrossOrigin(origins = "*")
     @GetMapping("/generateBillNo.service")
     public ResponseEntity<Map<String, String>> generateBillNoApi() {
@@ -103,13 +104,12 @@ public class BansiController {
         }
     }
 
-
-    //insert paymentDetail
+    // insert paymentDetail
     @CrossOrigin(origins = "*")
     @PostMapping("/insertPaymentDetail")
     public ResponseEntity<?> insertPaymentRequest(
             @RequestParam("toKen") String token,
-//            @RequestParam("pay_typeid") Long payTypeId,
+            // @RequestParam("pay_typeid") Long payTypeId,
             @RequestParam("supplierid") Long supplierId,
             @RequestParam("billNo") String billNo,
             @RequestParam("title") String title,
@@ -123,17 +123,16 @@ public class BansiController {
             @RequestParam(value = "tag", required = false) String tag,
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
-//            @RequestParam(value = "file", required = false) MultipartFile file,
+            // @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "file", required = false) MultipartFile[] files,
             @RequestParam("b_id") Long bId,
-            @RequestParam("pay_type_groupid") Long pay_type_groupid
-    ) {
+            @RequestParam("pay_type_groupid") Long pay_type_groupid) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             PaymentRequestDto dto = new PaymentRequestDto();
 
             dto.setToKen(token);
-//            dto.setPay_typeid(payTypeId);
+            // dto.setPay_typeid(payTypeId);
             dto.setSupplierid(supplierId);
             dto.setBillNo(billNo);
             dto.setTitle(title);
@@ -153,8 +152,8 @@ public class BansiController {
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
                         toolsJson,
-                        mapper.getTypeFactory().constructCollectionType(java.util.List.class, PaymentRequestDto.ToolDto.class)
-                ));
+                        mapper.getTypeFactory().constructCollectionType(java.util.List.class,
+                                PaymentRequestDto.ToolDto.class)));
             }
 
             PaymentRequestEntity result = bansiService.insertPaymentDetail(dto);
@@ -167,13 +166,13 @@ public class BansiController {
         }
     }
 
-    //updated paymentDetail
+    // updated paymentDetail
     @CrossOrigin(origins = "*")
     @PostMapping("/updatePaymentDetail")
     public ResponseEntity<?> updatePaymentRequest(
-            @RequestParam("billNo") String billNo,  // เปลี่ยนจาก keyId
+            @RequestParam("billNo") String billNo, // เปลี่ยนจาก keyId
             @RequestParam("toKen") String token,
-//            @RequestParam(value = "pay_typeid", required = false) Long payTypeId,
+            // @RequestParam(value = "pay_typeid", required = false) Long payTypeId,
             @RequestParam(value = "supplierid", required = false) Long supplierId,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "currency", required = false) String currency,
@@ -187,17 +186,16 @@ public class BansiController {
             @RequestParam(value = "tools", required = false) String toolsJson,
             @RequestParam(value = "datermine_date", required = false) String datermine_date,
             @RequestParam(value = "bill_status", required = false) String bill_status,
-//            @RequestParam(value = "file", required = false) MultipartFile file,
+            // @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "file", required = false) MultipartFile[] files,
             @RequestParam("b_id") Long bId,
-            @RequestParam("pay_type_groupid") Long pay_type_groupid
-    ) {
+            @RequestParam("pay_type_groupid") Long pay_type_groupid) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             PaymentRequestDto dto = new PaymentRequestDto();
 
             dto.setToKen(token);
-//            dto.setPay_typeid(payTypeId);
+            // dto.setPay_typeid(payTypeId);
             dto.setSupplierid(supplierId);
             dto.setTitle(title);
             dto.setCurrency(currency);
@@ -217,8 +215,8 @@ public class BansiController {
             if (toolsJson != null && !toolsJson.isEmpty()) {
                 dto.setTools(mapper.readValue(
                         toolsJson,
-                        mapper.getTypeFactory().constructCollectionType(java.util.List.class, PaymentRequestDto.ToolDto.class)
-                ));
+                        mapper.getTypeFactory().constructCollectionType(java.util.List.class,
+                                PaymentRequestDto.ToolDto.class)));
             }
 
             // เรียก service แบบใช้ billNo
@@ -232,19 +230,18 @@ public class BansiController {
         }
     }
 
-    //show PaymentDetail
+    // show PaymentDetail
     @CrossOrigin(origins = "*")
     @PostMapping("/listPaymentDetail")
     public PaymentDetailRes listPaymentDetail(@RequestBody PaymentDetailReq req) {
         return bansiService.getPaymentDetails(req);
     }
 
-    //approve billNo
+    // approve billNo
     @CrossOrigin(origins = "*")
     @PostMapping("/approveBill.service")
     public ResponseEntity<DataResponse> approveBill(
-            @RequestBody Map<String, Object> requestBody
-    ) {
+            @RequestBody Map<String, Object> requestBody) {
         DataResponse response = new DataResponse();
 
         try {
@@ -263,15 +260,16 @@ public class BansiController {
             for (String billNo : billNos) {
                 PaymentRequestEntity result = bansiService.approveBillNo(billNo, token, billStatus);
 
-                resultList.add(new HashMap<String, Object>() {{
-                    put("billNo", billNo);
-                    put("new_bill_status", result.getBillStatus());
-                    put("approve_by",
-                            result.getFinalApproveBy() != null ? result.getFinalApproveBy()
-                                    : result.getAccountApproveBy() != null ? result.getAccountApproveBy()
-                                    : result.getBansiApproveBy()
-                    );
-                }});
+                resultList.add(new HashMap<String, Object>() {
+                    {
+                        put("billNo", billNo);
+                        put("new_bill_status", result.getBillStatus());
+                        put("approve_by",
+                                result.getFinalApproveBy() != null ? result.getFinalApproveBy()
+                                        : result.getAccountApproveBy() != null ? result.getAccountApproveBy()
+                                                : result.getBansiApproveBy());
+                    }
+                });
             }
 
             response.setStatus("OK");
@@ -288,10 +286,7 @@ public class BansiController {
         return ResponseEntity.ok(response);
     }
 
-
-
-
-    //insert signature (Base64)
+    // insert signature (Base64)
     @CrossOrigin(origins = "*")
     @PostMapping("/saveSignature.service")
     public ResponseEntity<DataResponse> saveSignature(@RequestBody Map<String, String> body) {
@@ -309,7 +304,7 @@ public class BansiController {
         return ResponseEntity.ok(response);
     }
 
-    //update signature (Base64)
+    // update signature (Base64)
     @CrossOrigin(origins = "*")
     @PostMapping("/updateSignature.service")
     public ResponseEntity<DataResponse> updateSignature(@RequestBody Map<String, String> body) {
@@ -329,22 +324,23 @@ public class BansiController {
         }
         return ResponseEntity.ok(response);
     }
-//show
+
+    // show
     @CrossOrigin(origins = "*")
     @GetMapping("/getAllSignatures.service")
     public ResponseEntity<DataResponse> getAllSignatures() {
-    DataResponse response = new DataResponse();
-    try {
-        response = bansiService.getAllSignatures();
-    } catch (Exception e) {
-        e.printStackTrace();
-        response.setStatus("EE");
-        response.setMessage("Fetch Data Error !!");
-    }
-    return ResponseEntity.ok(response);
+        DataResponse response = new DataResponse();
+        try {
+            response = bansiService.getAllSignatures();
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Fetch Data Error !!");
+        }
+        return ResponseEntity.ok(response);
     }
 
-    //saveInterviewee
+    // saveInterviewee
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/saveInterviewee.service", consumes = "multipart/form-data")
     public DataResponse saveInterviewee(
@@ -364,8 +360,7 @@ public class BansiController {
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile,
             @RequestParam(value = "salary", required = false) String salary,
-            @RequestParam(value = "currency", required = false) String currency
-    ) {
+            @RequestParam(value = "currency", required = false) String currency) {
 
         // ✅ เขียน log ตรงนี้เช็คค่าที่ส่งมา
         log.info("✅ interviewDateStr: {}", interviewDateStr);
@@ -392,7 +387,6 @@ public class BansiController {
         return bansiService.saveInterviewee(entity, imageFile, profileFile);
     }
 
-
     //
     @CrossOrigin(origins = "*")
     @PostMapping(value = "/updateInterviewee.service", consumes = "multipart/form-data")
@@ -414,32 +408,31 @@ public class BansiController {
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile,
             @RequestParam(value = "salary", required = false) String salary,
-            @RequestParam(value = "currency", required = false) String currency
-    ) {
+            @RequestParam(value = "currency", required = false) String currency) {
         return bansiService.updateInterviewee(
                 keyId, interviewee, position, experience, age, tel, tel1, toKen,
-                interviewDateStr, interviewTimeStr,status, interviewer1, interviewer2, interviewer3, imageFile, profileFile, salary, currency
-        );
+                interviewDateStr, interviewTimeStr, status, interviewer1, interviewer2, interviewer3, imageFile,
+                profileFile, salary, currency);
     }
 
-    //show interviewee controller
+    // show interviewee controller
     @CrossOrigin(origins = "*")
     @PostMapping("/getInterviewee.service")
-    public IntervieweeRes getInterviewee(@RequestBody IntervieweeReq req){
+    public IntervieweeRes getInterviewee(@RequestBody IntervieweeReq req) {
         return bansiService.getInterviewee(req);
     }
 
-    //show reportAccounting controller
+    // show reportAccounting controller
     @CrossOrigin(origins = "*")
     @PostMapping("/reportAccounting.service")
-    public ReportAccountingRes reportAccounting(@RequestBody AccountingReportReq req){
+    public ReportAccountingRes reportAccounting(@RequestBody AccountingReportReq req) {
         return bansiService.reportAccounting(req);
     }
 
-    //bank Account controller
+    // bank Account controller
     @CrossOrigin(origins = "*")
     @PostMapping("/saveBankAccount.service")
-    public ResponseEntity<DataResponse> saveBankAccount(@RequestBody BankEntity bankEntity){
+    public ResponseEntity<DataResponse> saveBankAccount(@RequestBody BankEntity bankEntity) {
         DataResponse response = bansiService.saveBankAccount(bankEntity);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -452,7 +445,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //show bankAccount controller
+    // show bankAccount controller
     @CrossOrigin(origins = "*")
     @PostMapping("/getBankAccounts.service")
     public ResponseEntity<DataResponse> getAllBankAccounts(@RequestBody BankEntity bankEntity) {
@@ -468,7 +461,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // show Accounting bill  for finance again
+    // show Accounting bill for finance again
     @CrossOrigin(origins = "*")
     @PostMapping("/getListForFinance.again")
     public ResponseEntity<DataResponse> getListForFinance(@RequestBody FinanceListEntityAgain financeListEntityAgain) {
@@ -476,7 +469,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //generate Finance_Bill api
+    // generate Finance_Bill api
     @CrossOrigin(origins = "*")
     @GetMapping("/generateFinaceBill.service")
     public ResponseEntity<Map<String, String>> generateFinaceBill() {
@@ -492,7 +485,7 @@ public class BansiController {
         }
     }
 
-    //createFinaceBill
+    // createFinaceBill
     @CrossOrigin(origins = "*")
     @PostMapping("/insertFinance.service")
     public ResponseEntity<DataResponse> insertFinance(@RequestBody FinanceRequestDto req) {
@@ -502,8 +495,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
-    //update pay by Finance
+    // update pay by Finance
     @CrossOrigin(origins = "*")
     @PostMapping("/updateFinancePay.service")
     public ResponseEntity<DataResponse> updateFinancePay(@RequestBody FinanceUpdateDto req) {
@@ -511,7 +503,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //show  all finaceBill
+    // show all finaceBill
     @CrossOrigin(origins = "*")
     @PostMapping("/getFinanceView.service")
     public ResponseEntity<DataResponse> getFinanceViewGrouped(@RequestBody FinanceViewDto financeViewDto) {
@@ -519,7 +511,7 @@ public class BansiController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //show detail of finaceBill
+    // show detail of finaceBill
     @CrossOrigin(origins = "*")
     @PostMapping("/getFinancePayByBill.service")
     public ResponseEntity<DataResponse> getFinancePayByBill(@RequestBody FinanceHistDto financeHistDto) {
@@ -531,46 +523,70 @@ public class BansiController {
     @CrossOrigin(origins = "*")
     @PostMapping("/getSupplierNotPay.service")
     public ResponseEntity<DataResponse> getSupplierNotPay(
-            @RequestBody SupplierNotPayReq req
-    ) {
+            @RequestBody SupplierNotPayReq req) {
         return ResponseEntity.ok(
-                bansiService.searchSupplierNotPay(req)
-        );
+                bansiService.searchSupplierNotPay(req));
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/accountingNotify.service")
     public DataResponse getAccountingWaitCount(@RequestBody FinanceViewDto financeViewDto) {
         return bansiService.getAccountingWaitCount(financeViewDto);
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/findItemforaccounting.service")
     public ResponseEntity<DataResponse> findItemforaccounting(
-            @RequestBody SupplierNotPayReq req
-    ) {
+            @RequestBody SupplierNotPayReq req) {
         return ResponseEntity.ok(
-                bansiService.findItemforaccounting(req)
-        );
+                bansiService.findItemforaccounting(req));
     }
 
-// FINANCE BILL - 3 APIs
-// ════════════════════════════════════════════════════════
+    // FINANCE BILL - 3 APIs
+    // ════════════════════════════════════════════════════════
     @CrossOrigin(origins = "*")
     @PostMapping("/finance-bill/create")
     public ResponseEntity<DataResponse> createFinanceBill(
             @RequestBody FinanceBillRequestDto req) {
         return ResponseEntity.ok(bansiService.createFinanceBill(req));
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/finance-bill/list")
     public ResponseEntity<DataResponse> getFinanceBills(
             @RequestBody FinanceBillListRequest request) {
         return ResponseEntity.ok(bansiService.getFinanceBills(request));
     }
+
     @CrossOrigin(origins = "*")
     @PostMapping("/finance-bill/approve")
     public ResponseEntity<DataResponse> approveFinanceBill(
             @RequestBody FinanceBillApproveDto req) {
         return ResponseEntity.ok(bansiService.approveFinanceBill(req));
+    }
+
+    // ─── SAVE FINANCE DISCOUNT & UPDATE original_amount ───────
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finace-discount-bill/save")
+    public ResponseEntity<DataResponse> saveFinanceDiscount(
+            @RequestBody com.ldb.truck.Model.Bansi.FinanceDiscountRequestDto req) {
+        return ResponseEntity.ok(bansiService.saveFinanceDiscount(req));
+    }
+
+    // ─── GET FINANCE DISCOUNT LIST (JOIN v_accounting_finance) ─
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finace-discount-bill/list")
+    public ResponseEntity<DataResponse> getFinanceDiscountList(
+            @RequestBody com.ldb.truck.Model.Bansi.FinanceDiscountFilterDto req) {
+        return ResponseEntity.ok(bansiService.getFinanceDiscountList(req));
+    }
+
+    // ─── UPDATE FINANCE DISCOUNT ──────────────────────────────
+    @CrossOrigin(origins = "*")
+    @PostMapping("/finace-discount-bill/update")
+    public ResponseEntity<DataResponse> updateFinanceDiscount(
+            @RequestBody com.ldb.truck.Model.Bansi.FinanceDiscountUpdateDto req) {
+        return ResponseEntity.ok(bansiService.updateFinanceDiscount(req));
     }
 
     // ─── ACCOUNTANT ขอแก้ไข amount ───────────────────────────
@@ -580,6 +596,7 @@ public class BansiController {
             @RequestBody FinanceBillRefUpdateRequestDto req) {
         return ResponseEntity.ok(bansiService.requestUpdateRefAmount(req));
     }
+
     // ─── GET: ดูรายการ Request ที่รอ ADMIN Approve ────────────
     @CrossOrigin(origins = "*")
     @GetMapping("/get-finance/update-requests")
@@ -588,6 +605,7 @@ public class BansiController {
             @RequestParam(required = false) String status) {
         return ResponseEntity.ok(bansiService.getUpdateRequests(token, status));
     }
+
     // ─── ADMIN Approve / Reject ───────────────────────────────
     @CrossOrigin(origins = "*")
     @PostMapping("/finance-bill/ref/approve-update")
@@ -604,13 +622,15 @@ public class BansiController {
             @RequestParam(required = false) String financeBillNo) {
         return ResponseEntity.ok(bansiService.getUpdateRefHistory(token, financeBillNo));
     }
-    //report income outcome
+
+    // report income outcome
     @CrossOrigin(origins = "*")
     @PostMapping("/get-finance/balance-report")
     public ResponseEntity<DataResponse> getFinanceBalanceReport(
             @RequestBody FinanceBalanceReportRequest req) {
         return ResponseEntity.ok(bansiService.getFinanceBalanceReport(req));
     }
+
     // REPORT INCOME OUTCOME SUMARY
     @CrossOrigin(origins = "*")
     @PostMapping("/get-finance/balance-summary")
@@ -635,7 +655,8 @@ public class BansiController {
             }
             Profile user = profileList.get(0);
             String role = user.getRole().toUpperCase();
-            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE",
+                    "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");
@@ -677,7 +698,8 @@ public class BansiController {
             }
             Profile user = profileList.get(0);
             String role = user.getRole().toUpperCase();
-            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE",
+                    "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");
@@ -721,7 +743,8 @@ public class BansiController {
             }
             Profile user = profileList.get(0);
             String role = user.getRole().toUpperCase();
-            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE",
+                    "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");

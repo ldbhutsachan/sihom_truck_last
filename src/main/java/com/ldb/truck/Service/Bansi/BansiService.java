@@ -50,7 +50,7 @@ public class BansiService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired
-    private BansiRepository bansiRepository;  // ✅ ใช้ entity type จริง
+    private BansiRepository bansiRepository; // ✅ ใช้ entity type จริง
     @Autowired
     private PayTypeRepository payTypeRepository;
     @Autowired
@@ -63,8 +63,7 @@ public class BansiService {
     @Autowired
     private ProfileDao profileDao;
     @Autowired
-    private PaymentDetailDao paymentDetailDao;
-    ;
+    private PaymentDetailDao paymentDetailDao;;
     @Autowired
     private MediaUploadService mediaUploadService;
     @Autowired
@@ -99,7 +98,8 @@ public class BansiService {
     private FinanceBillRefUpdateRequestRepository refUpdateRequestRepository;
     @Autowired
     private FinanceBalanceSummaryRepository financeBalanceSummaryRepository;
-
+    @Autowired
+    private TbFinanceDiscountRepository tbFinanceDiscountRepository;
 
     public DataResponse saveProjectPaymen(BansiEntity bansiEntity) {
         DataResponse response = new DataResponse();
@@ -183,7 +183,7 @@ public class BansiService {
         return response;
     }
 
-    //show
+    // show
     public DataResponse showProjectPayment(ProjectShowReq request) {
         DataResponse response = new DataResponse();
         try {
@@ -230,7 +230,6 @@ public class BansiService {
         return response;
     }
 
-
     // insertPayType
     public DataResponse savePayType(PayTypeEntity payTypeEntity) {
         DataResponse response = new DataResponse();
@@ -254,7 +253,6 @@ public class BansiService {
                 response.setMessage("No right to save");
                 return response;
             }
-
 
             // กำหนด date_create อัตโนมัติเป็น LocalDateTime.now()
             payTypeEntity.setDateCreate(LocalDateTime.now());
@@ -321,7 +319,7 @@ public class BansiService {
         }
     }
 
-    //show payment_type
+    // show payment_type
     public DataResponse showPayType(PayTypeReq request) {
         DataResponse response = new DataResponse();
         try {
@@ -336,11 +334,11 @@ public class BansiService {
             String role = profiles.get(0).getRole();
 
             // ตรวจ role
-//            if (!"ACCOUNTANT".equalsIgnoreCase(role)) {
-//                response.setStatus("01");
-//                response.setMessage("Access Denied");
-//                return response;
-//            }
+            // if (!"ACCOUNTANT".equalsIgnoreCase(role)) {
+            // response.setStatus("01");
+            // response.setMessage("Access Denied");
+            // return response;
+            // }
             if (!"ACCOUNTANT".equalsIgnoreCase(role)
                     && !"FINANCE".equalsIgnoreCase(role)
                     && !"AUDITOR".equalsIgnoreCase(role)
@@ -420,7 +418,6 @@ public class BansiService {
         return prefix + String.format("%04d", number);
     }
 
-
     // insert payment Detail
     public PaymentRequestEntity insertPaymentDetail(PaymentRequestDto req) throws Exception {
         PaymentRequestEntity entity = new PaymentRequestEntity();
@@ -448,7 +445,7 @@ public class BansiService {
         }
         // set user_id from token
         entity.setUserId(Long.valueOf(user.getUserId()));
-//        entity.setPayTypeId(req.getPay_typeid());
+        // entity.setPayTypeId(req.getPay_typeid());
         entity.setPayTypeGroupId(req.getPay_type_groupid());
         entity.setSupplierId(req.getSupplierid());
         entity.setTitle(req.getTitle());
@@ -490,7 +487,6 @@ public class BansiService {
             entity.setFile("http://khounkham.com/images/image.jpg");
         }
 
-
         // save main data
         PaymentRequestEntity saved = paymentRequestRepository.save(entity);
 
@@ -515,7 +511,7 @@ public class BansiService {
         return saved;
     }
 
-    //update
+    // update
     @Transactional
     public PaymentRequestEntity updatePaymentDetailByBillNo(String billNo, PaymentRequestDto req) throws Exception {
         // หา entity จาก billNo
@@ -547,22 +543,26 @@ public class BansiService {
         // entity.setBillNo(...) //
 
         // update fields อื่น ๆ
-//        entity.setPayTypeId(req.getPay_typeid() != null ? req.getPay_typeid() : entity.getPayTypeId());
-        entity.setPayTypeGroupId(req.getPay_type_groupid() !=null ? req.getPay_type_groupid() : entity.getPayTypeGroupId());
+        // entity.setPayTypeId(req.getPay_typeid() != null ? req.getPay_typeid() :
+        // entity.getPayTypeId());
+        entity.setPayTypeGroupId(
+                req.getPay_type_groupid() != null ? req.getPay_type_groupid() : entity.getPayTypeGroupId());
         entity.setSupplierId(req.getSupplierid() != null ? req.getSupplierid() : entity.getSupplierId());
         entity.setTitle(req.getTitle() != null ? req.getTitle() : entity.getTitle());
         entity.setCurrency(req.getCurrency() != null ? req.getCurrency() : entity.getCurrency());
         entity.setExchangeRate(req.getExchange_rate() != null ? req.getExchange_rate() : entity.getExchangeRate());
-        entity.setReferenceNumber(req.getReference_number() != null ? req.getReference_number() : entity.getReferenceNumber());
+        entity.setReferenceNumber(
+                req.getReference_number() != null ? req.getReference_number() : entity.getReferenceNumber());
         entity.setReference(req.getReference() != null ? req.getReference() : entity.getReference());
         entity.setRemark(req.getRemark() != null ? req.getRemark() : entity.getRemark());
-        entity.setInternalRemark(req.getInternal_remark() != null ? req.getInternal_remark() : entity.getInternalRemark());
+        entity.setInternalRemark(
+                req.getInternal_remark() != null ? req.getInternal_remark() : entity.getInternalRemark());
         entity.setTag(req.getTag() != null ? req.getTag() : entity.getTag());
         entity.setDatertimeDate(req.getDatermine_date() != null ? req.getDatermine_date() : entity.getDatertimeDate());
-//        entity.setBillStatus(req.getBill_status() != null ? req.getBill_status() : entity.getBillStatus());
+        // entity.setBillStatus(req.getBill_status() != null ? req.getBill_status() :
+        // entity.getBillStatus());
         entity.setBillStatus("wait");
         entity.setBId(req.getB_id() != null ? req.getB_id() : entity.getBId());
-
 
         if (req.getDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -603,7 +603,6 @@ public class BansiService {
             log.info("ℹ No files field sent or empty. Keeping old files: {}", entity.getFile());
         }
 
-
         // save main data
         PaymentRequestEntity saved = paymentRequestRepository.save(entity);
 
@@ -614,8 +613,7 @@ public class BansiService {
                     paymentRequestListRepository.findAll()
                             .stream()
                             .filter(item -> billNo.equals(item.getBillNo()))
-                            .collect(Collectors.toList())
-            );
+                            .collect(Collectors.toList()));
 
             // save new items
             for (PaymentRequestDto.ToolDto t : req.getTools()) {
@@ -653,12 +651,11 @@ public class BansiService {
         String role = userProfiles.get(0).getRole();
         role = role != null ? role.trim() : "";
 
-        boolean isAllowed =
-                "ACCOUNTANT".equalsIgnoreCase(role) ||
-                        "FINANCE".equalsIgnoreCase(role) ||
-                        "AUDITOR".equalsIgnoreCase(role) ||
-                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role) ||
-                        "ACCOUNTANTCHECK".equalsIgnoreCase(role);
+        boolean isAllowed = "ACCOUNTANT".equalsIgnoreCase(role) ||
+                "FINANCE".equalsIgnoreCase(role) ||
+                "AUDITOR".equalsIgnoreCase(role) ||
+                "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role) ||
+                "ACCOUNTANTCHECK".equalsIgnoreCase(role);
 
         if (!isAllowed) {
             result.setStatus("02");
@@ -670,8 +667,7 @@ public class BansiService {
         int size = req.getSize() != null ? Math.min(req.getSize(), 100) : 50;
 
         List<PaymentDetailModel> data = paymentDetailDao.findPaymentDetailsCursor(
-                req, role, size
-        );
+                req, role, size);
 
         result.setStatus("00");
         result.setMessage("Success");
@@ -726,7 +722,7 @@ public class BansiService {
             entity.setBasiApproveDate(now);
             entity.setBansiApproveBy(approveBy);
             entity.setBillStatus("wait-aditor");
-//            entity.setBillStatus("wait-finance");
+            // entity.setBillStatus("wait-finance");
         } else if ("wait-aditor".equals(status)) {
             entity.setAccountApproveDate(now);
             entity.setAccountApproveBy(approveBy);
@@ -740,8 +736,7 @@ public class BansiService {
         return paymentRequestRepository.save(entity);
     }
 
-
-    //save signature
+    // save signature
     public DataResponse saveSignature(SignatureEntity signatureEntity) {
         DataResponse response = new DataResponse();
         try {
@@ -760,7 +755,7 @@ public class BansiService {
         return response;
     }
 
-    //update
+    // update
     public DataResponse updateSignature(SignatureEntity signatureEntity) {
         DataResponse response = new DataResponse();
         try {
@@ -796,7 +791,7 @@ public class BansiService {
         return response;
     }
 
-    //show signature
+    // show signature
     public DataResponse getAllSignatures() {
         DataResponse response = new DataResponse();
         try {
@@ -814,8 +809,8 @@ public class BansiService {
 
     // insert interviewee
     public DataResponse saveInterviewee(IntervieweeEntity intervieweeEntity,
-                                        MultipartFile imageFile,
-                                        MultipartFile profileFile) {
+            MultipartFile imageFile,
+            MultipartFile profileFile) {
 
         DataResponse response = new DataResponse();
 
@@ -838,7 +833,6 @@ public class BansiService {
             // ===== 2. Set default date/time =====
             if (intervieweeEntity.getDateCreate() == null)
                 intervieweeEntity.setDateCreate(LocalDate.now());
-
 
             // ===== 3. Save image file =====
             if (imageFile != null && !imageFile.isEmpty()) {
@@ -874,12 +868,12 @@ public class BansiService {
         return response;
     }
 
-    //update interviewee
+    // update interviewee
     public DataResponse updateInterviewee(Integer keyId, String interviewee, String position, String experience,
-                                          Integer age, String tel, String tel1, String toKen,
-                                          String interviewDateStr, String interviewTimeStr, String status,
-                                          String interviewer1, String interviewer2, String interviewer3,
-                                          MultipartFile imageFile, MultipartFile profileFile, String salary, String currency) {
+            Integer age, String tel, String tel1, String toKen,
+            String interviewDateStr, String interviewTimeStr, String status,
+            String interviewer1, String interviewer2, String interviewer3,
+            MultipartFile imageFile, MultipartFile profileFile, String salary, String currency) {
         DataResponse response = new DataResponse();
         try {
             // ===== ตรวจสอบ token =====
@@ -946,7 +940,7 @@ public class BansiService {
         return response;
     }
 
-    //showing interviewee service
+    // showing interviewee service
     public IntervieweeRes getInterviewee(IntervieweeReq req) {
         IntervieweeRes result = new IntervieweeRes();
 
@@ -958,7 +952,7 @@ public class BansiService {
             return result;
         }
 
-        //  check role
+        // check role
         boolean isHR = "HR".equalsIgnoreCase(userProfiles.get(0).getRole());
         if (!isHR) {
             result.setStatus("02");
@@ -970,8 +964,7 @@ public class BansiService {
         List<IntervieweeModel> data = paymentDetailDao.findInterviewees(
                 req.getStatus(),
                 req.getStartDate(),
-                req.getEndDate()
-        );
+                req.getEndDate());
         result.setStatus("00");
         result.setMessage("Success fetching Interviewee Data");
         result.setData(data);
@@ -979,7 +972,7 @@ public class BansiService {
         return result;
     }
 
-    //show ReportAccounting service
+    // show ReportAccounting service
     public ReportAccountingRes reportAccounting(AccountingReportReq req) {
         ReportAccountingRes result = new ReportAccountingRes();
 
@@ -993,14 +986,14 @@ public class BansiService {
         }
         Profile profile = userProfiles.get(0);
         String role = profile.getRole();
-        if (role != null) role = role.trim();
+        if (role != null)
+            role = role.trim();
 
-        boolean isAllowed =
-                "ACCOUNTANT".equalsIgnoreCase(role) ||
-                        "FINANCE".equalsIgnoreCase(role) ||
-                        "AUDITOR".equalsIgnoreCase(role) ||
-                        "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role) ||
-                        "ACCOUNTANTCHECK".equalsIgnoreCase(role);
+        boolean isAllowed = "ACCOUNTANT".equalsIgnoreCase(role) ||
+                "FINANCE".equalsIgnoreCase(role) ||
+                "AUDITOR".equalsIgnoreCase(role) ||
+                "FOR_DOCUMENT_ADMIN".equalsIgnoreCase(role) ||
+                "ACCOUNTANTCHECK".equalsIgnoreCase(role);
 
         if (!isAllowed) {
             result.setStatus("02");
@@ -1017,8 +1010,7 @@ public class BansiService {
                 req.getType_of_pay(),
                 req.getStartDate(),
                 req.getEndDate(),
-                role
-        );
+                role);
         // --------------------------------------------------------------------
         // SUM RECEIVE
         // --------------------------------------------------------------------
@@ -1035,13 +1027,16 @@ public class BansiService {
 
         for (AccountingReportModel m : data) {
 
-            if (m.getCurrency() == null) continue;
+            if (m.getCurrency() == null)
+                continue;
 
             String currency = m.getCurrency().toUpperCase();
             Double price = m.getPrice();
-            if (price == null) price = 0.0;  // ถ้า null ให้เป็น 0
+            if (price == null)
+                price = 0.0; // ถ้า null ให้เป็น 0
             Double defaulUSD = m.getUsd_price();
-            if (defaulUSD == null) defaulUSD = 0.0;  // ถ้า null ให้เป็น 0
+            if (defaulUSD == null)
+                defaulUSD = 0.0; // ถ้า null ให้เป็น 0
             String type = (m.getTypeOf() == null) ? "" : m.getTypeOf().toUpperCase();
             // ---- SUM RECEIVE ----
             if (type.equals("RECEIVE")) {
@@ -1093,7 +1088,7 @@ public class BansiService {
         return result;
     }
 
-    //insertBank
+    // insertBank
     public DataResponse saveBankAccount(BankEntity bankEntity) {
         DataResponse response = new DataResponse();
 
@@ -1143,7 +1138,7 @@ public class BansiService {
         }
     }
 
-    //update bankAccount
+    // update bankAccount
     public DataResponse updateBankAccount(BankEntity bankEntity) {
         DataResponse response = new DataResponse();
 
@@ -1210,7 +1205,7 @@ public class BansiService {
         return response;
     }
 
-    //show bankAccount Service
+    // show bankAccount Service
     public DataResponse getAllBankAccounts(BankEntity bankEntity) {
         DataResponse response = new DataResponse();
 
@@ -1248,7 +1243,6 @@ public class BansiService {
                 list = bankRepository.findByBankGroupIgnoreCase(bankGroup);
             }
 
-
             response.setStatus("00");
             response.setMessage("Success showing Data");
             response.setDataResponse(list);
@@ -1262,8 +1256,7 @@ public class BansiService {
         return response;
     }
 
-
-    //show financeList service
+    // show financeList service
     public DataResponse getListForFinance(FinanceListEntity financeListEntity) {
         DataResponse response = new DataResponse();
         try {
@@ -1279,7 +1272,8 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT","ACCOUNTANTCHECK");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT",
+                    "ACCOUNTANTCHECK");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1299,16 +1293,14 @@ public class BansiService {
             String startDate = financeListEntity.getStartDate();
             String endDate = financeListEntity.getEndDate();
 
-            List<FinanceListEntity> list =
-                    financeListRepository.searchFinance(
-                            supplierId,
-                            payTypeId,
-                            payTypeGroup,
-                            typeOf,
-                            currency,
-                            startDate,
-                            endDate
-                    );
+            List<FinanceListEntity> list = financeListRepository.searchFinance(
+                    supplierId,
+                    payTypeId,
+                    payTypeGroup,
+                    typeOf,
+                    currency,
+                    startDate,
+                    endDate);
 
             response.setStatus("00");
             response.setMessage("Success showing Finance Data");
@@ -1323,7 +1315,7 @@ public class BansiService {
         return response;
     }
 
-    //financeList again
+    // financeList again
     public DataResponse getFinanceListagian(FinanceListEntityAgain financeListEntityAgain) {
         DataResponse response = new DataResponse();
         try {
@@ -1339,7 +1331,8 @@ public class BansiService {
             String role = user.getRole();
 
             // 2) check role
-            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT","ACCOUNTANTCHECK");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT",
+                    "ACCOUNTANTCHECK");
             if (!allowed.contains(role.toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1360,17 +1353,15 @@ public class BansiService {
             String startDate = financeListEntityAgain.getStartDate();
             String endDate = financeListEntityAgain.getEndDate();
 
-            List<FinanceListEntityAgain> list =
-                    financeListRepositoryagain.searchFinance(
-                            supplierId,
-                            payTypeId,
-                            payTypeGroup,
-                            typeOf,
-                            currency,
-                            paystatus,
-                            startDate,
-                            endDate
-                    );
+            List<FinanceListEntityAgain> list = financeListRepositoryagain.searchFinance(
+                    supplierId,
+                    payTypeId,
+                    payTypeGroup,
+                    typeOf,
+                    currency,
+                    paystatus,
+                    startDate,
+                    endDate);
 
             response.setStatus("00");
             response.setMessage("Success showing Finance Data");
@@ -1404,7 +1395,7 @@ public class BansiService {
         return prefix + String.format("%04d", number);
     }
 
-    //INSERT FINANCEBILL
+    // INSERT FINANCEBILL
     @Transactional
     public DataResponse insertFinance(FinanceRequestDto req) {
         DataResponse response = new DataResponse();
@@ -1418,7 +1409,8 @@ public class BansiService {
         Profile user = profileList.get(0);
 
         // 2. Check role
-        List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT","ACCOUNTANTCHECK");
+        List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT",
+                "ACCOUNTANTCHECK");
         if (!allowedRoles.contains(user.getRole().toUpperCase())) {
             response.setStatus("01");
             response.setMessage("No permission to insert finance");
@@ -1465,9 +1457,7 @@ public class BansiService {
             master.setPayStatus(
                     amountMustPay.subtract(pay).compareTo(BigDecimal.ZERO) <= 0
                             ? "DONE"
-                            : "IN-PROGRESS"
-            );
-
+                            : "IN-PROGRESS");
 
             // nextDatePay
             if (req.getNextDatePay() != null && !req.getNextDatePay().isEmpty()) {
@@ -1537,7 +1527,6 @@ public class BansiService {
                 }
             }
 
-
             response.setStatus("00");
             response.setMessage("Finance saved successfully");
             response.setDataResponse(savedFinance);
@@ -1552,7 +1541,6 @@ public class BansiService {
             return response;
         }
     }
-
 
     // helper: generate next financeBill
     @Transactional
@@ -1639,7 +1627,6 @@ public class BansiService {
             BigDecimal newPay = currentPay.add(pay); // pay from client
             finance.setPay1(newPay);
 
-
             // ===============================
             // 6. Update nextDatePay if provided
             // ===============================
@@ -1654,7 +1641,6 @@ public class BansiService {
                 finance.setCurrency(req.getCurrency());
             }
 
-
             // ===============================
             // 9. Update payStatus
             // ===============================
@@ -1664,7 +1650,7 @@ public class BansiService {
 
             if (finance.getPay1().compareTo(amountMustPay) >= 0) {
                 finance.setPayStatus("DONE");
-                //save date when doen paying
+                // save date when doen paying
                 finance.setDoneDate(LocalDateTime.now());
             } else {
                 finance.setPayStatus("IN-PROGRESS");
@@ -1713,8 +1699,7 @@ public class BansiService {
         }
     }
 
-
-    //show FinanceViewService
+    // show FinanceViewService
     public DataResponse getFinanceViewGrouped(FinanceViewDto financeViewDto) {
         DataResponse response = new DataResponse();
 
@@ -1728,7 +1713,8 @@ public class BansiService {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT","ACCOUNTANTCHECK");
+            List<String> allowed = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN", "AUDITOR", "ACCOUNTANT",
+                    "ACCOUNTANTCHECK");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -1740,9 +1726,7 @@ public class BansiService {
                     financeViewDto.getTypeOf(),
                     financeViewDto.getPayStatus(),
                     financeViewDto.getStartDate(),
-                    financeViewDto.getEndDate()
-            );
-
+                    financeViewDto.getEndDate());
 
             // 3) Group by financeBill
             Map<String, List<FinanceViewDto>> grouped = financeList.stream()
@@ -1752,7 +1736,8 @@ public class BansiService {
             List<Map<String, Object>> result = new ArrayList<>();
             for (Map.Entry<String, List<FinanceViewDto>> entry : grouped.entrySet()) {
                 List<FinanceViewDto> list = entry.getValue();
-                if (list.isEmpty()) continue;
+                if (list.isEmpty())
+                    continue;
 
                 FinanceViewDto first = list.get(0);
 
@@ -1770,10 +1755,10 @@ public class BansiService {
                 map.put("createBy", first.getCreateBy());
                 map.put(("create_date"), first.getCreateDate());
                 // รวม billNo เป็น list
-//                List<String> billNos = list.stream()
-//                        .map(FinanceViewDto::getBillNo)
-//                        .collect(Collectors.toList());
-//                map.put("billNos", billNos);
+                // List<String> billNos = list.stream()
+                // .map(FinanceViewDto::getBillNo)
+                // .collect(Collectors.toList());
+                // map.put("billNos", billNos);
                 List<Map<String, Object>> billNos = list.stream()
                         .map(item -> {
                             Map<String, Object> billMap = new HashMap<>();
@@ -1789,7 +1774,6 @@ public class BansiService {
                         .collect(Collectors.toList());
 
                 map.put("billNos", billNos);
-
 
                 // คำนวณ paidTotal และ amountNotPayYet
                 double paidTotal = first.getPay1();
@@ -1841,18 +1825,17 @@ public class BansiService {
         return response;
     }
 
-    //show Finace Pay detail
+    // show Finace Pay detail
     public DataResponse getFinancePayByBill(FinanceHistDto financeHistDto) {
         DataResponse response = new DataResponse();
 
         try {
             // เรียก repository โดยส่ง financeBill
             List<FinanceHistDto> financeHist = financePayHisRepo.findFinancePayHisFilter(
-                    financeHistDto.getFinanceBill()
-            );
+                    financeHistDto.getFinanceBill());
 
             // set result ลง response
-            response.setStatus("00");  // 00 = success
+            response.setStatus("00"); // 00 = success
             response.setMessage("Success");
             response.setDataResponse(financeHist);
 
@@ -1864,9 +1847,8 @@ public class BansiService {
             response.setMessage("Error FinanceHis by bill: " + e.getMessage());
         }
 
-        return response;  // return response ทั้งกรณี success และ error
+        return response; // return response ทั้งกรณี success และ error
     }
-
 
     // supplier not pay
     public DataResponse searchSupplierNotPay(SupplierNotPayReq req) {
@@ -1894,8 +1876,7 @@ public class BansiService {
                     "FOR_DOCUMENT_ADMIN",
                     "ACCOUNTANT",
                     "AUDITOR",
-                    "ACCOUNTANTCHECK"
-            );
+                    "ACCOUNTANTCHECK");
 
             if (!allowedRoles.contains(role)) {
                 response.setStatus("01");
@@ -1906,14 +1887,12 @@ public class BansiService {
             // =========================
             // 3) Get finance bills (flat)
             // =========================
-            List<SupplierNotPayDto> flatList =
-                    supplierNotPayRepo.findSupplierNotPay(
-                            req.getStartDate(),
-                            req.getEndDate(),
-                            req.getTypeOf(),
-                            req.getSupplierId(),
-                            req.getShow()
-                    );
+            List<SupplierNotPayDto> flatList = supplierNotPayRepo.findSupplierNotPay(
+                    req.getStartDate(),
+                    req.getEndDate(),
+                    req.getTypeOf(),
+                    req.getSupplierId(),
+                    req.getShow());
 
             Map<Long, SupplierNotPayNestedDto> supplierMap = new LinkedHashMap<>();
 
@@ -2030,23 +2009,20 @@ public class BansiService {
                 receiveFooter.setSumPayUSD(receiveFooter.getSumPayUSD().add(supplier.getRECEIVE().getSumPayUSD()));
             }
 
-// สร้าง sumFooter structure
+            // สร้าง sumFooter structure
             Map<String, Object> sumFooter = new HashMap<>();
             sumFooter.put("pay", Map.of(
                     "amountPayLAK", payFooter.getSumPayLAK(),
                     "amountPayTHB", payFooter.getSumPayTHB(),
-                    "amountPayUSD", payFooter.getSumPayUSD()
-            ));
+                    "amountPayUSD", payFooter.getSumPayUSD()));
             sumFooter.put("receive", Map.of(
                     "amountPayLAK", receiveFooter.getSumPayLAK(),
                     "amountPayTHB", receiveFooter.getSumPayTHB(),
-                    "amountPayUSD", receiveFooter.getSumPayUSD()
-            ));
+                    "amountPayUSD", receiveFooter.getSumPayUSD()));
             response.setStatus("00");
             response.setMessage("Success showing Supplier Not Pay Data");
             response.setDataResponse(new ArrayList<>(supplierMap.values()));
             response.setSumFooter(List.of(sumFooter)); // ใส่ sumFooter ใน field ที่เป็น List<Map<String,Object>>
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2056,7 +2032,6 @@ public class BansiService {
 
         return response;
     }
-
 
     public DataResponse getAccountingWaitCount(FinanceViewDto financeViewDto) {
         DataResponse response = new DataResponse();
@@ -2072,7 +2047,8 @@ public class BansiService {
             }
 
             Profile user = userProfiles.get(0);
-            List<String> allowed = Arrays.asList("FINANCE", "ACCOUNTANT", "AUDITOR", "ACCOUNTANTCHECK", "FOR_DOCUMENT_ADMIN");
+            List<String> allowed = Arrays.asList("FINANCE", "ACCOUNTANT", "AUDITOR", "ACCOUNTANTCHECK",
+                    "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(user.getRole().toUpperCase())) {
                 response.setStatus("01");
                 response.setMessage("No right to fetch data");
@@ -2080,11 +2056,11 @@ public class BansiService {
             }
 
             // --- Query 1 : v_accounting_report ---
-            String sql1 =
-                    "SELECT " +
-                            " SUM(CASE WHEN type_of = 'PAY' AND bill_status = 'wait' THEN 1 ELSE 0 END) AS pay_wait_count, " +
-                            " SUM(CASE WHEN type_of = 'RECEIVE' AND bill_status = 'wait' THEN 1 ELSE 0 END) AS receive_wait_count " +
-                            "FROM v_accounting_report";
+            String sql1 = "SELECT " +
+                    " SUM(CASE WHEN type_of = 'PAY' AND bill_status = 'wait' THEN 1 ELSE 0 END) AS pay_wait_count, " +
+                    " SUM(CASE WHEN type_of = 'RECEIVE' AND bill_status = 'wait' THEN 1 ELSE 0 END) AS receive_wait_count "
+                    +
+                    "FROM v_accounting_report";
 
             List<AccountingWaitCountRes> list1 = jdbcTemplate.query(sql1, (rs, rowNum) -> {
                 AccountingWaitCountRes res = new AccountingWaitCountRes();
@@ -2099,27 +2075,24 @@ public class BansiService {
             }
 
             // --- Query 2 : tb_finance ---
-            String sql2 =
-                    "SELECT " +
-                            " SUM(CASE WHEN TRIM(UPPER(pay_status)) = 'IN-PROGRESS' " +
-                            "  AND TRIM(UPPER(type_of)) = 'RECEIVE' THEN 1 ELSE 0 END) AS in_progress_receive, " +
-                            " SUM(CASE WHEN TRIM(UPPER(pay_status)) = 'IN-PROGRESS' " +
-                            "  AND TRIM(UPPER(type_of)) = 'PAY' THEN 1 ELSE 0 END) AS in_progress_pay " +
-                            "FROM tb_finance";
+            String sql2 = "SELECT " +
+                    " SUM(CASE WHEN TRIM(UPPER(pay_status)) = 'IN-PROGRESS' " +
+                    "  AND TRIM(UPPER(type_of)) = 'RECEIVE' THEN 1 ELSE 0 END) AS in_progress_receive, " +
+                    " SUM(CASE WHEN TRIM(UPPER(pay_status)) = 'IN-PROGRESS' " +
+                    "  AND TRIM(UPPER(type_of)) = 'PAY' THEN 1 ELSE 0 END) AS in_progress_pay " +
+                    "FROM tb_finance";
 
-            AccountingWaitCountRes financeCount =
-                    jdbcTemplate.queryForObject(sql2, (rs, rowNum) -> {
-                        AccountingWaitCountRes r = new AccountingWaitCountRes();
-                        r.setFinanceBillInProgressReceive(rs.getInt("in_progress_receive"));
-                        r.setFinanceBillInProgressPay(rs.getInt("in_progress_pay"));
-                        return r;
-                    });
+            AccountingWaitCountRes financeCount = jdbcTemplate.queryForObject(sql2, (rs, rowNum) -> {
+                AccountingWaitCountRes r = new AccountingWaitCountRes();
+                r.setFinanceBillInProgressReceive(rs.getInt("in_progress_receive"));
+                r.setFinanceBillInProgressPay(rs.getInt("in_progress_pay"));
+                return r;
+            });
 
             if (financeCount != null) {
                 result.setFinanceBillInProgressReceive(financeCount.getFinanceBillInProgressReceive());
                 result.setFinanceBillInProgressPay(financeCount.getFinanceBillInProgressPay());
             }
-
 
             log.info(sql1);
             log.info(sql2);
@@ -2137,7 +2110,7 @@ public class BansiService {
         return response;
     }
 
-    //itemforaccounting service
+    // itemforaccounting service
     // itemforaccounting service
     public DataResponse findItemforaccounting(SupplierNotPayReq req) {
 
@@ -2166,8 +2139,7 @@ public class BansiService {
                     "FOR_DOCUMENT_ADMIN",
                     "ACCOUNTANT",
                     "AUDITOR",
-                    "ACCOUNTANTCHECK"
-            );
+                    "ACCOUNTANTCHECK");
 
             if (!allowedRoles.contains(role)) {
                 response.setStatus("01");
@@ -2178,12 +2150,10 @@ public class BansiService {
             // =========================
             // 3) Get Accounting Items
             // =========================
-            List<ItemForAccountingDto> listItem =
-                    supplierNotPayRepo.findItemforaccounting(
-                            req.getStartDate(),
-                            req.getEndDate(),
-                            req.getSupplierId()
-                    );
+            List<ItemForAccountingDto> listItem = supplierNotPayRepo.findItemforaccounting(
+                    req.getStartDate(),
+                    req.getEndDate(),
+                    req.getSupplierId());
 
             response.setStatus("00");
             response.setMessage("Success");
@@ -2198,11 +2168,10 @@ public class BansiService {
         return response;
     }
 
-
     //
     // ════════════════════════════════════════════════════════
-// FINANCE BILL SYSTEM
-// ════════════════════════════════════════════════════════
+    // FINANCE BILL SYSTEM
+    // ════════════════════════════════════════════════════════
 
     // ─── Generate เลขที่ Finance Bill ───────────────────────
     private synchronized String generateNewFinanceBillNo() {
@@ -2245,7 +2214,7 @@ public class BansiService {
                 response.setMessage("Only ACCOUNTANT or ADMIN can create Finance Bill");
                 return response;
             }
-            //3
+            // 3
             String supplierName = "-";
             if (req.getSupplierId() != null) {
                 try {
@@ -2299,8 +2268,7 @@ public class BansiService {
                     }
 
                     // ---- calculate remaining ----
-                     BigDecimal remaining = ref.getOriginalAmount().subtract(usedAmount);
-
+                    BigDecimal remaining = ref.getOriginalAmount().subtract(usedAmount);
 
                     if (ref.getAmount().compareTo(remaining) > 0) {
                         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -2309,8 +2277,7 @@ public class BansiService {
                         response.setMessage(
                                 "BillNo " + ref.getBillNo() +
                                         " ຍອດທີ່ສະເໜີ " + ref.getAmount() +
-                                        " ຫຼາຍກວ່າຍອດຄົງເຫຼືອ " + remaining
-                        );
+                                        " ຫຼາຍກວ່າຍອດຄົງເຫຼືອ " + remaining);
                         return response;
                     }
 
@@ -2329,7 +2296,7 @@ public class BansiService {
 
                     // ---- update pay status (after success insert) ----
                     int updated = paymentRequestRepository
-                            .updatePayStatusByBillNo(ref.getBillNo(), "IN-PROGRACE","");
+                            .updatePayStatusByBillNo(ref.getBillNo(), "IN-PROGRACE", "");
 
                     if (updated == 0) {
                         throw new RuntimeException("BillNo not found: " + ref.getBillNo());
@@ -2378,8 +2345,7 @@ public class BansiService {
             // =========================
             List<String> allowed = Arrays.asList(
                     "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR",
-                    "FINANCE", "FOR_DOCUMENT_ADMIN"
-            );
+                    "FINANCE", "FOR_DOCUMENT_ADMIN");
 
             if (!allowed.contains(role)) {
                 response.setStatus("01");
@@ -2430,9 +2396,12 @@ public class BansiService {
                 billList = billList.stream()
                         .filter(ref -> {
                             LocalDateTime created = ref.getDateCreate();
-                            if (created == null) return true;
-                            if (finalStart != null && created.isBefore(finalStart)) return false;
-                            if (finalEnd != null && created.isAfter(finalEnd)) return false;
+                            if (created == null)
+                                return true;
+                            if (finalStart != null && created.isBefore(finalStart))
+                                return false;
+                            if (finalEnd != null && created.isAfter(finalEnd))
+                                return false;
                             return true;
                         })
                         .collect(Collectors.toList());
@@ -2450,7 +2419,7 @@ public class BansiService {
                     .stream()
                     .collect(Collectors.toMap(TbFinanceBill::getId, b -> b));
 
-            //  FILTER billType และ supplierId จาก TbFinanceBill
+            // FILTER billType และ supplierId จาก TbFinanceBill
             if (request.getBillType() != null && !request.getBillType().isEmpty()) {
                 billMap = billMap.entrySet().stream()
                         .filter(e -> request.getBillType()
@@ -2465,7 +2434,7 @@ public class BansiService {
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             }
 
-            //  filter billList ให้ตรงกับ billMap ที่ filter แล้ว
+            // filter billList ให้ตรงกับ billMap ที่ filter แล้ว
             final Map<Long, TbFinanceBill> filteredBillMap = billMap;
             billList = billList.stream()
                     .filter(ref -> filteredBillMap.containsKey(ref.getFinanceBillId()))
@@ -2476,11 +2445,16 @@ public class BansiService {
             // =========================
             Set<Long> userIds = new HashSet<>();
             for (TbFinanceBillRef ref : billList) {
-                if (ref.getCreatedBy() != null) userIds.add(ref.getCreatedBy());
-                if (ref.getAccountantCheckBy() != null) userIds.add(ref.getAccountantCheckBy());
-                if (ref.getAuditorApproveBy() != null) userIds.add(ref.getAuditorApproveBy());
-                if (ref.getFinanceApproveBy() != null) userIds.add(ref.getFinanceApproveBy());
-                if (ref.getReturnBy() != null) userIds.add(ref.getReturnBy());
+                if (ref.getCreatedBy() != null)
+                    userIds.add(ref.getCreatedBy());
+                if (ref.getAccountantCheckBy() != null)
+                    userIds.add(ref.getAccountantCheckBy());
+                if (ref.getAuditorApproveBy() != null)
+                    userIds.add(ref.getAuditorApproveBy());
+                if (ref.getFinanceApproveBy() != null)
+                    userIds.add(ref.getFinanceApproveBy());
+                if (ref.getReturnBy() != null)
+                    userIds.add(ref.getReturnBy());
             }
 
             Map<Long, String> userNameMap = userIds.isEmpty()
@@ -2500,7 +2474,8 @@ public class BansiService {
                 List<TbFinanceBillRef> refs = entry.getValue();
                 TbFinanceBill bill = filteredBillMap.get(billId);
 
-                if (bill == null) continue;
+                if (bill == null)
+                    continue;
 
                 // build details
                 List<Map<String, Object>> detailList = new ArrayList<>();
@@ -2552,7 +2527,7 @@ public class BansiService {
                 billData.put("title", bill.getTitle());
                 billData.put("billType", bill.getBillType());
                 billData.put("supplierId", bill.getSupplierid());
-                billData.put("supplierName",bill.getSupplierName());
+                billData.put("supplierName", bill.getSupplierName());
                 billData.put("totalAmount", clean(totalAmount));
                 billData.put("currency", bill.getCurrency());
                 billData.put("exchangeRate", clean(bill.getExchangeRate()));
@@ -2580,10 +2555,10 @@ public class BansiService {
         return response;
     }
 
-
     // HELPER — ตัด trailing zeros
     private BigDecimal clean(BigDecimal value) {
-        if (value == null) return null;
+        if (value == null)
+            return null;
         return new BigDecimal(value.stripTrailingZeros().toPlainString());
     }
 
@@ -2690,7 +2665,7 @@ public class BansiService {
                         bill.setReturnBy(userId);
                         bill.setReturnDate(now);
                         bill.setReturnRemark(req.getRemark());
-                        
+
                     } else {
                         switch (role) {
                             case "ACCOUNTANTCHECK":
@@ -2704,7 +2679,8 @@ public class BansiService {
                                 bill.setAccountantCheckDate(now);
                                 bill.setAccountantCheckStatus(action);
                                 bill.setAccountantCheckRemark(req.getRemark());
-                                if ("APPROVED".equals(action)) bill.setBillStatus("PENDING_AUDIT");
+                                if ("APPROVED".equals(action))
+                                    bill.setBillStatus("PENDING_AUDIT");
                                 break;
 
                             case "AUDITOR":
@@ -2718,7 +2694,8 @@ public class BansiService {
                                 bill.setAuditorApproveDate(now);
                                 bill.setAuditorApproveStatus(action);
                                 bill.setAuditorApproveRemark(req.getRemark());
-                                if ("APPROVED".equals(action)) bill.setBillStatus("PENDING_FINANCE");
+                                if ("APPROVED".equals(action))
+                                    bill.setBillStatus("PENDING_FINANCE");
                                 break;
 
                             case "FINANCE":
@@ -2750,21 +2727,26 @@ public class BansiService {
                                     if (remainingAfterApprove.compareTo(BigDecimal.ZERO) == 0) {
                                         // remaining = 0 → update pay_status DONE-PAY
                                         int updated = paymentRequestRepository
-                                                .updatePayStatusByBillNo(bill.getBillNo(), "DONE-PAY", req.getExchangeRate());
+                                                .updatePayStatusByBillNo(bill.getBillNo(), "DONE-PAY",
+                                                        req.getExchangeRate());
                                         if (updated == 0) {
-                                            throw new RuntimeException("BillNo not found in Tb_accounting: " + bill.getBillNo());
+                                            throw new RuntimeException(
+                                                    "BillNo not found in Tb_accounting: " + bill.getBillNo());
                                         }
-                                        System.out.println(">>> pay_status updated to DONE-PAY for billNo: " + bill.getBillNo());
-                                    }
-                                    else {
-                                        //remaing>=0  update next_pay_date
+                                        System.out.println(
+                                                ">>> pay_status updated to DONE-PAY for billNo: " + bill.getBillNo());
+                                    } else {
+                                        // remaing>=0 update next_pay_date
                                         int updated = paymentRequestRepository
-                                                .updateNextPayDate(bill.getBillNo(),req.getNextPayDate(), req.getExchangeRate());
+                                                .updateNextPayDate(bill.getBillNo(), req.getNextPayDate(),
+                                                        req.getExchangeRate());
                                         if (updated == 0) {
-                                            throw new RuntimeException("BillNo not found in Tb_accounting: " + bill.getBillNo());
+                                            throw new RuntimeException(
+                                                    "BillNo not found in Tb_accounting: " + bill.getBillNo());
                                         }
                                         // remaining > 0 → ยังมียอดเหลือ ไม่ update paystatus
-                                        System.out.println(">>> remaining still: " + remainingAfterApprove + " skip update pay_status");
+                                        System.out.println(">>> remaining still: " + remainingAfterApprove
+                                                + " skip update pay_status");
                                     }
                                 }
 
@@ -2800,7 +2782,7 @@ public class BansiService {
         return response;
     }
 
-    //ACCOUNTANT REQUEST FOR UPDATE FINACE BILL
+    // ACCOUNTANT REQUEST FOR UPDATE FINACE BILL
     @Transactional
     public DataResponse requestUpdateRefAmount(FinanceBillRefUpdateRequestDto req) {
         DataResponse response = new DataResponse();
@@ -2815,7 +2797,8 @@ public class BansiService {
             Profile user = profileList.get(0);
 
             // check role
-            if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole()) || !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
+            if (!"ACCOUNTANT".equalsIgnoreCase(user.getRole())
+                    || !"FOR_DOCUMENT_ADMIN".equalsIgnoreCase(user.getRole())) {
                 response.setStatus("01");
                 response.setMessage("Only ACCOUNTANT or FOR_DOCUMENT_ADMIN can request FOR UPDATE FINACEBILL");
                 return response;
@@ -2848,8 +2831,8 @@ public class BansiService {
             updateReq.setFinanceBillNo(req.getFinanceBillNo());
             updateReq.setRefId(req.getRefId());
             updateReq.setBillNo(ref.getBillNo());
-            updateReq.setOldAmount(ref.getAmount());        //  เก็บค่าเดิม
-            updateReq.setNewAmount(req.getNewAmount());     //  เก็บค่าใหม่
+            updateReq.setOldAmount(ref.getAmount()); // เก็บค่าเดิม
+            updateReq.setNewAmount(req.getNewAmount()); // เก็บค่าใหม่
             updateReq.setRemark(req.getRemark());
             updateReq.setRequestBy(Long.valueOf(user.getUserId()));
             updateReq.setRequestByName(user.getUserName());
@@ -2888,8 +2871,7 @@ public class BansiService {
             // check role
             List<String> allowed = Arrays.asList(
                     "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR",
-                    "FINANCE", "FOR_DOCUMENT_ADMIN"
-            );
+                    "FINANCE", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");
@@ -2903,11 +2885,11 @@ public class BansiService {
                 requestList = (status != null && !status.isEmpty())
                         ? refUpdateRequestRepository.findByRequestBy(
                                 Long.valueOf(user.getUserId()))
-                        .stream()
-                        .filter(r -> status.equals(r.getStatus()))
-                        .collect(Collectors.toList())
+                                .stream()
+                                .filter(r -> status.equals(r.getStatus()))
+                                .collect(Collectors.toList())
                         : refUpdateRequestRepository.findByRequestBy(
-                        Long.valueOf(user.getUserId()));
+                                Long.valueOf(user.getUserId()));
             } else {
                 // ADMIN และ Role อื่นเห็นทั้งหมด
                 requestList = (status != null && !status.isEmpty())
@@ -2918,8 +2900,10 @@ public class BansiService {
             // get usernames
             Set<Long> userIds = new HashSet<>();
             for (TbFinanceBillRefUpdateRequest r : requestList) {
-                if (r.getRequestBy() != null) userIds.add(r.getRequestBy());
-                if (r.getApproveBy() != null) userIds.add(r.getApproveBy());
+                if (r.getRequestBy() != null)
+                    userIds.add(r.getRequestBy());
+                if (r.getApproveBy() != null)
+                    userIds.add(r.getApproveBy());
             }
 
             Map<Long, String> userNameMap = userIds.isEmpty()
@@ -2937,7 +2921,7 @@ public class BansiService {
                 map.put("oldAmount", r.getOldAmount());
                 map.put("newAmount", r.getNewAmount());
                 map.put("remark", r.getRemark());
-                map.put("status", r.getStatus());               // PENDING | APPROVED | REJECTED
+                map.put("status", r.getStatus()); // PENDING | APPROVED | REJECTED
                 map.put("requestBy", r.getRequestBy());
                 map.put("requestByName", userNameMap.getOrDefault(r.getRequestBy(), "-"));
                 map.put("requestDate", r.getRequestDate());
@@ -3018,8 +3002,8 @@ public class BansiService {
                 List<TbFinanceBillRef> otherRefs = financeBillRefRepository
                         .findByBillNo(updateReq.getBillNo())
                         .stream()
-                        .filter(r -> !r.getId().equals(updateReq.getRefId()))         // ยกเว้นตัวเอง
-                        .filter(r -> "APPROVED".equals(r.getBillStatus()))  //  เฉพาะ APPROVED
+                        .filter(r -> !r.getId().equals(updateReq.getRefId())) // ยกเว้นตัวเอง
+                        .filter(r -> "APPROVED".equals(r.getBillStatus())) // เฉพาะ APPROVED
                         .collect(Collectors.toList());
 
                 // SUM amount ของ ref อื่นๆ
@@ -3031,7 +3015,7 @@ public class BansiService {
                 // SUM รวม + newAmount
                 BigDecimal totalAfterUpdate = sumOtherAmounts.add(updateReq.getNewAmount());
 
-                //  เช็คว่าเกิน originalAmount ไหม
+                // เช็คว่าเกิน originalAmount ไหม
                 if (totalAfterUpdate.compareTo(originalAmount) > 0) {
                     response.setStatus("06");
                     response.setMessage(
@@ -3039,12 +3023,11 @@ public class BansiService {
                                     "ຍອດລວມຫຼັງແກ້ໄຂ " + totalAfterUpdate +
                                     " ເກີນຍອດໃບສະເໜີແລ້ວ " + originalAmount +
                                     " (ຍອດ Ref ອື່ນ " + sumOtherAmounts +
-                                    " + ຍອດໃໝ່ " + updateReq.getNewAmount() + ")"
-                    );
+                                    " + ຍອດໃໝ່ " + updateReq.getNewAmount() + ")");
                     return response;
                 }
 
-                //  ผ่าน Validate → อัปเดต amount จริง
+                // ผ่าน Validate → อัปเดต amount จริง
                 ref.setAmount(updateReq.getNewAmount());
                 financeBillRefRepository.save(ref);
             }
@@ -3086,8 +3069,7 @@ public class BansiService {
 
             List<String> allowed = Arrays.asList(
                     "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR",
-                    "FINANCE", "FOR_DOCUMENT_ADMIN"
-            );
+                    "FINANCE", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");
@@ -3096,23 +3078,25 @@ public class BansiService {
 
             List<TbFinanceBillRefUpdateRequest> historyList;
 
-             if (financeBillNo != null && !financeBillNo.isEmpty()) {
+            if (financeBillNo != null && !financeBillNo.isEmpty()) {
                 historyList = refUpdateRequestRepository
                         .findByFinanceBillNo(financeBillNo);
             } else {
-                 // ACCOUNTANT เห็นแค่ของตัวเอง
-                 if ("ACCOUNTANT".equals(role)) {
-                     historyList = refUpdateRequestRepository
-                             .findByRequestBy(Long.valueOf(user.getUserId()));
-                 }
+                // ACCOUNTANT เห็นแค่ของตัวเอง
+                if ("ACCOUNTANT".equals(role)) {
+                    historyList = refUpdateRequestRepository
+                            .findByRequestBy(Long.valueOf(user.getUserId()));
+                }
                 historyList = refUpdateRequestRepository.findAll();
             }
 
             // เก็บ userIds → get names
             Set<Long> userIds = new HashSet<>();
             for (TbFinanceBillRefUpdateRequest h : historyList) {
-                if (h.getRequestBy() != null) userIds.add(h.getRequestBy());
-                if (h.getApproveBy() != null) userIds.add(h.getApproveBy());
+                if (h.getRequestBy() != null)
+                    userIds.add(h.getRequestBy());
+                if (h.getApproveBy() != null)
+                    userIds.add(h.getApproveBy());
             }
 
             Map<Long, String> userNameMap = userIds.isEmpty()
@@ -3130,7 +3114,7 @@ public class BansiService {
                 map.put("oldAmount", clean(h.getOldAmount()));
                 map.put("newAmount", clean(h.getNewAmount()));
                 map.put("remark", h.getRemark());
-                map.put("status", h.getStatus());               // PENDING | APPROVED | REJECTED
+                map.put("status", h.getStatus()); // PENDING | APPROVED | REJECTED
                 map.put("requestBy", h.getRequestBy());
                 map.put("requestByName", userNameMap.getOrDefault(h.getRequestBy(), "-"));
                 map.put("requestByName", h.getRequestByName());
@@ -3171,8 +3155,7 @@ public class BansiService {
 
             // 2. CHECK ROLE
             List<String> allowed = Arrays.asList(
-                    "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN"
-            );
+                    "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR", "FINANCE", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");
@@ -3196,16 +3179,14 @@ public class BansiService {
                     req.getSmallProjectId(),
                     (req.getCurrency() != null && !req.getCurrency().isEmpty()) ? req.getCurrency() : null,
                     startDate,
-                    endDate
-            );
+                    endDate);
 
             // 5. GROUP BY SUPPLIER
             Map<Long, List<VFinanceBalanceSummary>> groupedBySupplier = list.stream()
                     .collect(Collectors.groupingBy(
                             VFinanceBalanceSummary::getSupplierid,
                             LinkedHashMap::new,
-                            Collectors.toList()
-                    ));
+                            Collectors.toList()));
 
             List<Map<String, Object>> result = new ArrayList<>();
 
@@ -3221,9 +3202,10 @@ public class BansiService {
                 // SORT
                 rows.sort(Comparator
                         .comparing((VFinanceBalanceSummary r) -> r.getCurrency() != null ? r.getCurrency() : "")
-                        .thenComparing(VFinanceBalanceSummary::getFinanceApproveDate, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(VFinanceBalanceSummary::getRowNum, Comparator.nullsLast(Comparator.naturalOrder()))
-                );
+                        .thenComparing(VFinanceBalanceSummary::getFinanceApproveDate,
+                                Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(VFinanceBalanceSummary::getRowNum,
+                                Comparator.nullsLast(Comparator.naturalOrder())));
 
                 VFinanceBalanceSummary first = rows.get(0);
 
@@ -3233,13 +3215,13 @@ public class BansiService {
                 Map<String, BigDecimal> openingByCurrency = new LinkedHashMap<>();
                 Map<String, BigDecimal> closingByCurrency = new LinkedHashMap<>();
 
-                List<Map<String, Object>> detailList = new ArrayList<>();   // ← เริ่มสร้าง details
+                List<Map<String, Object>> detailList = new ArrayList<>(); // ← เริ่มสร้าง details
 
                 for (VFinanceBalanceSummary row : rows) {
                     String cur = row.getCurrency() != null ? row.getCurrency().toUpperCase() : "UNKNOWN";
 
                     BigDecimal opening = clean(row.getOpeningBalance());
-                    BigDecimal income  = clean(row.getIncome());
+                    BigDecimal income = clean(row.getIncome());
                     BigDecimal outcome = clean(row.getOutcome());
                     BigDecimal closing = clean(row.getClosingBalance());
 
@@ -3264,7 +3246,7 @@ public class BansiService {
                     detail.put("outcome", outcome);
                     detail.put("closingBalance", closing);
 
-                    detailList.add(detail);   // ← เพิ่มเข้า details
+                    detailList.add(detail); // ← เพิ่มเข้า details
                 }
 
                 // Build maps สำหรับ supplier
@@ -3289,11 +3271,14 @@ public class BansiService {
                 outcomeMap.put("totalUSDOutcome", clean(outcomeByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
 
                 // Global Accumulator
-                for (String cur : new String[]{"LAK", "THB", "USD"}) {
+                for (String cur : new String[] { "LAK", "THB", "USD" }) {
                     gIncomeByCurrency.merge(cur, incomeByCurrency.getOrDefault(cur, BigDecimal.ZERO), BigDecimal::add);
-                    gOutcomeByCurrency.merge(cur, outcomeByCurrency.getOrDefault(cur, BigDecimal.ZERO), BigDecimal::add);
-                    gOpeningByCurrency.merge(cur, openingByCurrency.getOrDefault(cur, BigDecimal.ZERO), BigDecimal::add);
-                    gClosingByCurrency.merge(cur, closingByCurrency.getOrDefault(cur, BigDecimal.ZERO), BigDecimal::add);
+                    gOutcomeByCurrency.merge(cur, outcomeByCurrency.getOrDefault(cur, BigDecimal.ZERO),
+                            BigDecimal::add);
+                    gOpeningByCurrency.merge(cur, openingByCurrency.getOrDefault(cur, BigDecimal.ZERO),
+                            BigDecimal::add);
+                    gClosingByCurrency.merge(cur, closingByCurrency.getOrDefault(cur, BigDecimal.ZERO),
+                            BigDecimal::add);
                 }
 
                 // SUPPLIER ROW
@@ -3305,7 +3290,7 @@ public class BansiService {
                 supplierMap.put("closing", closingMap);
                 supplierMap.put("income", incomeMap);
                 supplierMap.put("outcome", outcomeMap);
-                supplierMap.put("details", detailList);     // ← ตรงนี้คือส่วน details
+                supplierMap.put("details", detailList); // ← ตรงนี้คือส่วน details
 
                 result.add(supplierMap);
             }
@@ -3353,7 +3338,7 @@ public class BansiService {
         return response;
     }
 
-    //report finace SUMARY
+    // report finace SUMARY
     public DataResponse getFinanceBalanceSummary(FinanceBalanceReportRequest req) {
         DataResponse response = new DataResponse();
         try {
@@ -3374,8 +3359,7 @@ public class BansiService {
             // =========================
             List<String> allowed = Arrays.asList(
                     "ACCOUNTANT", "ACCOUNTANTCHECK", "AUDITOR",
-                    "FINANCE", "FOR_DOCUMENT_ADMIN"
-            );
+                    "FINANCE", "FOR_DOCUMENT_ADMIN");
             if (!allowed.contains(role)) {
                 response.setStatus("01");
                 response.setMessage("No permission");
@@ -3391,9 +3375,9 @@ public class BansiService {
                             req.getBigProjectId(),
                             req.getSmallProjectId(),
                             (req.getCurrency() != null && !req.getCurrency().isEmpty())
-                                    ? req.getCurrency() : null,
-                            req.getEndDate()
-                    );
+                                    ? req.getCurrency()
+                                    : null,
+                            req.getEndDate());
 
             // =========================
             // 4. GROUP BY SUPPLIER
@@ -3402,17 +3386,16 @@ public class BansiService {
                     .collect(Collectors.groupingBy(
                             VFinanceBalanceSummary::getSupplierid,
                             LinkedHashMap::new,
-                            Collectors.toList()
-                    ));
+                            Collectors.toList()));
 
             List<Map<String, Object>> result = new ArrayList<>();
 
             // =========================
             // GLOBAL ACCUMULATORS
             // =========================
-            Map<String, BigDecimal> gClosingByCurrency     = new LinkedHashMap<>();
-            Map<String, BigDecimal> gIncomeByCurrency      = new LinkedHashMap<>();
-            Map<String, BigDecimal> gOutcomeByCurrency     = new LinkedHashMap<>();
+            Map<String, BigDecimal> gClosingByCurrency = new LinkedHashMap<>();
+            Map<String, BigDecimal> gIncomeByCurrency = new LinkedHashMap<>();
+            Map<String, BigDecimal> gOutcomeByCurrency = new LinkedHashMap<>();
             Map<String, BigDecimal> gRealOpeningByCurrency = new LinkedHashMap<>();
 
             // =========================
@@ -3420,7 +3403,8 @@ public class BansiService {
             // =========================
             for (Map.Entry<Long, List<VFinanceBalanceSummary>> entry : grouped.entrySet()) {
                 List<VFinanceBalanceSummary> rows = entry.getValue();
-                if (rows.isEmpty()) continue;
+                if (rows.isEmpty())
+                    continue;
 
                 VFinanceBalanceSummary firstRow = rows.get(0);
 
@@ -3428,15 +3412,14 @@ public class BansiService {
                 Map<String, List<VFinanceBalanceSummary>> rowsByCurrency = rows.stream()
                         .collect(Collectors.groupingBy(
                                 r -> r.getCurrency() != null
-                                        ? r.getCurrency().toUpperCase() : "UNKNOWN",
+                                        ? r.getCurrency().toUpperCase()
+                                        : "UNKNOWN",
                                 LinkedHashMap::new,
-                                Collectors.toList()
-                        ));
+                                Collectors.toList()));
 
                 Map<String, Object> balances = new LinkedHashMap<>();
 
-                for (Map.Entry<String, List<VFinanceBalanceSummary>> curEntry
-                        : rowsByCurrency.entrySet()) {
+                for (Map.Entry<String, List<VFinanceBalanceSummary>> curEntry : rowsByCurrency.entrySet()) {
 
                     String cur = curEntry.getKey();
                     List<VFinanceBalanceSummary> curRows = curEntry.getValue();
@@ -3447,19 +3430,23 @@ public class BansiService {
                     // รวม income / outcome
                     BigDecimal totalIncome = curRows.stream()
                             .map(r -> r.getIncome() != null
-                                    ? r.getIncome() : BigDecimal.ZERO)
+                                    ? r.getIncome()
+                                    : BigDecimal.ZERO)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                     BigDecimal totalOutcome = curRows.stream()
                             .map(r -> r.getOutcome() != null
-                                    ? r.getOutcome() : BigDecimal.ZERO)
+                                    ? r.getOutcome()
+                                    : BigDecimal.ZERO)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                     BigDecimal closing = latestRow.getClosingBalance() != null
-                            ? latestRow.getClosingBalance() : BigDecimal.ZERO;
+                            ? latestRow.getClosingBalance()
+                            : BigDecimal.ZERO;
 
                     BigDecimal opening = latestRow.getOpeningBalance() != null
-                            ? latestRow.getOpeningBalance() : BigDecimal.ZERO;
+                            ? latestRow.getOpeningBalance()
+                            : BigDecimal.ZERO;
 
                     // dateIn / dateOut
                     LocalDate dateInVal = curRows.stream()
@@ -3482,10 +3469,10 @@ public class BansiService {
                         if (req.getEndDate() != null && !req.getEndDate().isEmpty()) {
                             LocalDate dateSearch = LocalDate.parse(
                                     req.getEndDate(),
-                                    DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                            );
+                                    DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                             LocalDate transactionDate = dateInVal != null
-                                    ? dateInVal : dateOutVal;
+                                    ? dateInVal
+                                    : dateOutVal;
 
                             if (transactionDate != null) {
                                 if (dateSearch.isEqual(transactionDate)) {
@@ -3503,14 +3490,14 @@ public class BansiService {
 
                     // build currency data
                     Map<String, Object> currencyData = new LinkedHashMap<>();
-                    currencyData.put("currency",           cur);
-                    currencyData.put("datesearch",         req.getEndDate());
-                    currencyData.put("openingBalance",     clean(opening));
-                    currencyData.put("dateIn",             dateInVal);
-                    currencyData.put("income",             clean(totalIncome));
-                    currencyData.put("dateOut",            dateOutVal);
-                    currencyData.put("outcome",            clean(totalOutcome));
-                    currencyData.put("closingBalance",     clean(closing));
+                    currencyData.put("currency", cur);
+                    currencyData.put("datesearch", req.getEndDate());
+                    currencyData.put("openingBalance", clean(opening));
+                    currencyData.put("dateIn", dateInVal);
+                    currencyData.put("income", clean(totalIncome));
+                    currencyData.put("dateOut", dateOutVal);
+                    currencyData.put("outcome", clean(totalOutcome));
+                    currencyData.put("closingBalance", clean(closing));
                     currencyData.put("realOpeningBalance", clean(realOpeningBalance)); // ✅
 
                     balances.put(cur, currencyData);
@@ -3528,9 +3515,9 @@ public class BansiService {
 
                 // build supplier row
                 Map<String, Object> supplierMap = new LinkedHashMap<>();
-                supplierMap.put("supplierId",   firstRow.getSupplierid());
+                supplierMap.put("supplierId", firstRow.getSupplierid());
                 supplierMap.put("supplierName", firstRow.getSupplierName());
-                supplierMap.put("balances",     balances);
+                supplierMap.put("balances", balances);
                 result.add(supplierMap);
             }
 
@@ -3570,10 +3557,10 @@ public class BansiService {
                     clean(gClosingByCurrency.getOrDefault("USD", BigDecimal.ZERO)));
 
             Map<String, Object> footer = new LinkedHashMap<>();
-            footer.put("openingBalance", sumOpening);   // ✅ sum realOpeningBalance
-            footer.put("sumOfIncome",    sumIncome);    // ✅ sum income
-            footer.put("sumOfOutcome",   sumOutcome);   // ✅ sum outcome
-            footer.put("closingBalance", sumClosing);   // ✅ sum closing
+            footer.put("openingBalance", sumOpening); // ✅ sum realOpeningBalance
+            footer.put("sumOfIncome", sumIncome); // ✅ sum income
+            footer.put("sumOfOutcome", sumOutcome); // ✅ sum outcome
+            footer.put("closingBalance", sumClosing); // ✅ sum closing
 
             // =========================
             // 7. RESPONSE
@@ -3585,6 +3572,408 @@ public class BansiService {
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
+
+    // ─── SAVE FINANCE DISCOUNT & UPDATE original_amount ───────────────
+    @Transactional
+    public DataResponse saveFinanceDiscount(com.ldb.truck.Model.Bansi.FinanceDiscountRequestDto req) {
+        DataResponse response = new DataResponse();
+        try {
+            // 1. Check token
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
+            if (profileList == null || profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+            String role = user.getRole() != null ? user.getRole().toUpperCase() : "";
+            Long userId = Long.valueOf(user.getUserId());
+
+            // 2. Check role (FINANCE or FOR_DOCUMENT_ADMIN)
+            List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN");
+            if (!allowedRoles.contains(role)) {
+                response.setStatus("01");
+                response.setMessage("Role " + role + " has no right to save discount");
+                return response;
+            }
+
+            Long billId = req.getEffectiveBillId();
+            String billNo = req.getBillNo();
+
+            if (billId == null && (billNo == null || billNo.trim().isEmpty())) {
+                response.setStatus("04");
+                response.setMessage("bill_id or billNo is required");
+                return response;
+            }
+
+            // 3. Find matching records in tb_finance_bill_ref
+            List<TbFinanceBillRef> refs = new ArrayList<>();
+            if (billId != null && billNo != null && !billNo.trim().isEmpty()) {
+                refs = financeBillRefRepository.findByKeyIdAndBillNo(billId, billNo.trim());
+            }
+            if (refs.isEmpty() && billId != null) {
+                refs = financeBillRefRepository.findByKeyId(billId);
+            }
+            if (refs.isEmpty() && billNo != null && !billNo.trim().isEmpty()) {
+                refs = financeBillRefRepository.findByBillNo(billNo.trim());
+            }
+
+            if (refs.isEmpty()) {
+                response.setStatus("04");
+                response.setMessage("Bill reference not found in tb_finance_bill_ref for bill_id: " + billId
+                        + ", billNo: " + billNo);
+                return response;
+            }
+
+            String targetBillNo = billNo != null && !billNo.trim().isEmpty() ? billNo.trim() : refs.get(0).getBillNo();
+
+            // Check 1 to 1: discount cannot be added if billId or billNo already exists in
+            // tb_finance_discount
+            boolean isDiscountExist = (billId != null && tbFinanceDiscountRepository.existsByBillId(billId))
+                    || (targetBillNo != null && tbFinanceDiscountRepository.existsByBillNo(targetBillNo));
+
+            if (isDiscountExist) {
+                response.setStatus("02");
+                response.setMessage("ໃບສະເຫນີ " + targetBillNo + " ນີ້ເຄີຍເພີ່ມສ່ວນຫຼຸດແລ້ວ  ກະລຸນາອັບເດັບເອົາ");
+                return response;
+            }
+
+            // 4. Check pay_status != 'DONE-PAY' in tb_accounting
+            PaymentRequestEntity accountingBill = paymentRequestRepository.findByBillNo(targetBillNo);
+            if (accountingBill == null && billId != null) {
+                accountingBill = paymentRequestRepository.findById(billId).orElse(null);
+            }
+
+            if (accountingBill != null && "DONE-PAY".equalsIgnoreCase(accountingBill.getPayStatus())) {
+                response.setStatus("02");
+                response.setMessage(
+                        "ບໍ່ສາມາດເພີ່ມສ່ວນຫຼູດໄດ້ ເນື່ອງຈາກໃບສະເໜີ ຫຼື billNo ດັ່ງກ່າວໄດ້ສຳເລັດການຊຳລະແລ້ວ");
+                return response;
+            }
+
+            // Get amount_before from original_amount of tb_finance_bill_ref
+            BigDecimal amountBefore = refs.get(0).getOriginalAmount();
+            if (amountBefore == null) {
+                amountBefore = BigDecimal.ZERO;
+            }
+
+            BigDecimal inputPercent = req.getEffectiveDiscountPercent();
+            BigDecimal inputAmount = req.getEffectiveDiscountAmount();
+
+            if (inputPercent == null && inputAmount == null) {
+                response.setStatus("04");
+                response.setMessage("ກະລຸນາປ້ອນສ່ວນຫຼຸດເປັນເປີເຊັນ ຫຼື ຈຳນວນເງີນສ່ວນຫຼຸດ");
+                return response;
+            }
+
+            BigDecimal discountPercent = BigDecimal.ZERO;
+            BigDecimal discountAmount = BigDecimal.ZERO;
+            String savedDiscountType = req.getDiscountType() != null && !req.getDiscountType().trim().isEmpty()
+                    ? req.getDiscountType().toUpperCase()
+                    : "FIXED";
+
+            if (inputPercent != null && inputAmount == null) {
+                // Client input ONLY percent
+                discountPercent = inputPercent;
+                discountAmount = amountBefore.multiply(inputPercent).divide(new BigDecimal("100"), 2,
+                        java.math.RoundingMode.HALF_UP);
+                savedDiscountType = "PERCENT";
+            } else if (inputAmount != null && inputPercent == null) {
+                // Client input ONLY discount amount
+                discountAmount = inputAmount;
+                if (amountBefore.compareTo(BigDecimal.ZERO) > 0) {
+                    discountPercent = inputAmount.multiply(new BigDecimal("100")).divide(amountBefore, 2,
+                            java.math.RoundingMode.HALF_UP);
+                }
+                savedDiscountType = "FIXED";
+            } else {
+                // Client input BOTH percent AND discount amount -> Check if they match
+                BigDecimal expectedAmount = amountBefore.multiply(inputPercent).divide(new BigDecimal("100"), 2,
+                        java.math.RoundingMode.HALF_UP);
+                BigDecimal diff = expectedAmount.subtract(inputAmount).abs();
+
+                if (diff.compareTo(new BigDecimal("1.00")) > 0) {
+                    response.setStatus("02");
+                    response.setMessage(
+                            "ເງີນສ່ວນຫຼຸດທີ່ປ້ອນ ກັບ ສ່ວນຫຼຸດທີເປັນເປີເຊັນບໍ່ຕົງກັນ ປ້ອນສ່ວນໃດສ່ວນຫນື່ງກໍ່ໄດ້");
+                    return response;
+                }
+
+                discountPercent = inputPercent;
+                discountAmount = inputAmount;
+                savedDiscountType = "PERCENT";
+            }
+
+            // 5. Check discountAmount <= remaining
+            BigDecimal paidAmount = financeBillRefRepository.sumApprovedAmountByBillNo(targetBillNo);
+            BigDecimal totalAmount = amountBefore;
+            BigDecimal remaining = totalAmount.subtract(paidAmount);
+
+            if (discountAmount.compareTo(remaining) > 0) {
+                response.setStatus("03");
+                response.setMessage("Discount amount (" + clean(discountAmount) + ") is greater than remaining amount ("
+                        + clean(remaining) + ") for bill_no: " + targetBillNo);
+                return response;
+            }
+
+            BigDecimal amountAfter = amountBefore.subtract(discountAmount);
+            if (amountAfter.compareTo(BigDecimal.ZERO) < 0) {
+                amountAfter = BigDecimal.ZERO;
+            }
+
+            // Save to tb_finance_discount
+            com.ldb.truck.Entity.Bansi.TbFinanceDiscount discountEntity = new com.ldb.truck.Entity.Bansi.TbFinanceDiscount();
+            discountEntity.setBillId(billId != null ? billId : refs.get(0).getKeyId());
+            discountEntity.setBillNo(targetBillNo);
+            discountEntity.setDiscountType(savedDiscountType);
+            discountEntity.setDiscountPercent(discountPercent);
+            discountEntity.setDiscountAmount(discountAmount);
+            discountEntity.setAmountBefore(amountBefore);
+            discountEntity.setAmountAfter(amountAfter);
+            discountEntity.setRemark(req.getRemark());
+            discountEntity.setCreateDate(LocalDateTime.now());
+            discountEntity.setCreateBy(userId);
+
+            discountEntity = tbFinanceDiscountRepository.save(discountEntity);
+
+            // Update every original_amount in tb_finance_bill_ref = amountAfter
+            for (TbFinanceBillRef ref : refs) {
+                ref.setOriginalAmount(amountAfter);
+            }
+            financeBillRefRepository.saveAll(refs);
+
+            Map<String, Object> resData = new LinkedHashMap<>();
+            resData.put("discountId", discountEntity.getId());
+            resData.put("billId", discountEntity.getBillId());
+            resData.put("billNo", discountEntity.getBillNo());
+            resData.put("discountType", discountEntity.getDiscountType());
+            resData.put("discountPercent", discountEntity.getDiscountPercent());
+            resData.put("discountAmount", discountEntity.getDiscountAmount());
+            resData.put("amountBefore", discountEntity.getAmountBefore());
+            resData.put("amountAfter", discountEntity.getAmountAfter());
+            resData.put("remark", discountEntity.getRemark());
+
+            response.setStatus("00");
+            response.setMessage("Save discount and update original_amount successfully");
+            response.setDataResponse(resData);
+
+        } catch (Exception e) {
+            log.error("Error saving finance discount: ", e);
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
+
+    public DataResponse getFinanceDiscountList(com.ldb.truck.Model.Bansi.FinanceDiscountFilterDto req) {
+        DataResponse response = new DataResponse();
+        try {
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
+            if (profileList == null || profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+            String userRole = user.getRole() != null ? user.getRole().toUpperCase() : "";
+            List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN");
+            if (!allowedRoles.contains(userRole)) {
+                response.setStatus("03");
+                response.setMessage("Only FINANCE or FOR_DOCUMENT_ADMIN role can view discount list");
+                return response;
+            }
+
+            List<com.ldb.truck.Model.Bansi.FinanceDiscountListProjection> projections = tbFinanceDiscountRepository
+                    .findDiscountList(
+                            req.getStartDate(),
+                            req.getEndDate(),
+                            req.getBillNo(),
+                            req.getBillId());
+
+            List<com.ldb.truck.Model.Bansi.FinanceDiscountListResponseDto> resultList = new ArrayList<>();
+            if (projections != null) {
+                for (com.ldb.truck.Model.Bansi.FinanceDiscountListProjection p : projections) {
+                    resultList.add(com.ldb.truck.Model.Bansi.FinanceDiscountListResponseDto.fromProjection(p));
+                }
+            }
+
+            response.setStatus("00");
+            response.setMessage("Success");
+            response.setDataResponse(resultList);
+        } catch (Exception e) {
+            log.error("Error getting finance discount list: ", e);
+            response.setStatus("EE");
+            response.setMessage("Error: " + e.getMessage());
+        }
+        return response;
+    }
+
+    public DataResponse updateFinanceDiscount(com.ldb.truck.Model.Bansi.FinanceDiscountUpdateDto req) {
+        DataResponse response = new DataResponse();
+        try {
+            List<Profile> profileList = profileDao.getProfileInfoByToken(req.getToKen());
+            if (profileList == null || profileList.isEmpty()) {
+                response.setStatus("05");
+                response.setMessage("Unauthorized");
+                return response;
+            }
+            Profile user = profileList.get(0);
+            Long userId = Long.valueOf(user.getUserId());
+
+            String userRole = user.getRole() != null ? user.getRole().toUpperCase() : "";
+            List<String> allowedRoles = Arrays.asList("FINANCE", "FOR_DOCUMENT_ADMIN");
+            if (!allowedRoles.contains(userRole)) {
+                response.setStatus("03");
+                response.setMessage("Only FINANCE or FOR_DOCUMENT_ADMIN role can update discount");
+                return response;
+            }
+
+            if (req.getId() == null) {
+                response.setStatus("04");
+                response.setMessage("id (discount_id) is required for update");
+                return response;
+            }
+
+            TbFinanceDiscount discountEntity = tbFinanceDiscountRepository.findById(req.getId()).orElse(null);
+            if (discountEntity == null) {
+                response.setStatus("04");
+                response.setMessage("Discount record not found for id: " + req.getId());
+                return response;
+            }
+
+            String targetBillNo = discountEntity.getBillNo();
+            Long billId = discountEntity.getBillId();
+
+            // Check pay_status != 'DONE-PAY' in tb_accounting
+            PaymentRequestEntity accountingBill = paymentRequestRepository.findByBillNo(targetBillNo);
+            if (accountingBill == null && billId != null) {
+                accountingBill = paymentRequestRepository.findById(billId).orElse(null);
+            }
+
+            if (accountingBill != null && "DONE-PAY".equalsIgnoreCase(accountingBill.getPayStatus())) {
+                response.setStatus("02");
+                response.setMessage(
+                        "ບໍ່ສາມາດເພີ່ມສ່ວນຫຼູດໄດ້ ເນື່ອງຈາກໃບສະເໜີ ຫຼື billNo ດັ່ງກ່າວໄດ້ສຳເລັດການຊຳລະແລ້ວ");
+                return response;
+            }
+
+            BigDecimal amountBefore = discountEntity.getAmountBefore();
+            if (amountBefore == null || amountBefore.compareTo(BigDecimal.ZERO) == 0) {
+                List<TbFinanceBillRef> refs = financeBillRefRepository.findByBillNo(targetBillNo);
+                if (!refs.isEmpty() && refs.get(0).getOriginalAmount() != null) {
+                    amountBefore = refs.get(0).getOriginalAmount();
+                } else {
+                    amountBefore = BigDecimal.ZERO;
+                }
+            }
+
+            BigDecimal inputPercent = req.getEffectiveDiscountPercent();
+            BigDecimal inputAmount = req.getEffectiveDiscountAmount();
+
+            if (inputPercent == null && inputAmount == null) {
+                response.setStatus("04");
+                response.setMessage("ກະລຸນາປ້ອນສ່ວນຫຼຸດເປັນເປີເຊັນ ຫຼື ຈຳນວນເງີນສ່ວນຫຼຸດ");
+                return response;
+            }
+
+            BigDecimal discountPercent = BigDecimal.ZERO;
+            BigDecimal discountAmount = BigDecimal.ZERO;
+            String savedDiscountType = req.getDiscountType() != null && !req.getDiscountType().trim().isEmpty()
+                    ? req.getDiscountType().toUpperCase()
+                    : "FIXED";
+
+            if (inputPercent != null && inputAmount == null) {
+                discountPercent = inputPercent;
+                discountAmount = amountBefore.multiply(inputPercent).divide(new BigDecimal("100"), 2,
+                        java.math.RoundingMode.HALF_UP);
+                savedDiscountType = "PERCENT";
+            } else if (inputAmount != null && inputPercent == null) {
+                discountAmount = inputAmount;
+                if (amountBefore.compareTo(BigDecimal.ZERO) > 0) {
+                    discountPercent = inputAmount.multiply(new BigDecimal("100")).divide(amountBefore, 2,
+                            java.math.RoundingMode.HALF_UP);
+                }
+                savedDiscountType = "FIXED";
+            } else {
+                BigDecimal expectedAmount = amountBefore.multiply(inputPercent).divide(new BigDecimal("100"), 2,
+                        java.math.RoundingMode.HALF_UP);
+                BigDecimal diff = expectedAmount.subtract(inputAmount).abs();
+
+                if (diff.compareTo(new BigDecimal("1.00")) > 0) {
+                    response.setStatus("02");
+                    response.setMessage(
+                            "ເງີນສ່ວນຫຼຸດທີ່ປ້ອນ ກັບ ສ່ວນຫຼຸດທີເປັນເປີເຊັນບໍ່ຕົງກັນ ປ້ອນສ່ວນໃດສ່ວນຫນື່ງກໍ່ໄດ້");
+                    return response;
+                }
+
+                discountPercent = inputPercent;
+                discountAmount = inputAmount;
+                savedDiscountType = "PERCENT";
+            }
+
+            // Check discountAmount <= remaining
+            BigDecimal paidAmount = financeBillRefRepository.sumApprovedAmountByBillNo(targetBillNo);
+            BigDecimal totalAmount = amountBefore;
+            BigDecimal remaining = totalAmount.subtract(paidAmount);
+
+            if (discountAmount.compareTo(remaining) > 0) {
+                response.setStatus("03");
+                response.setMessage("Discount amount (" + clean(discountAmount) + ") is greater than remaining amount ("
+                        + clean(remaining) + ") for bill_no: " + targetBillNo);
+                return response;
+            }
+
+            BigDecimal amountAfter = amountBefore.subtract(discountAmount);
+            if (amountAfter.compareTo(BigDecimal.ZERO) < 0) {
+                amountAfter = BigDecimal.ZERO;
+            }
+
+            // Update tb_finance_discount
+            discountEntity.setDiscountType(savedDiscountType);
+            discountEntity.setDiscountPercent(discountPercent);
+            discountEntity.setDiscountAmount(discountAmount);
+            discountEntity.setAmountAfter(amountAfter);
+            if (req.getRemark() != null && !req.getRemark().trim().isEmpty()) {
+                discountEntity.setRemark(req.getRemark());
+            }
+            discountEntity.setCreateDate(LocalDateTime.now());
+            if (userId != null) {
+                discountEntity.setCreateBy(userId);
+            }
+
+            discountEntity = tbFinanceDiscountRepository.save(discountEntity);
+
+            // Update tb_finance_bill_ref
+            List<TbFinanceBillRef> refs = financeBillRefRepository.findByBillNo(targetBillNo);
+            for (TbFinanceBillRef ref : refs) {
+                ref.setOriginalAmount(amountAfter);
+            }
+            financeBillRefRepository.saveAll(refs);
+
+            Map<String, Object> resData = new LinkedHashMap<>();
+            resData.put("discountId", discountEntity.getId());
+            resData.put("billId", discountEntity.getBillId());
+            resData.put("billNo", discountEntity.getBillNo());
+            resData.put("discountType", discountEntity.getDiscountType());
+            resData.put("discountPercent", discountEntity.getDiscountPercent());
+            resData.put("discountAmount", discountEntity.getDiscountAmount());
+            resData.put("amountBefore", discountEntity.getAmountBefore());
+            resData.put("amountAfter", discountEntity.getAmountAfter());
+            resData.put("remark", discountEntity.getRemark());
+            resData.put("updateDate", discountEntity.getCreateDate());
+            resData.put("updateBy", discountEntity.getCreateBy());
+
+            response.setStatus("00");
+            response.setMessage("Update discount successfully");
+            response.setDataResponse(resData);
+
+        } catch (Exception e) {
+            log.error("Error updating finance discount: ", e);
             response.setStatus("EE");
             response.setMessage("Error: " + e.getMessage());
         }
