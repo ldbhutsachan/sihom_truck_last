@@ -19,7 +19,7 @@ public class DatabaseConfig {
     @Value("${spring.datasource.username:khounkham_logistics_user}")
     private String dbUsername;
 
-    @Value("${spring.datasource.password:${DB_PASSWORD:}}")
+    @Value("${DB_PASSWORD:${spring.datasource.password:eBe12345678$DB}}")
     private String dbPassword;
 
     @Value("${spring.datasource.driver-class-name:org.mariadb.jdbc.Driver}")
