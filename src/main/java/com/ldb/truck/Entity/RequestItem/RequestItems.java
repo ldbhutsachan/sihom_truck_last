@@ -15,4 +15,5 @@ public class RequestItems {
     private String toKen;
     private String billNo;
     private List<RequestItem> itemId;
+    private String houseNo;
 }
