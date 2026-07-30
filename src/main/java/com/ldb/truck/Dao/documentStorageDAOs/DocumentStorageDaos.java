@@ -901,14 +901,17 @@ public class DocumentStorageDaos implements DocumentInterface {
     public List<DocumentStorageModel> listDocDAOs(DocumentStorageReq req, String role2) {
         try {
             String sql;
-            String excludeToken = "eb168d8130dc6f4601dd97dd3f38bdbbc2Test_task_trackingda64dd75bf7dbounHR";
             boolean isAdmin = role2 != null && ("S-ADMIN".equalsIgnoreCase(role2.trim())
                     || "SECRETARY".equalsIgnoreCase(role2.trim())
                     || "LAW".equalsIgnoreCase(role2.trim())
                     || "ADMIN".equalsIgnoreCase(role2.trim()));
+
             if (isAdmin) {
-                sql = "SELECT * FROM V_DOC WHERE TOKEN != '" + excludeToken + "'";
+                // Admins see all documents EXCEPT documents created by SECRETARY_DOC and HR_DOC
+                // users
+                sql = "SELECT * FROM V_DOC WHERE TOKEN NOT IN (SELECT TOKEN FROM LOGIN WHERE ROLE2 IN ('SECRETARY_DOC', 'HR_DOC'))";
             } else {
+                // Other roles see ONLY their own data
                 sql = "SELECT * FROM V_DOC WHERE TOKEN='" + req.getToKen() + "'";
             }
 
