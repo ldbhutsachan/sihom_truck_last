@@ -22,6 +22,7 @@ import com.ldb.truck.Model.Candidate.CandidateVerifyReq;
 import com.ldb.truck.Model.Candidate.CandidateStatusUpdateReq;
 import com.ldb.truck.Model.Candidate.CandidateStatusSummary;
 import com.ldb.truck.Entity.Staff.CandidateEducation;
+import com.ldb.truck.Entity.Staff.CandidateLanguage;
 import com.ldb.truck.Entity.Staff.CandidateProfile;
 import com.ldb.truck.Entity.Staff.StaffEntity;
 import com.ldb.truck.Repository.Staffs.CandidateProfileRepository;
@@ -427,6 +428,13 @@ public class ImageOfCarService {
                         edu.setCandidate(candidate);
                     }
                 }
+
+                if (candidate.getLanguages() != null) {
+                    for (CandidateLanguage lang : candidate.getLanguages()) {
+                        sanitizeCandidateLanguage(lang);
+                        lang.setCandidate(candidate);
+                    }
+                }
             }
 
             List<CandidateProfile> savedList = candidateProfileRepository.saveAll(candidates);
@@ -826,6 +834,14 @@ public class ImageOfCarService {
         e.setYear(cleanStr(e.getYear(), 20));
         e.setGpa(cleanStr(e.getGpa(), 20));
         e.setMajor(cleanStr(e.getMajor(), 100));
+    }
+
+    private void sanitizeCandidateLanguage(CandidateLanguage l) {
+        l.setLanguageName(cleanStr(l.getLanguageName(), 50));
+        l.setSpeaking(cleanStr(l.getSpeaking(), 50));
+        l.setReading(cleanStr(l.getReading(), 50));
+        l.setWriting(cleanStr(l.getWriting(), 50));
+        l.setListening(cleanStr(l.getListening(), 50));
     }
 
     private String cleanStr(String val, int maxLen) {

@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -269,6 +270,16 @@ public class ImageOfCarController {
                 candidate.setEducations(edus);
             } catch (Exception e) {
                 log.warn("Failed to parse educations JSON parameter: " + e.getMessage());
+            }
+        }
+
+        String languagesJson = request.getParameter("languages");
+        if (languagesJson != null && !languagesJson.trim().isEmpty()) {
+            try {
+                JsonNode langNode = mapper.readTree(languagesJson);
+                candidate.setLanguagesJson(langNode);
+            } catch (Exception e) {
+                log.warn("Failed to parse languages JSON parameter: " + e.getMessage());
             }
         }
 

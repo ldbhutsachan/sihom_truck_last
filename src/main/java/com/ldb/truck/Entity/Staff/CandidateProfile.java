@@ -2,6 +2,9 @@ package com.ldb.truck.Entity.Staff;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -76,7 +79,8 @@ import java.util.List;
         "image",
         "files",
         "createdAt",
-        "educations"
+        "educations",
+        "languages"
 })
 public class CandidateProfile {
 
@@ -251,6 +255,46 @@ public class CandidateProfile {
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CandidateEducation> educations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CandidateLanguage> languages = new ArrayList<>();
+
+    @JsonProperty("languages")
+    public List<CandidateLanguage> getLanguages() {
+        return languages;
+    }
+
+    @JsonSetter("languages")
+    public void setLanguagesJson(JsonNode node) {
+        if (node == null || node.isNull()) {
+            return;
+        }
+        this.languages.clear();
+        ObjectMapper mapper = new ObjectMapper();
+        if (node.isArray()) {
+            for (JsonNode elem : node) {
+                try {
+                    CandidateLanguage lang = mapper.treeToValue(elem, CandidateLanguage.class);
+                    this.languages.add(lang);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        } else if (node.isObject()) {
+            node.fieldNames().forEachRemaining(key -> {
+                JsonNode child = node.get(key);
+                if (child != null && child.isObject()) {
+                    try {
+                        CandidateLanguage lang = mapper.treeToValue(child, CandidateLanguage.class);
+                        lang.setLanguageName(key);
+                        this.languages.add(lang);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+            });
+        }
+    }
 
     @JsonProperty("interviewStatus")
     public String getInterviewStatus() {
