@@ -34,7 +34,7 @@ public class ProfileDao {
     public List<Profile> getProfileInfo(BrachReq profileReq) {
         log.info("get data info:" + profileReq.getToKen());
         try {
-            String SQL = "select b.KEY_ID as userId ,b.USER_LOGIN as userName ,b.ROLE,b.BRANCH as branchNo ,a.B_NAME as banchName \n"
+            String SQL = "select b.KEY_ID as userId ,b.USER_LOGIN as userName ,b.ROLE,b.BRANCH as branchNo ,a.B_NAME as banchName, b.role2 \n"
                     +
                     "from LOGIN b inner join TB_BRANCH a on a.KEY_ID  =b.BRANCH  where token='" + profileReq.getToKen()
                     + "'";
@@ -48,6 +48,7 @@ public class ProfileDao {
                     tr.setRole(rs.getString("ROLE"));
                     tr.setBranchNo(rs.getString("branchNo"));
                     tr.setBranchName(rs.getString("banchName"));
+                    tr.setRole2(rs.getString("role2"));
                     return tr;
                 }
             });

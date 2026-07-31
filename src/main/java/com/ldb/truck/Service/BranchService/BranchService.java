@@ -173,12 +173,25 @@ public class BranchService {
 
     // del brancg
     public BranchRes DeleteBranch(BrachReq brachReq) {
-        Messages messages = new Messages();
         BranchRes result = new BranchRes();
-        List<Branch> listData = new ArrayList<>();
-        int i = 0;
         try {
-            i = implBranchDao.delDataBranch(brachReq);
+            List<Profile> userIn = profileDao.getProfileInfo(brachReq);
+            if (userIn == null || userIn.isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Token not found");
+                return result;
+            }
+
+            String role2 = userIn.get(0).getRole2();
+            boolean isAdmin = role2 != null
+                    && ("ADMIN".equalsIgnoreCase(role2.trim()) || "S-ADMIN".equalsIgnoreCase(role2.trim()));
+            if (!isAdmin) {
+                result.setStatus("01");
+                result.setMessage("Only ADMIN role can delete data");
+                return result;
+            }
+
+            int i = implBranchDao.delDataBranch(brachReq);
             if (i == 0) {
                 result.setStatus("01");
                 result.setMessage("have No Data to delete");
@@ -190,6 +203,8 @@ public class BranchService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("Exception: " + e.getMessage());
         }
         return result;
     }
