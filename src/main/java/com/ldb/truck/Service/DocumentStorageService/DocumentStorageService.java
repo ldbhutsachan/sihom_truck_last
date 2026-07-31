@@ -875,39 +875,37 @@ public class DocumentStorageService {
 
     // search api for doc
     public DocumentStorageRes SearchlistDocumentService(@RequestBody DocumentStorageReq documentStorageReq) {
-        log.info("toKen=======================:" + documentStorageReq.getToKen());
-        // ============================get User info=======================
-        List<Profile> userIn = profileDao.getProfileInfoByToken(documentStorageReq.getToKen());
-        log.info("show=================UserNo:" + userIn.get(0).getUserId());
-        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
-        log.info("show=================Role:" + userIn.get(0).getRole());
-        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
-        // ================================================================
-        String userId = userIn.get(0).getUserId();
-        String userBranchNo = userIn.get(0).getBranchNo();
-        // ===================set data to userId===============================
-        documentStorageReq.setUserId(userId);
-        documentStorageReq.setBranch(userBranchNo);
-        // ====================================================================
-        List<DocumentStorageModel> Data = new ArrayList<>();
         DocumentStorageRes result = new DocumentStorageRes();
         try {
-            // if (userIn.get(0).getUserId().equals(141)){
-            // Data = documentStorageDaos.listDocumentAdmin(documentStorageReq);
-            // result.setMessage("Success");
-            // result.setStatus("00");
-            // result.setData(Data);
-            // return result;
-            // }else {
-            Data = documentStorageDaos.SearchlistDocDAOs(documentStorageReq);
+            if (documentStorageReq.getToKen() == null || documentStorageReq.getToKen().trim().isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Token not found");
+                return result;
+            }
+
+            // ============================get User info=======================
+            List<Profile> userIn = profileDao.getProfileInfoByToken(documentStorageReq.getToKen());
+            if (userIn == null || userIn.isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Token not found");
+                return result;
+            }
+            String userId = userIn.get(0).getUserId();
+            String userBranchNo = userIn.get(0).getBranchNo();
+            String role2 = userIn.get(0).getRole2();
+
+            documentStorageReq.setUserId(userId);
+            documentStorageReq.setBranch(userBranchNo);
+
+            List<DocumentStorageModel> Data = documentStorageDaos.SearchlistDocDAOs(documentStorageReq, role2);
             result.setMessage("Success");
             result.setStatus("00");
             result.setData(Data);
             return result;
-            // }
+
         } catch (Exception e) {
             e.printStackTrace();
-            result.setMessage("data not found");
+            result.setMessage("exeption: " + e.getMessage());
             result.setStatus("01");
             return result;
         }

@@ -1226,11 +1226,21 @@ public class DocumentStorageDaos implements DocumentInterface {
     }
 
     // search Doc DAOs
+    @Override
     public List<DocumentStorageModel> SearchlistDocDAOs(DocumentStorageReq documentStorageReq) {
+        return SearchlistDocDAOs(documentStorageReq, null);
+    }
+
+    @Override
+    public List<DocumentStorageModel> SearchlistDocDAOs(DocumentStorageReq documentStorageReq, String role2) {
         String sql;
         try {
-            if (documentStorageReq.getToKen().equals("UnCuQ8Dql7bSVS9LcDfMWmA8asAtQLMF")
-                    || documentStorageReq.getToKen().equals("KIOMPlY4JcaUE7LZZzlKIKHFSZlTxLue")) {
+            boolean isAdmin = role2 != null && ("S-ADMIN".equalsIgnoreCase(role2.trim())
+                    || "SECRETARY".equalsIgnoreCase(role2.trim())
+                    || "LAW".equalsIgnoreCase(role2.trim())
+                    || "ADMIN".equalsIgnoreCase(role2.trim()));
+
+            if (isAdmin) {
                 if (documentStorageReq.getBouang() != null && documentStorageReq.getCompany() == null
                         && documentStorageReq.getType() == null) {
                     sql = "select * from V_DOC WHERE bouang='" + documentStorageReq.getBouang() + "'";
@@ -1243,7 +1253,7 @@ public class DocumentStorageDaos implements DocumentInterface {
                         && documentStorageReq.getType() != null) {
                     sql = "select * from V_DOC WHERE DOC_TYPE='" + documentStorageReq.getType() + "'";
                     log.info("SQL out bound:" + sql);
-                } else if (documentStorageReq.getUserIdoffinanceial().isEmpty()) {
+                } else if (documentStorageReq.getUserIdoffinanceial() == null || documentStorageReq.getUserIdoffinanceial().isEmpty()) {
                     sql = "select * from V_DOC";
 
                     log.info("SQL:" + sql);
