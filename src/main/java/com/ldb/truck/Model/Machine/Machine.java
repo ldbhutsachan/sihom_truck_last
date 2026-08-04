@@ -30,52 +30,50 @@ public class Machine {
     private String borName;
     private String borLocationName;
 
-    private double all_dig_metters;
-    private double all_oil_liter;
-    private Integer all_Used_Hours;
-    private Integer last_engine_Hours;
+    private BigDecimal all_dig_metters;
+    private BigDecimal all_oil_liter;
+    private BigDecimal all_Used_Hours;
+    private BigDecimal last_engine_Hours;
     private Integer time_fix;
     private Integer time_fix_monitor;
     private Integer totalFixMo;
     private String status_mo;
-    private Integer last_hydraulic_Hours;
+    private BigDecimal last_hydraulic_Hours;
     private Integer time_oil_fix;
     private Integer time_oil_fix_mo;
     private Integer totalFixMoOil;
     private String status_oil_mo;
 
-    private  String image;
+    private String image;
     private String date_in;
     private String remark;
 
     private String machine_mileage_now;
     private String machine_mileage_next;
     private String machine_mileage_hydrolic;
-//    private String machine_mileage_status;
+    // private String machine_mileage_status;
     private String dateChangeLeean;
     private String dateChangeLeeanNext;
-//    private String changeleean_status;
+    // private String changeleean_status;
     private String dateleanGia;
     private String dateleanGiaNextday;
-//    private String leangia_status;
+    // private String leangia_status;
     private String dateleanFuengThaiy;
-//    private String fuengthaiy_status;
+    // private String fuengthaiy_status;
     private String startdate_kongnam;
     private String enddate_kongnam;
-//    private String kongnam_status;
+    // private String kongnam_status;
     private String hydraulic_date;
     private String hydraulic_nextdate;
-//    private String hydraulic_status;
+    // private String hydraulic_status;
     private String machine_mileage_status;
     private String machine_mileage_hydrolic_status;
     private String notifyStatus;
 
-
-
-    //  List ของ tools ที่จะ return ไปให้ client
+    // List ของ tools ที่จะ return ไปให้ client
     private List<Tool> tools = new ArrayList<>();
 
-    //  Inner class Tool
+    // Inner class Tool
     @Data
     @NoArgsConstructor // จำเป็นสำหรับ Jackson
     @AllArgsConstructor
@@ -83,8 +81,8 @@ public class Machine {
         private int id;
         private String tool_name;
         private BigDecimal original_qty;
-        private BigDecimal  update_qty;
-        private BigDecimal  qty;
+        private BigDecimal update_qty;
+        private BigDecimal qty;
         private String status;
         private String mch_no;
         private String unit;

@@ -99,21 +99,33 @@ public class FinanceListEntity {
     @JsonProperty("usd_price")
     private Double usdPrice;
 
+    @Column(name = "original_lak_price")
+    @JsonProperty("original_lak_price")
+    private Double originalLakPrice;
+
+    @Column(name = "original_usd_price")
+    @JsonProperty("original_usd_price")
+    private Double originalUsdPrice;
+
+    @Column(name = "discount_amount")
+    @JsonProperty("discount_amount")
+    private Double discountAmount;
+
     @Column(name = "basi_approveby")
     @JsonProperty("basi_approveby")
-    private String  basiApproveby;
+    private String basiApproveby;
 
     @Column(name = "basi_approve_date")
     @JsonProperty("basi_approve_date")
-    private String  basiAapproveDate;
+    private String basiAapproveDate;
 
     @Column(name = "auditorby")
     @JsonProperty("auditorby")
-    private String  auditorBy;
+    private String auditorBy;
 
     @Column(name = "auditor_date")
     @JsonProperty("auditor_date")
-    private String  auditorDate;
+    private String auditorDate;
 
     @Column(name = "date_create")
     @JsonProperty("date_create")

@@ -193,12 +193,8 @@ public class MachineService {
                     if (item.getOilLiter() != null) {
                         totalOilLiter += item.getOilLiter();
                     }
-                    if (item.getTimeTotal() != null && !item.getTimeTotal().isEmpty()) {
-                        try {
-                            totalTimeTotal = totalTimeTotal.add(new BigDecimal(item.getTimeTotal()));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    if (item.getTimeTotal() != null) {
+                        totalTimeTotal = totalTimeTotal.add(item.getTimeTotal());
                     }
                 }
 

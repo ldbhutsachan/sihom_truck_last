@@ -31,8 +31,8 @@ public class MerchineHisEntity {
 //        @Column(name = "time_total")
 //        private Integer timeTotal; // time_total int(11)
 
-        @Column(name = "time_total", length = 10)
-        private String time_total; // time_close varchar(10)
+        @Column(name = "time_total", precision = 15, scale = 2)
+        private BigDecimal time_total;
 
         @Column(name = "dig_metter")
         private BigDecimal digMetter;

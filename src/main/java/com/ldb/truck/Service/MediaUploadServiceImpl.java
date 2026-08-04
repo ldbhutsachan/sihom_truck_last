@@ -28,14 +28,17 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class MediaUploadServiceImpl implements MediaUploadService {
-    @Value("${upload.directory.batery}")
+    @Value("${upload.directory.batery:src/main/resources/images/batery/}")
     private String uploadDirectory;
 
-    @Value("${upload.directory.car}")
+    @Value("${upload.directory.car:src/main/resources/images/car/}")
     private String uploadDirectoryCar;
 
-    @Value("${upload.directory.staff}")
+    @Value("${upload.directory.staff:src/main/resources/images/staff/}")
     private String uploadDirectoryStaff;
+
+    @Value("${upload.directory.candidate:src/main/resources/images/candidate/}")
+    private String uploadDirectoryCandidate;
     @Override
     public String uploadMedia(MultipartFile file) {
         try {
@@ -140,6 +143,32 @@ public class MediaUploadServiceImpl implements MediaUploadService {
             return "";
         }
 
+    }
+
+    @Override
+    public String uploadMediaCandidate(MultipartFile file) {
+        try {
+            log.info("Skipping base64 conversion for speed");
+            log.info("Get File Extension");
+            String[] filePattern = (file.getOriginalFilename()).split("\\.");
+            String extension = filePattern[filePattern.length - 1];
+            log.info("Media File Extension Is {}", extension);
+            log.info("Generate Random Media Name");
+            UUID uuid = UUID.randomUUID();
+            String fileName = uuid.toString() + "-" + uuid.toString() + "." + extension;
+            log.info("New Generate File Name {}" + fileName);
+            File targetDirectory = new File(uploadDirectoryCandidate);
+            if (!targetDirectory.exists()) {
+                targetDirectory.mkdirs();
+            }
+            Path filePath = Path.of(uploadDirectoryCandidate, fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            log.info("Finish Candidate Image/File Upload");
+            return fileName;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return "";
+        }
     }
 //    modify pdf upload  old base64
 @Override

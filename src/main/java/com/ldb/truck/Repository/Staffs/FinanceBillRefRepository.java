@@ -26,8 +26,12 @@ public interface FinanceBillRefRepository extends JpaRepository<TbFinanceBillRef
     // เช็คว่า bill_no นี้ถูกใช้ใน finance bill อื่นแล้วหรือยัง
     boolean existsByBillNo(String billNo);
 
-    //  เพิ่มตรงนี้ — ดึง ref ทั้งหมดของ bill_no
+    // เพิ่มตรงนี้ — ดึง ref ทั้งหมดของ bill_no
     List<TbFinanceBillRef> findByBillNo(String billNo);
+
+    List<TbFinanceBillRef> findByKeyIdAndBillNo(Long keyId, String billNo);
+
+    List<TbFinanceBillRef> findByKeyId(Long keyId);
 
     // FinanceBillRefRepository.java — เพิ่ม 2 method นี้
     @Query("SELECT COALESCE(SUM(r.amount), 0) FROM TbFinanceBillRef r WHERE r.billNo = :billNo AND r.billStatus = 'APPROVED'")

@@ -29,52 +29,54 @@ public class ReportAllService {
 
     @Autowired
     ReportAllServiceDao reportStaffServiceDao;
-    public ReportAllRes ListReportAll_Product(ReportAllReq reportAllReq){
-        log.info("toKen=======================:"+reportAllReq.getToKen());
-        //============================get User info=======================
+
+    public ReportAllRes ListReportAll_Product(ReportAllReq reportAllReq) {
+        log.info("toKen=======================:" + reportAllReq.getToKen());
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         reportAllReq.setUserId(userId);
         reportAllReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
 
         List<ReportAll> listData = new ArrayList<>();
         ReportAllRes result = new ReportAllRes();
         try {
             listData = reportStaffServiceDao.ListAllReportCustomer(reportAllReq);
-//  new          listData = reportStaffServiceDao.ListAllReportProduct(reportAllReq);
+            // new listData = reportStaffServiceDao.ListAllReportProduct(reportAllReq);
             result.setData(listData);
             result.setStatus("00");
             result.setMessage("success");
-        }catch (Exception e ){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("data not found");
         }
         return result;
     }
-    public ReportAllRes ListReportAll_Customer(ReportAllReq reportAllReq){
-        log.info("toKen=======================:"+reportAllReq.getToKen());
-        //============================get User info=======================
+
+    public ReportAllRes ListReportAll_Customer(ReportAllReq reportAllReq) {
+        log.info("toKen=======================:" + reportAllReq.getToKen());
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         reportAllReq.setUserId(userId);
         reportAllReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
 
         List<ReportAll> listData = new ArrayList<>();
         ReportAllRes result = new ReportAllRes();
@@ -83,64 +85,75 @@ public class ReportAllService {
             result.setData(listData);
             result.setStatus("00");
             result.setMessage("success");
-        }catch (Exception e ){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("data not found");
         }
         return result;
     }
-    //---product
-    public ReportAllRes ListReportAllProduct(ReportAllReq reportAllReq){
-        log.info("toKen=======================:"+reportAllReq.getToKen());
-        //============================get User info=======================
+
+    // ---product
+    public ReportAllRes ListReportAllProduct(ReportAllReq reportAllReq) {
+        log.info("toKen=======================:" + reportAllReq.getToKen());
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         reportAllReq.setUserId(userId);
         reportAllReq.setBranch(userBranchNo);
-        //====================================================================
-        double totalBiaLieng =0.0;
-        double totalNummun =0.0;
-        double todtalLaiyJaiyFrist =0.0;
-        double todtalLaiyJaiySecond =0.0;
-        double totalPriceFuel =0.0;
-        double totalstaff02_payAll =0.0;
-        double totalstaff02_beforepay =0.0;
-        double allLaiyJaiy=0.0;
-        double runningTotal=0.0;
+        // ====================================================================
+        double totalBiaLieng = 0.0;
+        double totalNummun = 0.0;
+        double todtalLaiyJaiyFrist = 0.0;
+        double todtalLaiyJaiySecond = 0.0;
+        double totalPriceFuel = 0.0;
+        double totalstaff02_payAll = 0.0;
+        double totalstaff02_beforepay = 0.0;
+        double allLaiyJaiy = 0.0;
+        double runningTotal = 0.0;
         List<ReportAll> groupListData = new ArrayList<>();
         DecimalFormat numfm = new DecimalFormat("###,###.###");
         List<ReportAll> listData = new ArrayList<>();
         ReportAllRes result = new ReportAllRes();
         try {
             listData = reportStaffServiceDao.ListAllReportProduct(reportAllReq);
-            //================================sum footer=================================
-            double sumNummun =  listData.stream().map(ReportAll::getTotalNummun).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalBiaLieng=  listData.stream().map(ReportAll::getTotalBiaLieng).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtodtalLaiyJaiyFrist =  listData.stream().map(ReportAll::getTodtalLaiyJaiyFrist).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtodtodtalLaiyJaiySecond =  listData.stream().map(ReportAll::getTodtalLaiyJaiySecond).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalstaff02_payAll=  listData.stream().map(ReportAll::getTotalstaff02_payAll).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalstaff02_beforepay =  listData.stream().map(ReportAll::getTotalstaff02_payAll).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalPriceFuel =  listData.stream().map(ReportAll::getTotalPriceFuel).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumtotalPriceNummun =  listData.stream().map(ReportAll::getTotalPriceNummun).collect(Collectors.summingDouble(Double::doubleValue));
-            double sumallLaiyJaiy =  listData.stream().map(ReportAll::getAllLaiyJaiy).collect(Collectors.summingDouble(Double::doubleValue));
+            // ================================sum footer=================================
+            double sumNummun = listData.stream().map(ReportAll::getTotalNummun)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalBiaLieng = listData.stream().map(ReportAll::getTotalBiaLieng)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtodtalLaiyJaiyFrist = listData.stream().map(ReportAll::getTodtalLaiyJaiyFrist)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtodtodtalLaiyJaiySecond = listData.stream().map(ReportAll::getTodtalLaiyJaiySecond)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalstaff02_payAll = listData.stream().map(ReportAll::getTotalstaff02_payAll)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalstaff02_beforepay = listData.stream().map(ReportAll::getTotalstaff02_payAll)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalPriceFuel = listData.stream().map(ReportAll::getTotalPriceFuel)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalPriceNummun = listData.stream().map(ReportAll::getTotalPriceNummun)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumallLaiyJaiy = listData.stream().map(ReportAll::getAllLaiyJaiy)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
             double getAllTotalLaijaiFrist = reportStaffServiceDao.getSumExpenses(reportAllReq);
             double getAllTotalLaijai = getAllTotalLaijaiFrist + sumallLaiyJaiy;
-            double sumRunningTotal =  listData.stream().map(ReportAll::getRunningTotal).collect(Collectors.summingDouble(Double::doubleValue));
+            double sumRunningTotal = listData.stream().map(ReportAll::getRunningTotal)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
             sumFooterGroup restFooter = new sumFooterGroup();
             restFooter.setRunningTotal(numfm.format(sumRunningTotal));
             restFooter.setTotalNummun(numfm.format(sumNummun));
             restFooter.setTotalBiaLieng(numfm.format(sumtotalBiaLieng));
 
-            restFooter.setTotalBiaLiengAndlaiJaiyOutFrist(numfm.format(sumtotalBiaLieng+getAllTotalLaijaiFrist));
-            restFooter.setBiaOutWasted(numfm.format(sumtotalBiaLieng+getAllTotalLaijaiFrist+sumRunningTotal));
+            restFooter.setTotalBiaLiengAndlaiJaiyOutFrist(numfm.format(sumtotalBiaLieng + getAllTotalLaijaiFrist));
+            restFooter.setBiaOutWasted(numfm.format(sumtotalBiaLieng + getAllTotalLaijaiFrist + sumRunningTotal));
 
             restFooter.setTodtalLaiyJaiyFrist(numfm.format(sumtodtalLaiyJaiyFrist));
             restFooter.setTodtalLaiyJaiySecond(numfm.format(sumtodtodtalLaiyJaiySecond));
@@ -153,113 +166,117 @@ public class ReportAllService {
             restFooter.setLaiJaiyOutFrist(numfm.format(getAllTotalLaijaiFrist));
             restFooter.setLaiJaiyOutTotal(numfm.format(getAllTotalLaijai));
             result.setSumFooter(restFooter);
-            //================================sum footer=================================
+            // ================================sum footer=================================
             result.setData(listData);
             result.setStatus("00");
             result.setMessage("success");
-        }catch (Exception e ){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setStatus("01");
             result.setMessage("data not found ");
         }
         return result;
     }
-// service report fuel
-public ReportFuelRes ReportFuealStation(ReportAllReq reportAllReq){
-    log.info("toKen=======================:"+reportAllReq.getToKen());
-    //============================get User info=======================
-    List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
-    log.info("show=================UserNo:"+userIn.get(0).getUserId());
-    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-    log.info("show=================Role:"+userIn.get(0).getRole());
-    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-    //================================================================
-    String userId = userIn.get(0).getUserId();
-    String userBranchNo = userIn.get(0).getBranchNo();
-    //===================set data to userId===============================
-    reportAllReq.setUserId(userId);
-    reportAllReq.setBranch(userBranchNo);
-    //====================================================================
 
-    double totalNummun =0.0;
-    double totalPriceFuel =0.0;
+    // service report fuel
+    public ReportFuelRes ReportFuealStation(ReportAllReq reportAllReq) {
+        log.info("toKen=======================:" + reportAllReq.getToKen());
+        // ============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        // ===================set data to userId===============================
+        reportAllReq.setUserId(userId);
+        reportAllReq.setBranch(userBranchNo);
+        // ====================================================================
 
-    List<ReportFuel> groupListData = new ArrayList<>();
-    DecimalFormat numfm = new DecimalFormat("###,###.###");
-    List<ReportFuel> listData = new ArrayList<>();
-    ReportFuelRes result = new ReportFuelRes();
-    try {
-        listData = reportStaffServiceDao.ReportFuealDao(reportAllReq);
-        //================================sum footer=================================
+        double totalNummun = 0.0;
+        double totalPriceFuel = 0.0;
 
-        double sumNummun =  listData.stream().map(ReportFuel::getTotalLidFuel).collect(Collectors.summingDouble(Double::doubleValue));
-        double sumtotalPriceFuel =  listData.stream().map(ReportFuel::getTotalPrizeFuelAll).collect(Collectors.summingDouble(Double::doubleValue));
+        List<ReportFuel> groupListData = new ArrayList<>();
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
+        List<ReportFuel> listData = new ArrayList<>();
+        ReportFuelRes result = new ReportFuelRes();
+        try {
+            listData = reportStaffServiceDao.ReportFuealDao(reportAllReq);
+            // ================================sum footer=================================
 
-        sumFooterGroupFuel restFooter = new sumFooterGroupFuel();
-        restFooter.setTotalLidFuel(numfm.format(sumNummun));
-        restFooter.setTotalPriceFuel(numfm.format(sumtotalPriceFuel));
+            double sumNummun = listData.stream().map(ReportFuel::getTotalLidFuel)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            double sumtotalPriceFuel = listData.stream().map(ReportFuel::getTotalPrizeFuelAll)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
 
-        result.setSumFooter(restFooter);
-        //================================sum footer=================================
-        result.setData(listData);
-        result.setStatus("00");
-        result.setMessage("success");
-    }catch (Exception e ){
-        e.printStackTrace();
-        result.setStatus("01");
-        result.setMessage("data not found ");
+            sumFooterGroupFuel restFooter = new sumFooterGroupFuel();
+            restFooter.setTotalLidFuel(numfm.format(sumNummun));
+            restFooter.setTotalPriceFuel(numfm.format(sumtotalPriceFuel));
+
+            result.setSumFooter(restFooter);
+            // ================================sum footer=================================
+            result.setData(listData);
+            result.setStatus("00");
+            result.setMessage("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("data not found ");
+        }
+        return result;
     }
-    return result;
-}
-// service report fuel
+    // service report fuel
 
-//    show total oils paid
-public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
-    log.info("toKen=======================:"+reportAllReq.getToKen());
-    //============================get User info=======================
-    List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
-    log.info("show=================UserNo:"+userIn.get(0).getUserId());
-    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-    log.info("show=================Role:"+userIn.get(0).getRole());
-    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-    //================================================================
-    String userId = userIn.get(0).getUserId();
-    String userBranchNo = userIn.get(0).getBranchNo();
-    //===================set data to userId===============================
-    reportAllReq.setUserId(userId);
-    reportAllReq.setBranch(userBranchNo);
-    //====================================================================
+    // show total oils paid
+    public ShowOilPaidRes ShowTotalOilPaidServiece(ReportAllReq reportAllReq) {
+        log.info("toKen=======================:" + reportAllReq.getToKen());
+        // ============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfoByToken(reportAllReq.getToKen());
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        // ===================set data to userId===============================
+        reportAllReq.setUserId(userId);
+        reportAllReq.setBranch(userBranchNo);
+        // ====================================================================
 
-//    double totalNummun =0.0;
-//    double totalPriceFuel =0.0;
+        // double totalNummun =0.0;
+        // double totalPriceFuel =0.0;
 
-//    List<ReportFuel> groupListData = new ArrayList<>();
-    DecimalFormat numfm = new DecimalFormat("###,###.###");
-    List<ForShowTotalOilPaid> data = new ArrayList<>();
-    ShowOilPaidRes result = new ShowOilPaidRes();
-    try {
-        data = reportStaffServiceDao.ShowOilPaid(reportAllReq);
-        //================================sum footer=================================
+        // List<ReportFuel> groupListData = new ArrayList<>();
+        DecimalFormat numfm = new DecimalFormat("###,###.###");
+        List<ForShowTotalOilPaid> data = new ArrayList<>();
+        ShowOilPaidRes result = new ShowOilPaidRes();
+        try {
+            data = reportStaffServiceDao.ShowOilPaid(reportAllReq);
+            // ================================sum footer=================================
 
-        double sumtotalOilPaid =  data.stream().map(ForShowTotalOilPaid::getTotalOilPaid).collect(Collectors.summingDouble(Double::doubleValue));
-//        double sumtotalPriceFuel =  listData.stream().map(ReportFuel::getTotalPrizeFuelAll).collect(Collectors.summingDouble(Double::doubleValue));
-//
-        sumfooterOilPaid restFooter = new sumfooterOilPaid();
-        restFooter.setSumtotalOilPaid(numfm.format(sumtotalOilPaid));
-//
-        result.setSumFooter(restFooter);
-        //================================sum footer=================================
-        result.setData(data);
-        result.setStatus("00");
-        result.setMessage("success");
-    }catch (Exception e ){
-        e.printStackTrace();
-        result.setStatus("01");
-        result.setMessage("data not found ");
+            double sumtotalOilPaid = data.stream().map(ForShowTotalOilPaid::getTotalOilPaid)
+                    .collect(Collectors.summingDouble(Double::doubleValue));
+            // double sumtotalPriceFuel =
+            // listData.stream().map(ReportFuel::getTotalPrizeFuelAll).collect(Collectors.summingDouble(Double::doubleValue));
+            //
+            sumfooterOilPaid restFooter = new sumfooterOilPaid();
+            restFooter.setSumtotalOilPaid(numfm.format(sumtotalOilPaid));
+            //
+            result.setSumFooter(restFooter);
+            // ================================sum footer=================================
+            result.setData(data);
+            result.setStatus("00");
+            result.setMessage("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("data not found ");
+        }
+        return result;
     }
-    return result;
-}
-
 
     public ReportAllStockInOutRes getReportDetailDailyStock(
             ReportItemInOutModelReq stockRequest,
@@ -270,21 +287,19 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
         ReportAllStockInOutRes response = new ReportAllStockInOutRes();
 
         try {
-            List<ReportAllStockInOut> rsListData =
-                    reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role, borNo, borNoss);
+            List<ReportAllStockInOut> rsListData = reportStaffServiceDao.getReportDetailDailyStock(stockRequest, role,
+                    borNo, borNoss);
 
             if (rsListData == null || rsListData.isEmpty()) {
                 response.setStatus("00");
                 response.setMessage("Data Not Found !!");
                 return response;
             }
-            Map<String, List<ReportAllStockInOut>> groupedMap =
-                    rsListData.stream()
-                            .collect(Collectors.groupingBy(
-                                    ReportAllStockInOut::getItemId,
-                                    LinkedHashMap::new,
-                                    Collectors.toList()
-                            ));
+            Map<String, List<ReportAllStockInOut>> groupedMap = rsListData.stream()
+                    .collect(Collectors.groupingBy(
+                            ReportAllStockInOut::getItemId,
+                            LinkedHashMap::new,
+                            Collectors.toList()));
 
             List<ReportAllStockGroup> groupedList = new ArrayList<>();
 
@@ -308,12 +323,13 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
 
                 // ===============================
                 // CALCULATE TOTAL
+                // Note: groupItems is ordered DESCENDING by date (newest first, oldest last)
                 // ===============================
                 int totalIn = groupItems.stream().mapToInt(ReportAllStockInOut::getInAmt).sum();
                 int totalOut = groupItems.stream().mapToInt(ReportAllStockInOut::getOutAmt).sum();
-                int totalRaised = groupItems.get(0).getRaisedAmt();           // opening
-                int totalClosing = groupItems.get(groupItems.size() - 1)
-                        .getClosingAmt();              // closing
+                int totalRaised = groupItems.get(groupItems.size() - 1).getRaisedAmt(); // opening balance (oldest
+                                                                                        // record)
+                int totalClosing = groupItems.get(0).getClosingAmt(); // closing balance (newest record)
 
                 double outPrice = groupItems.stream()
                         .mapToDouble(i -> i.getPrice() * i.getOutAmt())
@@ -378,22 +394,19 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
                     groupedList.stream()
                             .filter(g -> "USD".equalsIgnoreCase(g.getCurrency()))
                             .mapToDouble(ReportAllStockGroup::getOutprice)
-                            .sum()
-            );
+                            .sum());
 
             sumReport.setTotalOutPriceLAK(
                     groupedList.stream()
                             .filter(g -> "LAK".equalsIgnoreCase(g.getCurrency()))
                             .mapToDouble(ReportAllStockGroup::getOutprice)
-                            .sum()
-            );
+                            .sum());
 
             sumReport.setTotalOutPriceTHB(
                     groupedList.stream()
                             .filter(g -> "THB".equalsIgnoreCase(g.getCurrency()))
                             .mapToDouble(ReportAllStockGroup::getOutprice)
-                            .sum()
-            );
+                            .sum());
 
             // ===============================
             // RESPONSE
@@ -412,7 +425,7 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
         return response;
     }
 
-    //service report itemhis
+    // service report itemhis
     public DataResponse getReportItemHis(
             ReportItemInOutModelReq stockRequest,
             String role,
@@ -423,9 +436,8 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
         DataResponse response = new DataResponse();
 
         try {
-            List<ItemHisModel> rsListData =
-                    reportStaffServiceDao.getReportItemHis(
-                            stockRequest, role, borNo, borNoss, umission);
+            List<ItemHisModel> rsListData = reportStaffServiceDao.getReportItemHis(
+                    stockRequest, role, borNo, borNoss, umission);
 
             if (rsListData == null || rsListData.isEmpty()) {
                 response.setStatus("00");
@@ -445,8 +457,5 @@ public ShowOilPaidRes ShowTotalOilPaidServiece (ReportAllReq reportAllReq){
 
         return response;
     }
-
-
-
 
 }

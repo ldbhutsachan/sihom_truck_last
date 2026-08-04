@@ -13,13 +13,13 @@ import org.springframework.stereotype.Service;
 public class GetUserLoginOut {
     private String staftName;
     private String role;
+    private String role2;
     private String staftId;
     private String status;
     private String toKen;
     private String branch;
     private String department;
     private String department1;
-    private String role2;
     private String sprit_role;
     private String branchNo;
     private String branchName;

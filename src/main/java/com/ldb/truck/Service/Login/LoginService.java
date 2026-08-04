@@ -33,11 +33,11 @@ public class LoginService {
     @Autowired
     UserHisRepository userHisRepository;
 
-    public UserHisResponse getUserHistory(String userId){
+    public UserHisResponse getUserHistory(String userId) {
         UserHisResponse resposne = new UserHisResponse();
         try {
             List<UserHisEntity> rslUser = userHisRepository.getDetailsUserHis(userId);
-            if(rslUser.size() >= 1 ){
+            if (rslUser.size() >= 1) {
                 resposne.setStatus("00");
                 resposne.setMessage("susccess");
                 resposne.setData(rslUser);
@@ -46,7 +46,7 @@ public class LoginService {
             resposne.setMessage("Data Do not Found !!");
             resposne.setData(null);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             resposne.setStatus("00");
             resposne.setMessage("Data Do not Found !!");
             resposne.setData(null);
@@ -54,11 +54,11 @@ public class LoginService {
         return resposne;
     }
 
-    public UserHisViewResponse getUserHistoryView(String userId,UserHisRequest userHisRequest){
+    public UserHisViewResponse getUserHistoryView(String userId, UserHisRequest userHisRequest) {
         UserHisViewResponse resposne = new UserHisViewResponse();
         try {
             List<VUserHisEntity> rslUser = userHisRepository.getDetailViewIEWUserHis(userHisRequest.getDetailId());
-            if(rslUser.size() >= 1 ){
+            if (rslUser.size() >= 1) {
                 resposne.setStatus("00");
                 resposne.setMessage("susccess");
                 resposne.setData(rslUser);
@@ -67,7 +67,7 @@ public class LoginService {
             resposne.setMessage("Data Do not Found !!");
             resposne.setData(null);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             resposne.setStatus("00");
             resposne.setMessage("Data Do not Found !!");
             resposne.setData(null);
@@ -75,14 +75,13 @@ public class LoginService {
         return resposne;
     }
 
-
-    public GetUserLoginRes Userlogin(LoginReq loginReq){
+    public GetUserLoginRes Userlogin(LoginReq loginReq) {
         GetUserLoginRes result = new GetUserLoginRes();
         List<GetUserLoginOut> listData = new ArrayList<>();
         GetUserLoginOut data = new GetUserLoginOut();
         try {
             listData = imploginDao.Login(loginReq);
-            if(listData.size() < 1){
+            if (listData.size() < 1) {
                 result.setMessage("user or password incorrect");
                 result.setStatus("01");
                 return result;
@@ -90,6 +89,7 @@ public class LoginService {
             data.setStaftName(listData.get(0).getStaftName());
             data.setStaftId(listData.get(0).getStaftId());
             data.setRole(listData.get(0).getRole());
+            data.setRole2(listData.get(0).getRole2());
             data.setStatus(listData.get(0).getStatus());
             data.setToKen(listData.get(0).getToKen());
             data.setDepartment(listData.get(0).getDepartment());
@@ -104,7 +104,7 @@ public class LoginService {
             result.setStatus("00");
             result.setData(data);
             return result;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setMessage("user or password incorrect");
             result.setStatus("01");
@@ -112,118 +112,122 @@ public class LoginService {
         }
 
     }
-    public UserRes ListUserLogin(UserReq userReq){
-        log.info("toKen=======================:"+userReq.getToKen());
-        //============================get User info=======================
+
+    public UserRes ListUserLogin(UserReq userReq) {
+        log.info("toKen=======================:" + userReq.getToKen());
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(userReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         userReq.setUserId(userId);
         userReq.setBranch(userBranchNo);
-        //====================================================================
+        // ====================================================================
         UserRes result = new UserRes();
         List<UserLogin> listData = new PersistentList();
-        try{
+        try {
             listData = userLogin.listUser(userReq);
-            if(listData.size() == 0){
+            if (listData.size() == 0) {
                 result.setStatus("01");
                 result.setMessage("No Data");
                 result.setData(listData);
                 return result;
-            }else {
+            } else {
                 result.setStatus("00");
                 result.setMessage("success");
                 result.setData(listData);
                 return result;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
-    public UserRes storeUserLogin(UserReq userReq){
+
+    public UserRes storeUserLogin(UserReq userReq) {
         UserRes result = new UserRes();
-        log.info("toKen=======================:"+userReq.getToKen());
-        //============================get User info=======================
+        log.info("toKen=======================:" + userReq.getToKen());
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(userReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
         userReq.setSaveById(userId);
         int checkData = 0;
-        try{
+        try {
             checkData = userLogin.storeUser(userReq);
-            if(checkData  == 0){
+            if (checkData == 0) {
                 result.setStatus("01");
                 result.setMessage("No Save Data");
                 return result;
-            }else {
+            } else {
                 result.setStatus("00");
                 result.setMessage("Save Data Done");
                 return result;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
-    public UserRes updateUserLogin(UserReq userReq){
+
+    public UserRes updateUserLogin(UserReq userReq) {
         UserRes result = new UserRes();
-        log.info("toKen=======================:"+userReq.getToKen());
-        //============================get User info=======================
+        log.info("toKen=======================:" + userReq.getToKen());
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfoByToken(userReq.getToKen());
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
         int checkData = 0;
-        try{
+        try {
             checkData = userLogin.editUser(userReq);
-            if(checkData  == 0){
+            if (checkData == 0) {
                 result.setStatus("01");
                 result.setMessage("No edit User Data");
                 return result;
-            }else {
+            } else {
                 result.setStatus("00");
                 result.setMessage("edit User Data Done");
                 return result;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
-    public UserRes delUserLogin(UserReq userReq){
+
+    public UserRes delUserLogin(UserReq userReq) {
         UserRes result = new UserRes();
         int checkData = 0;
-        try{
+        try {
             checkData = userLogin.delUser(userReq);
-            if(checkData  == 0){
+            if (checkData == 0) {
                 result.setStatus("01");
                 result.setMessage("No del User Data");
                 return result;
-            }else {
+            } else {
                 result.setStatus("00");
                 result.setMessage("del User Data Done");
                 return result;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;

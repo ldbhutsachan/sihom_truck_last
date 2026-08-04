@@ -12,7 +12,7 @@ public class MachineHis {
     private String mch_name;
     private Date createDate; // create_date datetime
     private String createBy; // create_by varchar(100)
-    private String timeTotal; // time_close varchar(10)
+    private BigDecimal timeTotal;
     private Double digMetter;
     private Double oilLiter;
     private String hole;

@@ -32,88 +32,95 @@ public class BranchController {
         }
         return result;
     }
-//    new show branch api
-@CrossOrigin(origins = "*")
-@PostMapping("/getShowBranchNew2024.service")
-public BranchRes getShowBranchNew(@RequestBody BrachReq brachReq) {
-    BranchRes result = new BranchRes();
-    try {
-        result = branchService.getShowBranchnewService(brachReq);
-    } catch (Exception e) {
-        e.printStackTrace();
-        result.setStatus("01");
-        result.setMessage("exception");
+
+    // new show branch api
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getShowBranchNew2024.service")
+    public BranchRes getShowBranchNew(@RequestBody BrachReq brachReq) {
+        BranchRes result = new BranchRes();
+        try {
+            result = branchService.getShowBranchnewService(brachReq);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exception");
+        }
+        return result;
     }
-    return result;
-}
-@CrossOrigin(origins = "*")
-@PostMapping("/getData.service")
-public BranchRes getData(@RequestBody BrachReq brachReq) {
-    BranchRes result = new BranchRes();
-    try {
-        result = branchService.getShowBranchnewService(brachReq);
-    } catch (Exception e) {
-        e.printStackTrace();
-        result.setStatus("01");
-        result.setMessage("exception");
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/getData.service")
+    public BranchRes getData(@RequestBody BrachReq brachReq) {
+        BranchRes result = new BranchRes();
+        try {
+            result = branchService.getShowBranchnewService(brachReq);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setStatus("01");
+            result.setMessage("exception");
+        }
+        return result;
     }
-    return result;
-}
-    //    update branch
+
+    // update branch
     @CrossOrigin(origins = "*")
     @PostMapping("/UpdateBranch.service")
-    public BranchRes UpdateBranch (@RequestBody BrachReq userReq){
+    public BranchRes UpdateBranch(@RequestBody BrachReq userReq) {
         BranchRes result = new BranchRes();
-        try{
+        try {
             result = branchService.UpdateBranch(userReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
-    //    del branch
+
+    // del branch
     @CrossOrigin(origins = "*")
     @PostMapping("/DelBranchs.service")
-    public BranchRes DelBranchs (@RequestBody BrachReq userReq){
+    public BranchRes DelBranchs(@RequestBody BrachReq userReq) {
         BranchRes result = new BranchRes();
-        try{
+        try {
             result = branchService.DeleteBranch(userReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
-//    del task
-@CrossOrigin(origins = "*")
-@PostMapping("/DelTasks.service")
-public TaskRes DelTasks (@RequestBody TaskReq taskReq){
-    TaskRes result = new TaskRes();
-    try{
-        result = branchService.DeleteTasks(taskReq);
-    }catch (Exception e){
-        e.printStackTrace();
+
+    // del task
+    @CrossOrigin(origins = "*")
+    @PostMapping("/DelTasks.service")
+    public TaskRes DelTasks(@RequestBody TaskReq taskReq) {
+        TaskRes result = new TaskRes();
+        try {
+            result = branchService.DeleteTasks(taskReq);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
-    return result;
-}
-//delete link
-@CrossOrigin(origins = "*")
-@PostMapping("/Dellink.service")
-public LinkRes Dellink (@RequestBody LinkReq linkReq){
-    LinkRes result = new LinkRes();
-    try{
-        result = branchService.DeleteLink(linkReq);
-    }catch (Exception e){
-        e.printStackTrace();
+
+    // delete link
+    @CrossOrigin(origins = "*")
+    @PostMapping("/Dellink.service")
+    public LinkRes Dellink(@RequestBody LinkReq linkReq) {
+        LinkRes result = new LinkRes();
+        try {
+            result = branchService.DeleteLink(linkReq);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
-    return result;
-}
+
     @CrossOrigin(origins = "*")
     @PostMapping("/storeBranch.service")
-    public BranchRes storeUserLogin (@RequestBody BrachReq userReq){
+    public BranchRes storeUserLogin(@RequestBody BrachReq userReq) {
         BranchRes result = new BranchRes();
-        try{
+        try {
             result = branchService.saveBranch(userReq);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;

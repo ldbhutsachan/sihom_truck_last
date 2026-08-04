@@ -81,9 +81,6 @@ public class StaffEntity {
     private LocalDate cycleStartDate;   // เช่น 2026-01-01
 
 
-    // Relations เดิม
-    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<FaceRecord> faceRecords;
 
     @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AttendanceLog> attendanceLogs;

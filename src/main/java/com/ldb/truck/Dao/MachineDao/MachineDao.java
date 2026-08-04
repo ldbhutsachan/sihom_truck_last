@@ -328,7 +328,7 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
 
             // ใช้ helper function แปลงค่าปลอดภัย
             tr.setKeyId(getIntSafe(rs, "key_id"));
-            tr.setTimeTotal(getIntSafe(rs, "time_total"));
+            tr.setTimeTotal(getBigDecimalSafe(rs, "time_total"));
             tr.setStatus(getIntSafe(rs, "status"));
             tr.setMchProductYear(getIntSafe(rs, "mch_product_year"));
             tr.setQty(getIntSafe(rs, "qty"));
@@ -387,6 +387,25 @@ public List<MachineStockDetails> getRequestItemList(MachineStockDetailsReq req, 
         } catch (NumberFormatException e) {
             return 0.0;
         }
+    }
+
+    // Helper function แปลง BigDecimal safely และตัด trailing zeros
+    private BigDecimal getBigDecimalSafe(ResultSet rs, String column) throws SQLException {
+        Object obj = rs.getObject(column);
+        if (obj == null) return BigDecimal.ZERO;
+        BigDecimal bd;
+        if (obj instanceof BigDecimal) {
+            bd = (BigDecimal) obj;
+        } else if (obj instanceof Number) {
+            bd = BigDecimal.valueOf(((Number) obj).doubleValue());
+        } else {
+            try {
+                bd = new BigDecimal(obj.toString().trim());
+            } catch (Exception e) {
+                return BigDecimal.ZERO;
+            }
+        }
+        return bd.stripTrailingZeros();
     }
 
 
@@ -470,7 +489,8 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
                 tr.setMch_name(rs.getString("mch_name"));
                 tr.setCreateDate(rs.getTimestamp("create_date"));
                 tr.setCreateBy(rs.getString("USER_LOGIN"));
-                tr.setTimeTotal(rs.getString("time_total"));
+                BigDecimal tt = rs.getBigDecimal("time_total");
+                tr.setTimeTotal(tt != null ? tt.stripTrailingZeros() : null);
                 tr.setDigMetter(rs.getDouble("dig_metter"));
                 tr.setOilLiter(rs.getDouble("oil_liter"));
                 tr.setHole(rs.getString("hole"));
@@ -502,7 +522,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
             entity.setMchNo(machineHisReq.getMchNo());
             entity.setCreateDate(new Date());
             entity.setCreateBy(userId);
-            entity.setTime_total(machineHisReq.getTimeClose());
+            entity.setTime_total(machineHisReq.getTimeClose() != null ? machineHisReq.getTimeClose().stripTrailingZeros() : null);
             entity.setDigMetter(machineHisReq.getDigMetter());
             entity.setOilLiter(machineHisReq.getOilLiter());
             entity.setTxnDate(machineHisReq.getTxnDate());
@@ -519,7 +539,7 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
 
             int updated = JdbcTemplate.update(
                     sql,
-                    machineHisReq.getTimeClose() != null ? machineHisReq.getTimeClose() : 0.0,
+                    machineHisReq.getTimeClose() != null ? machineHisReq.getTimeClose() : BigDecimal.ZERO,
                     machineHisReq.getMchNo()
             );
 
@@ -554,12 +574,12 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
             MerchineHisEntity entity = optionalEntity.get();
 
             // ===== แปลง String เป็น Double =====
-            Double oldTimeTotal = parseToDouble(entity.getTime_total());
-            Double newTimeTotal = parseToDouble(machineHisReq.getTimeClose());
+            BigDecimal oldTimeTotal = entity.getTime_total() != null ? entity.getTime_total().stripTrailingZeros() : BigDecimal.ZERO;
+            BigDecimal newTimeTotal = machineHisReq.getTimeClose() != null ? machineHisReq.getTimeClose().stripTrailingZeros() : BigDecimal.ZERO;
 
-            // 2. อัพเดทข้อมูลใน entity (เก็บเป็น String)
+            // 2. อัพเดทข้อมูลใน entity
             entity.setMchNo(machineHisReq.getMchNo());
-            entity.setTime_total(String.valueOf(newTimeTotal));   // หรือใช้ format ถ้าต้องการ
+            entity.setTime_total(newTimeTotal);
             entity.setDigMetter(machineHisReq.getDigMetter());
             entity.setOilLiter(machineHisReq.getOilLiter());
             entity.setHole(machineHisReq.getHole());
@@ -571,9 +591,9 @@ public List<MachineHis> getMachineHis(MachineHisReq machineHisReq, String borNo)
             MERCHIN_HIS_REPOSITORY.save(entity);
 
             // 4. ปรับ machine_mileage_now ใน tb_machine
-            double diff = newTimeTotal - oldTimeTotal;
+            BigDecimal diff = newTimeTotal.subtract(oldTimeTotal);
 
-            if (diff != 0) {
+            if (diff.compareTo(BigDecimal.ZERO) != 0) {
                 String sql = "UPDATE tb_machine " +
                         "SET machine_mileage_now = IFNULL(machine_mileage_now, 0) + ? " +
                         "WHERE mch_no = ?";
@@ -755,29 +775,12 @@ public List<Machine> getMachine(MachineRPReq machineRPReq, String role, String b
                 tr.setTime_fix_monitor(rs.getInt("time_fix_monitor"));
                 tr.setTime_oil_fix(rs.getInt("time_oil_fix"));
                 tr.setTime_oil_fix_mo(rs.getInt("time_oil_fix_mo"));
-                // ถ้า column เป็น NULL จะได้ 0 แทน
-                tr.setAll_dig_metters(
-                        rs.getObject("all_dig_metters") != null ?
-                                ((BigDecimal) rs.getObject("all_dig_metters")).intValue() : 0
-                );
-                tr.setAll_oil_liter(
-                        rs.getObject("all_oil_liter") != null ?
-                                ((BigDecimal) rs.getObject("all_oil_liter")).intValue() : 0
-                );
-                tr.setAll_Used_Hours(
-                        rs.getObject("all_used_hours") != null ?
-                                ((BigDecimal) rs.getObject("all_used_hours")).intValue() : 0
-                );
+                tr.setAll_dig_metters(getBigDecimalSafe(rs, "all_dig_metters"));
+                tr.setAll_oil_liter(getBigDecimalSafe(rs, "all_oil_liter"));
+                tr.setAll_Used_Hours(getBigDecimalSafe(rs, "all_used_hours"));
 
-                tr.setLast_engine_Hours(
-                        rs.getObject("last_engine_hours") != null ?
-                                ((BigDecimal) rs.getObject("last_engine_hours")).intValue() : 0
-                );
-
-                tr.setLast_hydraulic_Hours(
-                        rs.getObject("last_hydraulic_hours") != null ?
-                                ((BigDecimal) rs.getObject("last_hydraulic_hours")).intValue() : 0
-                );
+                tr.setLast_engine_Hours(getBigDecimalSafe(rs, "last_engine_hours"));
+                tr.setLast_hydraulic_Hours(getBigDecimalSafe(rs, "last_hydraulic_hours"));
                 tr.setTotalFixMo(rs.getInt("timeTotal_Monitor"));
                 tr.setTotalFixMoOil(rs.getInt("timeTotal_Oil_Monitor"));
                 tr.setImage(rs.getString("image"));

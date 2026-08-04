@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Service
 public class BranchService {
     private static final Logger log = LogManager.getLogger(BranchService.class);
@@ -27,220 +28,230 @@ public class BranchService {
     ImplBranchDao implBranchDao;
     @Autowired
     ProfileDao profileDao;
-    //================================================================================
-    public BranchRes getShowBranch(BrachReq branchReq){
-        log.info("toKen=======================:"+branchReq.getToKen());
-        //============================get User info=======================
+
+    // ================================================================================
+    public BranchRes getShowBranch(BrachReq branchReq) {
+        log.info("toKen=======================:" + branchReq.getToKen());
+        // ============================get User info=======================
         List<Profile> userIn = profileDao.getProfileInfo(branchReq);
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
-       // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
+        // ===================set data to userId===============================
+        // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
         branchReq.setUserId(userId);
         branchReq.setBranchNo(userBranchNo);
 
-        //====================================================================
+        // ====================================================================
         Messages messages = new Messages();
         BranchRes result = new BranchRes();
-        try{
+        try {
 
             List<Branch> listData = new ArrayList<>();
             listData = implBranchDao.getBranch(branchReq);
-            if(listData.size() > 1){
+            if (listData.size() > 1) {
                 result.setStatus("00");
                 result.setMessage("Done");
                 result.setData(listData);
-            }else {
+            } else {
                 result.setStatus("01");
                 result.setMessage("No Data");
                 result.setData(listData);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            //result.setData(listData);
+            // result.setData(listData);
         }
         return result;
     }
-//    show branch service new
-public BranchRes getShowBranchnewService(BrachReq branchReq){
-    log.info("toKen=======================:"+branchReq.getToKen());
-    //============================get User info=======================
-    List<Profile> userIn = profileDao.getProfileInfo(branchReq);
-    log.info("show=================UserNo:"+userIn.get(0).getUserId());
-    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-    log.info("show=================Role:"+userIn.get(0).getRole());
-    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-    //================================================================
-    String userId = userIn.get(0).getUserId();
-    String userBranchNo = userIn.get(0).getBranchNo();
-    //===================set data to userId===============================
-    // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
-    branchReq.setUserId(userId);
-    branchReq.setBranchNo(userBranchNo);
 
-    //====================================================================
-    Messages messages = new Messages();
-    BranchRes result = new BranchRes();
-    try{
-
-        List<Branch> listData = new ArrayList<>();
-        listData = implBranchDao.getBranchNew(branchReq);
-        if(listData.size() > 1){
-            result.setStatus("00");
-            result.setMessage("Done");
-            result.setData(listData);
-        }else {
-            result.setStatus("01");
-            result.setMessage("No Data");
-            result.setData(listData);
-        }
-    }catch (Exception e){
-        e.printStackTrace();
-        //result.setData(listData);
-    }
-    return result;
-}
-    //==========================================insert  ======================================
-    public BranchRes saveBranch(BrachReq brachReq){
-        //============================get User info=======================
-        log.info("toKen=======================:"+brachReq.getToKen());
-        //============================get User info=======================
-        List<Profile> userIn = profileDao.getProfileInfo(brachReq);
-        log.info("show=================UserNo:"+userIn.get(0).getUserId());
-        log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-        log.info("show=================Role:"+userIn.get(0).getRole());
-        log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-        //================================================================
+    // show branch service new
+    public BranchRes getShowBranchnewService(BrachReq branchReq) {
+        log.info("toKen=======================:" + branchReq.getToKen());
+        // ============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfo(branchReq);
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
         String userId = userIn.get(0).getUserId();
         String userBranchNo = userIn.get(0).getBranchNo();
-        //===================set data to userId===============================
+        // ===================set data to userId===============================
+        // log.info("show==========where:"+branchReq.getBranchNo(userBranchNo));
+        branchReq.setUserId(userId);
+        branchReq.setBranchNo(userBranchNo);
+
+        // ====================================================================
+        Messages messages = new Messages();
+        BranchRes result = new BranchRes();
+        try {
+
+            List<Branch> listData = new ArrayList<>();
+            listData = implBranchDao.getBranchNew(branchReq);
+            if (listData.size() > 1) {
+                result.setStatus("00");
+                result.setMessage("Done");
+                result.setData(listData);
+            } else {
+                result.setStatus("01");
+                result.setMessage("No Data");
+                result.setData(listData);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // result.setData(listData);
+        }
+        return result;
+    }
+
+    // ==========================================insert
+    // ======================================
+    public BranchRes saveBranch(BrachReq brachReq) {
+        // ============================get User info=======================
+        log.info("toKen=======================:" + brachReq.getToKen());
+        // ============================get User info=======================
+        List<Profile> userIn = profileDao.getProfileInfo(brachReq);
+        log.info("show=================UserNo:" + userIn.get(0).getUserId());
+        log.info("show=================UserBname:" + userIn.get(0).getBranchName());
+        log.info("show=================Role:" + userIn.get(0).getRole());
+        log.info("show================BranchNo:" + userIn.get(0).getBranchNo());
+        // ================================================================
+        String userId = userIn.get(0).getUserId();
+        String userBranchNo = userIn.get(0).getBranchNo();
+        // ===================set data to userId===============================
         brachReq.setUserId(userId);
-        //====================================================================
+        // ====================================================================
         Messages messages = new Messages();
         BranchRes result = new BranchRes();
         List<Branch> listData = new ArrayList<>();
-        int i =0;
-        try{
+        int i = 0;
+        try {
             i = implBranchDao.saveDataBranch(brachReq);
-            if(i  == 0){
+            if (i == 0) {
                 result.setStatus("01");
                 result.setMessage("No Save Data");
                 return result;
-            }else {
+            } else {
                 result.setStatus("00");
                 result.setMessage("Save Data Done");
                 return result;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
-//    update branch
-public BranchRes UpdateBranch(BrachReq brachReq){
-    //============================get User info=======================
-    log.info("toKen=======================:"+brachReq.getToKen());
-    //============================get User info=======================
-    List<Profile> userIn = profileDao.getProfileInfo(brachReq);
-    log.info("show=================UserNo:"+userIn.get(0).getUserId());
-    log.info("show=================UserBname:"+userIn.get(0).getBranchName());
-    log.info("show=================Role:"+userIn.get(0).getRole());
-    log.info("show================BranchNo:"+userIn.get(0).getBranchNo());
-    //================================================================
-    String userId = userIn.get(0).getUserId();
-    String userBranchNo = userIn.get(0).getBranchNo();
-    //===================set data to userId===============================
-    brachReq.setUserId(userId);
-    //====================================================================
-    Messages messages = new Messages();
-    BranchRes result = new BranchRes();
-    List<Branch> listData = new ArrayList<>();
-    int i =0;
-    try{
-        i = implBranchDao.updateDataBranch(brachReq);
-        if(i  == 0){
-            result.setStatus("01");
-            result.setMessage("No Save Data");
-            return result;
-        }else {
-            result.setStatus("00");
-            result.setMessage("Update Sucessful");
-            return result;
+
+    // update branch
+    public BranchRes UpdateBranch(BrachReq brachReq) {
+        List<Profile> userIn = profileDao.getProfileInfo(brachReq);
+        String userId = userIn.get(0).getUserId();
+        brachReq.setUserId(userId);
+        BranchRes result = new BranchRes();
+        int i = 0;
+        try {
+            i = implBranchDao.updateDataBranch(brachReq);
+            if (i == 0) {
+                result.setStatus("01");
+                result.setMessage("No Save Data");
+                return result;
+            } else {
+                result.setStatus("00");
+                result.setMessage("Update Sucessful");
+                return result;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    }catch (Exception e){
-        e.printStackTrace();
+        return result;
     }
-    return result;
-}
-//del brancg
-public BranchRes DeleteBranch(BrachReq brachReq){
-    Messages messages = new Messages();
-    BranchRes result = new BranchRes();
-    List<Branch> listData = new ArrayList<>();
-    int i =0;
-    try{
-        i = implBranchDao.delDataBranch(brachReq);
-        if(i  == 0){
+
+    // del brancg
+    public BranchRes DeleteBranch(BrachReq brachReq) {
+        BranchRes result = new BranchRes();
+        try {
+            List<Profile> userIn = profileDao.getProfileInfo(brachReq);
+            if (userIn == null || userIn.isEmpty()) {
+                result.setStatus("01");
+                result.setMessage("Token not found");
+                return result;
+            }
+
+            String role2 = userIn.get(0).getRole2();
+            boolean isAdmin = role2 != null
+                    && ("ADMIN".equalsIgnoreCase(role2.trim()) || "S-ADMIN".equalsIgnoreCase(role2.trim()));
+            if (!isAdmin) {
+                result.setStatus("01");
+                result.setMessage("Only ADMIN role can delete data");
+                return result;
+            }
+
+            int i = implBranchDao.delDataBranch(brachReq);
+            if (i == 0) {
+                result.setStatus("01");
+                result.setMessage("have No Data to delete");
+                return result;
+            } else {
+                result.setStatus("00");
+                result.setMessage("Deleted");
+                return result;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
             result.setStatus("01");
-            result.setMessage("have No Data to delete");
-            return result;
-        }else {
-            result.setStatus("00");
-            result.setMessage("Deleted");
-            return result;
+            result.setMessage("Exception: " + e.getMessage());
         }
-    }catch (Exception e){
-        e.printStackTrace();
+        return result;
     }
-    return result;
-}
-    public TaskRes DeleteTasks(TaskReq taskReq){
+
+    public TaskRes DeleteTasks(TaskReq taskReq) {
         Messages messages = new Messages();
         TaskRes result = new TaskRes();
         List<Branch> listData = new ArrayList<>();
-        int i =0;
-        try{
+        int i = 0;
+        try {
             i = implBranchDao.delDataTasks(taskReq);
-            if(i  == 0){
+            if (i == 0) {
                 result.setStatus("01");
                 result.setMessage("have No Task to delete");
                 return result;
-            }else {
+            } else {
                 result.setStatus("00");
                 result.setMessage("Delete Successful");
                 return result;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
-    public LinkRes DeleteLink(LinkReq linkReq){
+
+    public LinkRes DeleteLink(LinkReq linkReq) {
         Messages messages = new Messages();
         LinkRes result = new LinkRes();
         List<Branch> listData = new ArrayList<>();
-        int i =0;
-        try{
+        int i = 0;
+        try {
             i = implBranchDao.delDatalink(linkReq);
-            if(i  == 0){
+            if (i == 0) {
                 result.setStatus("01");
                 result.setMessage("have No Task to delete");
                 return result;
-            }else {
+            } else {
                 result.setStatus("00");
                 result.setMessage("Delete Successful");
                 return result;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
-    //================================================================================
-    //================================================================================
+    // ================================================================================
+    // ================================================================================
 }

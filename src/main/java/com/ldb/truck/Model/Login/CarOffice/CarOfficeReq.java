@@ -73,5 +73,6 @@ public class CarOfficeReq {
     private String enddate_kongnam;
     private String borNo;
     private String remark;
+    private String spare_tire;
 //    private String lean;
 }

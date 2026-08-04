@@ -46,4 +46,17 @@ public interface AttendanceLogRepository extends JpaRepository<AttendanceLog, Lo
     //  NEW — ดึง CHECK_IN ครั้งแรกของวันที่กำหนด (OrderByCheckTimeAsc)
     Optional<AttendanceLog> findTopByStaff_IdAndCheckTypeAndCheckTimeBetweenOrderByCheckTimeAsc(
             Long staffId, String checkType, LocalDateTime start, LocalDateTime end);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM AttendanceLog a WHERE a.createdAt < :cutoffDate")
+    void deleteLogsOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query(value = "INSERT INTO attendance_logs_backup (original_log_id, user_id, check_type, check_time, remark, created_at, ip_address, mac_address, backed_up_at) " +
+            "SELECT id, user_id, check_type, check_time, remark, created_at, ip_address, mac_address, NOW() " +
+            "FROM attendance_logs " +
+            "WHERE created_at < :cutoffDate AND id NOT IN (SELECT original_log_id FROM attendance_logs_backup WHERE original_log_id IS NOT NULL)", nativeQuery = true)
+    void backupLogsOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
 }
