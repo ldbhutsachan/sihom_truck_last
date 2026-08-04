@@ -2,6 +2,7 @@ package com.ldb.truck.Model.Machine;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -10,7 +11,7 @@ public class MachineStockDetails {
     private String mchNo; // mch_no
     private Date createDate; // create_date
     private String createBy; // create_by
-    private Integer timeTotal; // time_total
+    private BigDecimal timeTotal; // time_total
     private Date txnDate; // txn_date
     private Integer status; // status
     private String mchName; // mch_name

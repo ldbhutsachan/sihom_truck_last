@@ -17,7 +17,7 @@ public class MachineHisReq {
 
    // private Integer timeTotal; // time_total int(11)
 
-    private String timeClose; // time_close varchar(10)
+    private BigDecimal timeClose;
     private BigDecimal digMetter;
     private BigDecimal oilLiter;
     private String hole;
